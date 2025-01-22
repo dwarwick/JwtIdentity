@@ -1,0 +1,1 @@
+﻿global using JwtIdentity.Common.Auth;
