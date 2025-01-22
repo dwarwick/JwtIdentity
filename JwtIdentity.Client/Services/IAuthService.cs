@@ -2,6 +2,6 @@
 {
     public interface IAuthService
     {
-        Task<string> Login(LoginModel loginModel);
+        Task<Response<LoginModel>> Login(LoginModel model);
     }
 }

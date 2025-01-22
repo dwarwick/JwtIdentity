@@ -22,12 +22,14 @@
 
     private async Task HandleLogin()
     {
-        var response = await AuthService.Login(loginModel);
-        if (!string.IsNullOrEmpty(response))
+        Response<LoginModel> response = await AuthService.Login(loginModel);
+        if (response.Success)
         {
-            var result = response;
-            await JSRuntime.InvokeVoidAsync("localStorage.setItem", "authToken", response);
-            // Redirect or perform other actions after successful login
+            if (!string.IsNullOrEmpty(response.Data?.Token))
+            {
+                await JSRuntime.InvokeVoidAsync("localStorage.setItem", "authToken", response.Data.Token);
+                // Redirect or perform other actions after successful login
+            }
         }
         else
         {

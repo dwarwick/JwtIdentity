@@ -23,13 +23,13 @@ namespace JwtIdentity.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginModel model)
+        public async Task<ActionResult<LoginModel>> Login([FromBody] LoginModel model)
         {
             var user = await _userManager.FindByNameAsync(model.Username);
             if (user != null && await _userManager.CheckPasswordAsync(user, model.Password))
             {
-                var token = GenerateJwtToken(user);
-                return Ok(new { token });
+                model.Token = GenerateJwtToken(user);
+                return Ok(model);
             }
             return Unauthorized();
         }
