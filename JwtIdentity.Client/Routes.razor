@@ -1,6 +1,23 @@
-﻿<Router AppAssembly="typeof(Program).Assembly">
+﻿<CascadingAuthenticationState>
+<Router AppAssembly="typeof(Program).Assembly">
     <Found Context="routeData">
-        <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)" />
+        <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)">
+            <NotAuthorized>
+                    @if((context.User?.Identity?.IsAuthenticated ?? false) == false)
+                    {
+                        
+                        var returnUrl = Navigation.ToBaseRelativePath(Navigation.Uri);
+                        <RedirectToLogin ReturnUrl="@returnUrl"/>    
+                    }
+                    else
+                    {
+                        <div class="alert alert-warning">
+                            <p>You are not authorized to access this resource.</p>
+                        </div>    
+                    }
+                </NotAuthorized>
+        </AuthorizeRouteView>
         <FocusOnNavigate RouteData="routeData" Selector="h1" />
     </Found>
 </Router>
+</CascadingAuthenticationState>

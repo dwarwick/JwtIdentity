@@ -28,20 +28,34 @@ namespace JwtIdentity.Controllers
             var user = await _userManager.FindByNameAsync(model.Username);
             if (user != null && await _userManager.CheckPasswordAsync(user, model.Password))
             {
-                model.Token = GenerateJwtToken(user);
+                model.Token = await GenerateJwtToken(user);
                 return Ok(model);
             }
             return Unauthorized();
         }
 
-        private string GenerateJwtToken(ApplicationUser user)
+        private async Task<string> GenerateJwtToken(ApplicationUser user)
         {
-            var claims = new[]
+            var roles = await _userManager.GetRolesAsync(user);
+            var roleClaims = roles.Select(q => new Claim(ClaimTypes.Role, q)).ToList();
+
+            var userClaims = await _userManager.GetClaimsAsync(user);
+
+            var claims = new List<Claim>
             {
-                new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
+                new Claim(JwtRegisteredClaimNames.Sub, user.UserName!),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
-            };
+                new Claim(JwtRegisteredClaimNames.Email, user.Email!)
+            }
+            .Union(userClaims)
+            .Union(roleClaims);
+
+            //var claims = new[]
+            //{
+            //    new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
+            //    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            //    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
+            //};
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);

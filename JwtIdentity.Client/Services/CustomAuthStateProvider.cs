@@ -16,7 +16,7 @@ namespace JwtIdentity.Client.Services
 
         public override async Task<AuthenticationState> GetAuthenticationStateAsync()
         {
-            var token = await _localStorage.GetItemAsync<string>("jwt_token");
+            var token = await _localStorage.GetItemAsync<string>("authToken");
             var identity = string.IsNullOrEmpty(token) ? new ClaimsIdentity() : new ClaimsIdentity(ParseClaimsFromJwt(token), "jwt");
             var user = new ClaimsPrincipal(identity);
             return new AuthenticationState(user);
@@ -28,6 +28,14 @@ namespace JwtIdentity.Client.Services
             var user = new ClaimsPrincipal(identity);
 
             NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(user)));
+        }
+
+        public async Task LoggedOut()
+        {
+            await this._localStorage.RemoveItemAsync("authToken");
+            var nobody = new ClaimsPrincipal(new ClaimsIdentity());
+            var authState = Task.FromResult(new AuthenticationState(nobody));
+            this.NotifyAuthenticationStateChanged(authState);
         }
 
         private static IEnumerable<Claim> ParseClaimsFromJwt(string jwt)

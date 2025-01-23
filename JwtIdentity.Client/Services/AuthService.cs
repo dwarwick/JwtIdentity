@@ -76,5 +76,10 @@ namespace JwtIdentity.Client.Services
                 throw;
             }
         }
+
+        public async Task Logout()
+        {
+            await ((CustomAuthStateProvider)this._customAuthStateProvider).LoggedOut();
+        }
     }
 }
