@@ -14,5 +14,8 @@ builder.Services.AddBlazoredLocalStorage();
 
 builder.Services.AddScoped(typeof(IApiService<>), typeof(ApiService<>));
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddMudServices();
+
+
 
 await builder.Build().RunAsync();
