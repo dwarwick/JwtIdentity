@@ -27,10 +27,9 @@
         {
             // Handle login failure
         }
-    }
-
-    public class LoginResult
-    {
-        public string Token { get; set; }
+        else
+        {
+            Navigation.NavigateTo("/");
+        }
     }
 }
