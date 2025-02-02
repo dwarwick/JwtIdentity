@@ -1,3 +1,4 @@
+using JwtIdentity.Configurations;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -16,6 +17,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddIdentity<ApplicationUser, ApplicationRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
+
+builder.Services.AddAutoMapper(typeof(MapperConfig));
 
 builder.Services.AddAuthentication(options =>
 {

@@ -1,0 +1,85 @@
+﻿@import url('open-iconic/font/css/open-iconic-bootstrap.min.css');
+:root {
+    --bodyBackgroundColor: #160F1E;
+    --textColor: #F0F8FF;
+    --textBoxBackgroundColor: #021630;
+    --navbarBackgroundColor: #2B2342;
+    --navbarTextColor: #F0F8FF;
+    --EditorToolbarBackgroundColor: #222f3e;
+    --forum-gray: rgba(50, 55, 50, 1);
+    --forum-blue: #222f3e;
+    --forum-edit: #274F80;
+    --bs-accordion-active-bg: var(--forum-gray) !important;
+    --disabledTextBoxBackgroundColor: #4a5a6a;
+    --disabledTextBoxForegroundColor: #ff0000;
+    --enabledTextBoxBackgroundColorFocused: #010150;
+}
+
+html, body {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+a, .btn-link {
+    color: #0366d6;
+}
+
+.btn-primary {
+    color: #fff;
+    background-color: #1b6ec2;
+    border-color: #1861ac;
+}
+
+.content {
+    padding-top: 1.1rem;
+}
+
+.valid.modified:not([type=checkbox]) {
+    outline: 1px solid #26b050;
+}
+
+.invalid {
+    outline: 1px solid red;
+}
+
+.validation-message {
+    color: red;
+}
+
+#blazor-error-ui {
+    background: lightyellow;
+    bottom: 0;
+    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+    display: none;
+    left: 0;
+    padding: 0.6rem 1.25rem 0.7rem 1.25rem;
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+}
+
+    #blazor-error-ui .dismiss {
+        cursor: pointer;
+        position: absolute;
+        right: 0.75rem;
+        top: 0.5rem;
+    }
+
+.main {
+    flex: 1;
+}
+
+.sidebar {
+    background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);
+}
+
+.bold-text {
+    font-weight: bolder;
+}
+
+#ProfilePic {
+    box-shadow: 2px 3px 15px 1px var(--disabledTextBoxBackgroundColor);
+}
+
+#ProfilePic:hover {
+    box-shadow: 2px 3px 15px 1px var(--forum-edit);
+}

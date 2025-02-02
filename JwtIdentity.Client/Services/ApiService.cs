@@ -3,7 +3,7 @@ using System.Text.Json;
 
 namespace JwtIdentity.Client.Services
 {
-    public class ApiService<T> : IApiService<T> where T : class
+    public class ApiService : IApiService
     {
         public HttpClient _httpClient { get; set; }
         private readonly JsonSerializerOptions _options;
@@ -18,28 +18,28 @@ namespace JwtIdentity.Client.Services
             };
         }
 
-        public async Task<T> GetAsync(string endpoint)
+        public async Task<T> GetAsync<T>(string endpoint)
         {
             var response = await _httpClient.GetAsync($"{endpoint}");
             _ = response.EnsureSuccessStatusCode();
             return await response.Content.ReadFromJsonAsync<T>();
         }
 
-        public async Task<IEnumerable<T>> GetAllAsync(string endpoint)
+        public async Task<IEnumerable<T>> GetAllAsync<T>(string endpoint)
         {
             var response = await _httpClient.GetAsync($"{endpoint}");
             _ = response.EnsureSuccessStatusCode();
             return await response.Content.ReadFromJsonAsync<IEnumerable<T>>();
         }
 
-        public async Task<T> CreateAsync(string endpoint, T viewModel)
+        public async Task<T> CreateAsync<T>(string endpoint, T viewModel)
         {
             var response = await _httpClient.PostAsJsonAsync($"{endpoint}", viewModel);
             _ = response.EnsureSuccessStatusCode();
             return await response.Content.ReadFromJsonAsync<T>();
         }
 
-        public async Task<T> UpdateAsync(string endpoint, T viewModel)
+        public async Task<T> UpdateAsync<T>(string endpoint, T viewModel)
         {
             var response = await _httpClient.PutAsJsonAsync($"{endpoint}", viewModel);
             _ = response.EnsureSuccessStatusCode();

@@ -1,5 +1,4 @@
-﻿using JwtIdentity.Common.Auth;
-using Microsoft.AspNetCore.Mvc;
+﻿
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -14,22 +13,35 @@ namespace JwtIdentity.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly IConfiguration _configuration;
+        private readonly IMapper _mapper;
 
-        public AuthController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IConfiguration configuration)
+        public AuthController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IConfiguration configuration, IMapper mapper)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _configuration = configuration;
+            _mapper = mapper;
         }
 
         [HttpPost("login")]
         public async Task<ActionResult<LoginModel>> Login([FromBody] LoginModel model)
         {
-            var user = await _userManager.FindByNameAsync(model.Username);
+            if (!ModelState.IsValid || string.IsNullOrEmpty(model.Username) || string.IsNullOrEmpty(model.Password))
+            {
+                return BadRequest("Invalid client request");
+            }
+
+            ApplicationUser? user = await _userManager.FindByNameAsync(model.Username);
+
             if (user != null && await _userManager.CheckPasswordAsync(user, model.Password))
             {
-                model.Token = await GenerateJwtToken(user);
-                return Ok(model);
+                string Token = await GenerateJwtToken(user);
+
+                ApplicationUserViewModel applicationUserViewModel = _mapper.Map<ApplicationUserViewModel>(user);
+
+                applicationUserViewModel.Token = Token;
+
+                return Ok(applicationUserViewModel);
             }
             return Unauthorized();
         }
@@ -45,7 +57,8 @@ namespace JwtIdentity.Controllers
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.UserName!),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(JwtRegisteredClaimNames.Email, user.Email!)
+                new Claim(JwtRegisteredClaimNames.Email, user.Email!),
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
             }
             .Union(userClaims)
             .Union(roleClaims);

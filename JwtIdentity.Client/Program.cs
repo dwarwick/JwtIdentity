@@ -2,6 +2,7 @@ using Blazored.LocalStorage;
 using JwtIdentity.Client.Services;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using MudBlazor.Services;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
@@ -12,7 +13,7 @@ builder.Services.AddAuthorizationCore();
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
 builder.Services.AddBlazoredLocalStorage();
 
-builder.Services.AddScoped(typeof(IApiService<>), typeof(ApiService<>));
+builder.Services.AddScoped<IApiService, ApiService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddMudServices();
 

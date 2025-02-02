@@ -7,6 +7,9 @@
         {
         }
 
+        public DbSet<ApplicationUser> ApplicationUsers { get; set; }
+        public DbSet<ApplicationRole> ApplicationRoles { get; set; }
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             // Seed roles
@@ -17,7 +20,8 @@
 
 
             // Seed users
-            var hasher = new PasswordHasher<ApplicationUser>();
+            _ = new PasswordHasher<ApplicationUser>();
+
             _ = builder.Entity<ApplicationUser>().HasData(
                 new ApplicationUser
                 {
@@ -27,8 +31,10 @@
                     Email = "admin@example.com",
                     NormalizedEmail = "ADMIN@EXAMPLE.COM",
                     EmailConfirmed = true,
-                    PasswordHash = hasher.HashPassword(null, "AdminPassword123"),
-                    SecurityStamp = string.Empty
+                    PasswordHash = "AQAAAAIAAYagAAAAENYeHtZjzzSCzot7QF9qVAC25mKeyiv6v/kdBakqJiTW7Jt5TCt/9tSVdTSABsJGtQ==",
+                    ConcurrencyStamp = "975c6e69-81c0-463e-bc0f-212c970f34d4",
+                    SecurityStamp = string.Empty,
+                    Theme = "dark"
                 },
                 new ApplicationUser
                 {
@@ -38,8 +44,10 @@
                     Email = "user@example.com",
                     NormalizedEmail = "USER@EXAMPLE.COM",
                     EmailConfirmed = true,
-                    PasswordHash = hasher.HashPassword(null, "UserPassword123"),
-                    SecurityStamp = string.Empty
+                    PasswordHash = "AQAAAAIAAYagAAAAEDaaeD+y1I6b06Mfnm/tKqk8uIC+IIyCC5XMjODRg0PAJuxDcmPh6iihBkSLhMoyJQ==",
+                    ConcurrencyStamp = "be6fc596-979b-42b1-906e-d6d5a59d6fce",
+                    SecurityStamp = string.Empty,
+                    Theme = "light"
                 }
             );
 
