@@ -2,7 +2,9 @@
 {
     public interface IAuthService
     {
-        Task<Response<LoginModel>> Login(LoginModel model);
+        ApplicationUserViewModel? CurrentUser { get; set; }
+
+        Task<Response<ApplicationUserViewModel>> Login(ApplicationUserViewModel model);
 
         Task Logout();
     }

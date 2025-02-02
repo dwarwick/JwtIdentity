@@ -10,18 +10,20 @@ namespace JwtIdentity.Client.Services
     {
         private readonly AuthenticationStateProvider _customAuthStateProvider;
         private readonly ILocalStorageService LocalStorage;
-        private readonly IApiService<LoginModel> _apiService;
+        private readonly IApiService _apiService;
 
-        public AuthService(AuthenticationStateProvider customAuthStateProvider, ILocalStorageService localStorage, IApiService<LoginModel> apiService)
+        public ApplicationUserViewModel? CurrentUser { get; set; }
+
+        public AuthService(AuthenticationStateProvider customAuthStateProvider, ILocalStorageService localStorage, IApiService apiService)
         {
             _customAuthStateProvider = customAuthStateProvider;
             LocalStorage = localStorage;
             _apiService = apiService;
         }
 
-        public async Task<Response<LoginModel>> Login(LoginModel model)
+        public async Task<Response<ApplicationUserViewModel>> Login(ApplicationUserViewModel input)
         {
-            Response<LoginModel> response;
+            Response<ApplicationUserViewModel> response;
             _ = new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
@@ -29,15 +31,15 @@ namespace JwtIdentity.Client.Services
 
             try
             {
-                model = await _apiService.CreateAsync("api/auth/login", model);
+                CurrentUser = await _apiService.CreateAsync<ApplicationUserViewModel>("api/auth/login", input);
 
-                if (model != null && !string.IsNullOrEmpty(model.Token))
+                if (CurrentUser != null && !string.IsNullOrEmpty(CurrentUser.Token))
                 {
 
 
-                    response = new Response<LoginModel>
+                    response = new Response<ApplicationUserViewModel>
                     {
-                        Data = model,
+                        Data = CurrentUser,
                         Success = true,
                     };
 
@@ -49,7 +51,7 @@ namespace JwtIdentity.Client.Services
                 }
                 else
                 {
-                    response = new Response<LoginModel>
+                    response = new Response<ApplicationUserViewModel>
                     {
                         Data = null,
                         Success = false,
@@ -67,6 +69,8 @@ namespace JwtIdentity.Client.Services
         public async Task Logout()
         {
             await ((CustomAuthStateProvider)this._customAuthStateProvider).LoggedOut();
+
+            CurrentUser = null;
         }
     }
 }

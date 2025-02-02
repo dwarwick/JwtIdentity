@@ -1,7 +1,8 @@
 ﻿@inherits LayoutComponentBase
+@using System.Security.Claims
 
-@* Required *@
-<MudThemeProvider />
+<MudThemeProvider IsDarkMode="@_isDarkMode" />
+
 <MudPopoverProvider />
 
 @* Needed for dialogs *@
@@ -12,26 +13,12 @@
 
 
 <main>
-    <div class="top-row px-4">
-        <AuthorizeView>
-            <NotAuthorized>
-                <a href="login">Login</a>
-            </NotAuthorized>
 
-            <Authorized>
-                <a href="logout">Logout</a>
-            </Authorized>
-        </AuthorizeView>
-    </div>
 
     <MudLayout>
-        <MudAppBar>
-            <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
-            My Application
-        </MudAppBar>
-        <MudDrawer @bind-Open="@_drawerOpen">
-            <MyNavMenu />
-        </MudDrawer>
+
+        <MyNavMenu @bind-DarkTheme="@_isDarkMode" @bind-DarkTheme:after="HandleThemeChanged" />
+
         <MudMainContent>
             <MudContainer>
                 @Body
@@ -47,10 +34,92 @@
 </div>
 
 @code {
-    bool _drawerOpen = true;
+    MudTheme mudTheme = new();
+    bool _isDarkMode;
+    string _theme = "light";
 
-    void DrawerToggle()
+    MudTheme MyCustomLightTheme = new MudTheme()
     {
-        _drawerOpen = !_drawerOpen;
+        PaletteLight = new PaletteLight()
+        {
+            AppbarBackground = Colors.Gray.Lighten3,
+        }, 
+    };
+
+    IJSObjectReference? module;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // reference app.js in the wwwroot folder
+            module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./js/app.js");
+
+            AuthenticationState authState = await AuthStateProvider.GetAuthenticationStateAsync();
+
+            if (authState.User?.Identity?.IsAuthenticated ?? false)
+            {
+                // get the Id of the user from the claims
+                var userId = authState.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+                ApplicationUserViewModel? applicationUserViewModel = await Client.GetFromJsonAsync<ApplicationUserViewModel>($"api/applicationuser/{userId}");
+
+                if (applicationUserViewModel != null)
+                {
+                    applicationUserViewModel.Token = await LocalStorage.GetItemAsStringAsync("authToken") ?? string.Empty;
+
+                    AuthService.CurrentUser = applicationUserViewModel;
+                }
+            }
+
+            _theme = await LocalStorage.GetItemAsStringAsync("theme") ?? string.Empty;
+
+            if (string.IsNullOrEmpty(_theme))
+            {
+                if (AuthService.CurrentUser != null)
+                {
+                    _theme = AuthService.CurrentUser.Theme ?? "light"; //  "dark" : "light";
+                }
+                else
+                {
+                    _theme = "light";
+                }
+            }
+            await SetTheme();
+        }
+        catch (Exception ex)
+        {
+            // Handle exception
+        }
+    }
+
+    private async Task SetTheme()
+    {
+        await LocalStorage.SetItemAsStringAsync("theme", _theme);
+        await LocalStorage.SetItemAsync<DateTime>("LastCheckTime", DateTime.UtcNow);
+
+        if (_theme == "light") mudTheme = MyCustomLightTheme;
+
+        _isDarkMode = _theme == "dark";
+
+        if (module != null)
+        {            
+            await module.InvokeAsync<string>("removeThemes");
+
+            await module.InvokeAsync<string>("addCss", $"css/app-{_theme}.css");
+        }
+
+        if (AuthService.CurrentUser != null && AuthService.CurrentUser.Theme != _theme)
+        {
+            AuthService.CurrentUser.Theme = _theme;
+
+            await Client.PutAsJsonAsync($"api/applicationuser/{AuthService.CurrentUser.Id}", AuthService.CurrentUser);
+        }
+    }
+
+    private async Task HandleThemeChanged()
+    {
+        _theme = _isDarkMode ? "dark" : "light";
+        await SetTheme();
     }
 }

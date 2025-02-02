@@ -13,8 +13,12 @@
 @using JwtIdentity.Client.Pages.Navigation
 @using Microsoft.AspNetCore.Authorization
 @using MudBlazor
+@using Blazored.LocalStorage
+@using JwtIdentity.Common.ViewModels
 
+@inject AuthenticationStateProvider AuthStateProvider
 @inject HttpClient Client
 @inject NavigationManager Navigation
 @inject IJSRuntime JSRuntime
 @inject IAuthService AuthService
+@inject ILocalStorageService LocalStorage
