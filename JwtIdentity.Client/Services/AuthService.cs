@@ -44,8 +44,8 @@ namespace JwtIdentity.Client.Services
                     };
 
                     await LocalStorage.SetItemAsync("authToken", response.Data.Token);
-                    ((CustomAuthStateProvider)_customAuthStateProvider).NotifyUserAuthentication(response.Data.Token);
-                    _apiService._httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", response.Data.Token);
+                    await ((CustomAuthStateProvider)_customAuthStateProvider).LoggedIn();
+                    ((CustomAuthStateProvider)_customAuthStateProvider)._httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", response.Data.Token);
 
                     return response;
                 }

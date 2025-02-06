@@ -14,13 +14,15 @@ namespace JwtIdentity.Controllers
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly IConfiguration _configuration;
         private readonly IMapper _mapper;
+        private readonly ApplicationDbContext _dbContext;
 
-        public AuthController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IConfiguration configuration, IMapper mapper)
+        public AuthController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IConfiguration configuration, IMapper mapper, ApplicationDbContext applicationDbContext)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _configuration = configuration;
             _mapper = mapper;
+            _dbContext = applicationDbContext;
         }
 
         [HttpPost("login")]
@@ -41,6 +43,19 @@ namespace JwtIdentity.Controllers
 
                 applicationUserViewModel.Token = Token;
 
+                // 'Response' is the HttpResponse for the current request
+                Response.Cookies.Append(
+                    "authToken",
+                    Token,
+                    new CookieOptions
+                    {
+                        HttpOnly = true,
+                        Secure = true,
+                        SameSite = SameSiteMode.Strict,
+                        Expires = DateTimeOffset.Now.AddMinutes(30)
+                    }
+                );
+
                 return Ok(applicationUserViewModel);
             }
             return Unauthorized();
@@ -48,8 +63,13 @@ namespace JwtIdentity.Controllers
 
         private async Task<string> GenerateJwtToken(ApplicationUser user)
         {
+            if (string.IsNullOrEmpty(_configuration["Jwt:Key"]) || string.IsNullOrEmpty(_configuration["Jwt:Issuer"]) || string.IsNullOrEmpty(_configuration["Jwt:Audience"]))
+            {
+                return string.Empty;
+            }
+
             var roles = await _userManager.GetRolesAsync(user);
-            var roleClaims = roles.Select(q => new Claim(ClaimTypes.Role, q)).ToList();
+            var roleClaims = roles.Select(q => new Claim("role", q)).ToList();
 
             var userClaims = await _userManager.GetClaimsAsync(user);
 

@@ -27,6 +27,20 @@ builder.Services.AddAuthentication(options =>
 })
 .AddJwtBearer(options =>
 {
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            // If the header is empty, try to read the token from a cookie
+            var cookie = context.Request.Cookies["authToken"];
+            if (!string.IsNullOrEmpty(cookie))
+            {
+                context.Token = cookie;
+            }
+            return Task.CompletedTask;
+        }
+    };
+
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,
@@ -41,6 +55,19 @@ builder.Services.AddAuthentication(options =>
 
 // Add MVC services
 builder.Services.AddControllers();
+
+// add an AllowAll Cors policy
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll",
+        builder =>
+        {
+            _ = builder.AllowAnyOrigin()
+                   .AllowAnyMethod()
+                   .AllowAnyHeader();
+        });
+});
+
 
 var app = builder.Build();
 
@@ -64,7 +91,7 @@ app.UseAntiforgery();
 app.UseAuthentication();
 app.UseAuthorization();
 
-// Use CORS policy
+// Use CORS policymap
 app.UseCors("AllowAll");
 
 // Map controllers

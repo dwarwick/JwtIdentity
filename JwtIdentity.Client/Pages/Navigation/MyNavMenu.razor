@@ -4,7 +4,7 @@
     <MudSpacer />
     <MudHidden Breakpoint="Breakpoint.SmAndDown">
         <MudButton Variant="Variant.Text" Color="Color.Inherit" Class="mx-2">Home</MudButton>
-        <MudButton Variant="Variant.Text" Color="Color.Inherit" Class="mx-2">About</MudButton>
+        <MudButton Variant="Variant.Text" Color="Color.Inherit" Class="mx-2" Href="/counter">Counter</MudButton>
         <MudButton Variant="Variant.Text" Color="Color.Inherit" Class="mx-2">Contact</MudButton>
         <MudSwitch Value="@DarkTheme" Label="Dark Theme" ValueChanged="DarkThemeChanged" />
     </MudHidden>
@@ -15,7 +15,7 @@
     <MudDrawerHeader>Menu</MudDrawerHeader>
     <MudNavMenu>
         <MudNavLink Href="/" Match="NavLinkMatch.All">Home</MudNavLink>
-        <MudNavLink Href="/about">About</MudNavLink>
+        <MudNavLink Href="/counter">Counter</MudNavLink>
         <MudNavLink Href="/contact">Contact</MudNavLink>
     </MudNavMenu>
 </MudDrawer>
