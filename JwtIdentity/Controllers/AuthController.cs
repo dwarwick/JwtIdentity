@@ -69,7 +69,7 @@ namespace JwtIdentity.Controllers
             }
 
             var roles = await _userManager.GetRolesAsync(user);
-            var roleClaims = roles.Select(q => new Claim("role", q)).ToList();
+            var roleClaims = roles.Select(q => new Claim(ClaimTypes.Role, q)).ToList();
 
             var userClaims = await _userManager.GetClaimsAsync(user);
 
