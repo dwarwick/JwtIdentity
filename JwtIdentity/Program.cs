@@ -1,4 +1,5 @@
 using JwtIdentity.Configurations;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -22,6 +23,7 @@ builder.Services.AddAutoMapper(typeof(MapperConfig));
 
 builder.Services.AddAuthentication(options =>
 {
+    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 })
@@ -51,6 +53,24 @@ builder.Services.AddAuthentication(options =>
         ValidAudience = builder.Configuration["Jwt:Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ?? ""))
     };
+}).AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
+{
+    options.LoginPath = "/login"; // Blazor page for login
+    options.LogoutPath = "/api/auth/logout"; // Controller endpoint for logout
+});
+
+builder.Services.AddAuthorizationCore(options =>
+{
+    var type = typeof(Permissions);
+
+    var permissionNames = type.GetFields().Select(permission => permission.Name);
+    foreach (var name in permissionNames)
+    {
+        options.AddPolicy(
+            name,
+            policyBuilder => policyBuilder.RequireAssertion(
+                context => context.User.HasClaim(claim => claim.Type == CustomClaimTypes.Permission && claim.Value == name)));
+    }
 });
 
 // Add MVC services

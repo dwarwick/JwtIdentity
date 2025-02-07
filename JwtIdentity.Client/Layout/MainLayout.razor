@@ -68,7 +68,7 @@
                 {
                     applicationUserViewModel.Token = await LocalStorage.GetItemAsStringAsync("authToken") ?? string.Empty;
 
-                    AuthService.CurrentUser = applicationUserViewModel;
+                    ((CustomAuthStateProvider)AuthStateProvider!).CurrentUser = applicationUserViewModel;
                 }
             }
 
@@ -76,9 +76,9 @@
 
             if (string.IsNullOrEmpty(_theme))
             {
-                if (AuthService.CurrentUser != null)
+                if (((CustomAuthStateProvider)AuthStateProvider!).CurrentUser != null)
                 {
-                    _theme = AuthService.CurrentUser.Theme ?? "light"; //  "dark" : "light";
+                    _theme = ((CustomAuthStateProvider)AuthStateProvider!).CurrentUser?.Theme ?? "light"; //  "dark" : "light";
                 }
                 else
                 {
@@ -109,11 +109,11 @@
             await module.InvokeAsync<string>("addCss", $"css/app-{_theme}.css");
         }
 
-        if (AuthService.CurrentUser != null && AuthService.CurrentUser.Theme != _theme)
+        if (((CustomAuthStateProvider)AuthStateProvider!).CurrentUser != null && ((CustomAuthStateProvider)AuthStateProvider!).CurrentUser?.Theme != _theme)
         {
-            AuthService.CurrentUser.Theme = _theme;
+            ((CustomAuthStateProvider)AuthStateProvider!).CurrentUser!.Theme = _theme;
 
-            await Client.PutAsJsonAsync($"api/applicationuser/{AuthService.CurrentUser.Id}", AuthService.CurrentUser);
+            await Client.PutAsJsonAsync($"api/applicationuser/{((CustomAuthStateProvider)AuthStateProvider!).CurrentUser?.Id}", ((CustomAuthStateProvider)AuthStateProvider!).CurrentUser);
         }
     }
 

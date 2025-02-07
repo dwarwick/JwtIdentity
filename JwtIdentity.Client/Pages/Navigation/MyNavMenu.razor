@@ -4,9 +4,19 @@
     <MudSpacer />
     <MudHidden Breakpoint="Breakpoint.SmAndDown">
         <MudButton Variant="Variant.Text" Color="Color.Inherit" Class="mx-2">Home</MudButton>
-        <MudButton Variant="Variant.Text" Color="Color.Inherit" Class="mx-2" Href="/counter">Counter</MudButton>
+        <MudButton Variant="Variant.Text" Color="Color.Inherit" Class="mx-2" Href="/ManageRolePermissions">Manage Permissions</MudButton>
         <MudButton Variant="Variant.Text" Color="Color.Inherit" Class="mx-2">Contact</MudButton>
         <MudSwitch Value="@DarkTheme" Label="Dark Theme" ValueChanged="DarkThemeChanged" />
+        <div class="mx-1">
+            <AuthorizeView>
+                <Authorized>
+                    <MudButton Variant="Variant.Text" Color="Color.Inherit" Class="mx-2" Href="logout">Logout</MudButton>
+                </Authorized>
+                <NotAuthorized>
+                    <MudButton Variant="Variant.Text" Color="Color.Inherit" Class="mx-2" Href="login">Login</MudButton>
+                </NotAuthorized>
+            </AuthorizeView>
+        </div>
     </MudHidden>
     <MudIconButton Icon="@Icons.Material.Filled.AccountCircle" Color="Color.Inherit" Edge="Edge.End" />
 </MudAppBar>
@@ -14,8 +24,16 @@
 <MudDrawer @bind-Open="_drawerOpen" Anchor="Anchor.Left" Variant="DrawerVariant.Temporary" Elevation="1">
     <MudDrawerHeader>Menu</MudDrawerHeader>
     <MudNavMenu>
+        <AuthorizeView>
+            <Authorized>
+                <MudNavLink Href="logout">Logout</MudNavLink>
+            </Authorized>
+            <NotAuthorized>
+                <MudNavLink Href="login">Login</MudNavLink>
+            </NotAuthorized>
+        </AuthorizeView>
         <MudNavLink Href="/" Match="NavLinkMatch.All">Home</MudNavLink>
-        <MudNavLink Href="/counter">Counter</MudNavLink>
+        <MudNavLink Href="/ManageRolePermissions">Manage Permissions</MudNavLink>
         <MudNavLink Href="/contact">Contact</MudNavLink>
     </MudNavMenu>
 </MudDrawer>

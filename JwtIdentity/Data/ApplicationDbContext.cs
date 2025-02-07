@@ -57,6 +57,22 @@
                 new IdentityUserRole<int> { UserId = 2, RoleId = 2 }  // User
             );
 
+            var type = typeof(Permissions);
+            List<string>? AllPermissions;
+
+            AllPermissions = type.GetFields().Select(q => q.Name).ToList();
+
+            // Seed all permissions for Admin role
+            _ = builder.Entity<RoleClaim>().HasData(
+                AllPermissions.Select(q => new RoleClaim
+                {
+                    Id = AllPermissions.IndexOf(q) + 1,
+                    RoleId = 1,
+                    ClaimType = "permission",
+                    ClaimValue = q
+                }).ToArray()
+            );
+
             base.OnModelCreating(builder);
         }
     }

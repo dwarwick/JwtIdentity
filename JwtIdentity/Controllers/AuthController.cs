@@ -1,4 +1,6 @@
-﻿
+﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -61,6 +63,57 @@ namespace JwtIdentity.Controllers
             return Unauthorized();
         }
 
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout()
+        {
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            Response.Cookies.Delete(".AspNetCore.Identity.Application");
+            return Ok(new { message = "Logged out" });
+        }
+
+        [HttpGet]
+        [Authorize(Policy = Permissions.ManageUsers)]
+        [Route("GetRolesAndPermissions")]
+        public async Task<ActionResult<List<ApplicationRoleViewModel>>> GetRolesAndPermissions()
+        {
+            List<ApplicationRole> applicationRoles = await _dbContext.ApplicationRoles.Include(x => x.Claims).ToListAsync();
+
+            return Ok(_mapper.Map<List<ApplicationRoleViewModel>>(applicationRoles));
+        }
+
+        [HttpPost]
+        [Route("addpermission")]
+        [Authorize(Policy = Permissions.ManageUsers)]
+        public async Task<ActionResult<RoleClaimViewModel>> AddPermissionFromRole([FromBody] RoleClaimViewModel model)
+        {
+            if (model == null)
+            {
+                return BadRequest(false);
+            }
+
+            try
+            {
+                RoleClaim? roleClaim = _mapper.Map<RoleClaim>(model);
+
+                if (roleClaim != null)
+                {
+                    _ = _dbContext.RoleClaims.Add(roleClaim);
+                    _ = await _dbContext.SaveChangesAsync();
+
+                    model = _mapper.Map<RoleClaimViewModel>(roleClaim);
+
+                    return this.Ok(model);
+                }
+            }
+            catch (Exception ex)
+            {
+
+                Console.WriteLine($"Error adding permission\r\n\r\n{ex}");
+            }
+
+            return Problem("Error adding permission");
+        }
+
         private async Task<string> GenerateJwtToken(ApplicationUser user)
         {
             if (string.IsNullOrEmpty(_configuration["Jwt:Key"]) || string.IsNullOrEmpty(_configuration["Jwt:Issuer"]) || string.IsNullOrEmpty(_configuration["Jwt:Audience"]))
@@ -73,6 +126,26 @@ namespace JwtIdentity.Controllers
 
             var userClaims = await _userManager.GetClaimsAsync(user);
 
+            List<Claim> permissions;
+            if (!roles.Any(x => x == "Admin"))
+            {
+                var rolePermissions = from ur in _dbContext.UserRoles
+                                      where ur.UserId == user.Id
+                                      join r in _dbContext.Roles on ur.RoleId equals r.Id
+                                      join rc in _dbContext.RoleClaims on r.Id equals rc.RoleId
+                                      select rc.ClaimValue;
+
+                rolePermissions = rolePermissions.Distinct();
+
+                permissions = await rolePermissions.Select(q => new Claim(CustomClaimTypes.Permission, q)).ToListAsync();
+            }
+            else
+            {
+                var type = typeof(Permissions);
+
+                permissions = type.GetFields().Select(q => new Claim(CustomClaimTypes.Permission, q.Name)).ToList();
+            }
+
             var claims = new List<Claim>
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.UserName!),
@@ -81,7 +154,8 @@ namespace JwtIdentity.Controllers
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
             }
             .Union(userClaims)
-            .Union(roleClaims);
+            .Union(roleClaims)
+            .Union(permissions);
 
             //var claims = new[]
             //{
@@ -90,7 +164,7 @@ namespace JwtIdentity.Controllers
             //    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
             //};
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"] ?? ""));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
