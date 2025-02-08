@@ -116,34 +116,34 @@ namespace JwtIdentity.Controllers
         }
 
         [HttpDelete]
-[Route("deletepermission/{Id}")]
-[Authorize(Policy = Permissions.ManageUsers)]
-public async Task<ActionResult<bool>> DeletePermissionFromRole([FromRoute] int Id)
-{
-    if (Id == 0)
-    {
-        return BadRequest(false);
-    }
-
-    try
-    {
-        RoleClaim? roleClaim = await _dbContext.RoleClaims.FindAsync(Id);
-
-        if (roleClaim != null)
+        [Route("deletepermission/{Id}")]
+        [Authorize(Policy = Permissions.ManageUsers)]
+        public async Task<ActionResult<bool>> DeletePermissionFromRole([FromRoute] int Id)
         {
-            _ = _dbContext.RoleClaims.Remove(roleClaim);
-            _ = await _dbContext.SaveChangesAsync();
-            return this.Ok(true);
+            if (Id == 0)
+            {
+                return BadRequest(false);
+            }
+
+            try
+            {
+                RoleClaim? roleClaim = await _dbContext.RoleClaims.FindAsync(Id);
+
+                if (roleClaim != null)
+                {
+                    _ = _dbContext.RoleClaims.Remove(roleClaim);
+                    _ = await _dbContext.SaveChangesAsync();
+                    return this.Ok(true);
+                }
+            }
+            catch (Exception ex)
+            {
+
+
+            }
+
+            return Problem("Error deleting permission");
         }
-    }
-    catch (Exception ex)
-    {
-
-        
-    }
-
-    return Problem("Error deleting permission");
-}
 
         private async Task<string> GenerateJwtToken(ApplicationUser user)
         {
