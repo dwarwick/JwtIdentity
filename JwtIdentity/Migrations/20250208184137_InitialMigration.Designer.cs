@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace JwtIdentity.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250207003609_Permissions")]
-    partial class Permissions
+    [Migration("20250208184137_InitialMigration")]
+    partial class InitialMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

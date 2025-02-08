@@ -28,12 +28,7 @@ builder.Services.AddAuthorizationCore(options =>
     }
 });
 
-
-
-
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddMudServices();
-
-
 
 await builder.Build().RunAsync();

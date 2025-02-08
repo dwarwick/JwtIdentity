@@ -5,11 +5,36 @@
 namespace JwtIdentity.Migrations
 {
     /// <inheritdoc />
-    public partial class Permissions : Migration
+    public partial class FixRoleClaimsRelationship : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropForeignKey(
+                name: "FK_AspNetRoleClaims_AspNetRoles_ApplicationRoleId",
+                table: "AspNetRoleClaims");
+
+            migrationBuilder.DropIndex(
+                name: "IX_AspNetRoleClaims_ApplicationRoleId",
+                table: "AspNetRoleClaims");
+
+            migrationBuilder.DropColumn(
+                name: "ApplicationRoleId",
+                table: "AspNetRoleClaims");
+
+            migrationBuilder.DropColumn(
+                name: "Discriminator",
+                table: "AspNetRoleClaims");
+        }
+
+        /// <inheritdoc />
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DeleteData(
+                table: "AspNetRoleClaims",
+                keyColumn: "Id",
+                keyValue: 1);
+
             migrationBuilder.AddColumn<int>(
                 name: "ApplicationRoleId",
                 table: "AspNetRoleClaims",
@@ -40,31 +65,6 @@ namespace JwtIdentity.Migrations
                 column: "ApplicationRoleId",
                 principalTable: "AspNetRoles",
                 principalColumn: "Id");
-        }
-
-        /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropForeignKey(
-                name: "FK_AspNetRoleClaims_AspNetRoles_ApplicationRoleId",
-                table: "AspNetRoleClaims");
-
-            migrationBuilder.DropIndex(
-                name: "IX_AspNetRoleClaims_ApplicationRoleId",
-                table: "AspNetRoleClaims");
-
-            migrationBuilder.DeleteData(
-                table: "AspNetRoleClaims",
-                keyColumn: "Id",
-                keyValue: 1);
-
-            migrationBuilder.DropColumn(
-                name: "ApplicationRoleId",
-                table: "AspNetRoleClaims");
-
-            migrationBuilder.DropColumn(
-                name: "Discriminator",
-                table: "AspNetRoleClaims");
         }
     }
 }

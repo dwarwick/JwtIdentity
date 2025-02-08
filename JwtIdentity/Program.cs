@@ -88,6 +88,7 @@ builder.Services.AddCors(options =>
         });
 });
 
+builder.Services.AddCyclicalReferenceHandling();
 
 var app = builder.Build();
 

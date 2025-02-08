@@ -76,8 +76,9 @@ namespace JwtIdentity.Controllers
         [Route("GetRolesAndPermissions")]
         public async Task<ActionResult<List<ApplicationRoleViewModel>>> GetRolesAndPermissions()
         {
-            List<ApplicationRole> applicationRoles = await _dbContext.ApplicationRoles.Include(x => x.Claims).ToListAsync();
-
+            List<ApplicationRole> applicationRoles = await _dbContext.ApplicationRoles
+                .Include(x => x.Claims)
+                .ToListAsync();
             return Ok(_mapper.Map<List<ApplicationRoleViewModel>>(applicationRoles));
         }
 
@@ -113,6 +114,36 @@ namespace JwtIdentity.Controllers
 
             return Problem("Error adding permission");
         }
+
+        [HttpDelete]
+[Route("deletepermission/{Id}")]
+[Authorize(Policy = Permissions.ManageUsers)]
+public async Task<ActionResult<bool>> DeletePermissionFromRole([FromRoute] int Id)
+{
+    if (Id == 0)
+    {
+        return BadRequest(false);
+    }
+
+    try
+    {
+        RoleClaim? roleClaim = await _dbContext.RoleClaims.FindAsync(Id);
+
+        if (roleClaim != null)
+        {
+            _ = _dbContext.RoleClaims.Remove(roleClaim);
+            _ = await _dbContext.SaveChangesAsync();
+            return this.Ok(true);
+        }
+    }
+    catch (Exception ex)
+    {
+
+        
+    }
+
+    return Problem("Error deleting permission");
+}
 
         private async Task<string> GenerateJwtToken(ApplicationUser user)
         {

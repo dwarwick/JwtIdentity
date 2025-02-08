@@ -1,5 +1,6 @@
 ﻿using System.Net.Http.Json;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace JwtIdentity.Client.Services
 {
@@ -13,7 +14,8 @@ namespace JwtIdentity.Client.Services
         {
             _options = new JsonSerializerOptions
             {
-                PropertyNameCaseInsensitive = true
+                PropertyNameCaseInsensitive = true,
+                ReferenceHandler = ReferenceHandler.IgnoreCycles // Add this line
             };
             _httpClient = httpClient;
         }

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace JwtIdentity.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250122012854_SeedAdminAndUser")]
-    partial class SeedAdminAndUser
+    [Migration("20250208200949_FixRoleClaimsRelationship")]
+    partial class FixRoleClaimsRelationship
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -117,6 +117,10 @@ namespace JwtIdentity.Migrations
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Theme")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("bit");
 
@@ -141,15 +145,16 @@ namespace JwtIdentity.Migrations
                         {
                             Id = 1,
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "97270c0d-00bc-45bc-a7bd-fef6805db588",
+                            ConcurrencyStamp = "975c6e69-81c0-463e-bc0f-212c970f34d4",
                             Email = "admin@example.com",
                             EmailConfirmed = true,
                             LockoutEnabled = false,
                             NormalizedEmail = "ADMIN@EXAMPLE.COM",
                             NormalizedUserName = "ADMIN",
-                            PasswordHash = "AQAAAAIAAYagAAAAEF/fbS48/SWf2yV/FNlZTFwXU//m9QUXHFZH4KHg8mwl4xVpbvF204XWi0ICxGY9tw==",
+                            PasswordHash = "AQAAAAIAAYagAAAAENYeHtZjzzSCzot7QF9qVAC25mKeyiv6v/kdBakqJiTW7Jt5TCt/9tSVdTSABsJGtQ==",
                             PhoneNumberConfirmed = false,
                             SecurityStamp = "",
+                            Theme = "dark",
                             TwoFactorEnabled = false,
                             UserName = "admin"
                         },
@@ -157,21 +162,22 @@ namespace JwtIdentity.Migrations
                         {
                             Id = 2,
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "2b896488-e96b-4700-9c93-4600c281893b",
+                            ConcurrencyStamp = "be6fc596-979b-42b1-906e-d6d5a59d6fce",
                             Email = "user@example.com",
                             EmailConfirmed = true,
                             LockoutEnabled = false,
                             NormalizedEmail = "USER@EXAMPLE.COM",
                             NormalizedUserName = "USER",
-                            PasswordHash = "AQAAAAIAAYagAAAAEAqabsr/tMnb7tgJwpvktcIiE/WHiPol3LL9iSRNX9AsiGrbBPA3pLbTFqAf62jGgg==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEDaaeD+y1I6b06Mfnm/tKqk8uIC+IIyCC5XMjODRg0PAJuxDcmPh6iihBkSLhMoyJQ==",
                             PhoneNumberConfirmed = false,
                             SecurityStamp = "",
+                            Theme = "light",
                             TwoFactorEnabled = false,
                             UserName = "user"
                         });
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
+            modelBuilder.Entity("JwtIdentity.Model.RoleClaim", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -193,6 +199,15 @@ namespace JwtIdentity.Migrations
                     b.HasIndex("RoleId");
 
                     b.ToTable("AspNetRoleClaims", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            ClaimType = "permission",
+                            ClaimValue = "ManageUsers",
+                            RoleId = 1
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<int>", b =>
@@ -286,13 +301,15 @@ namespace JwtIdentity.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
+            modelBuilder.Entity("JwtIdentity.Model.RoleClaim", b =>
                 {
-                    b.HasOne("JwtIdentity.Model.ApplicationRole", null)
-                        .WithMany()
+                    b.HasOne("JwtIdentity.Model.ApplicationRole", "Role")
+                        .WithMany("Claims")
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Role");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<int>", b =>
@@ -335,6 +352,11 @@ namespace JwtIdentity.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("JwtIdentity.Model.ApplicationRole", b =>
+                {
+                    b.Navigation("Claims");
                 });
 #pragma warning restore 612, 618
         }

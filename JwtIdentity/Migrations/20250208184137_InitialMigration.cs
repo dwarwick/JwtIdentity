@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace JwtIdentity.Migrations
 {
     /// <inheritdoc />
-    public partial class SeedAdminAndUser : Migration
+    public partial class InitialMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -34,6 +34,7 @@ namespace JwtIdentity.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
+                    Theme = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -62,11 +63,18 @@ namespace JwtIdentity.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     RoleId = table.Column<int>(type: "int", nullable: false),
                     ClaimType = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ClaimValue = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    ClaimValue = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Discriminator = table.Column<string>(type: "nvarchar(34)", maxLength: 34, nullable: false),
+                    ApplicationRoleId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AspNetRoleClaims", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_AspNetRoleClaims_AspNetRoles_ApplicationRoleId",
+                        column: x => x.ApplicationRoleId,
+                        principalTable: "AspNetRoles",
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_AspNetRoleClaims_AspNetRoles_RoleId",
                         column: x => x.RoleId,
@@ -171,12 +179,17 @@ namespace JwtIdentity.Migrations
 
             migrationBuilder.InsertData(
                 table: "AspNetUsers",
-                columns: new[] { "Id", "AccessFailedCount", "ConcurrencyStamp", "Email", "EmailConfirmed", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "SecurityStamp", "TwoFactorEnabled", "UserName" },
+                columns: new[] { "Id", "AccessFailedCount", "ConcurrencyStamp", "Email", "EmailConfirmed", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "SecurityStamp", "Theme", "TwoFactorEnabled", "UserName" },
                 values: new object[,]
                 {
-                    { 1, 0, "97270c0d-00bc-45bc-a7bd-fef6805db588", "admin@example.com", true, false, null, "ADMIN@EXAMPLE.COM", "ADMIN", "AQAAAAIAAYagAAAAEF/fbS48/SWf2yV/FNlZTFwXU//m9QUXHFZH4KHg8mwl4xVpbvF204XWi0ICxGY9tw==", null, false, "", false, "admin" },
-                    { 2, 0, "2b896488-e96b-4700-9c93-4600c281893b", "user@example.com", true, false, null, "USER@EXAMPLE.COM", "USER", "AQAAAAIAAYagAAAAEAqabsr/tMnb7tgJwpvktcIiE/WHiPol3LL9iSRNX9AsiGrbBPA3pLbTFqAf62jGgg==", null, false, "", false, "user" }
+                    { 1, 0, "975c6e69-81c0-463e-bc0f-212c970f34d4", "admin@example.com", true, false, null, "ADMIN@EXAMPLE.COM", "ADMIN", "AQAAAAIAAYagAAAAENYeHtZjzzSCzot7QF9qVAC25mKeyiv6v/kdBakqJiTW7Jt5TCt/9tSVdTSABsJGtQ==", null, false, "", "dark", false, "admin" },
+                    { 2, 0, "be6fc596-979b-42b1-906e-d6d5a59d6fce", "user@example.com", true, false, null, "USER@EXAMPLE.COM", "USER", "AQAAAAIAAYagAAAAEDaaeD+y1I6b06Mfnm/tKqk8uIC+IIyCC5XMjODRg0PAJuxDcmPh6iihBkSLhMoyJQ==", null, false, "", "light", false, "user" }
                 });
+
+            migrationBuilder.InsertData(
+                table: "AspNetRoleClaims",
+                columns: new[] { "Id", "ApplicationRoleId", "ClaimType", "ClaimValue", "Discriminator", "RoleId" },
+                values: new object[] { 1, null, "permission", "ManageUsers", "RoleClaim", 1 });
 
             migrationBuilder.InsertData(
                 table: "AspNetUserRoles",
@@ -186,6 +199,11 @@ namespace JwtIdentity.Migrations
                     { 1, 1 },
                     { 2, 2 }
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AspNetRoleClaims_ApplicationRoleId",
+                table: "AspNetRoleClaims",
+                column: "ApplicationRoleId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",

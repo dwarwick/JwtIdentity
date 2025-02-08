@@ -174,7 +174,7 @@ namespace JwtIdentity.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
+            modelBuilder.Entity("JwtIdentity.Model.RoleClaim", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -188,11 +188,6 @@ namespace JwtIdentity.Migrations
                     b.Property<string>("ClaimValue")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Discriminator")
-                        .IsRequired()
-                        .HasMaxLength(34)
-                        .HasColumnType("nvarchar(34)");
-
                     b.Property<int>("RoleId")
                         .HasColumnType("int");
 
@@ -202,9 +197,14 @@ namespace JwtIdentity.Migrations
 
                     b.ToTable("AspNetRoleClaims", (string)null);
 
-                    b.HasDiscriminator().HasValue("IdentityRoleClaim<int>");
-
-                    b.UseTphMappingStrategy();
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            ClaimType = "permission",
+                            ClaimValue = "ManageUsers",
+                            RoleId = 1
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<int>", b =>
@@ -300,32 +300,13 @@ namespace JwtIdentity.Migrations
 
             modelBuilder.Entity("JwtIdentity.Model.RoleClaim", b =>
                 {
-                    b.HasBaseType("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>");
-
-                    b.Property<int?>("ApplicationRoleId")
-                        .HasColumnType("int");
-
-                    b.HasIndex("ApplicationRoleId");
-
-                    b.HasDiscriminator().HasValue("RoleClaim");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            ClaimType = "permission",
-                            ClaimValue = "ManageUsers",
-                            RoleId = 1
-                        });
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
-                {
-                    b.HasOne("JwtIdentity.Model.ApplicationRole", null)
-                        .WithMany()
+                    b.HasOne("JwtIdentity.Model.ApplicationRole", "Role")
+                        .WithMany("Claims")
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Role");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<int>", b =>
@@ -368,13 +349,6 @@ namespace JwtIdentity.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("JwtIdentity.Model.RoleClaim", b =>
-                {
-                    b.HasOne("JwtIdentity.Model.ApplicationRole", null)
-                        .WithMany("Claims")
-                        .HasForeignKey("ApplicationRoleId");
                 });
 
             modelBuilder.Entity("JwtIdentity.Model.ApplicationRole", b =>
