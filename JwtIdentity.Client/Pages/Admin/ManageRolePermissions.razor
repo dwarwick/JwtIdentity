@@ -1,0 +1,37 @@
+﻿@page "/ManageRolePermissions"
+@inherits ManageRolePermissionsBase
+@attribute [Authorize(Policy = Permissions.ManageUsers)]
+
+@if (applicationRoleViewModels != null)
+{
+        <MudCard>
+            <MudCardHeader>
+                <MudText Typo="Typo.h3">Manage Role Permissions</MudText>
+            </MudCardHeader>
+            <MudCardContent>
+
+                    <MudSelect Label="Select Role" @bind-Value="RoleViewModel" @bind-Value:after="SelectedRoleChanged">
+                @foreach (ApplicationRoleViewModel roleViewModel in applicationRoleViewModels ?? new())
+                {
+                                <MudSelectItem Value="roleViewModel">@roleViewModel.Name</MudSelectItem>
+                }
+                    </MudSelect>
+
+                    <MudSelect Label="Select Permission" @bind-Value="SelectedPermission">
+                @foreach (string permission in UnusedPermissions ?? new())
+                {
+                                <MudSelectItem Value="permission">@permission</MudSelectItem>
+                }
+                    </MudSelect>
+                    <MudButton OnClick="@(() => AddPermission(SelectedPermission))" Variant="Variant.Outlined" Class="my-4">Add Permission</MudButton>
+
+
+                    <MudStack Row="true" Class="flex-wrap">
+                @foreach (RoleClaimViewModel existingPermission in RoleViewModel?.Claims ?? new())
+                {
+                                <MudChip T="RoleClaimViewModel" Color="Color.Default" OnClick="@(() => DeletePermission(existingPermission))" Icon="@Icons.Material.Filled.Dangerous" IconColor="Color.Error">@existingPermission.ClaimValue</MudChip>
+                }
+                    </MudStack>            
+            </MudCardContent>
+        </MudCard>
+}

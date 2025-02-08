@@ -12,8 +12,6 @@ namespace JwtIdentity.Client.Services
         private readonly ILocalStorageService LocalStorage;
         private readonly IApiService _apiService;
 
-        public ApplicationUserViewModel? CurrentUser { get; set; }
-
         public AuthService(AuthenticationStateProvider customAuthStateProvider, ILocalStorageService localStorage, IApiService apiService)
         {
             _customAuthStateProvider = customAuthStateProvider;
@@ -31,21 +29,21 @@ namespace JwtIdentity.Client.Services
 
             try
             {
-                CurrentUser = await _apiService.CreateAsync<ApplicationUserViewModel>("api/auth/login", input);
+                ((CustomAuthStateProvider)_customAuthStateProvider).CurrentUser = await _apiService.CreateAsync<ApplicationUserViewModel>("api/auth/login", input);
 
-                if (CurrentUser != null && !string.IsNullOrEmpty(CurrentUser.Token))
+                if (((CustomAuthStateProvider)_customAuthStateProvider).CurrentUser != null && !string.IsNullOrEmpty(((CustomAuthStateProvider)_customAuthStateProvider).CurrentUser?.Token))
                 {
 
 
                     response = new Response<ApplicationUserViewModel>
                     {
-                        Data = CurrentUser,
+                        Data = ((CustomAuthStateProvider)_customAuthStateProvider).CurrentUser,
                         Success = true,
                     };
 
                     await LocalStorage.SetItemAsync("authToken", response.Data.Token);
-                    ((CustomAuthStateProvider)_customAuthStateProvider).NotifyUserAuthentication(response.Data.Token);
-                    _apiService._httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", response.Data.Token);
+                    await ((CustomAuthStateProvider)_customAuthStateProvider).LoggedIn();
+                    ((CustomAuthStateProvider)_customAuthStateProvider)._httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", response.Data.Token);
 
                     return response;
                 }
@@ -70,7 +68,9 @@ namespace JwtIdentity.Client.Services
         {
             await ((CustomAuthStateProvider)this._customAuthStateProvider).LoggedOut();
 
-            CurrentUser = null;
+            ((CustomAuthStateProvider)_customAuthStateProvider).CurrentUser = null;
+
+            _ = await _apiService.CreateAsync<object>("api/auth/logout", null); // Call backend logout
         }
     }
 }

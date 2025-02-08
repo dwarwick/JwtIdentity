@@ -1,4 +1,5 @@
 using JwtIdentity.Configurations;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -22,11 +23,26 @@ builder.Services.AddAutoMapper(typeof(MapperConfig));
 
 builder.Services.AddAuthentication(options =>
 {
+    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 })
 .AddJwtBearer(options =>
 {
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            // If the header is empty, try to read the token from a cookie
+            var cookie = context.Request.Cookies["authToken"];
+            if (!string.IsNullOrEmpty(cookie))
+            {
+                context.Token = cookie;
+            }
+            return Task.CompletedTask;
+        }
+    };
+
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,
@@ -37,10 +53,42 @@ builder.Services.AddAuthentication(options =>
         ValidAudience = builder.Configuration["Jwt:Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ?? ""))
     };
+}).AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
+{
+    options.LoginPath = "/login"; // Blazor page for login
+    options.LogoutPath = "/api/auth/logout"; // Controller endpoint for logout
+});
+
+builder.Services.AddAuthorizationCore(options =>
+{
+    var type = typeof(Permissions);
+
+    var permissionNames = type.GetFields().Select(permission => permission.Name);
+    foreach (var name in permissionNames)
+    {
+        options.AddPolicy(
+            name,
+            policyBuilder => policyBuilder.RequireAssertion(
+                context => context.User.HasClaim(claim => claim.Type == CustomClaimTypes.Permission && claim.Value == name)));
+    }
 });
 
 // Add MVC services
 builder.Services.AddControllers();
+
+// add an AllowAll Cors policy
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll",
+        builder =>
+        {
+            _ = builder.AllowAnyOrigin()
+                   .AllowAnyMethod()
+                   .AllowAnyHeader();
+        });
+});
+
+builder.Services.AddCyclicalReferenceHandling();
 
 var app = builder.Build();
 
@@ -64,7 +112,7 @@ app.UseAntiforgery();
 app.UseAuthentication();
 app.UseAuthorization();
 
-// Use CORS policy
+// Use CORS policymap
 app.UseCors("AllowAll");
 
 // Map controllers

@@ -1,7 +1,17 @@
 ﻿namespace JwtIdentity.Data
 {
-    public class ApplicationDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, int>
-    {
+    public class ApplicationDbContext 
+    : IdentityDbContext<
+        ApplicationUser,                // TUser
+        ApplicationRole,                // TRole
+        int,                            // TKey
+        IdentityUserClaim<int>,         // TUserClaim
+        IdentityUserRole<int>,          // TUserRole
+        IdentityUserLogin<int>,         // TUserLogin
+        RoleClaim,                      // TRoleClaim (YOUR custom class)
+        IdentityUserToken<int>          // TUserToken
+    >
+{
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
         {
@@ -10,14 +20,25 @@
         public DbSet<ApplicationUser> ApplicationUsers { get; set; }
         public DbSet<ApplicationRole> ApplicationRoles { get; set; }
 
+        // You can add a DbSet if you like:
+        public DbSet<RoleClaim> RoleClaims { get; set; }
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
+            base.OnModelCreating(builder);
+
+            // create relationship between roleclaims and roles
+            builder.Entity<RoleClaim>()
+            .HasOne(rc => rc.Role)
+            .WithMany(r => r.Claims)
+            .HasForeignKey(rc => rc.RoleId)
+            .IsRequired();
+
             // Seed roles
             _ = builder.Entity<ApplicationRole>().HasData(
                 new ApplicationRole { Id = 1, Name = "Admin", NormalizedName = "ADMIN" },
                 new ApplicationRole { Id = 2, Name = "User", NormalizedName = "USER" }
             );
-
 
             // Seed users
             _ = new PasswordHasher<ApplicationUser>();
@@ -57,7 +78,21 @@
                 new IdentityUserRole<int> { UserId = 2, RoleId = 2 }  // User
             );
 
-            base.OnModelCreating(builder);
+            var type = typeof(Permissions);
+            List<string>? AllPermissions;
+
+            AllPermissions = type.GetFields().Select(q => q.Name).ToList();
+
+            // Seed all permissions for Admin role
+            _ = builder.Entity<RoleClaim>().HasData(
+                AllPermissions.Select(q => new RoleClaim
+                {
+                    Id = AllPermissions.IndexOf(q) + 1,
+                    RoleId = 1,
+                    ClaimType = "permission",
+                    ClaimValue = q
+                }).ToArray()
+            );            
         }
     }
 }

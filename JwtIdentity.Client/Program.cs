@@ -5,18 +5,30 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor.Services;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
-
-// create an http client
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 
-builder.Services.AddAuthorizationCore();
-builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
-builder.Services.AddBlazoredLocalStorage();
-
 builder.Services.AddScoped<IApiService, ApiService>();
+
+builder.Services.AddBlazoredLocalStorage();
+builder.Services.AddAuthorizationCore();
+builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>(); // if using a custom provider
+builder.Services.AddCascadingAuthenticationState();
+
+builder.Services.AddAuthorizationCore(options =>
+{
+    var type = typeof(Permissions);
+
+    var permissionNames = type.GetFields().Select(permission => permission.Name);
+    foreach (var name in permissionNames)
+    {
+        options.AddPolicy(
+            name,
+            policyBuilder => policyBuilder.RequireAssertion(
+                context => context.User.HasClaim(claim => claim.Type == CustomClaimTypes.Permission && claim.Value == name)));
+    }
+});
+
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddMudServices();
-
-
 
 await builder.Build().RunAsync();

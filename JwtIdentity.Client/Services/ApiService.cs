@@ -1,21 +1,23 @@
 ﻿using System.Net.Http.Json;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace JwtIdentity.Client.Services
 {
     public class ApiService : IApiService
     {
-        public HttpClient _httpClient { get; set; }
         private readonly JsonSerializerOptions _options;
+
+        private readonly HttpClient _httpClient;
 
         public ApiService(HttpClient httpClient)
         {
-            _httpClient = httpClient;
-
             _options = new JsonSerializerOptions
             {
-                PropertyNameCaseInsensitive = true
+                PropertyNameCaseInsensitive = true,
+                ReferenceHandler = ReferenceHandler.IgnoreCycles // Add this line
             };
+            _httpClient = httpClient;
         }
 
         public async Task<T> GetAsync<T>(string endpoint)
