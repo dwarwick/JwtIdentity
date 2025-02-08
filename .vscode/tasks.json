@@ -1,0 +1,15 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "launch-chrome",
+        "type": "shell",
+        "command": "start chrome https://localhost:5001",
+        "group": {
+          "kind": "build",
+          "isDefault": false
+        },
+        "problemMatcher": []
+      }
+    ]
+  }  
