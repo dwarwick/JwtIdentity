@@ -29,7 +29,7 @@
                     <MudStack Row="true" Class="flex-wrap">
                 @foreach (RoleClaimViewModel existingPermission in RoleViewModel?.Claims ?? new())
                 {
-                                <MudChip T="RoleClaimViewModel" Color="Color.Default" OnClick="@(() => DeletePermission(existingPermission))" Icon="@Icons.Material.Filled.Dangerous" IconColor="Color.Error">@existingPermission.ClaimValue</MudChip>
+                    <MudChip T="RoleClaimViewModel" Color="Color.Default" OnClick="@(async () => await DeletePermission(existingPermission))" Icon="@Icons.Material.Filled.Dangerous" IconColor="Color.Error">@existingPermission.ClaimValue</MudChip>
                 }
                     </MudStack>            
             </MudCardContent>

@@ -1,0 +1,11 @@
+﻿@page "/not-authorized"
+<h3>You are not authorized to AuthorizeView this resource.</h3>
+<p>Click <a href="login">here</a> to login.</p>
+
+@code {
+ protected override async Task OnInitializedAsync()
+ {
+     // This is a workaround to force the page to re-render when the user logs in
+     await ((CustomAuthStateProvider)AuthStateProvider!).LoggedOut();
+ }
+}

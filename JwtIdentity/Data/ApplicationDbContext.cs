@@ -22,6 +22,7 @@
 
         // You can add a DbSet if you like:
         public DbSet<RoleClaim> RoleClaims { get; set; }
+        public DbSet<LogEntry> LogEntries { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

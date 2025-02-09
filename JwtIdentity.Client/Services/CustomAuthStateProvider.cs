@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Components.Authorization;
+﻿using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Authorization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
 using System.Security.Claims;
@@ -11,15 +12,20 @@ namespace JwtIdentity.Client.Services
         private readonly IApiService _apiService;
         private readonly JwtSecurityTokenHandler jwtSecurityTokenHandler;
         public HttpClient _httpClient { get; set; }
-        public ApplicationUserViewModel? CurrentUser { get; set; }
 
-        public CustomAuthStateProvider(Blazored.LocalStorage.ILocalStorageService localStorage, HttpClient httpClient, IApiService apiService)
+        private readonly NavigationManager _navigationManager;
+        public ApplicationUserViewModel? CurrentUser { get; set; }
+        
+        public event Action? OnLoggedOut;
+
+        public CustomAuthStateProvider(Blazored.LocalStorage.ILocalStorageService localStorage, HttpClient httpClient, IApiService apiService, NavigationManager navigationManager)
         {
             _localStorage = localStorage;
             jwtSecurityTokenHandler = new JwtSecurityTokenHandler();
 
             _httpClient = httpClient;
             _apiService = apiService;
+            _navigationManager = navigationManager;
         }
 
         public override async Task<AuthenticationState> GetAuthenticationStateAsync()
@@ -34,7 +40,7 @@ namespace JwtIdentity.Client.Services
 
             var tokenContent = this.jwtSecurityTokenHandler.ReadJwtToken(savedToken);
 
-            if (tokenContent.ValidTo < DateTime.Now)
+            if (tokenContent.ValidTo < DateTime.UtcNow)
             {
                 await LoggedOut();
                 return new AuthenticationState(user);
@@ -82,7 +88,11 @@ namespace JwtIdentity.Client.Services
 
             CurrentUser = null;
 
+            _ = await _apiService.CreateAsync<object>($"{ApiEndpoints.Auth}/logout", null);            
+
             this.NotifyAuthenticationStateChanged(authState);
+
+            OnLoggedOut?.Invoke();
         }
 
         private async Task<List<Claim>> GetClaims()

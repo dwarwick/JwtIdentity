@@ -10,14 +10,14 @@ namespace JwtIdentity.Client.Services
 
         private readonly HttpClient _httpClient;
 
-        public ApiService(HttpClient httpClient)
+        public ApiService(IHttpClientFactory httpClientFactory)
         {
             _options = new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true,
                 ReferenceHandler = ReferenceHandler.IgnoreCycles // Add this line
             };
-            _httpClient = httpClient;
+            _httpClient = httpClientFactory.CreateClient("AuthorizedClient");
         }
 
         public async Task<T> GetAsync<T>(string endpoint)
