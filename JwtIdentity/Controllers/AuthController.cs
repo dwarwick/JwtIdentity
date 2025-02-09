@@ -54,9 +54,17 @@ namespace JwtIdentity.Controllers
                         HttpOnly = true,
                         Secure = true,
                         SameSite = SameSiteMode.Strict,
-                        Expires = DateTimeOffset.Now.AddMinutes(30)
+                        Expires = DateTimeOffset.Now.AddMinutes(1)
                     }
                 );
+
+                _ = _dbContext.LogEntries.Add(new LogEntry
+                {
+                    Message = $"User {model.Username} logged in at {DateTime.UtcNow}",
+                    Level = "Info",
+                    LoggedAt = DateTime.UtcNow
+                });
+                _ = _dbContext.SaveChanges();
 
                 return Ok(applicationUserViewModel);
             }
@@ -99,6 +107,15 @@ namespace JwtIdentity.Controllers
                 if (roleClaim != null)
                 {
                     _ = _dbContext.RoleClaims.Add(roleClaim);
+
+                    // log the permission addition
+                    _ = _dbContext.LogEntries.Add(new LogEntry
+                    {
+                        Message = $"Permission {model.ClaimValue} added to role {model.RoleId}",
+                        Level = "Info",
+                        LoggedAt = DateTime.UtcNow
+                    });
+
                     _ = await _dbContext.SaveChangesAsync();
 
                     model = _mapper.Map<RoleClaimViewModel>(roleClaim);
@@ -108,8 +125,13 @@ namespace JwtIdentity.Controllers
             }
             catch (Exception ex)
             {
-
-                Console.WriteLine($"Error adding permission\r\n\r\n{ex}");
+                _ = _dbContext.LogEntries.Add(new LogEntry
+                {
+                    Message = $"Error adding permission: {ex.Message}",
+                    Level = "Error",
+                    LoggedAt = DateTime.UtcNow
+                });
+                _ = _dbContext.SaveChanges();
             }
 
             return Problem("Error adding permission");
@@ -132,13 +154,29 @@ namespace JwtIdentity.Controllers
                 if (roleClaim != null)
                 {
                     _ = _dbContext.RoleClaims.Remove(roleClaim);
+
+                    // log the permission deletion
+                    _ = _dbContext.LogEntries.Add(new LogEntry
+                    {
+                        Message = $"Permission {roleClaim.ClaimValue} deleted from role {roleClaim.RoleId}",
+                        Level = "Info",
+                        LoggedAt = DateTime.UtcNow
+                    });
+
                     _ = await _dbContext.SaveChangesAsync();
+
                     return this.Ok(true);
                 }
             }
             catch (Exception ex)
             {
-
+                _ = _dbContext.LogEntries.Add(new LogEntry
+                {
+                    Message = $"Error deleting permission: {ex.Message}",
+                    Level = "Error",
+                    LoggedAt = DateTime.UtcNow
+                });
+                _ = _dbContext.SaveChanges();
 
             }
 
@@ -202,7 +240,7 @@ namespace JwtIdentity.Controllers
                 issuer: _configuration["Jwt:Issuer"],
                 audience: _configuration["Jwt:Audience"],
                 claims: claims,
-                expires: DateTime.Now.AddMinutes(30),
+                expires: DateTime.Now.AddMinutes(1),
                 signingCredentials: creds);
 
             return new JwtSecurityTokenHandler().WriteToken(token);

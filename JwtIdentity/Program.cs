@@ -1,4 +1,5 @@
 using JwtIdentity.Configurations;
+using JwtIdentity.Filters;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -74,7 +75,10 @@ builder.Services.AddAuthorizationCore(options =>
 });
 
 // Add MVC services
-builder.Services.AddControllers();
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add<DatabaseLoggingFilter>();
+});
 
 // add an AllowAll Cors policy
 builder.Services.AddCors(options =>
