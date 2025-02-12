@@ -24,9 +24,17 @@ builder.Services.AddAutoMapper(typeof(MapperConfig));
 
 builder.Services.AddAuthentication(options =>
 {
+    // Let cookies handle the challenge (so it can do 302 to /not-authorized):
     options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+
+    // If you still want JWT to validate tokens for API calls:
+    //  - set this as the default **authenticate** scheme
+    //  - or use [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)] on your API endpoints
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+
+    // The key line:
+    options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
 })
 .AddJwtBearer(options =>
 {
@@ -58,6 +66,7 @@ builder.Services.AddAuthentication(options =>
 {
     options.LoginPath = "/login"; // Blazor page for login
     options.LogoutPath = "/api/auth/logout"; // Controller endpoint for logout
+    options.AccessDeniedPath = "/not-authorized"; // Blazor page for access denied
 });
 
 builder.Services.AddAuthorizationCore(options =>
@@ -77,7 +86,7 @@ builder.Services.AddAuthorizationCore(options =>
 // Add MVC services
 builder.Services.AddControllers(options =>
 {
-    options.Filters.Add<DatabaseLoggingFilter>();
+    _ = options.Filters.Add<DatabaseLoggingFilter>();
 });
 
 // add an AllowAll Cors policy
@@ -115,6 +124,25 @@ app.UseAntiforgery();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseStatusCodePages(context =>
+{
+    var response = context.HttpContext.Response;
+
+    // If the server sets 401 or 403, redirect to /not-authorized
+    if (response.StatusCode == StatusCodes.Status401Unauthorized ||
+        response.StatusCode == StatusCodes.Status403Forbidden)
+    {
+        response.Redirect("/not-authorized");
+    }
+
+    if (response.StatusCode == StatusCodes.Status404NotFound && !(context.HttpContext.Request.Path.Value?.StartsWith("/api/") ?? false))
+    {
+        response.Redirect("/not-found");
+    }
+
+    return Task.CompletedTask;
+});
 
 // Use CORS policymap
 app.UseCors("AllowAll");
