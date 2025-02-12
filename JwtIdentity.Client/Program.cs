@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor.Services;
 using Microsoft.Extensions.Http;
+using MudBlazor;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
@@ -37,7 +38,17 @@ builder.Services.AddAuthorizationCore(options =>
 });
 
 builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddMudServices();
+builder.Services.AddMudServices(config =>
+{
+    config.SnackbarConfiguration.PositionClass = Defaults.Classes.Position.TopCenter;
+    config.SnackbarConfiguration.PreventDuplicates = false;
+    config.SnackbarConfiguration.NewestOnTop = false;
+    config.SnackbarConfiguration.ShowCloseIcon = true;
+    config.SnackbarConfiguration.VisibleStateDuration = 10000;
+    config.SnackbarConfiguration.HideTransitionDuration = 500;
+    config.SnackbarConfiguration.ShowTransitionDuration = 500;
+    config.SnackbarConfiguration.SnackbarVariant = Variant.Filled;
+});
 
 builder.Services.AddTransient<CustomAuthorizationMessageHandler>();
 

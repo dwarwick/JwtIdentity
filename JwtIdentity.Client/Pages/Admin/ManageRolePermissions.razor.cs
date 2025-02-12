@@ -107,7 +107,7 @@ namespace JwtIdentity.Client.Pages.Admin
                     RoleId = RoleViewModel.Id
                 };
 
-                RoleClaimViewModel response = await ApiService!.CreateAsync($"{ApiEndpoints.Auth}/addpermission", newPermission);
+                RoleClaimViewModel response = await ApiService!.PostAsync($"{ApiEndpoints.Auth}/addpermission", newPermission);
 
 
                 RoleViewModel.Claims.Add(response ?? new());

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
+using JwtIdentity.Common.Auth;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -77,6 +78,40 @@ namespace JwtIdentity.Controllers
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             Response.Cookies.Delete(".AspNetCore.Identity.Application");
             return Ok(new { message = "Logged out" });
+        }
+
+        [HttpPost("register")]
+        public async Task<ActionResult<RegisterViewModel>> Register([FromBody] RegisterViewModel model)
+        {
+            if (!ModelState.IsValid || string.IsNullOrEmpty(model.Email) || string.IsNullOrEmpty(model.Password) || model.Password != model.ConfirmPassword)
+            {
+                model.Response = "Invalid client request";
+                return Ok(model);
+            }
+
+            ApplicationUser? existingUser = await _userManager.FindByEmailAsync(model.Email);
+            if (existingUser != null)
+            {
+                model.Response = "Email already exists";
+                return Ok(model);
+            }
+
+            ApplicationUser newUser = new ApplicationUser
+            {
+                UserName = model.Email,
+                Email = model.Email
+            };
+
+            IdentityResult result = await _userManager.CreateAsync(newUser, model.Password);
+            if (!result.Succeeded)
+            {
+                return Problem("Error creating user");
+            }
+
+            model.Response = "User created successfully";
+            await _userManager.AddToRoleAsync(newUser, "User");
+
+            return Ok(model);
         }
 
         [HttpGet]
