@@ -88,7 +88,7 @@ namespace JwtIdentity.Client.Services
 
             CurrentUser = null;
 
-            _ = await _apiService.CreateAsync<object>($"{ApiEndpoints.Auth}/logout", null);            
+            _ = await _apiService.PostAsync<object>($"{ApiEndpoints.Auth}/logout", null);            
 
             this.NotifyAuthenticationStateChanged(authState);
 

@@ -29,7 +29,7 @@ namespace JwtIdentity.Client.Services
 
             try
             {
-                ((CustomAuthStateProvider)_customAuthStateProvider).CurrentUser = await _apiService.CreateAsync<ApplicationUserViewModel>("api/auth/login", input);
+                ((CustomAuthStateProvider)_customAuthStateProvider).CurrentUser = await _apiService.PostAsync<ApplicationUserViewModel>("api/auth/login", input);
 
                 if (((CustomAuthStateProvider)_customAuthStateProvider).CurrentUser != null && !string.IsNullOrEmpty(((CustomAuthStateProvider)_customAuthStateProvider).CurrentUser?.Token))
                 {
@@ -70,7 +70,7 @@ namespace JwtIdentity.Client.Services
 
             ((CustomAuthStateProvider)_customAuthStateProvider).CurrentUser = null;
 
-            _ = await _apiService.CreateAsync<object>("api/auth/logout", null); // Call backend logout
+            _ = await _apiService.PostAsync<object>("api/auth/logout", null); // Call backend logout
         }
     }
 }

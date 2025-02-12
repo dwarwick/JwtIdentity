@@ -33,14 +33,7 @@ namespace JwtIdentity.Client.Services
             _ = response.EnsureSuccessStatusCode();
             return await response.Content.ReadFromJsonAsync<IEnumerable<T>>();
         }
-
-        public async Task<T> CreateAsync<T>(string endpoint, T viewModel)
-        {
-            var response = await _httpClient.PostAsJsonAsync($"{endpoint}", viewModel);
-            _ = response.EnsureSuccessStatusCode();
-            return await response.Content.ReadFromJsonAsync<T>();
-        }
-
+        
         public async Task<T> UpdateAsync<T>(string endpoint, T viewModel)
         {
             var response = await _httpClient.PutAsJsonAsync($"{endpoint}", viewModel);
@@ -53,6 +46,13 @@ namespace JwtIdentity.Client.Services
             var response = await _httpClient.DeleteAsync($"{endpoint}");
             _ = response.EnsureSuccessStatusCode();
             return response.IsSuccessStatusCode;
+        }
+
+        public async Task<T> PostAsync<T>(string endpoint, T viewModel)
+        {
+            var response = await _httpClient.PostAsJsonAsync($"{endpoint}", viewModel);
+            _ = response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<T>();
         }
     }
 
