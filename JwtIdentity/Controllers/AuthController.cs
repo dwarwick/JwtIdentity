@@ -1,10 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.IdentityModel.Tokens;
-using JwtIdentity.Common.Auth;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
+using Microsoft.AspNetCore.WebUtilities;
 using System.Text;
 
 namespace JwtIdentity.Controllers
@@ -18,14 +15,18 @@ namespace JwtIdentity.Controllers
         private readonly IConfiguration _configuration;
         private readonly IMapper _mapper;
         private readonly ApplicationDbContext _dbContext;
+        private readonly IEmailService _emailService;
+        private readonly IApiAuthService _apiAuthService;
 
-        public AuthController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IConfiguration configuration, IMapper mapper, ApplicationDbContext applicationDbContext)
+        public AuthController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IConfiguration configuration, IMapper mapper, ApplicationDbContext applicationDbContext, IEmailService emailService, IApiAuthService apiAuthService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _configuration = configuration;
             _mapper = mapper;
             _dbContext = applicationDbContext;
+            _emailService = emailService;
+            _apiAuthService = apiAuthService;
         }
 
         [HttpPost("login")]
@@ -40,7 +41,7 @@ namespace JwtIdentity.Controllers
 
             if (user != null && await _userManager.CheckPasswordAsync(user, model.Password))
             {
-                string Token = await GenerateJwtToken(user);
+                string Token = await _apiAuthService.GenerateJwtToken(user);
 
                 ApplicationUserViewModel applicationUserViewModel = _mapper.Map<ApplicationUserViewModel>(user);
 
@@ -65,7 +66,7 @@ namespace JwtIdentity.Controllers
                     Level = "Info",
                     LoggedAt = DateTime.UtcNow
                 });
-                _ = _dbContext.SaveChanges();
+                _ = await _dbContext.SaveChangesAsync();
 
                 return Ok(applicationUserViewModel);
             }
@@ -109,7 +110,9 @@ namespace JwtIdentity.Controllers
             }
 
             model.Response = "User created successfully";
-            await _userManager.AddToRoleAsync(newUser, "User");
+            _ = await _userManager.AddToRoleAsync(newUser, "User");
+            string link = await _apiAuthService.GenerateEmailVerificationLink(newUser);
+            _emailService.SendEmailVerificationMessage(newUser.Email, link);
 
             return Ok(model);
         }
@@ -218,67 +221,32 @@ namespace JwtIdentity.Controllers
             return Problem("Error deleting permission");
         }
 
-        private async Task<string> GenerateJwtToken(ApplicationUser user)
+        [HttpGet("confirmemail")]
+        public async Task<IActionResult> ConfirmEmail(string token, string email)
         {
-            if (string.IsNullOrEmpty(_configuration["Jwt:Key"]) || string.IsNullOrEmpty(_configuration["Jwt:Issuer"]) || string.IsNullOrEmpty(_configuration["Jwt:Audience"]))
+            if (string.IsNullOrEmpty(token) || string.IsNullOrEmpty(email))
             {
-                return string.Empty;
+                return BadRequest("Invalid email confirmation request");
             }
 
-            var roles = await _userManager.GetRolesAsync(user);
-            var roleClaims = roles.Select(q => new Claim(ClaimTypes.Role, q)).ToList();
+            Console.WriteLine($"Received Token: {token}");
 
-            var userClaims = await _userManager.GetClaimsAsync(user);
+            var codeDecodedBytes = WebEncoders.Base64UrlDecode(token);
+            var codeDecoded = Encoding.UTF8.GetString(codeDecodedBytes);
 
-            List<Claim> permissions;
-            if (!roles.Any(x => x == "Admin"))
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null)
             {
-                var rolePermissions = from ur in _dbContext.UserRoles
-                                      where ur.UserId == user.Id
-                                      join r in _dbContext.Roles on ur.RoleId equals r.Id
-                                      join rc in _dbContext.RoleClaims on r.Id equals rc.RoleId
-                                      select rc.ClaimValue;
-
-                rolePermissions = rolePermissions.Distinct();
-
-                permissions = await rolePermissions.Select(q => new Claim(CustomClaimTypes.Permission, q)).ToListAsync();
-            }
-            else
-            {
-                var type = typeof(Permissions);
-
-                permissions = type.GetFields().Select(q => new Claim(CustomClaimTypes.Permission, q.Name)).ToList();
+                return NotFound("User not found");
             }
 
-            var claims = new List<Claim>
+            var result = await _userManager.ConfirmEmailAsync(user, codeDecoded);
+            if (result.Succeeded)
             {
-                new Claim(JwtRegisteredClaimNames.Sub, user.UserName!),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(JwtRegisteredClaimNames.Email, user.Email!),
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
+                return LocalRedirect("/users/emailconfirmed");
             }
-            .Union(userClaims)
-            .Union(roleClaims)
-            .Union(permissions);
 
-            //var claims = new[]
-            //{
-            //    new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
-            //    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            //    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
-            //};
-
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"] ?? ""));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-            var token = new JwtSecurityToken(
-                issuer: _configuration["Jwt:Issuer"],
-                audience: _configuration["Jwt:Audience"],
-                claims: claims,
-                expires: DateTime.Now.AddMinutes(1),
-                signingCredentials: creds);
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
+            return LocalRedirect("/users/emailnotconfirmed");
         }
     }
 }

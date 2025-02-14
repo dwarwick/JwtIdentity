@@ -1,0 +1,17 @@
+﻿@page "/users/emailconfirmed"
+<MudStack Justify="Justify.Center">
+    <MudPaper class="d-flex justify-content-center mud-theme-primary" style="height:100px;width:80vw;">
+
+        <h3 class="align-self-center">Email confirmed! Please log in.</h3>
+
+    </MudPaper>
+</MudStack>
+
+@code{
+    [SupplyParameterFromQuery] public string email { get; set; } = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        AuthService.Logout();
+    }
+}

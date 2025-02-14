@@ -16,7 +16,7 @@
         if (result != null && result.Response == "User created successfully")
         {
             Snackbar.Add("User created successfully", Severity.Success);
-            Navigation.NavigateTo("/login");
+            Navigation.NavigateTo($"/users/emailsent?email={registerModel.Email}");
         }
         else
         {

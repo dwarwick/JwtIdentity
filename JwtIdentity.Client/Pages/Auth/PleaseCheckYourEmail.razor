@@ -1,0 +1,18 @@
+﻿@page "/users/emailsent"
+<MudStack Justify="Justify.Center">
+    <MudPaper class="d-flex justify-content-center mud-theme-primary" style="height:100px;width:80vw;">
+
+        <h3 class="align-self-center">We've sent an email to you at @email. Please click the link in the email to confirm. The email will come from customerservice@davidtest.xyz.</h3>
+
+    </MudPaper>
+</MudStack>
+
+@code {
+    [Parameter]
+    [SupplyParameterFromQuery] public string email { get; set; } = string.Empty;
+
+    protected override void OnParametersSet()
+    {
+        StateHasChanged();
+    }
+}

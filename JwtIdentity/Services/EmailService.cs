@@ -7,20 +7,28 @@ namespace JwtIdentity.Services
     {
         private readonly IConfiguration configuration;
 
-        private readonly string header = "<html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\"<head></head><body><div align=\"center\"><img src=\"https://digitalcart.biz/StaticAssets/images/DigitalCartLogo.png\" alt=\">digitalcart.biz logo\" style=\"margin-top:20px;\"></div><h3 style=\"text-align: center;\">digitalcart.biz</h3>";
-        private readonly string footer = $"<div style=\"text-align:center;margin-top:20px;\">&#169; {DateTime.Now.Year} digitalcart.biz</div></body></html>";
+        private readonly string domain;
+        private readonly string fromEmail;
+
+        private readonly string header;
+        private readonly string footer;
 
         private readonly string tableHtml = "<table bgcolor=\"#f6f9fc\" border=\"1\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\" style=\"margin:0;padding:2px;\">";
 
         public EmailService(IConfiguration configuration)
         {
             this.configuration = configuration;
+
+            domain = configuration["EmailSettings:Domain"] ?? string.Empty;
+            fromEmail = configuration["EmailSettings:CustomerServiceEmail"] ?? string.Empty;
+            header = $"<html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\"<head></head><body><div align=\"center\"></div><h3 style=\"text-align: center;\">{domain}</h3>";
+            footer = $"<div style=\"text-align:center;margin-top:20px;\">&#169; {DateTime.Now.Year} {domain}</div></body></html>";
         }
 
         public void SendEmail(string FromEmail, string ToEmail, string Subject, string Body, AlternateView? alternate = null)
         {
-            string userName = configuration["SMTP:Username"] ?? string.Empty;
-            string password = configuration["SMTP:Password"] ?? string.Empty;
+            string userName = configuration["EmailSettings:CustomerServiceEmail"] ?? string.Empty;
+            string password = configuration["EmailSettings:Password"] ?? string.Empty;
 
             System.Net.ServicePointManager.SecurityProtocol = System.Net.SecurityProtocolType.Tls12;
 
@@ -36,7 +44,7 @@ namespace JwtIdentity.Services
                 m.AlternateViews.Add(alternate);
             }
 
-            sc.Host = configuration["SMTP:Server"] ?? string.Empty;
+            sc.Host = configuration["EmailSettings:Server"] ?? string.Empty;
             try
             {
                 sc.Port = 8889;
@@ -53,14 +61,12 @@ namespace JwtIdentity.Services
         }
 
         #region Email Verification
-        public void SendEmailVerificationMessage(ApplicationUser applicationUser, string token)
+        public void SendEmailVerificationMessage(string toEmail, string tokenUrl)
         {
-            string baseUrl = configuration["Url"] ?? string.Empty;
-            string tokenUrl = $"{baseUrl}/api/auth/confirmemail?token={token}&email={applicationUser.Email}";
-            string body = $"Please click the link below to verify your email address to complete your registration for {baseUrl}\n\n{tokenUrl}";
+            string body = $"Please click the link below to verify your email address to complete your registration for {domain}\n\n{tokenUrl}";
 
             // Construct the alternate body as HTML.                  
-            string HtmlBody = $"<p>Please click the button below to verify your email address to complete your registration for digitalcart.biz.</p></br></br><div style=\"text-align:center;\"><a href=\"{tokenUrl}\"><button type=\"button\" style=\"background-color:blue;color:white;border-radius:20px;padding:5px 15px;\">Verify</button></a></div><p>If you cannot click the button, please navigate to the following URL to verify your email address.</p><p>{tokenUrl}</p>";
+            string HtmlBody = $"<p>Please click the button below to verify your email address to complete your registration for {domain}.</p></br></br><div style=\"text-align:center;\"><a href=\"{tokenUrl}\"><button type=\"button\" style=\"background-color:blue;color:white;border-radius:20px;padding:5px 15px;\">Verify</button></a></div><p>If you cannot click the button, please navigate to the following URL to verify your email address.</p><p>{tokenUrl}</p>";
 
             string html = header + HtmlBody + footer;
             ContentType mimeType = new System.Net.Mime.ContentType("text/html");
@@ -68,7 +74,7 @@ namespace JwtIdentity.Services
             // Add the alternate body to the message.
             AlternateView alternate = AlternateView.CreateAlternateViewFromString(html, mimeType);
 
-            SendEmail("customerservice@digitalcart.biz", applicationUser.Email ?? string.Empty, "Please Verify Your Email Address", body, alternate);
+            SendEmail(fromEmail, toEmail ?? string.Empty, "Please Verify Your Email Address", body, alternate);
         }
         #endregion
 
