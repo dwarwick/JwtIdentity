@@ -16,9 +16,16 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 builder.Services.AddIdentity<ApplicationUser, ApplicationRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
-    .AddDefaultTokenProviders();
+    .AddDefaultTokenProviders()
+    .AddTokenProvider<EmailTokenAuthorizationProvider<ApplicationUser>>("Email");
+
+builder.Services.Configure<DataProtectionTokenProviderOptions>(options =>
+{
+    options.TokenLifespan = TimeSpan.FromHours(1);
+});
 
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IApiAuthService, ApiAuthService>();
 
 builder.Services.AddAutoMapper(typeof(MapperConfig));
 builder.Services.AddAuthentication(options =>
