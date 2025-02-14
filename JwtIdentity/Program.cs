@@ -1,5 +1,3 @@
-using JwtIdentity.Configurations;
-using JwtIdentity.Filters;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -20,8 +18,9 @@ builder.Services.AddIdentity<ApplicationUser, ApplicationRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
-builder.Services.AddAutoMapper(typeof(MapperConfig));
+builder.Services.AddScoped<IEmailService, EmailService>();
 
+builder.Services.AddAutoMapper(typeof(MapperConfig));
 builder.Services.AddAuthentication(options =>
 {
     // Let cookies handle the challenge (so it can do 302 to /not-authorized):
