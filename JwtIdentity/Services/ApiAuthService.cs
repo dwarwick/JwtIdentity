@@ -69,7 +69,7 @@ namespace JwtIdentity.Services
                 issuer: _configuration["Jwt:Issuer"],
                 audience: _configuration["Jwt:Audience"],
                 claims: claims,
-                expires: DateTime.Now.AddMinutes(1),
+                expires: DateTime.Now.AddMinutes(int.TryParse(_configuration["Jwt:ExpirationMinutes"], out int minutes) ? minutes : 60),
                 signingCredentials: creds);
 
             return new JwtSecurityTokenHandler().WriteToken(token);
