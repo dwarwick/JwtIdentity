@@ -5,6 +5,14 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Add environment-based appsettings.json files
+builder.Configuration
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true);
+
+// Bind "AppSettings" section to the AppSettings class
+builder.Services.Configure<AppSettings>(builder.Configuration);
+
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveWebAssemblyComponents();
