@@ -1,6 +1,6 @@
 ﻿namespace JwtIdentity.Data
 {
-    public class ApplicationDbContext 
+    public class ApplicationDbContext
     : IdentityDbContext<
         ApplicationUser,                // TUser
         ApplicationRole,                // TRole
@@ -11,7 +11,7 @@
         RoleClaim,                      // TRoleClaim (YOUR custom class)
         IdentityUserToken<int>          // TUserToken
     >
-{
+    {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
         {
@@ -29,7 +29,7 @@
             base.OnModelCreating(builder);
 
             // create relationship between roleclaims and roles
-            builder.Entity<RoleClaim>()
+            _ = builder.Entity<RoleClaim>()
             .HasOne(rc => rc.Role)
             .WithMany(r => r.Claims)
             .HasForeignKey(rc => rc.RoleId)
@@ -38,7 +38,8 @@
             // Seed roles
             _ = builder.Entity<ApplicationRole>().HasData(
                 new ApplicationRole { Id = 1, Name = "Admin", NormalizedName = "ADMIN" },
-                new ApplicationRole { Id = 2, Name = "User", NormalizedName = "USER" }
+                new ApplicationRole { Id = 2, Name = "User", NormalizedName = "USER" },
+                new ApplicationRole { Id = 3, Name = "UnconfirmedUser", NormalizedName = "UNCONFIRMEDUSER" }
             );
 
             // Seed users
@@ -93,7 +94,7 @@
                     ClaimType = "permission",
                     ClaimValue = q
                 }).ToArray()
-            );            
+            );
         }
     }
 }

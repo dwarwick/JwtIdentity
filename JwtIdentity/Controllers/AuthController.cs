@@ -56,7 +56,7 @@ namespace JwtIdentity.Controllers
                         HttpOnly = true,
                         Secure = true,
                         SameSite = SameSiteMode.Strict,
-                        Expires = DateTimeOffset.Now.AddMinutes(1)
+                        Expires = DateTime.Now.AddMinutes(int.TryParse(_configuration["Jwt:ExpirationMinutes"], out int minutes) ? minutes : 60)
                     }
                 );
 
@@ -110,7 +110,7 @@ namespace JwtIdentity.Controllers
             }
 
             model.Response = "User created successfully";
-            _ = await _userManager.AddToRoleAsync(newUser, "User");
+            _ = await _userManager.AddToRoleAsync(newUser, "UnconfirmedUser");
             string link = await _apiAuthService.GenerateEmailVerificationLink(newUser);
             _emailService.SendEmailVerificationMessage(newUser.Email, link);
 
@@ -243,6 +243,8 @@ namespace JwtIdentity.Controllers
             var result = await _userManager.ConfirmEmailAsync(user, codeDecoded);
             if (result.Succeeded)
             {
+                _ = await _userManager.RemoveFromRoleAsync(user, "UnconfirmedUser");
+                _ = await _userManager.AddToRoleAsync(user, "User");
                 return LocalRedirect("/users/emailconfirmed");
             }
 
