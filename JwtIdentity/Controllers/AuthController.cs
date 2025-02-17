@@ -97,10 +97,14 @@ namespace JwtIdentity.Controllers
                 return Ok(model);
             }
 
+            DateTime now = DateTime.UtcNow;
+
             ApplicationUser newUser = new ApplicationUser
             {
                 UserName = model.Email,
-                Email = model.Email
+                Email = model.Email,
+                CreatedDate = now,
+                UpdatedDate = now
             };
 
             IdentityResult result = await _userManager.CreateAsync(newUser, model.Password);

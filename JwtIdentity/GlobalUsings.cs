@@ -1,11 +1,12 @@
 ﻿global using AutoMapper;
 global using JwtIdentity.Common.Auth;
+global using JwtIdentity.Common.Helpers;
 global using JwtIdentity.Common.ViewModels;
 global using JwtIdentity.Components;
 global using JwtIdentity.Configurations;
 global using JwtIdentity.Data;
 global using JwtIdentity.Filters;
-global using JwtIdentity.Model;
+global using JwtIdentity.Models;
 global using JwtIdentity.Services;
 global using Microsoft.AspNetCore.Identity;
 // ...existing code...

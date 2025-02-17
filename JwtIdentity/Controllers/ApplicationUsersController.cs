@@ -46,6 +46,8 @@
 
             ApplicationUser applicationUser = _mapper.Map<ApplicationUser>(applicationUserViewModel);
 
+            applicationUser.UpdatedDate = DateTime.UtcNow;
+
             _context.Entry(applicationUser).State = EntityState.Modified;
 
             try

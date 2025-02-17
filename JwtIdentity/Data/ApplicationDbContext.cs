@@ -23,6 +23,11 @@
         // You can add a DbSet if you like:
         public DbSet<RoleClaim> RoleClaims { get; set; }
         public DbSet<LogEntry> LogEntries { get; set; }
+        public DbSet<Survey> Surveys { get; set; }
+        public DbSet<Question> Questions { get; set; }
+        public DbSet<Answer> Answers { get; set; }
+        public DbSet<ChoiceOption> ChoiceOptions { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -95,6 +100,21 @@
                     ClaimValue = q
                 }).ToArray()
             );
+
+            // TPH for Questions
+            _ = builder.Entity<Question>()
+                .HasDiscriminator(q => q.QuestionType)
+                .HasValue<TextQuestion>(QuestionType.Text)
+                .HasValue<TrueFalseQuestion>(QuestionType.TrueFalse)
+                .HasValue<MultipleChoiceQuestion>(QuestionType.MultipleChoice);
+
+            // TPH for Answers
+            _ = builder.Entity<Answer>()
+                .HasDiscriminator(a => a.AnswerType)
+                .HasValue<TextAnswer>(AnswerType.Text)
+                .HasValue<TrueFalseAnswer>(AnswerType.TrueFalse)
+                .HasValue<SingleChoiceAnswer>(AnswerType.SingleChoice)
+                .HasValue<MultipleChoiceAnswer>(AnswerType.MultipleChoice);
         }
     }
 }
