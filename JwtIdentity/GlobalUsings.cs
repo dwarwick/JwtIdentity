@@ -1,5 +1,6 @@
 ﻿global using AutoMapper;
 global using JwtIdentity.Common.Auth;
+global using JwtIdentity.Common.Helpers;
 global using JwtIdentity.Common.ViewModels;
 global using JwtIdentity.Components;
 global using JwtIdentity.Configurations;

@@ -1,9 +1,9 @@
 ﻿namespace JwtIdentity.Model
 {
-    public class ApplicationUser : IdentityUser<int>
+    public class BaseModel
     {
-        public string Theme { get; set; } = "light";
         public DateTime CreatedDate { get; set; }
         public DateTime UpdatedDate { get; set; }
+        public ApplicationUser CreatedBy { get; set; }
     }
 }
