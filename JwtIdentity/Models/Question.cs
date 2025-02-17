@@ -1,4 +1,4 @@
-﻿namespace JwtIdentity.Model
+﻿namespace JwtIdentity.Models
 {
     public abstract class Question : BaseModel
     {
