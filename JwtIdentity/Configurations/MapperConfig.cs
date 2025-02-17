@@ -10,6 +10,29 @@
             _ = CreateMap<ApplicationRole, ApplicationRoleViewModel>().ReverseMap();
             _ = CreateMap<RoleClaim, RoleClaimViewModel>().ReverseMap();
 
+
+            _ = CreateMap<Answer, AnswerViewModel>();
+            _ = CreateMap<AnswerViewModel, Answer>()
+                .ForMember(x => x.CreatedBy, options => options.Ignore());
+
+
+            _ = CreateMap<TextAnswer, TextAnswerViewModel>().ReverseMap();
+            _ = CreateMap<TrueFalseAnswer, TrueFalseAnswerViewModel>().ReverseMap();
+            _ = CreateMap<MultipleChoiceAnswer, MultipleChoiceAnswerViewModel>().ReverseMap();
+            _ = CreateMap<SingleChoiceAnswer, SingleChoiceAnswerViewModel>().ReverseMap();
+
+            _ = CreateMap<ChoiceOption, ChoiceOptionViewModel>().ReverseMap();
+
+            _ = CreateMap<Question, QuestionViewModel>();
+            _ = CreateMap<QuestionViewModel, Question>()
+                .ForMember(x => x.CreatedBy, options => options.Ignore());
+
+            _ = CreateMap<TextQuestion, TextQuestionViewModel>().ReverseMap();
+            _ = CreateMap<TrueFalseQuestion, TrueFalseQuestionViewModel>().ReverseMap();
+            _ = CreateMap<MultipleChoiceQuestion, MultipleChoiceQuestionViewModel>().ReverseMap();
+
+            _ = CreateMap<Survey, SurveyViewModel>().ReverseMap();
+
             //this.CreateMap<BaseModel, BaseViewModel>().ReverseMap();
 
             //this.CreateMap<Forum, ForumViewModel>();
