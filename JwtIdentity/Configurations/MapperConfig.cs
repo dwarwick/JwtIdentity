@@ -6,13 +6,17 @@
         {
             //this.CreateMap<ApplicationUser, UserDto>().ReverseMap();
 
+            _ = CreateMap<BaseModel, BaseViewModel>();
+            _ = CreateMap<BaseViewModel, BaseModel>()
+                .ForMember(x => x.CreatedBy, options => options.Ignore());
+
             _ = CreateMap<ApplicationUser, ApplicationUserViewModel>().ReverseMap();
             _ = CreateMap<ApplicationRole, ApplicationRoleViewModel>().ReverseMap();
             _ = CreateMap<RoleClaim, RoleClaimViewModel>().ReverseMap();
 
 
-            _ = CreateMap<Answer, AnswerViewModel>();
-            _ = CreateMap<AnswerViewModel, Answer>()
+            _ = CreateMap<Answer, AnswerViewModel>().IncludeAllDerived();
+            _ = CreateMap<AnswerViewModel, Answer>().IncludeAllDerived()
                 .ForMember(x => x.CreatedBy, options => options.Ignore());
 
 
@@ -23,13 +27,17 @@
 
             _ = CreateMap<ChoiceOption, ChoiceOptionViewModel>().ReverseMap();
 
-            _ = CreateMap<Question, QuestionViewModel>();
-            _ = CreateMap<QuestionViewModel, Question>()
-                .ForMember(x => x.CreatedBy, options => options.Ignore());
+            _ = CreateMap<Question, QuestionViewModel>().IncludeAllDerived();
+            _ = CreateMap<QuestionViewModel, Question>().IncludeAllDerived()
+                .ForMember(x => x.CreatedBy, options => options.Ignore())
+                .ForMember(x => x.CreatedById, options => options.Ignore());
 
             _ = CreateMap<TextQuestion, TextQuestionViewModel>().ReverseMap();
             _ = CreateMap<TrueFalseQuestion, TrueFalseQuestionViewModel>().ReverseMap();
-            _ = CreateMap<MultipleChoiceQuestion, MultipleChoiceQuestionViewModel>().ReverseMap();
+            _ = CreateMap<MultipleChoiceQuestion, MultipleChoiceQuestionViewModel>();
+            _ = CreateMap<MultipleChoiceQuestionViewModel, MultipleChoiceQuestion>()
+                .ForMember(x => x.CreatedBy, options => options.Ignore())
+                .ForMember(x => x.CreatedById, options => options.Ignore());
 
             _ = CreateMap<Survey, SurveyViewModel>().ReverseMap();
 

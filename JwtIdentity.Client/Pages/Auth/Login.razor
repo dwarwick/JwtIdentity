@@ -1,4 +1,5 @@
 ﻿@page "/login"
+@inherits LoginModel
 <h3>Login</h3>
 
 <EditForm Model="applicationUserViewModel" OnValidSubmit="HandleLogin" FormName="LoginForm">
@@ -15,21 +16,3 @@
     </div>
     <button type="submit" class="btn btn-primary">Login</button>
 </EditForm>
-
-@code {
-    private ApplicationUserViewModel applicationUserViewModel = new ();
-
-
-    private async Task HandleLogin()
-    {
-        Response<ApplicationUserViewModel> response = await AuthService.Login(applicationUserViewModel);
-        if (!response.Success)        
-        {
-            // Handle login failure
-        }
-        else
-        {
-            Navigation.NavigateTo("/");
-        }
-    }
-}

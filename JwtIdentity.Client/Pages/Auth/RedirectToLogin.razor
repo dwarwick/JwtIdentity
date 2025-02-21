@@ -1,14 +1,1 @@
-﻿@code {
-    [Parameter]
-    public string? ReturnUrl { get; set; }
-    protected override void OnInitialized()
-    {
-        if (ReturnUrl != null)
-        {
-            ReturnUrl = ReturnUrl;
-            Navigation.NavigateTo($"login?returnUrl={ReturnUrl}", forceLoad: true);
-        }
-        else Navigation.NavigateTo($"login", forceLoad: true);
-
-    }
-}
+﻿

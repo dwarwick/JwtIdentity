@@ -1,19 +1,14 @@
 ﻿using JwtIdentity.Client.Services;
-using JwtIdentity.Common.Helpers;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
-using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace JwtIdentity.Client.Pages.Admin
 {
-    public class ManageRolePermissionsBase : ComponentBase, IDisposable
+    public class ManageRolePermissionsModel : BlazorBase, IDisposable
     {
-        [Inject]
-        public AuthenticationStateProvider? AuthStateProvider { get; set; }
+        private bool _disposed = false;
 
         [Inject]
-        public IApiService? ApiService { get; set; }
+        public AuthenticationStateProvider? AuthStateProvider { get; set; }
 
         [Inject]
         public NavigationManager? Navigation { get; set; }
@@ -32,7 +27,7 @@ namespace JwtIdentity.Client.Pages.Admin
         protected override async Task OnInitializedAsync()
         {
             ((CustomAuthStateProvider)AuthStateProvider!).OnLoggedOut += NavigateLogin;
-            
+
             var type = typeof(Permissions);
 
             AllPermissions = type.GetFields().Select(q => q.Name).ToList();
@@ -64,7 +59,7 @@ namespace JwtIdentity.Client.Pages.Admin
             {
                 await ((CustomAuthStateProvider)AuthStateProvider).LoggedOut();
                 Navigation?.NavigateTo("/login");
-            }       
+            }
 
             if (RoleViewModel != null && RoleViewModel.Claims != null && AllPermissions != null)
             {
@@ -96,8 +91,8 @@ namespace JwtIdentity.Client.Pages.Admin
             {
                 await ((CustomAuthStateProvider)AuthStateProvider).LoggedOut();
                 Navigation?.NavigateTo("/login");
-            }            
-            
+            }
+
             if (RoleViewModel != null && RoleViewModel.Claims != null && !string.IsNullOrEmpty(permission))
             {
                 RoleClaimViewModel newPermission = new()
@@ -129,7 +124,7 @@ namespace JwtIdentity.Client.Pages.Admin
             {
                 await ((CustomAuthStateProvider)AuthStateProvider).LoggedOut();
                 Navigation?.NavigateTo("/login");
-            }    
+            }
 
             if (RoleViewModel != null && RoleViewModel.Claims != null)
             {
@@ -157,9 +152,22 @@ namespace JwtIdentity.Client.Pages.Admin
             Navigation?.NavigateTo("/login");
         }
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    ((CustomAuthStateProvider)AuthStateProvider!).OnLoggedOut -= NavigateLogin;
+                }
+                _disposed = true;
+            }
+        }
+
         public void Dispose()
         {
-            ((CustomAuthStateProvider)AuthStateProvider!).OnLoggedOut -= NavigateLogin;
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
     }
 }

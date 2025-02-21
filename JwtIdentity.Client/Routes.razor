@@ -1,4 +1,5 @@
-﻿<CascadingAuthenticationState>
+﻿@inject NavigationManager NavigationManager
+<CascadingAuthenticationState>
 <Router AppAssembly="typeof(Program).Assembly">
     <Found Context="routeData">
         <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)">
@@ -6,7 +7,7 @@
                     @if((context.User?.Identity?.IsAuthenticated ?? false) == false)
                     {
                         
-                        var returnUrl = Navigation.ToBaseRelativePath(Navigation.Uri);
+                        var returnUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
                         <RedirectToLogin ReturnUrl="@returnUrl"/>    
                     }
                     else

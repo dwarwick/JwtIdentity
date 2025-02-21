@@ -1,0 +1,37 @@
+﻿@page "/survey/createquestions/{SurveyId:int}"
+@inherits CreateQuestionsModel
+<MudText Typo="Typo.h3">Create Questions</MudText>
+
+<MudStack Spacing="1">
+    <MudSelect Label="Select the Question Type"
+    @bind-Value="SelectedQuestionType"
+    Variant="Variant.Filled"
+    Immediate="true"
+    ErrorText="Please select a type"
+    Error="@(string.IsNullOrWhiteSpace(SelectedQuestionType))">
+        @foreach (var questionType in QuestionTypes)
+        {
+            <MudSelectItem Value="@(StringHelper.PascalCaseToWords( questionType))" />
+        }
+    </MudSelect>
+
+    <MudText Typo="Typo.h4" Class="mt-5">Create a @Common.Helpers.StringHelper.PascalCaseToWords(SelectedQuestionType) Question</MudText>
+    <MudTextField id="Text" Label="Question Text" @bind-Value="QuestionText" Variant="Variant.Filled" Lines="1" MaxLines="5" AutoGrow="true" Immediate="true" Counter="50" MaxLength="50" />
+</MudStack>
+
+    @if (SelectedQuestionType.Replace(" ", "") == Enum.GetName(QuestionType.MultipleChoice))
+    {
+        <MudText Typo="Typo.h5" Class="mb-1">Add the Question Choices</MudText>
+        <MudTextField id="Choice" Label="Choice Text" @bind-Value="NewChoiceOptionText" Variant="Variant.Filled" Lines="1" MaxLines="5" AutoGrow="true" Immediate="true" Counter="50" MaxLength="50" />
+
+        <MudButton ButtonType="ButtonType.Button" Variant="Variant.Filled" Color="Color.Primary" OnClick="@AddChoiceOption">Add Choice</MudButton>
+        @foreach(var choice in MultipleChoiceQuestion.Options)
+        {
+            <MudText Typo="Typo.h6">@choice.OptionText</MudText>
+        }
+    }
+
+
+
+
+<MudButton ButtonType="ButtonType.Button" Variant="Variant.Filled" Color="Color.Primary" OnClick="AddQuestionToSurvey">Add Question to Survey</MudButton>
