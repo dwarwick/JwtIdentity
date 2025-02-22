@@ -1,13 +1,15 @@
 ﻿@page "/survey/create"
+@namespace JwtIdentity.Client.Pages.Survey
 @inherits CreateSurveyModel
+@attribute [Authorize(Policy = Permissions.CreateSurvey)]
 <h3>Create Survey</h3>
 
 <EditForm Model="@Survey" OnValidSubmit="@CreateSurvey">
     <DataAnnotationsValidator />
     <ValidationSummary />
     <MudStack Spacing="1">        
-        <MudTextField id="Title" Label="Title" class="form-control" @bind-Value="Survey.Title" Variant="Variant.Filled" Lines="1" MaxLines="5" AutoGrow="true" Immediate="true" Counter="50" MaxLength="50" />            
-        <MudTextField id="Description" Label="Description" class="form-control" @bind-Value="Survey.Description" Variant="Variant.Filled" Lines="5" MaxLines="10" AutoGrow="true" Immediate="true" Counter="250" MaxLength="250" />       
+        <MudTextField id="Title" Label="Title" @bind-Value="Survey.Title" Variant="Variant.Filled" Lines="1" MaxLines="5" AutoGrow="true" Immediate="true" Counter="50" MaxLength="50" />            
+        <MudTextField id="Description" Label="Description" @bind-Value="Survey.Description" Variant="Variant.Filled" Lines="5" MaxLines="10" AutoGrow="true" Immediate="true" Counter="250" MaxLength="250" />       
     </MudStack>    
     <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Disabled="@(Survey.Id > 0)">Create</MudButton>    
 </EditForm>

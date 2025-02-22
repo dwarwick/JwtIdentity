@@ -1,5 +1,8 @@
 ﻿@page "/survey/createquestions/{SurveyId:int}"
+@namespace JwtIdentity.Client.Pages.Survey
 @inherits CreateQuestionsModel
+@attribute [Authorize(Policy = Permissions.CreateSurvey)]
+
 <MudText Typo="Typo.h4">Create Questions</MudText>
 <MudText Typo="Typo.h5">Survey Title: @Survey.Title</MudText>
 
@@ -45,9 +48,6 @@
             </MudPaper>
         }
     </MudStack>
-
-
-
     <MudPaper Class="p-2 flex-1">
         <MudText Typo="Typo.h4">Survey Questions</MudText>
         @{

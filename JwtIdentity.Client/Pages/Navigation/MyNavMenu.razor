@@ -51,6 +51,11 @@
                 <MudNavLink Href="/ManageRolePermissions">Manage Permissions</MudNavLink>
             </Authorized>
         </AuthorizeView>
+        <AuthorizeView Policy="@Permissions.CreateSurvey">
+            <Authorized>
+                <MudNavLink Href="/survey/create">Create Survey</MudNavLink>
+            </Authorized>
+        </AuthorizeView>
         <MudNavLink Href="/contact">Contact</MudNavLink>
     </MudNavMenu>
 </MudDrawer>
