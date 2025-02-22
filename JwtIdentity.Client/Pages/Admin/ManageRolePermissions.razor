@@ -1,5 +1,5 @@
 ﻿@page "/ManageRolePermissions"
-@inherits ManageRolePermissionsBase
+@inherits ManageRolePermissionsModel
 @attribute [Authorize(Policy = Permissions.ManageUsers)]
 
 @if (applicationRoleViewModels != null)

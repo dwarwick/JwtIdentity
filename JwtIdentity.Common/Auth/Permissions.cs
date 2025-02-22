@@ -3,5 +3,6 @@
     public static class Permissions
     {
         public const string ManageUsers = "ManageUsers";
+        public const string CreateSurvey = "CreateSurvey";
     }
 }

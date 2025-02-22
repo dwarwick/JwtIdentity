@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Authorization;
+
 namespace JwtIdentity.Controllers
 {
     [Route("api/[controller]")]
@@ -6,11 +8,13 @@ namespace JwtIdentity.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
+        private readonly IApiAuthService authService;
 
-        public SurveyController(ApplicationDbContext context, IMapper mapper)
+        public SurveyController(ApplicationDbContext context, IMapper mapper, IApiAuthService authService)
         {
             _context = context;
             _mapper = mapper;
+            this.authService = authService;
         }
 
         // GET: api/Survey
@@ -32,18 +36,69 @@ namespace JwtIdentity.Controllers
                 return NotFound();
             }
 
+            // Pull out the IDs of any multiple-choice questions in memory
+            var mcIds = survey.Questions
+                .OfType<MultipleChoiceQuestion>()
+                .Select(mc => mc.Id)
+                .ToList();
+
+            // Now load each one’s Options
+            await _context.Questions
+                .OfType<MultipleChoiceQuestion>()
+                .Where(mc => mcIds.Contains(mc.Id))
+                .Include(mc => mc.Options)
+                .LoadAsync();
+
             return Ok(_mapper.Map<SurveyViewModel>(survey));
         }
 
         // POST: api/Survey
         [HttpPost]
+        [Authorize(Policy = $"{Permissions.CreateSurvey}")]
         public async Task<ActionResult<SurveyViewModel>> PostSurvey(SurveyViewModel surveyViewModel)
         {
             var survey = _mapper.Map<Survey>(surveyViewModel);
-            _ = _context.Surveys.Add(survey);
+
+            if (survey == null) return BadRequest();
+
+            int createdById = authService.GetUserId(User);
+
+            if (survey.Id == 0)
+            { // new survey
+                survey.CreatedById = createdById;
+
+                _ = _context.Surveys.Add(survey);
+            }
+            else
+            { // existing survey
+                foreach (var question in survey.Questions)
+                {
+                    if (question.Id == 0)
+                    { // new question
+                        question.CreatedById = createdById;
+                        question.SurveyId = survey.Id;
+
+                        _ = _context.Questions.Add(question);
+                    }
+                    else
+                    { // existing question
+
+                        // check if question text has changed. If so, update the question
+                        var existingQuestion = await _context.Questions.FindAsync(question.Id);
+                        if (existingQuestion != null)
+                        {
+                            if (existingQuestion.Text != question.Text)
+                            {
+                                _context.Entry(question).State = EntityState.Modified;
+                            }
+                        }
+                    }
+                }
+            }
+
             _ = await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetSurvey), new { id = survey.Id }, _mapper.Map<SurveyViewModel>(survey));
+            return CreatedAtAction(nameof(PostSurvey), new { id = survey.Id }, _mapper.Map<SurveyViewModel>(survey));
         }
 
         // PUT: api/Survey/5

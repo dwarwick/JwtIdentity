@@ -1,4 +1,4 @@
-﻿@implements IDisposable
+﻿@inherits MyNavMenuModel
 
 <MudAppBar Elevation="4" Color="Color.Primary">
     <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="ToggleDrawer" />
@@ -9,6 +9,11 @@
         <AuthorizeView Policy="@Permissions.ManageUsers">
             <Authorized>
                 <MudButton Variant="Variant.Text" Color="Color.Inherit" Class="mx-2" Href="/ManageRolePermissions">Manage Permissions</MudButton>
+            </Authorized>
+        </AuthorizeView>
+        <AuthorizeView Policy="@Permissions.CreateSurvey">
+            <Authorized>
+                <MudButton Variant="Variant.Text" Color="Color.Inherit" Class="mx-2" Href="/survey/create">Create Survey</MudButton>
             </Authorized>
         </AuthorizeView>
         <MudButton Variant="Variant.Text" Color="Color.Inherit" Class="mx-2">Contact</MudButton>
@@ -46,45 +51,11 @@
                 <MudNavLink Href="/ManageRolePermissions">Manage Permissions</MudNavLink>
             </Authorized>
         </AuthorizeView>
+        <AuthorizeView Policy="@Permissions.CreateSurvey">
+            <Authorized>
+                <MudNavLink Href="/survey/create">Create Survey</MudNavLink>
+            </Authorized>
+        </AuthorizeView>
         <MudNavLink Href="/contact">Contact</MudNavLink>
     </MudNavMenu>
 </MudDrawer>
-
-@code {
-    private bool _drawerOpen = false;
-    
-    [Parameter]
-    public bool DarkTheme { get; set; }
-
-    [Parameter]
-    public EventCallback<bool> DarkThemeChanged { get; set; }
-
-    protected override void OnInitialized()
-    {
-       ((CustomAuthStateProvider)AuthStateProvider!).OnLoggedOut += UpdateLoggedIn;
-       CustomAuthorizationMessageHandler.OnUnauthorized += UpdateLoggedIn;
-        _drawerOpen = false;
-    }
-
-    private void ToggleDrawer()
-    {
-        _drawerOpen = !_drawerOpen;
-    }
-
-    private async Task DarkThemeChangedHandler(bool value)
-    {
-        DarkTheme = value;
-        await DarkThemeChanged.InvokeAsync(value);
-    }
-
-    private void UpdateLoggedIn()
-    {
-        StateHasChanged();
-    }
-
-    public void Dispose()
-    {
-        ((CustomAuthStateProvider)AuthStateProvider!).OnLoggedOut -= UpdateLoggedIn;
-        CustomAuthorizationMessageHandler.OnUnauthorized -= UpdateLoggedIn;
-    }
-}

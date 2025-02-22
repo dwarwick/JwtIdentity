@@ -1,4 +1,5 @@
-﻿namespace JwtIdentity.Data
+﻿
+namespace JwtIdentity.Data
 {
     public class ApplicationDbContext
     : IdentityDbContext<
@@ -115,6 +116,29 @@
                 .HasValue<TrueFalseAnswer>(AnswerType.TrueFalse)
                 .HasValue<SingleChoiceAnswer>(AnswerType.SingleChoice)
                 .HasValue<MultipleChoiceAnswer>(AnswerType.MultipleChoice);
+        }
+
+        public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            DateTime createdDate = DateTime.UtcNow;
+
+            var entries = ChangeTracker
+            .Entries()
+                .Where(e => e.Entity is BaseModel && (
+                        e.State == EntityState.Added
+                || e.State == EntityState.Modified));
+
+            foreach (var entityEntry in entries)
+            {
+                ((BaseModel)entityEntry.Entity).UpdatedDate = createdDate;
+
+                if (entityEntry.State == EntityState.Added)
+                {
+                    ((BaseModel)entityEntry.Entity).CreatedDate = createdDate;
+                }
+            }
+
+            return await base.SaveChangesAsync(cancellationToken);
         }
     }
 }

@@ -90,5 +90,16 @@ namespace JwtIdentity.Services
             var verificationUrl = $"{baseUrl}/api/auth/confirmemail?token={codeEncoded}&email={user.Email}";
             return verificationUrl;
         }
+
+        // get the id of the logged in user 
+        public int GetUserId(ClaimsPrincipal user)
+        {
+            var nameIdentifierClaim = user.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier && int.TryParse(x.Value, out _));
+            if (nameIdentifierClaim != null && int.TryParse(nameIdentifierClaim.Value, out int userId))
+            {
+                return userId;
+            }
+            return 0;
+        }
     }
 }

@@ -1,20 +1,9 @@
 ﻿@page "/users/emailsent"
+@inherits PleaseCheckYourEmailModel
 <MudStack Justify="Justify.Center">
     <MudPaper class="d-flex justify-content-center mud-theme-primary" style="height:100px;width:80vw;">
 
-        <h3 class="align-self-center">We've sent an email to you at @email. Please click the link in the email to confirm. The email will come from @appSettings.EmailSettings.Domain.</h3>
+        <h3 class="align-self-center">We've sent an email to you at @Email. Please click the link in the email to confirm. The email will come from @AppSettings.EmailSettings.Domain.</h3>
 
     </MudPaper>
 </MudStack>
-
-@code {
-    [Parameter]
-    [SupplyParameterFromQuery] public string email { get; set; } = string.Empty;
-
-    AppSettings appSettings = new ();
-
-    protected override async Task OnInitializedAsync()
-    {
-        appSettings = await ApiService.GetAsync<AppSettings>("/api/appsettings");
-    }
-}

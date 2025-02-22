@@ -1,4 +1,8 @@
-﻿global using JwtIdentity.Client.Services.Base;
+﻿global using JwtIdentity.Client.Services;
+global using JwtIdentity.Client.Services.Base;
 global using JwtIdentity.Common.Auth;
 global using JwtIdentity.Common.Helpers;
 global using JwtIdentity.Common.ViewModels;
+global using Microsoft.AspNetCore.Components;
+global using Microsoft.AspNetCore.Components.Authorization;
+global using MudBlazor;

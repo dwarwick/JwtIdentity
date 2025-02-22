@@ -1,3 +1,5 @@
+using System.Security.Claims;
+
 namespace JwtIdentity.Services
 {
     public interface IApiAuthService
@@ -6,5 +8,7 @@ namespace JwtIdentity.Services
         // ...existing code...
 
         Task<string> GenerateEmailVerificationLink(ApplicationUser user);
+
+        int GetUserId(ClaimsPrincipal user);
     }
 }
