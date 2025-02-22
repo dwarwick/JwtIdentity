@@ -4,6 +4,12 @@
     {
         protected ApplicationUserViewModel applicationUserViewModel { get; set; } = new();
 
+        protected Dictionary<string, object> InputAttributes { get; set; } =
+        new Dictionary<string, object>()
+            {
+               { "autocomplete", "current-password" },
+            };
+
         protected async Task HandleLogin()
         {
             Response<ApplicationUserViewModel> response = await AuthService.Login(applicationUserViewModel);

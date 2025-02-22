@@ -25,7 +25,16 @@
 
         protected string NewChoiceOptionText { get; set; }
 
+        protected bool AddQuestionToSurveyDisabled => string.IsNullOrWhiteSpace(QuestionText) ||
+            (SelectedQuestionType.Replace(" ", "") == Enum.GetName(QuestionType.MultipleChoice) && MultipleChoiceQuestion.Options.Count == 0);
+
         protected override async Task OnInitializedAsync()
+        {
+            // get the survey based on the SurveyId
+            await LoadData();
+        }
+
+        private async Task LoadData()
         {
             // get the survey based on the SurveyId
             Survey = await ApiService.GetAsync<SurveyViewModel>($"{ApiEndpoints.Survey}/{SurveyId}");
@@ -36,6 +45,7 @@
             if (SelectedQuestionType.Replace(" ", "") == Enum.GetName(typeof(QuestionType), QuestionType.MultipleChoice))
             {
                 MultipleChoiceQuestion.Options.Add(new ChoiceOptionViewModel { OptionText = NewChoiceOptionText });
+                NewChoiceOptionText = null;
             }
         }
 
@@ -57,6 +67,11 @@
             var response = await ApiService.PostAsync(ApiEndpoints.Survey, Survey);
             if (response != null && response.Id > 0)
             {
+                await LoadData();
+
+                QuestionText = null;
+                MultipleChoiceQuestion.Options.Clear();
+
                 _ = Snackbar.Add("Question Added", MudBlazor.Severity.Success);
             }
             else
