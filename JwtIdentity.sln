@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JwtIdentity", "JwtIdentity\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JwtIdentity.Client", "JwtIdentity.Client\JwtIdentity.Client.csproj", "{397C2652-7063-4613-8FEE-620245D59A2C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JwtIdentity.Common", "JwtIdentity.Common\JwtIdentity.Common\JwtIdentity.Common.csproj", "{422D191F-A57F-426C-BBE8-B3727D4A21B1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JwtIdentity.Common", "JwtIdentity.Common\JwtIdentity.Common.csproj", "{DD51D32B-D139-1B4E-A299-493B2693A4F6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -43,18 +43,18 @@ Global
 		{397C2652-7063-4613-8FEE-620245D59A2C}.Release|x64.Build.0 = Release|Any CPU
 		{397C2652-7063-4613-8FEE-620245D59A2C}.Release|x86.ActiveCfg = Release|Any CPU
 		{397C2652-7063-4613-8FEE-620245D59A2C}.Release|x86.Build.0 = Release|Any CPU
-		{422D191F-A57F-426C-BBE8-B3727D4A21B1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{422D191F-A57F-426C-BBE8-B3727D4A21B1}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{422D191F-A57F-426C-BBE8-B3727D4A21B1}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{422D191F-A57F-426C-BBE8-B3727D4A21B1}.Debug|x64.Build.0 = Debug|Any CPU
-		{422D191F-A57F-426C-BBE8-B3727D4A21B1}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{422D191F-A57F-426C-BBE8-B3727D4A21B1}.Debug|x86.Build.0 = Debug|Any CPU
-		{422D191F-A57F-426C-BBE8-B3727D4A21B1}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{422D191F-A57F-426C-BBE8-B3727D4A21B1}.Release|Any CPU.Build.0 = Release|Any CPU
-		{422D191F-A57F-426C-BBE8-B3727D4A21B1}.Release|x64.ActiveCfg = Release|Any CPU
-		{422D191F-A57F-426C-BBE8-B3727D4A21B1}.Release|x64.Build.0 = Release|Any CPU
-		{422D191F-A57F-426C-BBE8-B3727D4A21B1}.Release|x86.ActiveCfg = Release|Any CPU
-		{422D191F-A57F-426C-BBE8-B3727D4A21B1}.Release|x86.Build.0 = Release|Any CPU
+		{DD51D32B-D139-1B4E-A299-493B2693A4F6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DD51D32B-D139-1B4E-A299-493B2693A4F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DD51D32B-D139-1B4E-A299-493B2693A4F6}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{DD51D32B-D139-1B4E-A299-493B2693A4F6}.Debug|x64.Build.0 = Debug|Any CPU
+		{DD51D32B-D139-1B4E-A299-493B2693A4F6}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{DD51D32B-D139-1B4E-A299-493B2693A4F6}.Debug|x86.Build.0 = Debug|Any CPU
+		{DD51D32B-D139-1B4E-A299-493B2693A4F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DD51D32B-D139-1B4E-A299-493B2693A4F6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DD51D32B-D139-1B4E-A299-493B2693A4F6}.Release|x64.ActiveCfg = Release|Any CPU
+		{DD51D32B-D139-1B4E-A299-493B2693A4F6}.Release|x64.Build.0 = Release|Any CPU
+		{DD51D32B-D139-1B4E-A299-493B2693A4F6}.Release|x86.ActiveCfg = Release|Any CPU
+		{DD51D32B-D139-1B4E-A299-493B2693A4F6}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
