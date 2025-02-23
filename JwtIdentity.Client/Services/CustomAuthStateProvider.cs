@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Authorization;
-using System.IdentityModel.Tokens.Jwt;
+﻿using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
 using System.Security.Claims;
 
@@ -15,7 +13,7 @@ namespace JwtIdentity.Client.Services
 
         private readonly NavigationManager _navigationManager;
         public ApplicationUserViewModel? CurrentUser { get; set; }
-        
+
         public event Action? OnLoggedOut;
 
         public CustomAuthStateProvider(Blazored.LocalStorage.ILocalStorageService localStorage, HttpClient httpClient, IApiService apiService, NavigationManager navigationManager)
@@ -88,7 +86,7 @@ namespace JwtIdentity.Client.Services
 
             CurrentUser = null;
 
-            _ = await _apiService.PostAsync<object>($"{ApiEndpoints.Auth}/logout", null);            
+            _ = await _apiService.PostAsync<object>($"{ApiEndpoints.Auth}/logout", null);
 
             this.NotifyAuthenticationStateChanged(authState);
 

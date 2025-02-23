@@ -1,11 +1,6 @@
 using Blazored.LocalStorage;
-using JwtIdentity.Client.Services;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor.Services;
-using Microsoft.Extensions.Http;
-using MudBlazor;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
@@ -14,7 +9,9 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.
 builder.Services.AddScoped<IApiService, ApiService>(sp =>
 {
     var httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
-    return new ApiService(httpClientFactory);
+    var navigationManager = sp.GetRequiredService<NavigationManager>();
+    var snackbar = sp.GetRequiredService<ISnackbar>();
+    return new ApiService(httpClientFactory, navigationManager, snackbar);
 });
 
 builder.Services.AddBlazoredLocalStorage();
