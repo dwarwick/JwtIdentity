@@ -6,7 +6,7 @@ namespace JwtIdentity.Common.ViewModels
     [JsonDerivedType(typeof(TextQuestionViewModel), (int)QuestionType.Text)]
     [JsonDerivedType(typeof(TrueFalseQuestionViewModel), (int)QuestionType.TrueFalse)]
     [JsonDerivedType(typeof(MultipleChoiceQuestionViewModel), (int)QuestionType.MultipleChoice)]
-    public abstract class QuestionViewModel
+    public abstract class QuestionViewModel : BaseViewModel
     {
         public int Id { get; set; }
         public int SurveyId { get; set; }

@@ -5,19 +5,11 @@
         [Parameter]
         public int SurveyId { get; set; }
 
-        protected SurveyViewModel Survey = new();
+        protected SurveyViewModel Survey { get; set; } = new();
 
-        protected QuestionsViewModel Questions = new();
+        protected MultipleChoiceQuestionViewModel MultipleChoiceQuestion { get; set; } = new MultipleChoiceQuestionViewModel();
 
-        protected TextQuestionViewModel TextQuestion = new TextQuestionViewModel();
-
-        protected TrueFalseQuestionViewModel TrueFalseQuestion = new TrueFalseQuestionViewModel();
-
-        protected MultipleChoiceQuestionViewModel MultipleChoiceQuestion = new MultipleChoiceQuestionViewModel();
-
-        protected string[] QuestionTypes = Enum.GetNames(typeof(QuestionType));
-
-        protected string[] AnswerTypes = Enum.GetNames(typeof(AnswerType));
+        protected static string[] QuestionTypes => Enum.GetNames(typeof(QuestionType));
 
         protected string SelectedQuestionType { get; set; } = Enum.GetName(typeof(QuestionType), QuestionType.Text) ?? "Text";
 
@@ -32,6 +24,13 @@
         {
             // get the survey based on the SurveyId
             await LoadData();
+
+            if (await AuthService.GetUserId() != Survey.CreatedById)
+            {
+                Navigation.NavigateTo("/");
+
+                _ = Snackbar.Add("You are not authorized to edit this survey.", MudBlazor.Severity.Error);
+            }
         }
 
         private async Task LoadData()

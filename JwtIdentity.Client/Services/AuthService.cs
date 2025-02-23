@@ -1,7 +1,7 @@
 ﻿
 using Blazored.LocalStorage;
-using Microsoft.AspNetCore.Components.Authorization;
 using System.Net.Http.Headers;
+using System.Security.Claims;
 using System.Text.Json;
 
 namespace JwtIdentity.Client.Services
@@ -71,6 +71,24 @@ namespace JwtIdentity.Client.Services
             ((CustomAuthStateProvider)_customAuthStateProvider).CurrentUser = null;
 
             _ = await _apiService.PostAsync<object>("api/auth/logout", null); // Call backend logout
+        }
+
+
+
+        public async Task<int> GetUserId()
+        {
+            // get user id from the authentication state
+            var authState = await ((CustomAuthStateProvider)this._customAuthStateProvider).GetAuthenticationStateAsync();
+
+            if (authState.User.Identity?.IsAuthenticated != true)
+            {
+                return 0;
+            }
+
+            var user = authState.User;
+            int UserId = int.Parse(user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value);
+
+            return UserId;
         }
     }
 }

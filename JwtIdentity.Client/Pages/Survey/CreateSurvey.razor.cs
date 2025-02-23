@@ -8,6 +8,8 @@
 
         protected async Task CreateSurvey()
         {
+            Survey.Guid = Guid.NewGuid().ToString();
+
             var response = await ApiService.PostAsync(ApiEndpoints.Survey, Survey);
             if (response != null && response.Id > 0)
             {

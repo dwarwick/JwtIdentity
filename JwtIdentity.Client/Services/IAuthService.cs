@@ -5,5 +5,7 @@
         Task<Response<ApplicationUserViewModel>> Login(ApplicationUserViewModel model);
 
         Task Logout();
+
+        Task<int> GetUserId();
     }
 }
