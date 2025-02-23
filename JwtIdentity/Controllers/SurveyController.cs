@@ -26,10 +26,10 @@ namespace JwtIdentity.Controllers
         }
 
         // GET: api/Survey/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<SurveyViewModel>> GetSurvey(int id)
+        [HttpGet("{guid}")]
+        public async Task<ActionResult<SurveyViewModel>> GetSurvey(string guid)
         {
-            var survey = await _context.Surveys.Include(s => s.Questions).FirstOrDefaultAsync(s => s.Id == id);
+            var survey = await _context.Surveys.Include(s => s.Questions).FirstOrDefaultAsync(s => s.Guid == guid);
 
             if (survey == null)
             {
