@@ -111,6 +111,10 @@ builder.Services.AddAuthorizationCore(options =>
 builder.Services.AddControllers(options =>
 {
     _ = options.Filters.Add<DatabaseLoggingFilter>();
+}).AddJsonOptions(opts =>
+{
+    opts.JsonSerializerOptions.Converters.Add(new AnswerViewModelConverter());
+    opts.JsonSerializerOptions.Converters.Add(new QuestionViewModelConverter());
 });
 
 // add an AllowAll Cors policy

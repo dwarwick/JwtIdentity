@@ -6,11 +6,13 @@ namespace JwtIdentity.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
+        private readonly IApiAuthService apiAuthService;
 
-        public AnswerController(ApplicationDbContext context, IMapper mapper)
+        public AnswerController(ApplicationDbContext context, IMapper mapper, IApiAuthService apiAuthService)
         {
             _context = context;
             _mapper = mapper;
+            this.apiAuthService = apiAuthService;
         }
 
         // GET: api/Answer
@@ -33,6 +35,30 @@ namespace JwtIdentity.Controllers
             }
 
             return Ok(_mapper.Map<AnswerViewModel>(answer));
+        }
+
+        [HttpGet("getanswersforsurvey/{guid}")]
+        public async Task<ActionResult<AnswerViewModel>> GetAnswersForSurvey(string guid)
+        {
+            int userId = apiAuthService.GetUserId(User);
+            var survey = await _context.Surveys
+                .Where(s => s.Guid == guid)
+                .Include(s => s.Questions).ThenInclude(q => q.Answers.Where(a => a.CreatedById == userId)).FirstOrDefaultAsync();
+
+            // Pull out the IDs of any multiple-choice questions in memory
+            var mcIds = survey.Questions
+                .OfType<MultipleChoiceQuestion>()
+                .Select(mc => mc.Id)
+                .ToList();
+
+            // Now load each one’s Options
+            await _context.Questions
+                .OfType<MultipleChoiceQuestion>()
+                .Where(mc => mcIds.Contains(mc.Id))
+                .Include(mc => mc.Options)
+                .LoadAsync();
+
+            return Ok(_mapper.Map<SurveyViewModel>(survey));
         }
 
         // POST: api/Answer
