@@ -35,6 +35,16 @@
 
                 <MudTextField T="string" Value="answer.Text" ValueChanged="@((t) => HandleAnswerQuestion(answer, t))" Label="Enter Answer Text" />
             }
+            else if (question.QuestionType == QuestionType.TrueFalse)
+            {
+                TrueFalseAnswerViewModel answer = question.Answers.FirstOrDefault() as TrueFalseAnswerViewModel;
+                <MudRadioGroup T="bool" Value="answer.Value" ValueChanged="@((v) => HandleAnswerQuestion(answer, v))">
+                    <MudStack Spacing="0" Row="true">
+                        <MudRadio Label="True" Value="true" />
+                        <MudRadio Label="False" Value="false" />
+                    </MudStack>
+                </MudRadioGroup>
+            }
         }        
     }
 }

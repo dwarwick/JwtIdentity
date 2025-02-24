@@ -57,6 +57,17 @@ namespace JwtIdentity.Client.Pages.Survey
 
                             question.Answers.Add(answer);
                         }
+
+                        else if (question.QuestionType == QuestionType.TrueFalse)
+                        {
+                            TrueFalseAnswerViewModel answer = new()
+                            {
+                                AnswerType = AnswerType.TrueFalse,
+                                QuestionId = question.Id
+                            };
+
+                            question.Answers.Add(answer);
+                        }
                     }
                 }
             }
@@ -71,6 +82,10 @@ namespace JwtIdentity.Client.Pages.Survey
             else if (answer is TextAnswerViewModel textAnswerViewModel)
             {
                 textAnswerViewModel.Text = selectedAnswer.ToString();
+            }
+            else if (answer is TrueFalseAnswerViewModel trueFalseAnswerViewModel)
+            {
+                trueFalseAnswerViewModel.Value = (bool)selectedAnswer;
             }
 
             var response = await ApiService.PostAsync(ApiEndpoints.Answer, answer);
