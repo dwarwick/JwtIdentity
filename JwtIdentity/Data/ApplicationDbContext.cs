@@ -1,4 +1,6 @@
 ﻿
+using System.Security.Claims;
+
 namespace JwtIdentity.Data
 {
     public class ApplicationDbContext
@@ -13,9 +15,12 @@ namespace JwtIdentity.Data
         IdentityUserToken<int>          // TUserToken
     >
     {
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+        private readonly IHttpContextAccessor httpContextAccessor;
+
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, IHttpContextAccessor httpContextAccessor)
         : base(options)
         {
+            this.httpContextAccessor = httpContextAccessor;
         }
 
         public DbSet<ApplicationUser> ApplicationUsers { get; set; }
@@ -28,7 +33,6 @@ namespace JwtIdentity.Data
         public DbSet<Question> Questions { get; set; }
         public DbSet<Answer> Answers { get; set; }
         public DbSet<ChoiceOption> ChoiceOptions { get; set; }
-
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -135,6 +139,17 @@ namespace JwtIdentity.Data
                 if (entityEntry.State == EntityState.Added)
                 {
                     ((BaseModel)entityEntry.Entity).CreatedDate = createdDate;
+
+                    if (((BaseModel)entityEntry.Entity).CreatedById == 0)
+                    {
+                        ClaimsPrincipal user = httpContextAccessor.HttpContext.User;
+
+                        var nameIdentifierClaim = user.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier && int.TryParse(x.Value, out _));
+                        if (nameIdentifierClaim != null && int.TryParse(nameIdentifierClaim.Value, out int userId))
+                        {
+                            ((BaseModel)entityEntry.Entity).CreatedById = userId;
+                        }
+                    }
                 }
             }
 

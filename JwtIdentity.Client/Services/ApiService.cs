@@ -16,7 +16,8 @@ namespace JwtIdentity.Client.Services
             _options = new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true,
-                ReferenceHandler = ReferenceHandler.IgnoreCycles // Add this line
+                ReferenceHandler = ReferenceHandler.IgnoreCycles, // Add this line                                                                  ,
+                Converters = { new AnswerViewModelConverter(), new QuestionViewModelConverter() }
             };
             _httpClient = httpClientFactory.CreateClient("AuthorizedClient");
             this.navigationManager = navigationManager;
@@ -27,21 +28,21 @@ namespace JwtIdentity.Client.Services
         {
             var response = await _httpClient.GetAsync($"{endpoint}");
             _ = EnsureSuccess(response);
-            return await response.Content.ReadFromJsonAsync<T>();
+            return await response.Content.ReadFromJsonAsync<T>(_options);
         }
 
         public async Task<IEnumerable<T>> GetAllAsync<T>(string endpoint)
         {
             var response = await _httpClient.GetAsync($"{endpoint}");
             _ = EnsureSuccess(response);
-            return await response.Content.ReadFromJsonAsync<IEnumerable<T>>();
+            return await response.Content.ReadFromJsonAsync<IEnumerable<T>>(_options);
         }
 
         public async Task<T> UpdateAsync<T>(string endpoint, T viewModel)
         {
             var response = await _httpClient.PutAsJsonAsync($"{endpoint}", viewModel);
             _ = EnsureSuccess(response);
-            return await response.Content.ReadFromJsonAsync<T>();
+            return await response.Content.ReadFromJsonAsync<T>(_options);
         }
 
         public async Task<bool> DeleteAsync(string endpoint)
@@ -53,9 +54,9 @@ namespace JwtIdentity.Client.Services
 
         public async Task<T> PostAsync<T>(string endpoint, T viewModel)
         {
-            var response = await _httpClient.PostAsJsonAsync($"{endpoint}", viewModel);
+            var response = await _httpClient.PostAsJsonAsync($"{endpoint}", viewModel, _options);
             _ = EnsureSuccess(response);
-            return await response.Content.ReadFromJsonAsync<T>();
+            return await response.Content.ReadFromJsonAsync<T>(_options);
         }
 
         private HttpResponseMessage EnsureSuccess(HttpResponseMessage response)

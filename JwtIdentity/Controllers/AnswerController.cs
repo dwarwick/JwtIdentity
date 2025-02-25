@@ -6,11 +6,13 @@ namespace JwtIdentity.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
+        private readonly IApiAuthService apiAuthService;
 
-        public AnswerController(ApplicationDbContext context, IMapper mapper)
+        public AnswerController(ApplicationDbContext context, IMapper mapper, IApiAuthService apiAuthService)
         {
             _context = context;
             _mapper = mapper;
+            this.apiAuthService = apiAuthService;
         }
 
         // GET: api/Answer
@@ -35,12 +37,68 @@ namespace JwtIdentity.Controllers
             return Ok(_mapper.Map<AnswerViewModel>(answer));
         }
 
+        [HttpGet("getanswersforsurvey/{guid}")]
+        public async Task<ActionResult<AnswerViewModel>> GetAnswersForSurvey(string guid)
+        {
+            int userId = apiAuthService.GetUserId(User);
+            var survey = await _context.Surveys
+                .Where(s => s.Guid == guid)
+                .Include(s => s.Questions).ThenInclude(q => q.Answers.Where(a => a.CreatedById == userId)).FirstOrDefaultAsync();
+
+            // Pull out the IDs of any multiple-choice questions in memory
+            var mcIds = survey.Questions
+                .OfType<MultipleChoiceQuestion>()
+                .Select(mc => mc.Id)
+                .ToList();
+
+            // Now load each one’s Options
+            await _context.Questions
+                .OfType<MultipleChoiceQuestion>()
+                .Where(mc => mcIds.Contains(mc.Id))
+                .Include(mc => mc.Options)
+                .LoadAsync();
+
+            return Ok(_mapper.Map<SurveyViewModel>(survey));
+        }
+
         // POST: api/Answer
         [HttpPost]
         public async Task<ActionResult<AnswerViewModel>> PostAnswer(AnswerViewModel answerViewModel)
         {
             var answer = _mapper.Map<Answer>(answerViewModel);
-            _ = _context.Answers.Add(answer);
+
+            if (answer == null) return NotFound();
+
+            if (answer.Id == 0)
+            {
+                _ = _context.Answers.Add(answer);
+            }
+            else
+            {
+                var existingAnswer = await _context.Answers.AsNoTracking().FirstOrDefaultAsync(x => x.Id == answerViewModel.Id);
+
+                answer.CreatedById = answerViewModel.CreatedById;
+
+                switch (answer.AnswerType)
+                {
+                    case AnswerType.Text:
+                        if (((TextAnswer)answer).Text != ((TextAnswer)existingAnswer).Text) _ = _context.Answers.Update(answer);
+                        break;
+                    case AnswerType.TrueFalse:
+                        if (((TrueFalseAnswer)answer).Value != ((TrueFalseAnswer)existingAnswer).Value) _ = _context.Answers.Update(answer);
+                        break;
+                    case AnswerType.SingleChoice:
+                        if (((SingleChoiceAnswer)answer).SelectedOptionId != ((SingleChoiceAnswer)existingAnswer).SelectedOptionId) _ = _context.Answers.Update(answer);
+                        break;
+                    case AnswerType.MultipleChoice:
+                        if (((MultipleChoiceAnswer)answer).SelectedOptionId != ((MultipleChoiceAnswer)existingAnswer).SelectedOptionId) _ = _context.Answers.Update(answer);
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+
             _ = await _context.SaveChangesAsync();
 
             return CreatedAtAction(nameof(GetAnswer), new { id = answer.Id }, _mapper.Map<AnswerViewModel>(answer));

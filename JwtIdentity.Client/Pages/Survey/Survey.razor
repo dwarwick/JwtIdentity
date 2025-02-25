@@ -1,0 +1,50 @@
+﻿@page "/survey/{SurveyId}"
+@namespace JwtIdentity.Client.Pages.Survey
+@inherits SurveyModel
+
+@if (Survey != null && Survey.Id > 0)
+{
+    <MudText Typo="Typo.h4">@Survey.Title</MudText>
+    <MudText Typo="Typo.h6">@Survey.Description</MudText>
+
+    int questionNumber = 1;
+
+    @foreach (var question in Survey.Questions)
+    {
+        <MudText Typo="Typo.body1">@questionNumber. @question.Text</MudText>
+
+        @if (question.Answers.Count > 0)
+        {
+            @if (question.QuestionType == QuestionType.MultipleChoice)
+            {
+                MultipleChoiceAnswerViewModel answer = question.Answers.FirstOrDefault() as MultipleChoiceAnswerViewModel;
+
+                <MudRadioGroup T="int" Value="answer.SelectedOptionId" ValueChanged="@((v) => HandleAnswerQuestion(answer, v))">
+                    <MudStack Spacing="0">
+                        @foreach (var option in ((MultipleChoiceQuestionViewModel)question).Options)
+                        {
+                            <MudRadio Label="@option.OptionText" Value="@option.Id" />
+                        }
+                    </MudStack>
+                </MudRadioGroup>
+            }
+
+            else if (question.QuestionType == QuestionType.Text)
+            {
+                TextAnswerViewModel answer = question.Answers.FirstOrDefault() as TextAnswerViewModel;
+
+                <MudTextField T="string" Value="answer.Text" ValueChanged="@((t) => HandleAnswerQuestion(answer, t))" Label="Enter Answer Text" />
+            }
+            else if (question.QuestionType == QuestionType.TrueFalse)
+            {
+                TrueFalseAnswerViewModel answer = question.Answers.FirstOrDefault() as TrueFalseAnswerViewModel;
+                <MudRadioGroup T="bool" Value="answer.Value" ValueChanged="@((v) => HandleAnswerQuestion(answer, v))">
+                    <MudStack Spacing="0" Row="true">
+                        <MudRadio Label="True" Value="true" />
+                        <MudRadio Label="False" Value="false" />
+                    </MudStack>
+                </MudRadioGroup>
+            }
+        }        
+    }
+}

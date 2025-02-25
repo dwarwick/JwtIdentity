@@ -3,7 +3,7 @@
     public class CreateQuestionsModel : BlazorBase
     {
         [Parameter]
-        public int SurveyId { get; set; }
+        public string SurveyId { get; set; }
 
         protected SurveyViewModel Survey { get; set; } = new();
 

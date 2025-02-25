@@ -14,26 +14,36 @@
             _ = CreateMap<ApplicationRole, ApplicationRoleViewModel>().ReverseMap();
             _ = CreateMap<RoleClaim, RoleClaimViewModel>().ReverseMap();
 
-
-            _ = CreateMap<Answer, AnswerViewModel>().IncludeAllDerived();
-            _ = CreateMap<AnswerViewModel, Answer>().IncludeAllDerived()
-                .ForMember(x => x.CreatedBy, options => options.Ignore());
-
-
-            _ = CreateMap<TextAnswer, TextAnswerViewModel>().ReverseMap();
-            _ = CreateMap<TrueFalseAnswer, TrueFalseAnswerViewModel>().ReverseMap();
-            _ = CreateMap<MultipleChoiceAnswer, MultipleChoiceAnswerViewModel>().ReverseMap();
-            _ = CreateMap<SingleChoiceAnswer, SingleChoiceAnswerViewModel>().ReverseMap();
-
-            _ = CreateMap<ChoiceOption, ChoiceOptionViewModel>().ReverseMap();
-
             _ = CreateMap<Question, QuestionViewModel>().IncludeAllDerived();
+            _ = CreateMap<Answer, AnswerViewModel>().IncludeAllDerived();
+
+
             _ = CreateMap<QuestionViewModel, Question>().IncludeAllDerived()
                 .ForMember(x => x.CreatedBy, options => options.Ignore())
                 .ForMember(x => x.CreatedById, options => options.Ignore());
 
+            _ = CreateMap<AnswerViewModel, Answer>().IncludeAllDerived()
+                .ForMember(x => x.CreatedBy, options => options.Ignore())
+                .ForMember(x => x.CreatedById, options => options.Ignore());
+
+
+            _ = CreateMap<TextAnswer, TextAnswerViewModel>().ReverseMap();
+            _ = CreateMap<TrueFalseAnswer, TrueFalseAnswerViewModel>().ReverseMap();
+            _ = CreateMap<MultipleChoiceAnswer, MultipleChoiceAnswerViewModel>();
+            _ = CreateMap<MultipleChoiceAnswerViewModel, MultipleChoiceAnswer>()
+                .ForMember(x => x.CreatedBy, options => options.Ignore())
+                .ForMember(x => x.CreatedById, options => options.Ignore());
+
+            _ = CreateMap<SingleChoiceAnswer, SingleChoiceAnswerViewModel>().ReverseMap();
+
+            _ = CreateMap<ChoiceOption, ChoiceOptionViewModel>().ReverseMap();
+
+
+
+
             _ = CreateMap<TextQuestion, TextQuestionViewModel>().ReverseMap();
             _ = CreateMap<TrueFalseQuestion, TrueFalseQuestionViewModel>().ReverseMap();
+
             _ = CreateMap<MultipleChoiceQuestion, MultipleChoiceQuestionViewModel>();
             _ = CreateMap<MultipleChoiceQuestionViewModel, MultipleChoiceQuestion>()
                 .ForMember(x => x.CreatedBy, options => options.Ignore())
