@@ -66,7 +66,39 @@ namespace JwtIdentity.Controllers
         public async Task<ActionResult<AnswerViewModel>> PostAnswer(AnswerViewModel answerViewModel)
         {
             var answer = _mapper.Map<Answer>(answerViewModel);
-            _ = _context.Answers.Add(answer);
+
+            if (answer == null) return NotFound();
+
+            if (answer.Id == 0)
+            {
+                _ = _context.Answers.Add(answer);
+            }
+            else
+            {
+                var existingAnswer = await _context.Answers.AsNoTracking().FirstOrDefaultAsync(x => x.Id == answerViewModel.Id);
+
+                answer.CreatedById = answerViewModel.CreatedById;
+
+                switch (answer.AnswerType)
+                {
+                    case AnswerType.Text:
+                        if (((TextAnswer)answer).Text != ((TextAnswer)existingAnswer).Text) _ = _context.Answers.Update(answer);
+                        break;
+                    case AnswerType.TrueFalse:
+                        if (((TrueFalseAnswer)answer).Value != ((TrueFalseAnswer)existingAnswer).Value) _ = _context.Answers.Update(answer);
+                        break;
+                    case AnswerType.SingleChoice:
+                        if (((SingleChoiceAnswer)answer).SelectedOptionId != ((SingleChoiceAnswer)existingAnswer).SelectedOptionId) _ = _context.Answers.Update(answer);
+                        break;
+                    case AnswerType.MultipleChoice:
+                        if (((MultipleChoiceAnswer)answer).SelectedOptionId != ((MultipleChoiceAnswer)existingAnswer).SelectedOptionId) _ = _context.Answers.Update(answer);
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+
             _ = await _context.SaveChangesAsync();
 
             return CreatedAtAction(nameof(GetAnswer), new { id = answer.Id }, _mapper.Map<AnswerViewModel>(answer));
