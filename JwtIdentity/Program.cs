@@ -6,6 +6,10 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.AddDebug();
+
 // Add environment-based appsettings.json files
 builder.Configuration
     .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
