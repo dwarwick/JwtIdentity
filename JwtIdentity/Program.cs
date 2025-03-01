@@ -8,7 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add environment-based appsettings.json files
 builder.Configuration
-    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
     .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true);
 
 // Bind "AppSettings" section to the AppSettings class
