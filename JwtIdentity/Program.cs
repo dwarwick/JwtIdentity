@@ -2,13 +2,27 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models; // Add this using statement
+using Serilog;
+using Serilog.Sinks.RollingFileAlternate;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Configure Serilog
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .WriteTo.Console()
+    .WriteTo.Debug()
+
+// Replace the line with the error
+.WriteTo.RollingFileAlternate("logs/log-{Date}.txt", fileSizeLimitBytes: null, retainedFileCountLimit: 30)
+    .CreateLogger();
+
+builder.Host.UseSerilog();
+
+// Configure logging
 builder.Logging.ClearProviders();
-builder.Logging.AddConsole();
-builder.Logging.AddDebug();
+builder.Logging.AddSerilog();
 
 // Add environment-based appsettings.json files
 builder.Configuration
