@@ -32,6 +32,8 @@ namespace JwtIdentity.Client.Pages.Survey
         {
             string url = $"{NavigationManager.BaseUri}survey/{guid}";
             await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", url);
+
+            _ = Snackbar.Add("Survey link copied to clipboard", Severity.Success);
         }
     }
 }

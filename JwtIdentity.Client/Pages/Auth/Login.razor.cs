@@ -2,6 +2,9 @@
 {
     public class LoginModel : BlazorBase
     {
+        [SupplyParameterFromQuery]
+        public string returnUrl { get; set; }
+
         protected ApplicationUserViewModel applicationUserViewModel { get; set; } = new();
 
         protected Dictionary<string, object> InputAttributes { get; set; } =
@@ -19,7 +22,7 @@
             }
             else
             {
-                NavigationManager.NavigateTo("/");
+                NavigationManager.NavigateTo(returnUrl ?? "/");
             }
         }
     }

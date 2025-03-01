@@ -3,7 +3,7 @@
     public class RedirectToLoginModel : BlazorBase
     {
         [Parameter]
-        public string? ReturnUrl { get; set; }
+        public string ReturnUrl { get; set; }
         protected override void OnInitialized()
         {
             if (ReturnUrl != null)
