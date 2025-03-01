@@ -6,3 +6,4 @@ global using JwtIdentity.Common.ViewModels;
 global using Microsoft.AspNetCore.Components;
 global using Microsoft.AspNetCore.Components.Authorization;
 global using MudBlazor;
+global using Syncfusion.Blazor;

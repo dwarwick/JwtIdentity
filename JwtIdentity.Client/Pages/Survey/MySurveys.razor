@@ -1,0 +1,32 @@
+﻿@page "/survey/mysurveys"
+@namespace JwtIdentity.Client.Pages.Survey
+@inherits MySurveysModel
+@attribute [Authorize(Policy = Permissions.CreateSurvey)]
+<h3>My Surveys</h3>
+
+
+@* <MudDataGrid Items="@UserSurveys" Filterable="true" FilterMode="DataGridFilterMode.ColumnFilterRow" FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive">
+    <Columns>
+        <PropertyColumn Property="x => x.Title" Title="Title" />
+        <PropertyColumn Property="x => x.Description" Title="Description" />
+        <PropertyColumn Property="x => x.CreatedDate"
+                        
+                        Title="Created Date"
+                        Filterable="true">
+            
+        </PropertyColumn>        
+    </Columns>
+    <PagerContent>
+        <MudDataGridPager T="SurveyViewModel" />
+    </PagerContent>
+</MudDataGrid> *@
+
+<SfGrid DataSource="@UserSurveys" AllowPaging="true" AllowSorting="true" AllowFiltering="true">
+    <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel"></GridFilterSettings>
+    <GridColumns>
+        <GridColumn Field="Title" HeaderText="Title" Width="120"></GridColumn>
+        <GridColumn Field="Description" HeaderText="Description" Width="120"></GridColumn>
+        <GridColumn Field="CreatedDate" HeaderText="Created Date" Width="120" Type=" ColumnType.Date" Format="d"></GridColumn>
+    </GridColumns>
+</SfGrid>
+

@@ -52,6 +52,20 @@ namespace JwtIdentity.Controllers
             return Ok(_mapper.Map<SurveyViewModel>(survey));
         }
 
+        // GET: api/Survey/MySurveys
+        [HttpGet("MySurveys")]
+        [Authorize(Policy = $"{Permissions.CreateSurvey}")]
+        public async Task<ActionResult<IEnumerable<SurveyViewModel>>> GetMySurveys()
+        {
+            var createdById = authService.GetUserId(User);
+            var surveys = await _context.Surveys
+                .Include(s => s.Questions)
+                .Where(s => s.CreatedById == createdById)
+                .ToListAsync();
+
+            return Ok(_mapper.Map<IEnumerable<SurveyViewModel>>(surveys));
+        }
+
         // POST: api/Survey
         [HttpPost]
         [Authorize(Policy = $"{Permissions.CreateSurvey}")]

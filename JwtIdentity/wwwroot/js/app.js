@@ -17,7 +17,7 @@ export function removeThemes() {
 
     if (elements.length == 0) return;
 
-    for (var i = 0, l = elements.length; i < l; i++) {
+    for (var i = elements.length - 1, l = elements.length; i >= 0; i--) {
         elements[i].remove();
     }
 }
