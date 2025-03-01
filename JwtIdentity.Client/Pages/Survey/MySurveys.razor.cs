@@ -1,4 +1,6 @@
-﻿namespace JwtIdentity.Client.Pages.Survey
+﻿
+
+namespace JwtIdentity.Client.Pages.Survey
 {
     public class MySurveysModel : BlazorBase
     {
@@ -26,6 +28,10 @@
             };
         }
 
-
+        protected async Task CopySurveyLinkAsync(string guid)
+        {
+            string url = $"{NavigationManager.BaseUri}survey/{guid}";
+            await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", url);
+        }
     }
 }
