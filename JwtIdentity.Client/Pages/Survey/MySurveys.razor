@@ -1,0 +1,27 @@
+﻿@page "/survey/mysurveys"
+@namespace JwtIdentity.Client.Pages.Survey
+@inherits MySurveysModel
+@attribute [Authorize(Policy = Permissions.CreateSurvey)]
+<h3>My Surveys</h3>
+
+<SfGrid DataSource="@UserSurveys" AllowPaging="true" AllowSorting="true" AllowFiltering="true">
+    <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel"></GridFilterSettings>
+    <GridColumns>
+        <GridColumn Field="Title" HeaderText="Title" Width="120" />
+        <GridColumn Field="Description" HeaderText="Description" Width="120" />
+        <GridColumn Field="CreatedDate" HeaderText="Created Date" Width="120" Type=" ColumnType.Date" Format="d" />
+        <GridColumn HeaderText="Copy Link to Survey">
+            <Template>
+                @{
+                    var guid = ((context as SurveyViewModel)).Guid;
+
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(async () => await CopySurveyLinkAsync(guid))">Copy</MudButton>
+                }
+                
+               
+                
+            </Template>
+        </GridColumn>
+    </GridColumns>
+</SfGrid>
+
