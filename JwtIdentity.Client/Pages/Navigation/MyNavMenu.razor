@@ -13,6 +13,16 @@
         </AuthorizeView>
         <AuthorizeView Policy="@Permissions.CreateSurvey">
             <Authorized>
+                <MudMenu Label="Surveys" Variant="Variant.Text" EndIcon="@Icons.Material.Filled.KeyboardArrowDown">
+
+                    <MudMenuItem Href="/survey/create">Create Survey</MudMenuItem>
+                    <MudMenuItem Href="/survey/mysurveys">My Surveys</MudMenuItem>
+
+                </MudMenu>
+            </Authorized>
+        </AuthorizeView>
+        <AuthorizeView Policy="@Permissions.CreateSurvey">
+            <Authorized>
                 <MudButton Variant="Variant.Text" Color="Color.Inherit" Class="mx-2" Href="/survey/create">Create Survey</MudButton>
             </Authorized>
         </AuthorizeView>
@@ -53,7 +63,12 @@
         </AuthorizeView>
         <AuthorizeView Policy="@Permissions.CreateSurvey">
             <Authorized>
-                <MudNavLink Href="/survey/create">Create Survey</MudNavLink>
+                <MudMenu Label="Surveys" Variant="Variant.Text" EndIcon="@Icons.Material.Filled.KeyboardArrowDown">
+
+                    <MudMenuItem Href="/survey/create">Create Survey</MudMenuItem>
+                    <MudMenuItem Href="/survey/mysurveys">My Surveys</MudMenuItem>
+
+                </MudMenu>
             </Authorized>
         </AuthorizeView>
         <MudNavLink Href="/contact">Contact</MudNavLink>
