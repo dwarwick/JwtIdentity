@@ -28,4 +28,16 @@
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="7.2.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Exclude the logs folder from the publish output -->
+    <Content Remove="logs\**" />
+    <None Remove="logs\**" />
+  </ItemGroup>
+
+  <Target Name="ExcludeLogsFolder" AfterTargets="CollectFilesToPublish">
+    <ItemGroup>
+      <FileToPublish Remove="@(FileToPublish)" Condition="%(FileToPublish.RelativePath.StartsWith('logs\'))" />
+    </ItemGroup>
+  </Target>
+
 </Project>
