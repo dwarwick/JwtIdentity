@@ -4,23 +4,6 @@
 @attribute [Authorize(Policy = Permissions.CreateSurvey)]
 <h3>My Surveys</h3>
 
-
-@* <MudDataGrid Items="@UserSurveys" Filterable="true" FilterMode="DataGridFilterMode.ColumnFilterRow" FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive">
-    <Columns>
-        <PropertyColumn Property="x => x.Title" Title="Title" />
-        <PropertyColumn Property="x => x.Description" Title="Description" />
-        <PropertyColumn Property="x => x.CreatedDate"
-                        
-                        Title="Created Date"
-                        Filterable="true">
-            
-        </PropertyColumn>        
-    </Columns>
-    <PagerContent>
-        <MudDataGridPager T="SurveyViewModel" />
-    </PagerContent>
-</MudDataGrid> *@
-
 <SfGrid DataSource="@UserSurveys" AllowPaging="true" AllowSorting="true" AllowFiltering="true">
     <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel"></GridFilterSettings>
     <GridColumns>
