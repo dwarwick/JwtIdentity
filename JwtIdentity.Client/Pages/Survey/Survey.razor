@@ -7,10 +7,9 @@
     <MudText Typo="Typo.h4">@Survey.Title</MudText>
     <MudText Typo="Typo.h6">@Survey.Description</MudText>
 
-    int questionNumber = 1;
-
     @foreach (var question in Survey.Questions)
     {
+        int questionNumber = Survey.Questions.OrderBy(x => x.QuestionNumber).ToList().FindIndex(x => x.Id == question.Id) + 1;
         <MudText Typo="Typo.body1">@questionNumber. @question.Text</MudText>
 
         @if (question.Answers.Count > 0)
@@ -47,7 +46,5 @@
                 </MudRadioGroup>
             }
         }
-
-        questionNumber++;
     }
 }
