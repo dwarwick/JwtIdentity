@@ -49,21 +49,6 @@
         }
     </MudStack>
 
-    @*   @{
-            int i = 0;
-            if (Survey?.Questions != null && Survey.Questions.Count > 0)
-            {
-                <div style="overflow:auto;height: 65vh;">
-                    <MudList T="string" ReadOnly="true" Dense="true">
-                        @foreach (var question in Survey.Questions)
-                        {
-                            i++;
-                            <MudListItem Text="@($"{@i}. {@question.Text}")" />
-                        }
-                    </MudList>
-                </div>
-            }
-        }*@
     @if (Survey?.Questions != null && Survey.Questions.Count > 0)
     {
         <MudPaper Class="p-2 flex-1">
