@@ -12,6 +12,7 @@ namespace JwtIdentity.Common.ViewModels
         public int Id { get; set; }
         public int SurveyId { get; set; }
         public string Text { get; set; }
+        public int QuestionNumber { get; set; }
         [JsonPropertyName("questionType")]
         public QuestionType QuestionType { get; set; }
         public List<AnswerViewModel> Answers { get; set; }

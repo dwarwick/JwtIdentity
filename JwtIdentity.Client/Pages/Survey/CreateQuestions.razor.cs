@@ -1,4 +1,6 @@
-﻿namespace JwtIdentity.Client.Pages.Survey
+﻿using MudBlazor.Utilities;
+
+namespace JwtIdentity.Client.Pages.Survey
 {
     public class CreateQuestionsModel : BlazorBase
     {
@@ -9,6 +11,7 @@
 
         protected MultipleChoiceQuestionViewModel MultipleChoiceQuestion { get; set; } = new MultipleChoiceQuestionViewModel();
 
+        protected MudDropContainer<QuestionViewModel> _container { get; set; }
         protected static string[] QuestionTypes => Enum.GetNames(typeof(QuestionType));
 
         protected string SelectedQuestionType { get; set; } = Enum.GetName(typeof(QuestionType), QuestionType.Text) ?? "Text";
@@ -37,6 +40,8 @@
         {
             // get the survey based on the SurveyId
             Survey = await ApiService.GetAsync<SurveyViewModel>($"{ApiEndpoints.Survey}/{SurveyId}");
+
+            RefreshContainer();
         }
 
         protected void AddChoiceOption()
@@ -77,6 +82,28 @@
             {
                 _ = Snackbar.Add("Question Not Added", MudBlazor.Severity.Error);
             }
+        }
+
+        protected async Task ItemUpdated(MudItemDropInfo<QuestionViewModel> dropItem)
+        {
+            //var indexOffset = dropItem.DropzoneIdentifier switch
+            //{
+            //    "2" => Survey.Questions.Count(x => x.Selector == "1"),
+            //    _ => 0
+            //};
+
+            Survey.Questions.UpdateOrder(dropItem, item => item.QuestionNumber, dropItem.IndexInZone);
+
+            _ = await ApiService.UpdateAsync($"{ApiEndpoints.Question}/UpdateQuestionNumbers", Survey.Questions);
+        }
+
+        protected void RefreshContainer()
+        {
+            //update the binding to the container
+            StateHasChanged();
+
+            //the container refreshes the internal state
+            _container.Refresh();
         }
     }
 }

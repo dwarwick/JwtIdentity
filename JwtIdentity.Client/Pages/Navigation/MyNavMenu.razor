@@ -20,13 +20,7 @@
 
                 </MudMenu>
             </Authorized>
-        </AuthorizeView>
-        <AuthorizeView Policy="@Permissions.CreateSurvey">
-            <Authorized>
-                <MudButton Variant="Variant.Text" Color="Color.Inherit" Class="mx-2" Href="/survey/create">Create Survey</MudButton>
-            </Authorized>
-        </AuthorizeView>
-        <MudButton Variant="Variant.Text" Color="Color.Inherit" Class="mx-2">Contact</MudButton>
+        </AuthorizeView>        
         <MudSwitch Value="@DarkTheme" Label="Dark Theme" ValueChanged="DarkThemeChanged" />
         <div class="mx-1">
             <AuthorizeView>
@@ -70,7 +64,6 @@
 
                 </MudMenu>
             </Authorized>
-        </AuthorizeView>
-        <MudNavLink Href="/contact">Contact</MudNavLink>
+        </AuthorizeView>       
     </MudNavMenu>
 </MudDrawer>

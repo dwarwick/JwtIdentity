@@ -9,6 +9,7 @@ namespace JwtIdentity.Models
         [ForeignKey("Survey")]
         public int SurveyId { get; set; }
         public string Text { get; set; }
+        public int QuestionNumber { get; set; }
         // Could store an enum or string describing the question type
         public QuestionType QuestionType { get; set; } // E.g. Text, TrueFalse, MultipleChoice
         public List<Answer> Answers { get; set; }

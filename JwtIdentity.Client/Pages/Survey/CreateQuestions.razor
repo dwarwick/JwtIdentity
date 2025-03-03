@@ -48,9 +48,8 @@
             </MudPaper>
         }
     </MudStack>
-    <MudPaper Class="p-2 flex-1">
-        <MudText Typo="Typo.h4">Survey Questions</MudText>
-        @{
+
+    @*   @{
             int i = 0;
             if (Survey?.Questions != null && Survey.Questions.Count > 0)
             {
@@ -64,6 +63,31 @@
                     </MudList>
                 </div>
             }
-        }
-    </MudPaper>
+        }*@
+    @if (Survey?.Questions != null && Survey.Questions.Count > 0)
+    {
+        <MudPaper Class="p-2 flex-1">
+            <MudText Typo="Typo.h4">Survey Questions</MudText>
+            <MudDropContainer T="QuestionViewModel" Items="@Survey.Questions" @ref="_container" ItemsSelector="@((item,dropzone) => item.QuestionNumber >= 0)" ItemDropped="ItemUpdated" Class="d-flex flex-wrap flex-grow-1">
+                <ChildContent>
+
+                    <MudPaper Class="ma-4 flex-grow-1">
+                        <MudList T="string" Class="d-flex flex-column mud-height-full">
+                            <MudListSubheader>Reorder Questions</MudListSubheader>
+                            <MudDropZone T="QuestionViewModel" Class="flex-grow-1" AllowReorder="true" />
+                        </MudList>
+                    </MudPaper>
+
+                </ChildContent>
+                <ItemRenderer>
+                    @{
+                        int questionNumber = Survey.Questions.OrderBy(x => x.QuestionNumber).ToList().FindIndex(x => x.Id == context.Id) + 1;
+                    }
+                    <MudListItem T="QuestionViewModel" Text="@($"{questionNumber}. {context.Text}")" />
+                </ItemRenderer>
+            </MudDropContainer>
+
+        </MudPaper>
+    }
+
 </div>

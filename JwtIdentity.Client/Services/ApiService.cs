@@ -42,7 +42,13 @@ namespace JwtIdentity.Client.Services
         {
             var response = await _httpClient.PutAsJsonAsync($"{endpoint}", viewModel);
             _ = EnsureSuccess(response);
-            return await response.Content.ReadFromJsonAsync<T>(_options);
+
+            if (response.StatusCode != System.Net.HttpStatusCode.NoContent)
+            {
+                return await response.Content.ReadFromJsonAsync<T>(_options);
+            }
+
+            return default;
         }
 
         public async Task<bool> DeleteAsync(string endpoint)

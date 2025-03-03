@@ -19,7 +19,7 @@
             {
                 MultipleChoiceAnswerViewModel answer = question.Answers.FirstOrDefault() as MultipleChoiceAnswerViewModel;
 
-                <MudRadioGroup T="int" Value="answer.SelectedOptionId" ValueChanged="@((v) => HandleAnswerQuestion(answer, v))">
+                <MudRadioGroup @key="question" T="int" Value="answer.SelectedOptionId" ValueChanged="@((v) => HandleAnswerQuestion(answer, v))">
                     <MudStack Spacing="0">
                         @foreach (var option in ((MultipleChoiceQuestionViewModel)question).Options)
                         {
@@ -33,18 +33,21 @@
             {
                 TextAnswerViewModel answer = question.Answers.FirstOrDefault() as TextAnswerViewModel;
 
-                <MudTextField T="string" Value="answer.Text" ValueChanged="@((t) => HandleAnswerQuestion(answer, t))" Label="Enter Answer Text" />
+                <MudTextField @key="question" T="string" Value="answer.Text" ValueChanged="@((t) => HandleAnswerQuestion(answer, t))" Label="Enter Answer Text" />
             }
             else if (question.QuestionType == QuestionType.TrueFalse)
             {
                 TrueFalseAnswerViewModel answer = question.Answers.FirstOrDefault() as TrueFalseAnswerViewModel;
-                <MudRadioGroup T="bool" Value="answer.Value" ValueChanged="@((v) => HandleAnswerQuestion(answer, v))">
+
+                <MudRadioGroup @key="question" T="bool" Value="answer.Value" ValueChanged="@((v) => HandleAnswerQuestion(answer, v))">
                     <MudStack Spacing="0" Row="true">
                         <MudRadio Label="True" Value="true" />
                         <MudRadio Label="False" Value="false" />
                     </MudStack>
                 </MudRadioGroup>
             }
-        }        
+        }
+
+        questionNumber++;
     }
 }

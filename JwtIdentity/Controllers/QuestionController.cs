@@ -77,6 +77,20 @@ namespace JwtIdentity.Controllers
             return NoContent();
         }
 
+        [HttpPut("UpdateQuestionNumbers")]
+
+        public async Task<IActionResult> UpdateQuestionNumbers(List<QuestionViewModel> questions)
+        {
+            foreach (var question in questions)
+            {
+                var questionToUpdate = await _context.Questions.FindAsync(question.Id);
+                questionToUpdate.QuestionNumber = question.QuestionNumber;
+                _context.Entry(questionToUpdate).State = EntityState.Modified;
+            }
+            _ = await _context.SaveChangesAsync();
+            return NoContent();
+        }
+
         // DELETE: api/Question/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteQuestion(int id)
