@@ -1,4 +1,4 @@
-﻿using MudBlazor.Utilities;
+﻿using Syncfusion.Blazor.DropDowns;
 
 namespace JwtIdentity.Client.Pages.Survey
 {
@@ -11,7 +11,6 @@ namespace JwtIdentity.Client.Pages.Survey
 
         protected MultipleChoiceQuestionViewModel MultipleChoiceQuestion { get; set; } = new MultipleChoiceQuestionViewModel();
 
-        protected MudDropContainer<QuestionViewModel> _container { get; set; }
         protected static string[] QuestionTypes => Enum.GetNames(typeof(QuestionType));
 
         protected string SelectedQuestionType { get; set; } = Enum.GetName(typeof(QuestionType), QuestionType.Text) ?? "Text";
@@ -40,8 +39,6 @@ namespace JwtIdentity.Client.Pages.Survey
         {
             // get the survey based on the SurveyId
             Survey = await ApiService.GetAsync<SurveyViewModel>($"{ApiEndpoints.Survey}/{SurveyId}");
-
-            RefreshContainer();
         }
 
         protected void AddChoiceOption()
@@ -84,26 +81,32 @@ namespace JwtIdentity.Client.Pages.Survey
             }
         }
 
-        protected async Task ItemUpdated(MudItemDropInfo<QuestionViewModel> dropItem)
+        protected async Task ItemUpdated(DropEventArgs<QuestionViewModel> args)
         {
-            //var indexOffset = dropItem.DropzoneIdentifier switch
-            //{
-            //    "2" => Survey.Questions.Count(x => x.Selector == "1"),
-            //    _ => 0
-            //};
+            // Ensure we have valid indices from the event args.
+            int fromIndex = args.Items.ToList()[0].QuestionNumber - 1;
+            int toIndex = args.DropIndex;
 
-            Survey.Questions.UpdateOrder(dropItem, item => item.QuestionNumber, dropItem.IndexInZone);
+            if (fromIndex != toIndex && fromIndex >= 0 && toIndex >= 0)
+            {
+                // Remove the dragged item from its original position
+                var movedItem = Survey.Questions[fromIndex];
+                Survey.Questions.RemoveAt(fromIndex);
 
+                // Insert the dragged item into the new position
+                Survey.Questions.Insert(toIndex, movedItem);
+
+                // Update QuestionNumber property for each item according to its new order
+                for (int i = 0; i < Survey.Questions.Count; i++)
+                {
+                    Survey.Questions[i].QuestionNumber = i + 1;
+                }
+            }
+
+            // Now call your API to persist the new order.
             _ = await ApiService.UpdateAsync($"{ApiEndpoints.Question}/UpdateQuestionNumbers", Survey.Questions);
-        }
 
-        protected void RefreshContainer()
-        {
-            //update the binding to the container
-            StateHasChanged();
-
-            //the container refreshes the internal state
-            _container.Refresh();
+            await LoadData();
         }
     }
 }

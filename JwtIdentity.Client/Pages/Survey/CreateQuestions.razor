@@ -52,26 +52,27 @@
     @if (Survey?.Questions != null && Survey.Questions.Count > 0)
     {
         <MudPaper Class="p-2 flex-1">
-            <MudText Typo="Typo.h4">Survey Questions</MudText>
-            <MudDropContainer T="QuestionViewModel" Items="@Survey.Questions" @ref="_container" ItemsSelector="@((item,dropzone) => item.QuestionNumber >= 0)" ItemDropped="ItemUpdated" Class="d-flex flex-wrap flex-grow-1">
-                <ChildContent>
+            <SfListBox TItem="QuestionViewModel"
+                       DataSource="@Survey.Questions"
+                       AllowDragAndDrop="true"
+                       Height="350px"
+                       TValue="int">
 
-                    <MudPaper Class="ma-4 flex-grow-1">
-                        <MudList T="string" Class="d-flex flex-column mud-height-full">
-                            <MudListSubheader>Reorder Questions</MudListSubheader>
-                            <MudDropZone T="QuestionViewModel" Class="flex-grow-1" AllowReorder="true" />
-                        </MudList>
-                    </MudPaper>
+                <!-- Field settings to tell Syncfusion which
+                     properties are the text and the value. -->
+                <ListBoxFieldSettings Text="Text" Value="Id"></ListBoxFieldSettings>
+                <ListBoxTemplates TItem="QuestionViewModel">
+                    <ItemTemplate>
+                        <div class="list-wrapper">
 
-                </ChildContent>
-                <ItemRenderer>
-                    @{
-                        int questionNumber = Survey.Questions.OrderBy(x => x.QuestionNumber).ToList().FindIndex(x => x.Id == context.Id) + 1;
-                    }
-                    <MudListItem T="QuestionViewModel" Text="@($"{questionNumber}. {context.Text}")" />
-                </ItemRenderer>
-            </MudDropContainer>
+                            <SfIcon Name=IconName.GripVertical></SfIcon> <span class="text">@((context).QuestionNumber). @((context).Text)</span>
+                        </div>
+                    </ItemTemplate>
+                </ListBoxTemplates>
 
+                <!-- Use ListBoxEvents so we can handle reordering when the drag stops -->
+                <ListBoxEvents TItem="QuestionViewModel" TValue="int" OnDrop="ItemUpdated" />
+            </SfListBox>
         </MudPaper>
     }
 
