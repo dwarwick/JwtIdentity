@@ -1,15 +1,7 @@
-﻿using System.Text.Json;
-
-namespace JwtIdentity.Client.Pages.Survey
+﻿namespace JwtIdentity.Client.Pages.Survey
 {
     public class SurveyModel : BlazorBase
     {
-        private static readonly JsonSerializerOptions JsonSerializerOptions = new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true,
-            Converters = { new AnswerViewModelConverter() }
-        };
-
         [Parameter]
         public string SurveyId { get; set; }
 
@@ -18,6 +10,8 @@ namespace JwtIdentity.Client.Pages.Survey
         protected List<AnswerViewModel> Answers { get; set; } = new List<AnswerViewModel>();
 
         protected int SelectedOptionId { get; set; }
+
+        protected string Url => $"{NavigationManager.Uri}/survey/{Survey?.Guid ?? ""}";
 
         protected override async Task OnInitializedAsync()
         {

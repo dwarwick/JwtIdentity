@@ -11,19 +11,18 @@ namespace JwtIdentity.Client.Services
         private readonly JwtSecurityTokenHandler jwtSecurityTokenHandler;
         public HttpClient _httpClient { get; set; }
 
-        private readonly NavigationManager _navigationManager;
+
         public ApplicationUserViewModel? CurrentUser { get; set; }
 
-        public event Action? OnLoggedOut;
+        public event Action OnLoggedOut;
 
-        public CustomAuthStateProvider(Blazored.LocalStorage.ILocalStorageService localStorage, HttpClient httpClient, IApiService apiService, NavigationManager navigationManager)
+        public CustomAuthStateProvider(Blazored.LocalStorage.ILocalStorageService localStorage, HttpClient httpClient, IApiService apiService)
         {
             _localStorage = localStorage;
             jwtSecurityTokenHandler = new JwtSecurityTokenHandler();
 
             _httpClient = httpClient;
             _apiService = apiService;
-            _navigationManager = navigationManager;
         }
 
         public override async Task<AuthenticationState> GetAuthenticationStateAsync()
@@ -32,7 +31,6 @@ namespace JwtIdentity.Client.Services
             var savedToken = await _localStorage.GetItemAsync<string>("authToken");
             if (savedToken == null)
             {
-                await LoggedOut();
                 return new AuthenticationState(user);
             }
 
@@ -40,7 +38,7 @@ namespace JwtIdentity.Client.Services
 
             if (tokenContent.ValidTo < DateTime.UtcNow)
             {
-                await LoggedOut();
+                await this._localStorage.RemoveItemAsync("authToken");
                 return new AuthenticationState(user);
             }
 

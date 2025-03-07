@@ -2,6 +2,14 @@
 @namespace JwtIdentity.Client.Pages.Survey
 @inherits SurveyModel
 
+<HeadContent>
+    <meta property="og:url" content="@Url" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="@Survey?.Title" />
+    <meta property="og:description" content="@Survey?.Description" />
+    <meta property="og:image" content="@($"{Url}/images/logo.png")" />
+</HeadContent>
+
 @if (Survey != null && Survey.Id > 0)
 {
     <MudText Typo="Typo.h4">@Survey.Title</MudText>
