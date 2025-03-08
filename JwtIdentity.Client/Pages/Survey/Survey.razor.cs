@@ -1,17 +1,11 @@
-﻿using System.Text.Json;
-
-namespace JwtIdentity.Client.Pages.Survey
+﻿namespace JwtIdentity.Client.Pages.Survey
 {
     public class SurveyModel : BlazorBase
     {
-        private static readonly JsonSerializerOptions JsonSerializerOptions = new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true,
-            Converters = { new AnswerViewModelConverter() }
-        };
-
         [Parameter]
         public string SurveyId { get; set; }
+
+        private IJSObjectReference Module;
 
         protected SurveyViewModel Survey { get; set; }
 
@@ -19,8 +13,18 @@ namespace JwtIdentity.Client.Pages.Survey
 
         protected int SelectedOptionId { get; set; }
 
+        protected string Url => $"{NavigationManager.BaseUri}survey/{Survey?.Guid ?? ""}";
+
         protected override async Task OnInitializedAsync()
         {
+            // reference app.js in the wwwroot folder
+            Module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./js/app.js");
+
+            if (Module != null)
+            {
+                _ = await Module.InvokeAsync<string>("moveOpenGraphMetaTagsToTop");
+            }
+
             // get the survey based on the SurveyId
             await LoadData();
         }
@@ -71,6 +75,12 @@ namespace JwtIdentity.Client.Pages.Survey
                     }
                 }
             }
+            else
+            {
+                _ = Snackbar.Add("Survey not found", Severity.Error);
+                NavigationManager.NavigateTo("/");
+            }
+
         }
 
         protected async Task HandleAnswerQuestion(AnswerViewModel answer, object selectedAnswer)

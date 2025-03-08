@@ -29,7 +29,7 @@ namespace JwtIdentity.Controllers
         [HttpGet("{guid}")]
         public async Task<ActionResult<SurveyViewModel>> GetSurvey(string guid)
         {
-            var survey = await _context.Surveys.Include(s => s.Questions).FirstOrDefaultAsync(s => s.Guid == guid);
+            var survey = await _context.Surveys.Include(s => s.Questions.OrderBy(x => x.QuestionNumber)).FirstOrDefaultAsync(s => s.Guid == guid);
 
             if (survey == null)
             {

@@ -1,4 +1,6 @@
-﻿namespace JwtIdentity.Client.Pages.Survey
+﻿using Syncfusion.Blazor.DropDowns;
+
+namespace JwtIdentity.Client.Pages.Survey
 {
     public class CreateQuestionsModel : BlazorBase
     {
@@ -77,6 +79,34 @@
             {
                 _ = Snackbar.Add("Question Not Added", MudBlazor.Severity.Error);
             }
+        }
+
+        protected async Task ItemUpdated(DropEventArgs<QuestionViewModel> args)
+        {
+            // Ensure we have valid indices from the event args.
+            int fromIndex = args.Items.ToList()[0].QuestionNumber - 1;
+            int toIndex = args.DropIndex;
+
+            if (fromIndex != toIndex && fromIndex >= 0 && toIndex >= 0)
+            {
+                // Remove the dragged item from its original position
+                var movedItem = Survey.Questions[fromIndex];
+                Survey.Questions.RemoveAt(fromIndex);
+
+                // Insert the dragged item into the new position
+                Survey.Questions.Insert(toIndex, movedItem);
+
+                // Update QuestionNumber property for each item according to its new order
+                for (int i = 0; i < Survey.Questions.Count; i++)
+                {
+                    Survey.Questions[i].QuestionNumber = i + 1;
+                }
+            }
+
+            // Now call your API to persist the new order.
+            _ = await ApiService.UpdateAsync($"{ApiEndpoints.Question}/UpdateQuestionNumbers", Survey.Questions);
+
+            await LoadData();
         }
     }
 }

@@ -27,7 +27,12 @@ namespace JwtIdentity.Client.Services
         public async Task<T> GetAsync<T>(string endpoint)
         {
             var response = await _httpClient.GetAsync($"{endpoint}");
-            _ = EnsureSuccess(response);
+            if (!response.IsSuccessStatusCode)
+            {
+
+                _ = snackbar.Add("There was a problem with the request", Severity.Error);
+                return default;
+            }
             return await response.Content.ReadFromJsonAsync<T>(_options);
         }
 
@@ -42,7 +47,13 @@ namespace JwtIdentity.Client.Services
         {
             var response = await _httpClient.PutAsJsonAsync($"{endpoint}", viewModel);
             _ = EnsureSuccess(response);
-            return await response.Content.ReadFromJsonAsync<T>(_options);
+
+            if (response.StatusCode != System.Net.HttpStatusCode.NoContent)
+            {
+                return await response.Content.ReadFromJsonAsync<T>(_options);
+            }
+
+            return default;
         }
 
         public async Task<bool> DeleteAsync(string endpoint)

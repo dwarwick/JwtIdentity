@@ -18,7 +18,7 @@ builder.Services.AddScoped<IApiService, ApiService>(sp =>
     return new ApiService(httpClientFactory, navigationManager, snackbar);
 });
 
-Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense(builder.Configuration["Syncfusion"]);
+Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense("Ngo9BigBOggjHTQxAR8/V1NMaF5cXmBCf1FpRmJGdld5fUVHYVZUTXxaS00DNHVRdkdmWXxec3VcRWNeUUZwWEo=");
 
 builder.Services.AddSyncfusionBlazor();
 builder.Services.AddBlazoredLocalStorage();

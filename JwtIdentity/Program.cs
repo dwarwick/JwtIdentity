@@ -24,6 +24,8 @@ builder.Host.UseSerilog();
 builder.Logging.ClearProviders();
 builder.Logging.AddSerilog();
 
+builder.Services.AddHttpContextAccessor(); // Register HttpContextAccessor
+
 // Add environment-based appsettings.json files
 builder.Configuration
     .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
@@ -62,6 +64,7 @@ builder.Services.Configure<DataProtectionTokenProviderOptions>(options =>
 
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IApiAuthService, ApiAuthService>();
+builder.Services.AddScoped<ISurveyService, SurveyService>();
 
 builder.Services.AddAutoMapper(typeof(MapperConfig));
 builder.Services.AddAuthentication(options =>

@@ -2,7 +2,7 @@
 
 <MudAppBar Elevation="4" Color="Color.Primary">
     <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="ToggleDrawer" />
-    <MudText Typo="Typo.h6" Class="ml-2">My Application</MudText>
+    <MudImage Src="images/logo_200_60.png" />
     <MudSpacer />
     <MudHidden Breakpoint="Breakpoint.SmAndDown">
         <MudButton Variant="Variant.Text" Color="Color.Inherit" Class="mx-2" Href="/">Home</MudButton>
@@ -20,13 +20,7 @@
 
                 </MudMenu>
             </Authorized>
-        </AuthorizeView>
-        <AuthorizeView Policy="@Permissions.CreateSurvey">
-            <Authorized>
-                <MudButton Variant="Variant.Text" Color="Color.Inherit" Class="mx-2" Href="/survey/create">Create Survey</MudButton>
-            </Authorized>
-        </AuthorizeView>
-        <MudButton Variant="Variant.Text" Color="Color.Inherit" Class="mx-2">Contact</MudButton>
+        </AuthorizeView>        
         <MudSwitch Value="@DarkTheme" Label="Dark Theme" ValueChanged="DarkThemeChanged" />
         <div class="mx-1">
             <AuthorizeView>
@@ -70,7 +64,6 @@
 
                 </MudMenu>
             </Authorized>
-        </AuthorizeView>
-        <MudNavLink Href="/contact">Contact</MudNavLink>
+        </AuthorizeView>       
     </MudNavMenu>
 </MudDrawer>

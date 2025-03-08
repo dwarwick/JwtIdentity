@@ -10,18 +10,68 @@
         <GridColumn Field="Title" HeaderText="Title" Width="120" />
         <GridColumn Field="Description" HeaderText="Description" Width="120" />
         <GridColumn Field="CreatedDate" HeaderText="Created Date" Width="120" Type=" ColumnType.Date" Format="d" />
-        <GridColumn HeaderText="Copy Link to Survey">
+        <GridColumn HeaderText="Copy Link or Share">
             <Template>
+                <MudStack Spacing="2" Row="true" Class="py-1" >
                 @{
-                    var guid = ((context as SurveyViewModel)).Guid;
+                    var guid = (context as SurveyViewModel).Guid;
 
-                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(async () => await CopySurveyLinkAsync(guid))">Copy</MudButton>
+                    <MudButton Class="copy_button" Variant="Variant.Filled" Color="Color.Primary" OnClick="@(async () => await CopySurveyLinkAsync(guid))">Copy</MudButton>
                 }
                 
-               
-                
+                <div class="fb-share-button" data-href="https://developers.facebook.com/docs/plugins/" data-layout="button_count" data-size="small">
+                        <a target="_blank" href=@($"https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fdavidtest.xyz%2Fsurvey%2F{guid}&amp;src=sdkpreparse") class="fb-xfbml-parse-ignore">
+                    <svg viewBox="0 0 12 12" preserveAspectRatio="xMidYMid meet">
+                        <path class="svg-icon-path" d="M9.1,0.1V2H8C7.6,2,7.3,2.1,7.1,2.3C7,2.4,6.9,2.7,6.9,3v1.4H9L8.8,6.5H6.9V12H4.7V6.5H2.9V4.4h1.8V2.8 c0-0.9,0.3-1.6,0.7-2.1C6,0.2,6.6,0,7.5,0C8.2,0,8.7,0,9.1,0.1z"></path>
+                    </svg>
+                    <span>Share</span>
+                    </a>
+                </div>
+
+               </MudStack>
             </Template>
         </GridColumn>
     </GridColumns>
 </SfGrid>
+
+
+    
+<style>
+    .fb-share-button {
+        background: #3b5998;
+        border-radius: 3px;
+        font-weight: 600;
+        padding: 5px 8px;
+        display: inline-block;
+        position: static;
+        height:28px;
+        margin-top:auto;
+        margin-bottom: auto;
+    }
+
+        .fb-share-button:hover {
+            cursor: pointer;
+            background: #213A6F
+        }
+
+        .fb-share-button svg {
+            width: 18px;
+            fill: white;
+            /* vertical-align: middle; */
+            border-radius: 2px
+        }
+
+        .fb-share-button span {
+            /* vertical-align: middle; */
+            color: white;
+            font-size: 14px;
+            padding: 0 3px
+        }
+
+        .copy_button{
+        margin-top: auto;
+        margin-bottom: auto;
+        height: 28px;
+        }
+</style>
 
