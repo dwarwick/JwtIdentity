@@ -78,6 +78,7 @@ namespace JwtIdentity.Controllers
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             Response.Cookies.Delete(".AspNetCore.Identity.Application");
+            Response.Cookies.Delete("authToken"); // Delete the authToken cookie
             return Ok(new { message = "Logged out" });
         }
 
