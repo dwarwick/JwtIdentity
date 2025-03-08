@@ -21,3 +21,10 @@ export function removeThemes() {
         elements[i].remove();
     }
 }
+
+export function moveOpenGraphMetaTagsToTop() {
+    document.querySelectorAll('head > meta[property^="og:"]')
+        .forEach(meta => {
+            document.head.prepend(meta);
+        });
+}

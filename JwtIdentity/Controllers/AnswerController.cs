@@ -45,6 +45,8 @@ namespace JwtIdentity.Controllers
                 .Where(s => s.Guid == guid)
                 .Include(s => s.Questions).ThenInclude(q => q.Answers.Where(a => a.CreatedById == userId)).FirstOrDefaultAsync();
 
+            if (survey == null) return BadRequest("Survey does not exist");
+
             // Pull out the IDs of any multiple-choice questions in memory
             var mcIds = survey.Questions
                 .OfType<MultipleChoiceQuestion>()
