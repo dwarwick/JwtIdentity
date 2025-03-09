@@ -6,7 +6,10 @@ namespace JwtIdentity.Common.ViewModels
     public abstract class AnswerViewModel : BaseViewModel
     {
         public int Id { get; set; }
+
         public int QuestionId { get; set; }
+
+        public string IpAddress { get; set; }
 
         [JsonPropertyName("answerType")]
         public AnswerType AnswerType { get; set; }

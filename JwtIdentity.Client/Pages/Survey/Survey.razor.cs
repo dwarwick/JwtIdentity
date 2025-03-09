@@ -27,6 +27,24 @@ namespace JwtIdentity.Client.Pages.Survey
 
         protected override async Task OnInitializedAsync()
         {
+            await HandleLoggingInUser();
+
+            // get the survey based on the SurveyId
+            await LoadData();
+        }
+
+        protected override async Task OnAfterRenderAsync(bool firstRender)
+        {
+            if (firstRender)
+            {
+                await JSRuntime.InvokeVoidAsync("registerCaptchaCallback", objRef);
+                // Call JavaScript to manually render the widget in the container with your site key.
+                await JSRuntime.InvokeVoidAsync("renderReCaptcha", "captcha-container", Configuration["ReCaptcha:SiteKey"]);
+            }
+        }
+
+        private async Task HandleLoggingInUser()
+        {
             objRef = DotNetObjectReference.Create(this);
 
             var authState = await AuthStateProvider.GetAuthenticationStateAsync();
@@ -52,30 +70,13 @@ namespace JwtIdentity.Client.Pages.Survey
                 {
                     _ = Snackbar.Add("You are now being logged in as an anonymous user", Severity.Success);
                     Response<ApplicationUserViewModel> loginResponse = await AuthService.Login(new ApplicationUserViewModel() { UserName = "logmein", Password = "123" });
-                    if (loginResponse.Success)
-                    {
-                        _ = Snackbar.Add("You may now complete the survey", Severity.Success);
-                    }
-                    else
+                    if (!loginResponse.Success)
                     {
                         _ = Snackbar.Add("Problem logging you in anonymously. You will not be able to complete the survey. You may be able to take the survey if you create an account and login.", Severity.Error);
 
                         Navigation.NavigateTo("/");
                     }
                 }
-            }
-
-            // get the survey based on the SurveyId
-            await LoadData();
-        }
-
-        protected override async Task OnAfterRenderAsync(bool firstRender)
-        {
-            if (firstRender)
-            {
-                await JSRuntime.InvokeVoidAsync("registerCaptchaCallback", objRef);
-                // Call JavaScript to manually render the widget in the container with your site key.
-                await JSRuntime.InvokeVoidAsync("renderReCaptcha", "captcha-container", Configuration["ReCaptcha:SiteKey"]);
             }
         }
 
@@ -123,14 +124,16 @@ namespace JwtIdentity.Client.Pages.Survey
                             question.Answers.Add(answer);
                         }
                     }
+                    else
+                    { // this user or ip address has answered this before
+
+                    }
                 }
             }
             else
             {
-                _ = Snackbar.Add("Survey not found", Severity.Error);
                 NavigationManager.NavigateTo("/");
             }
-
         }
 
         protected async Task HandleAnswerQuestion(AnswerViewModel answer, object selectedAnswer)

@@ -5,6 +5,8 @@
         public int Id { get; set; }
         public int QuestionId { get; set; }
 
+        public string IpAddress { get; set; }
+
         // EF Core navigation
         public Question Question { get; set; }
 

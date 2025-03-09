@@ -1,3 +1,5 @@
+using System.Security.Claims;
+
 namespace JwtIdentity.Controllers
 {
     [Route("api/[controller]")]
@@ -40,10 +42,33 @@ namespace JwtIdentity.Controllers
         [HttpGet("getanswersforsurvey/{guid}")]
         public async Task<ActionResult<AnswerViewModel>> GetAnswersForSurvey(string guid)
         {
+            // get the ip address of the user
+            var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
+
+            // generate code to get the usename of the user
+            var username = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
             int userId = apiAuthService.GetUserId(User);
-            var survey = await _context.Surveys
-                .Where(s => s.Guid == guid)
-                .Include(s => s.Questions).ThenInclude(q => q.Answers.Where(a => a.CreatedById == userId)).FirstOrDefaultAsync();
+
+            Survey survey = null;
+
+            if ((username == "anonymous" && await _context.Answers.AnyAsync(a =>
+              a.IpAddress == ipAddress &&
+              a.CreatedById == userId &&
+              _context.Surveys.Any(s => s.Id == a.Question.SurveyId && s.Guid == guid)))
+
+              || await _context.Answers.AnyAsync(a =>
+              a.CreatedById == userId &&
+              _context.Surveys.Any(s => s.Id == a.Question.SurveyId && s.Guid == guid)))
+            {
+                return BadRequest("You have already taken this survey");
+            }
+
+            survey = await _context.Surveys
+            .Where(s => s.Guid == guid)
+            .Include(s => s.Questions).ThenInclude(q => q.Answers.Where(a => a.CreatedById == userId)).FirstOrDefaultAsync();
+
+
 
             if (survey == null) return BadRequest("Survey does not exist");
 
