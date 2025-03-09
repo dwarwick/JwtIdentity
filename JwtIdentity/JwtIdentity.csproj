@@ -34,6 +34,10 @@
     <None Remove="logs\**" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Remove="wwwroot\js\.editorconfig" />
+  </ItemGroup>
+
   <Target Name="ExcludeLogsFolder" AfterTargets="CollectFilesToPublish">
     <ItemGroup>
       <FileToPublish Remove="@(FileToPublish)" Condition="%(FileToPublish.RelativePath.StartsWith('logs\'))" />
