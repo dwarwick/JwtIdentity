@@ -49,7 +49,8 @@ namespace JwtIdentity.Data
             _ = builder.Entity<ApplicationRole>().HasData(
                 new ApplicationRole { Id = 1, Name = "Admin", NormalizedName = "ADMIN" },
                 new ApplicationRole { Id = 2, Name = "User", NormalizedName = "USER" },
-                new ApplicationRole { Id = 3, Name = "UnconfirmedUser", NormalizedName = "UNCONFIRMEDUSER" }
+                new ApplicationRole { Id = 3, Name = "UnconfirmedUser", NormalizedName = "UNCONFIRMEDUSER" },
+                new ApplicationRole { Id = 4, Name = "AnonymousUser", NormalizedName = "ANONYMOUSUSER" }
             );
 
             // Seed users
@@ -81,13 +82,27 @@ namespace JwtIdentity.Data
                     ConcurrencyStamp = "be6fc596-979b-42b1-906e-d6d5a59d6fce",
                     SecurityStamp = string.Empty,
                     Theme = "light"
+                },
+                new ApplicationUser
+                {
+                    Id = 3,
+                    UserName = "anonymous",
+                    NormalizedUserName = "ANONYMOUS",
+                    Email = "anonymous@example.com",
+                    NormalizedEmail = "ANONYMOUS@EXAMPLE.COM",
+                    EmailConfirmed = true,
+                    PasswordHash = "AQAAAAIAAYagAAAAEDaaeD+y1I6b06Mfnm/tKqk8uIC+IIyCC5XMjODRg0PAJuxDcmPh6iihBkSLhMoyJQ==",
+                    ConcurrencyStamp = "be6fc596-979b-42b1-906e-d6d5a59d6fce",
+                    SecurityStamp = string.Empty,
+                    Theme = "light"
                 }
             );
 
             // Assign roles to users
             _ = builder.Entity<IdentityUserRole<int>>().HasData(
                 new IdentityUserRole<int> { UserId = 1, RoleId = 1 }, // Admin
-                new IdentityUserRole<int> { UserId = 2, RoleId = 2 }  // User
+                new IdentityUserRole<int> { UserId = 2, RoleId = 2 },  // User
+                new IdentityUserRole<int> { UserId = 3, RoleId = 4 }  // AnonymousUser
             );
 
             var type = typeof(Permissions);

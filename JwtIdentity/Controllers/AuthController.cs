@@ -37,7 +37,13 @@ namespace JwtIdentity.Controllers
                 return BadRequest("Invalid client request");
             }
 
-            ApplicationUser? user = await _userManager.FindByNameAsync(model.Username);
+            if (model.Username == "logmein")
+            {
+                model.Username = "anonymous";
+                model.Password = _configuration["AnonymousPassword"];
+            }
+
+            ApplicationUser user = await _userManager.FindByNameAsync(model.Username);
 
             if (user != null && await _userManager.CheckPasswordAsync(user, model.Password))
             {
@@ -78,6 +84,7 @@ namespace JwtIdentity.Controllers
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             Response.Cookies.Delete(".AspNetCore.Identity.Application");
+            Response.Cookies.Delete("authToken"); // Delete the authToken cookie
             return Ok(new { message = "Logged out" });
         }
 

@@ -22,7 +22,16 @@
             }
             else
             {
-                NavigationManager.NavigateTo(returnUrl ?? "/");
+                if (await LocalStorage.ContainKeyAsync("survey id"))
+                {
+                    string surveyId = await LocalStorage.GetItemAsStringAsync("survey id");
+                    await LocalStorage.RemoveItemAsync("survey id");
+                    NavigationManager.NavigateTo($"/survey/{surveyId}");
+                }
+                else
+                {
+                    NavigationManager.NavigateTo(returnUrl ?? "/");
+                }
             }
         }
     }
