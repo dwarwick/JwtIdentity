@@ -29,8 +29,19 @@ namespace JwtIdentity.Client.Services
             var response = await _httpClient.GetAsync($"{endpoint}");
             if (!response.IsSuccessStatusCode)
             {
-                _ = snackbar.Add("There was a problem with the request", Severity.Error);
-                return default;
+                // get th error message
+                var error = await response.Content.ReadAsStringAsync();
+
+                if (string.IsNullOrEmpty(error))
+                {
+                    _ = snackbar.Add("There was a problem with the request", Severity.Error);
+                    return default;
+                }
+                else
+                {
+                    _ = snackbar.Add(error, Severity.Error);
+                    return default;
+                }
             }
             return await response.Content.ReadFromJsonAsync<T>(_options);
         }
