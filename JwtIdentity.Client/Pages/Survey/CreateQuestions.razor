@@ -22,7 +22,7 @@
                     }
                 </MudSelect>
 
-                <MudText Typo="Typo.h6" Class="mt-5">Create a @Common.Helpers.StringHelper.PascalCaseToWords(SelectedQuestionType) Question</MudText>
+                <MudText Typo="Typo.h6" Class="mt-5">Create a @StringHelper.PascalCaseToWords(SelectedQuestionType) Question</MudText>
                 <MudTextField id="Text" Label="Question Text" @bind-Value="QuestionText" Variant="Variant.Filled" Lines="1" MaxLines="5" AutoGrow="true" Immediate="true" Counter="50" MaxLength="50" />
             </MudStack>
 

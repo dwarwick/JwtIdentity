@@ -37,7 +37,13 @@ namespace JwtIdentity.Controllers
                 return BadRequest("Invalid client request");
             }
 
-            ApplicationUser? user = await _userManager.FindByNameAsync(model.Username);
+            if (model.Username == "logmein")
+            {
+                model.Username = "anonymous";
+                model.Password = _configuration["AnonymousPassword"];
+            }
+
+            ApplicationUser user = await _userManager.FindByNameAsync(model.Username);
 
             if (user != null && await _userManager.CheckPasswordAsync(user, model.Password))
             {

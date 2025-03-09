@@ -1,11 +1,11 @@
-﻿namespace JwtIdentity.Client.Pages.Survey
+﻿using JwtIdentity.Client.Pages.Common;
+
+namespace JwtIdentity.Client.Pages.Survey
 {
     public class SurveyModel : BlazorBase
     {
         [Parameter]
         public string SurveyId { get; set; }
-
-        private IJSObjectReference Module;
 
         protected SurveyViewModel Survey { get; set; }
 
@@ -15,14 +15,44 @@
 
         protected string Url => $"{NavigationManager.BaseUri}survey/{Survey?.Guid ?? ""}";
 
+        private readonly DialogOptions _topCenter = new() { Position = DialogPosition.TopCenter, CloseButton = false, CloseOnEscapeKey = false };
+
         protected override async Task OnInitializedAsync()
         {
-            // reference app.js in the wwwroot folder
-            Module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./js/app.js");
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
 
-            if (Module != null)
+            if (!user.Identity.IsAuthenticated)
             {
-                _ = await Module.InvokeAsync<string>("moveOpenGraphMetaTagsToTop");
+                DialogParameters keyValuePairs = new()
+                {
+                    { "Message", "You can take the survey annonymously, or you can create an account. If you create an account first, you will be able to access your survey results in the future. Would you like to create an account first?" },
+                    { "OkText" , "Yes" },
+                    { "CancelText" , "No" }
+                };
+
+                IDialogReference response = await MudDialog.ShowAsync<ConfirmDialog>("Create Account?", keyValuePairs, _topCenter);
+                var result = await response.Result;
+                if (!result.Canceled)
+                {
+                    // User pressed OK
+                    NavigationManager.NavigateTo($"/register/{SurveyId}");
+                }
+                else
+                {
+                    _ = Snackbar.Add("You are now being logged in as an anonymous user", Severity.Success);
+                    Response<ApplicationUserViewModel> loginResponse = await AuthService.Login(new ApplicationUserViewModel() { UserName = "logmein", Password = "123" });
+                    if (loginResponse.Success)
+                    {
+                        _ = Snackbar.Add("You may now complete the survey", Severity.Success);
+                    }
+                    else
+                    {
+                        _ = Snackbar.Add("Problem logging you in anonymously. You will not be able to complete the survey. You may be able to take the survey if you create an account and login.", Severity.Error);
+
+                        Navigation.NavigateTo("/");
+                    }
+                }
             }
 
             // get the survey based on the SurveyId
