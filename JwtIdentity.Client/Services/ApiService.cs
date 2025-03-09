@@ -29,7 +29,6 @@ namespace JwtIdentity.Client.Services
             var response = await _httpClient.GetAsync($"{endpoint}");
             if (!response.IsSuccessStatusCode)
             {
-
                 _ = snackbar.Add("There was a problem with the request", Severity.Error);
                 return default;
             }
@@ -66,7 +65,13 @@ namespace JwtIdentity.Client.Services
         public async Task<T> PostAsync<T>(string endpoint, T viewModel)
         {
             var response = await _httpClient.PostAsJsonAsync($"{endpoint}", viewModel, _options);
-            _ = EnsureSuccess(response);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                _ = snackbar.Add("There was a problem with the request", Severity.Error);
+                return default;
+            }
+
             return await response.Content.ReadFromJsonAsync<T>(_options);
         }
 

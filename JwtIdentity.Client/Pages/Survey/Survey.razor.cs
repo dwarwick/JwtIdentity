@@ -1,8 +1,10 @@
 ﻿using JwtIdentity.Client.Pages.Common;
+using System.Net.Http.Json;
+using System.Security.Claims;
 
 namespace JwtIdentity.Client.Pages.Survey
 {
-    public class SurveyModel : BlazorBase
+    public class SurveyModel : BlazorBase, IAsyncDisposable
     {
         [Parameter]
         public string SurveyId { get; set; }
@@ -15,12 +17,20 @@ namespace JwtIdentity.Client.Pages.Survey
 
         protected string Url => $"{NavigationManager.BaseUri}survey/{Survey?.Guid ?? ""}";
 
+        protected bool isCaptchaVerified { get; set; } = false;
+
         private readonly DialogOptions _topCenter = new() { Position = DialogPosition.TopCenter, CloseButton = false, CloseOnEscapeKey = false };
+
+        private DotNetObjectReference<SurveyModel> objRef;
+
+        private bool disposed = false;
 
         protected override async Task OnInitializedAsync()
         {
+            objRef = DotNetObjectReference.Create(this);
+
             var authState = await AuthStateProvider.GetAuthenticationStateAsync();
-            var user = authState.User;
+            ClaimsPrincipal user = authState.User;
 
             if (!user.Identity.IsAuthenticated)
             {
@@ -57,6 +67,16 @@ namespace JwtIdentity.Client.Pages.Survey
 
             // get the survey based on the SurveyId
             await LoadData();
+        }
+
+        protected override async Task OnAfterRenderAsync(bool firstRender)
+        {
+            if (firstRender)
+            {
+                await JSRuntime.InvokeVoidAsync("registerCaptchaCallback", objRef);
+                // Call JavaScript to manually render the widget in the container with your site key.
+                await JSRuntime.InvokeVoidAsync("renderReCaptcha", "captcha-container", Configuration["ReCaptcha:SiteKey"]);
+            }
         }
 
         private async Task LoadData()
@@ -148,6 +168,69 @@ namespace JwtIdentity.Client.Pages.Survey
                 }
 
             }
+        }
+
+        [JSInvokable("ReceiveCaptchaToken")]
+        // This method is called by JavaScript once the captcha is solved.
+        // [JSInvokable("ReceiveCaptchaToken")]
+        public async Task ReceiveCaptchaToken(string token)
+        {
+            // Call the server-side API endpoint to verify the token using the client-side HttpClient.
+            var response = await Client.PostAsJsonAsync("api/recaptcha/validate", new { Token = token });
+            var result = await response.Content.ReadFromJsonAsync<RecaptchaValidationResult>();
+            if (result != null && result.Success)
+            {
+                isCaptchaVerified = true;
+                StateHasChanged();
+            }
+            else
+            {
+                // Optionally, alert the user or reset the captcha
+                _ = Snackbar.Add("Captcha verification failed", Severity.Error);
+            }
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            await DisposeAsync(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual async ValueTask DisposeAsync(bool disposing)
+        {
+            if (!disposed)
+            {
+                if (disposing)
+                {
+                    // Dispose managed resources
+                    objRef?.Dispose();
+
+                    var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+                    ClaimsPrincipal user = authState.User;
+
+                    // get the users username and email
+                    if (user.Identity.IsAuthenticated)
+                    {
+                        var username = user.FindFirst(ClaimTypes.Name)?.Value;
+
+                        if (username == "anonymous")
+                        {
+                            // log the user out
+                            await ((CustomAuthStateProvider)AuthStateProvider).LoggedOut();
+
+                        }
+                    }
+                }
+
+                // Dispose unmanaged resources
+
+                disposed = true;
+            }
+        }
+
+        ~SurveyModel()
+        {
+            DisposeAsync(false).AsTask().GetAwaiter().GetResult();
         }
     }
 }

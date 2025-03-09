@@ -18,6 +18,9 @@ namespace JwtIdentity.Client.Pages
         internal IAuthService AuthService { get; set; }
 
         [Inject]
+        internal IConfiguration Configuration { get; set; }
+
+        [Inject]
         internal AuthenticationStateProvider AuthStateProvider { get; set; }
 
         [Inject]
