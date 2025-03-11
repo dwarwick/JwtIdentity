@@ -85,29 +85,7 @@ namespace JwtIdentity.Controllers
             }
             else
             { // existing survey
-                foreach (var question in survey.Questions)
-                {
-                    if (question.Id == 0)
-                    { // new question
-                        question.CreatedById = createdById;
-                        question.SurveyId = survey.Id;
-
-                        _ = _context.Questions.Add(question);
-                    }
-                    else
-                    { // existing question
-
-                        // check if question text has changed. If so, update the question
-                        var existingQuestion = await _context.Questions.FindAsync(question.Id);
-                        if (existingQuestion != null)
-                        {
-                            if (existingQuestion.Text != question.Text)
-                            {
-                                _context.Entry(question).State = EntityState.Modified;
-                            }
-                        }
-                    }
-                }
+                _ = _context.Surveys.Update(survey);
             }
 
             _ = await _context.SaveChangesAsync();
@@ -116,12 +94,17 @@ namespace JwtIdentity.Controllers
         }
 
         // PUT: api/Survey/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutSurvey(int id, SurveyViewModel surveyViewModel)
+        [HttpPut]
+        public async Task<IActionResult> PutSurvey(SurveyViewModel surveyViewModel)
         {
-            if (id != surveyViewModel.Id)
+            if (surveyViewModel == null || surveyViewModel.Id == 0)
             {
-                return BadRequest();
+                return BadRequest("Bad Request");
+            }
+
+            if (!SurveyExists(surveyViewModel.Id))
+            {
+                return NotFound("Survey not found");
             }
 
             var survey = _mapper.Map<Survey>(surveyViewModel);
@@ -130,20 +113,15 @@ namespace JwtIdentity.Controllers
             try
             {
                 _ = await _context.SaveChangesAsync();
+
+                surveyViewModel = _mapper.Map<SurveyViewModel>(survey);
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!SurveyExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                return BadRequest("Concurrency Exception");
             }
 
-            return NoContent();
+            return Ok(surveyViewModel);
         }
 
         // DELETE: api/Survey/5

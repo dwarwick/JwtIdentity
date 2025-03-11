@@ -4,6 +4,7 @@ using JwtIdentity.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace JwtIdentity.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250309230552_AddCompleteToSurvey")]
+    partial class AddCompleteToSurvey
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -54,7 +57,7 @@ namespace JwtIdentity.Migrations
 
                     b.HasIndex("QuestionId");
 
-                    b.ToTable("Answers", (string)null);
+                    b.ToTable("Answers");
 
                     b.HasDiscriminator<int>("AnswerType");
 
@@ -271,7 +274,7 @@ namespace JwtIdentity.Migrations
 
                     b.HasIndex("MultipleChoiceQuestionId");
 
-                    b.ToTable("ChoiceOptions", (string)null);
+                    b.ToTable("ChoiceOptions");
                 });
 
             modelBuilder.Entity("JwtIdentity.Models.LogEntry", b =>
@@ -293,7 +296,7 @@ namespace JwtIdentity.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("LogEntries", (string)null);
+                    b.ToTable("LogEntries");
                 });
 
             modelBuilder.Entity("JwtIdentity.Models.Question", b =>
@@ -331,7 +334,7 @@ namespace JwtIdentity.Migrations
 
                     b.HasIndex("SurveyId");
 
-                    b.ToTable("Questions", (string)null);
+                    b.ToTable("Questions");
 
                     b.HasDiscriminator<int>("QuestionType");
 
@@ -418,7 +421,7 @@ namespace JwtIdentity.Migrations
 
                     b.HasIndex("CreatedById");
 
-                    b.ToTable("Surveys", (string)null);
+                    b.ToTable("Surveys");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<int>", b =>
@@ -534,7 +537,7 @@ namespace JwtIdentity.Migrations
                     b.Property<int>("SelectedOptionId")
                         .HasColumnType("int");
 
-                    b.ToTable("Answers", null, t =>
+                    b.ToTable("Answers", t =>
                         {
                             t.Property("SelectedOptionId")
                                 .HasColumnName("SingleChoiceAnswer_SelectedOptionId");

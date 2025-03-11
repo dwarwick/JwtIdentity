@@ -23,7 +23,7 @@
     public class TrueFalseAnswer : Answer
     {
         // This holds the boolean value
-        public bool Value { get; set; }
+        public bool? Value { get; set; }
     }
 
     public class MultipleChoiceAnswer : Answer

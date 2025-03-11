@@ -25,12 +25,16 @@ namespace JwtIdentity.Client.Pages.Survey
 
         private bool disposed = false;
 
+        protected bool Loading { get; set; } = true;
+
         protected override async Task OnInitializedAsync()
         {
             await HandleLoggingInUser();
 
             // get the survey based on the SurveyId
             await LoadData();
+
+            Loading = false;
         }
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -118,7 +122,8 @@ namespace JwtIdentity.Client.Pages.Survey
                             TrueFalseAnswerViewModel answer = new()
                             {
                                 AnswerType = AnswerType.TrueFalse,
-                                QuestionId = question.Id
+                                QuestionId = question.Id,
+                                Value = null
                             };
 
                             question.Answers.Add(answer);
@@ -234,6 +239,59 @@ namespace JwtIdentity.Client.Pages.Survey
         ~SurveyModel()
         {
             DisposeAsync(false).AsTask().GetAwaiter().GetResult();
+        }
+
+        protected async Task SubmitSurvey()
+        {
+            if (AllQuestionsAnswered())
+            {
+                Survey.Complete = true;
+
+                SurveyViewModel submittedSurvey = await ApiService.UpdateAsync(ApiEndpoints.Survey, Survey);
+
+                if (submittedSurvey?.Complete ?? false)
+                {
+                    _ = Snackbar.Add("Survey submitted", Severity.Success);
+
+                    Navigation.NavigateTo("/");
+                }
+                else
+                {
+                    _ = Snackbar.Add("There was a problem submitting the survey", Severity.Error);
+                }
+            }
+        }
+
+        private bool AllQuestionsAnswered()
+        {
+            // check if all questions have been answered
+            foreach (var question in Survey.Questions)
+            {
+                switch (question.QuestionType)
+                {
+                    case QuestionType.Text:
+                        if (string.IsNullOrEmpty(((TextAnswerViewModel)question.Answers[0]).Text))
+                        {
+                            return false;
+                        }
+                        break;
+                    case QuestionType.TrueFalse:
+                        if (((TrueFalseAnswerViewModel)question.Answers[0]).Value == null)
+                        {
+                            return false;
+                        }
+                        break;
+                    case QuestionType.MultipleChoice:
+                        if (((MultipleChoiceAnswerViewModel)question.Answers[0]).SelectedOptionId == 0)
+                        {
+                            return false;
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
+            return true;
         }
     }
 }

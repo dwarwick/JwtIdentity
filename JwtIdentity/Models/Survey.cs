@@ -6,6 +6,7 @@
         public string Title { get; set; }
         public string Description { get; set; }
         public string Guid { get; set; }
+        public bool Complete { get; set; }
         public List<Question> Questions { get; set; }
     }
 }

@@ -22,7 +22,7 @@ namespace JwtIdentity.Common.ViewModels
 
     public class TrueFalseAnswerViewModel : AnswerViewModel
     {
-        public bool Value { get; set; }
+        public bool? Value { get; set; }
     }
 
     public class MultipleChoiceAnswerViewModel : AnswerViewModel

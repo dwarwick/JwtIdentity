@@ -56,11 +56,26 @@ namespace JwtIdentity.Client.Services
         public async Task<T> UpdateAsync<T>(string endpoint, T viewModel)
         {
             var response = await _httpClient.PutAsJsonAsync($"{endpoint}", viewModel);
-            _ = EnsureSuccess(response);
 
             if (response.StatusCode != System.Net.HttpStatusCode.NoContent)
             {
-                return await response.Content.ReadFromJsonAsync<T>(_options);
+                if (response.IsSuccessStatusCode)
+                {
+                    return await response.Content.ReadFromJsonAsync<T>(_options);
+                }
+                else
+                {
+                    string error = await response.Content.ReadAsStringAsync();
+
+                    if (string.IsNullOrEmpty(error))
+                    {
+                        _ = snackbar.Add("There was a problem with the request", Severity.Error);
+                    }
+                    else
+                    {
+                        _ = snackbar.Add(error, Severity.Error);
+                    }
+                }
             }
 
             return default;
