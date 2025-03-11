@@ -72,6 +72,8 @@ namespace JwtIdentity.Controllers
 
             if (survey == null) return BadRequest("Survey does not exist");
 
+            if (!survey.Published) return BadRequest("This survey has not been published");
+
             // Pull out the IDs of any multiple-choice questions in memory
             var mcIds = survey.Questions
                 .OfType<MultipleChoiceQuestion>()

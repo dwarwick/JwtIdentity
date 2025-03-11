@@ -19,7 +19,9 @@ namespace JwtIdentity.Client.Pages.Survey
 
         protected string NewChoiceOptionText { get; set; }
 
-        protected bool AddQuestionToSurveyDisabled => string.IsNullOrWhiteSpace(QuestionText) ||
+        protected bool AddQuestionToSurveyDisabled =>
+            Survey.Published ||
+            string.IsNullOrWhiteSpace(QuestionText) ||
             (SelectedQuestionType.Replace(" ", "") == Enum.GetName(QuestionType.MultipleChoice) && MultipleChoiceQuestion.Options.Count == 0);
 
         protected override async Task OnInitializedAsync()
@@ -107,6 +109,43 @@ namespace JwtIdentity.Client.Pages.Survey
             _ = await ApiService.UpdateAsync($"{ApiEndpoints.Question}/UpdateQuestionNumbers", Survey.Questions);
 
             await LoadData();
+        }
+
+        protected async Task PublishSurvey()
+        {
+            if (Survey.Questions.Count == 0)
+            {
+                _ = Snackbar.Add("A survey must have at least 1 question", Severity.Error);
+                return;
+            }
+
+            foreach (var question in Survey.Questions)
+            {
+                switch (question.QuestionType)
+                {
+                    case QuestionType.MultipleChoice:
+                        if (((MultipleChoiceQuestionViewModel)question).Options.Count == 0)
+                        {
+                            _ = Snackbar.Add("A multiple choice question must have at least 1 option", Severity.Error);
+                        }
+
+                        break;
+                }
+            }
+
+            Survey.Published = true;
+
+            SurveyViewModel publishedSurvey = await ApiService.UpdateAsync(ApiEndpoints.Survey, Survey);
+
+            if (publishedSurvey.Published)
+            {
+                _ = Snackbar.Add("Survey Published", Severity.Success);
+                Navigation.NavigateTo("/");
+            }
+            else
+            {
+                _ = Snackbar.Add("Unable to publish survey", Severity.Error);
+            }
         }
     }
 }
