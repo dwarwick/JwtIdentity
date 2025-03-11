@@ -55,11 +55,11 @@ namespace JwtIdentity.Controllers
             if ((username == "anonymous" && await _context.Answers.AnyAsync(a =>
               a.IpAddress == ipAddress &&
               a.CreatedById == userId &&
-              _context.Surveys.Any(s => s.Id == a.Question.SurveyId && s.Guid == guid)))
+              _context.Surveys.Any(s => s.Id == a.Question.SurveyId && s.Guid == guid && s.Complete)))
 
               || await _context.Answers.AnyAsync(a =>
               a.CreatedById == userId &&
-              _context.Surveys.Any(s => s.Id == a.Question.SurveyId && s.Guid == guid)))
+              _context.Surveys.Any(s => s.Id == a.Question.SurveyId && s.Guid == guid && s.Complete)))
             {
                 return BadRequest("You have already taken this survey");
             }
@@ -92,9 +92,11 @@ namespace JwtIdentity.Controllers
         [HttpPost]
         public async Task<ActionResult<AnswerViewModel>> PostAnswer(AnswerViewModel answerViewModel)
         {
+            if (answerViewModel == null) return BadRequest("Bad Request");
+
             var answer = _mapper.Map<Answer>(answerViewModel);
 
-            if (answer == null) return NotFound();
+            answer.IpAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
 
             if (answer.Id == 0)
             {
@@ -124,7 +126,6 @@ namespace JwtIdentity.Controllers
                         break;
                 }
             }
-
 
             _ = await _context.SaveChangesAsync();
 
