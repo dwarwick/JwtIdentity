@@ -3,58 +3,71 @@
 @inherits CreateQuestionsModel
 @attribute [Authorize(Policy = Permissions.CreateSurvey)]
 
-<MudText Typo="Typo.h4">Create Questions</MudText>
+<MudStack Row="true" Justify="Justify.SpaceBetween">
+    <MudText Typo="Typo.h4">Create Questions</MudText>
+    <MudButton Class="mt-1" ButtonType="ButtonType.Button" Variant="Variant.Filled" Color="Color.Primary" OnClick="PublishSurvey" Disabled="@(Survey.Published)">Publish Survey</MudButton>
+</MudStack>
 <MudText Typo="Typo.h5">Survey Title: @Survey.Title</MudText>
 
 <div Class="d-md-flex flex-row justify-space-evenly gap-2">
-    <MudStack Class="flex-1">
-        <MudPaper Class="p-2">
-            <MudStack Spacing="1">
-                <MudSelect Label="Select the Question Type"
-                           @bind-Value="@SelectedQuestionType"
-                           Variant="Variant.Filled"
-                           Immediate="true"
-                           ErrorText="Please select a type"
-                           Error="@(string.IsNullOrWhiteSpace(SelectedQuestionType))">
-                    @foreach (var questionType in QuestionTypes)
-                    {
-                        <MudSelectItem Value="@(StringHelper.PascalCaseToWords( questionType))" />
-                    }
-                </MudSelect>
 
-                <MudText Typo="Typo.h6" Class="mt-5">Create a @StringHelper.PascalCaseToWords(SelectedQuestionType) Question</MudText>
-                <MudTextField id="Text" Label="Question Text" @bind-Value="QuestionText" Variant="Variant.Filled" Lines="1" MaxLines="5" AutoGrow="true" Immediate="true" Counter="50" MaxLength="50" />
-            </MudStack>
+    @if (!Survey.Published)
+    {
+        <MudStack Class="flex-1">
+            <MudPaper Class="p-2">
 
-            <MudButton ButtonType="ButtonType.Button" Variant="Variant.Filled" Color="Color.Primary" OnClick="AddQuestionToSurvey" Disabled="@AddQuestionToSurveyDisabled">Add Question to Survey</MudButton>
-        </MudPaper>
-
-        @if (SelectedQuestionType.Replace(" ", "") == Enum.GetName(QuestionType.MultipleChoice))
-        {
-            <MudPaper>
-                <MudText Typo="Typo.h6" Class="mb-1">Add the Question Choices</MudText>
-                <MudTextField id="Choice" Label="Choice Text" @bind-Value="NewChoiceOptionText" Variant="Variant.Filled" Lines="1" MaxLines="5" AutoGrow="true" Immediate="true" Counter="50" MaxLength="50" />
-
-                <MudButton ButtonType="ButtonType.Button" Variant="Variant.Filled" Color="Color.Primary" OnClick="@AddChoiceOption" Disabled="@(string.IsNullOrWhiteSpace(NewChoiceOptionText))">Add Choice</MudButton>
-
-                <div style="height:150px;overflow:auto;" class="mt-2">
-                    <MudList T="string" ReadOnly="true" Dense="true">
-                        @foreach (var choice in MultipleChoiceQuestion.Options)
+                <MudStack Spacing="1">
+                    <MudSelect Label="Select the Question Type"
+                    @bind-Value="@SelectedQuestionType"
+                    Variant="Variant.Filled"
+                    Immediate="true"
+                    ErrorText="Please select a type"
+                    Error="@(string.IsNullOrWhiteSpace(SelectedQuestionType))">
+                        @foreach (var questionType in QuestionTypes)
                         {
-                            <MudListItem Text="@choice.OptionText" />
+                            <MudSelectItem Value="@(StringHelper.PascalCaseToWords( questionType))" />
                         }
-                    </MudList>
-                </div>
+                    </MudSelect>
+
+                    <MudText Typo="Typo.h6" Class="mt-5">Create a @StringHelper.PascalCaseToWords(SelectedQuestionType) Question</MudText>
+                    <MudTextField id="Text" Label="Question Text" @bind-Value="QuestionText" Variant="Variant.Filled" Lines="1" MaxLines="5" AutoGrow="true" Immediate="true" Counter="50" MaxLength="50" />
+                </MudStack>
+
+                <MudButton ButtonType="ButtonType.Button" Variant="Variant.Filled" Color="Color.Primary" OnClick="AddQuestionToSurvey" Disabled="@AddQuestionToSurveyDisabled">Add Question to Survey</MudButton>
             </MudPaper>
-        }
-    </MudStack>
+
+            @if (SelectedQuestionType.Replace(" ", "") == Enum.GetName(QuestionType.MultipleChoice))
+            {
+                <MudPaper>
+                    <MudText Typo="Typo.h6" Class="mb-1">Add the Question Choices</MudText>
+                    <MudTextField id="Choice" Label="Choice Text" @bind-Value="NewChoiceOptionText" Variant="Variant.Filled" Lines="1" MaxLines="5" AutoGrow="true" Immediate="true" Counter="50" MaxLength="50" />
+
+                    <MudButton ButtonType="ButtonType.Button" Variant="Variant.Filled" Color="Color.Primary" OnClick="@AddChoiceOption" Disabled="@(string.IsNullOrWhiteSpace(NewChoiceOptionText))">Add Choice</MudButton>
+
+                    <div style="height:150px;overflow:auto;" class="mt-2">
+                        <MudList T="string" ReadOnly="true" Dense="true">
+                            @foreach (var choice in MultipleChoiceQuestion.Options)
+                            {
+                                <MudListItem Text="@choice.OptionText" />
+                            }
+                        </MudList>
+                    </div>
+                </MudPaper>
+            }
+        </MudStack>
+    }
+    else
+    {
+        <MudAlert Severity="Severity.Normal" Variant="Variant.Outlined">This survey has been published</MudAlert>
+    }
+
 
     @if (Survey?.Questions != null && Survey.Questions.Count > 0)
     {
         <MudPaper Class="p-2 flex-1">
             <SfListBox TItem="QuestionViewModel"
                        DataSource="@Survey.Questions"
-                       AllowDragAndDrop="true"
+                       AllowDragAndDrop="@(!Survey.Published)"
                        Height="350px"
                        TValue="int">
 
