@@ -18,7 +18,7 @@ namespace JwtIdentity.Client.Pages.Survey
 
         protected static string GetTitleText(bool published) => published ? "Copy Survey Link" : "Survey not published";
 
-        protected static string ShareButtonDisabled(bool published) => published ? "" : "disabled";
+        protected static string ShareButtonDisabled(bool published, bool disabledCondition) => published == disabledCondition ? "" : "disabled";
 
         protected override async Task OnInitializedAsync()
         {
@@ -67,6 +67,17 @@ namespace JwtIdentity.Client.Pages.Survey
 
             // Open the URL in a new tab
             await JSRuntime.InvokeVoidAsync("open", url, "_blank");
+        }
+
+        protected void AddEditQuestions(string guid, bool published)
+        {
+            if (published)
+            {
+                _ = Snackbar.Add("Survey published. You cannot edit survey questions once it has been published", Severity.Error);
+                return;
+            }
+
+            NavigationManager.NavigateTo($"/survey/createquestions/{guid}");
         }
     }
 }

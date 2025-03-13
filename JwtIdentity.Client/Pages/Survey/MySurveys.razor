@@ -14,12 +14,12 @@
             <Template>
                 <MudStack Spacing="2" Row="true" Class="py-1" >
                 @{
-                        var guid = (context as SurveyViewModel).Guid;
+                    var guid = (context as SurveyViewModel).Guid;
 
-                        <MudButton Class=@($"copy_button {ShareButtonDisabled((context as SurveyViewModel).Published)}") Variant="Variant.Filled" Color="Color.Primary" OnClick="@(async () => await CopySurveyLinkAsync(guid))" title="@(GetTitleText((context as SurveyViewModel).Published))">Copy Survey Link</MudButton>
-                    }
+                        <MudButton Class=@($"mysurvey_buttons copy_button {ShareButtonDisabled((context as SurveyViewModel).Published, true)}") Variant="Variant.Filled" Color="Color.Primary" OnClick="@(async () => await CopySurveyLinkAsync(guid))" title="@(GetTitleText((context as SurveyViewModel).Published))">Copy Survey Link</MudButton>
+                }
 
-                    <div class=@($"fb-share-button d-flex {ShareButtonDisabled((context as SurveyViewModel).Published)}")
+                    <div class=@($"fb-share-button d-flex {ShareButtonDisabled((context as SurveyViewModel).Published, true)}")
                          data-href=@($"https://www.davidtest.xyz/survey/{guid}")
                          data-layout="button_count"
                          data-size="small"
@@ -30,7 +30,9 @@
                             <path class="svg-icon-path" d="M9.1,0.1V2H8C7.6,2,7.3,2.1,7.1,2.3C7,2.4,6.9,2.7,6.9,3v1.4H9L8.8,6.5H6.9V12H4.7V6.5H2.9V4.4h1.8V2.8 c0-0.9,0.3-1.6,0.7-2.1C6,0.2,6.6,0,7.5,0C8.2,0,8.7,0,9.1,0.1z"></path>
                         </svg>
                     </div>
-               </MudStack>
+
+                    <MudButton Class=@($"mysurvey_buttons addEditQuestions_button {ShareButtonDisabled((context as SurveyViewModel).Published, false)}") Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => AddEditQuestions((context as SurveyViewModel).Guid, (context as SurveyViewModel).Published))">Add/Edit Questions</MudButton>
+                </MudStack>
             </Template>
         </GridColumn>
     </GridColumns>
