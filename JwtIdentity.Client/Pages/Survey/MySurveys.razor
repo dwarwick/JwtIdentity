@@ -16,7 +16,7 @@
                 @{
                     var guid = (context as SurveyViewModel).Guid;
 
-                        <MudButton Class=@($"mysurvey_buttons copy_button {ShareButtonDisabled((context as SurveyViewModel).Published, true)}") Variant="Variant.Filled" Color="Color.Primary" OnClick="@(async () => await CopySurveyLinkAsync(guid))" title="@(GetTitleText((context as SurveyViewModel).Published))">Copy Survey Link</MudButton>
+                    <MudButton Class=@($"mysurvey_buttons copy_button {ShareButtonDisabled((context as SurveyViewModel).Published, true)}") Variant="Variant.Filled" Color="Color.Primary" OnClick="@(async () => await CopySurveyLinkAsync(guid))" title="@(GetTitleText((context as SurveyViewModel).Published))">Copy Survey Link</MudButton>
                 }
 
                     <div class=@($"fb-share-button d-flex {ShareButtonDisabled((context as SurveyViewModel).Published, true)}")
