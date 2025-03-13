@@ -16,6 +16,10 @@ namespace JwtIdentity.Client.Pages.Survey
 
         protected FilterDefinition<SurveyViewModel> _filterDefinition { get; set; }
 
+        protected static string GetTitleText(bool published) => published ? "Copy Survey Link" : "Survey not published";
+
+        protected static string ShareButtonDisabled(bool published) => published ? "" : "disabled";
+
         protected override async Task OnInitializedAsync()
         {
             UserSurveys = (await ApiService.GetAllAsync<SurveyViewModel>("api/Survey/MySurveys")).ToList();
@@ -30,10 +34,39 @@ namespace JwtIdentity.Client.Pages.Survey
 
         protected async Task CopySurveyLinkAsync(string guid)
         {
+            if (!UserSurveys.FirstOrDefault(x => x.Guid == guid).Published)
+            {
+                _ = Snackbar.Add("Survey not published", Severity.Error);
+                return;
+            }
+
             string url = $"{NavigationManager.BaseUri}survey/{guid}";
             await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", url);
 
             _ = Snackbar.Add("Survey link copied to clipboard", Severity.Success);
+        }
+
+        protected void CheckDisabledButton(string guid)
+        {
+            if (!UserSurveys.FirstOrDefault(x => x.Guid == guid).Published)
+            {
+                _ = Snackbar.Add("Survey not published", Severity.Error);
+            }
+        }
+
+        protected async Task HandleShareClick(string guid, bool published)
+        {
+            if (!published)
+            {
+                _ = Snackbar.Add("Survey not published", Severity.Error);
+                return;
+            }
+
+            // Construct the URL
+            string url = $"https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fwww.davidtest.xyz%2Fsurvey%2F{guid}&amp;src=sdkpreparse";
+
+            // Open the URL in a new tab
+            await JSRuntime.InvokeVoidAsync("open", url, "_blank");
         }
     }
 }
