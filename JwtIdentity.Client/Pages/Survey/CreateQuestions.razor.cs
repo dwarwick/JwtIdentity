@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Components.Web;
-using Syncfusion.Blazor.DropDowns;
+﻿using Syncfusion.Blazor.DropDowns;
 
 namespace JwtIdentity.Client.Pages.Survey
 {
@@ -14,6 +13,8 @@ namespace JwtIdentity.Client.Pages.Survey
 
         protected MultipleChoiceQuestionViewModel MultipleChoiceQuestion { get; set; } = new MultipleChoiceQuestionViewModel();
 
+        protected QuestionViewModel SelectedQuestion { get; set; }
+
         protected static string[] QuestionTypes => Enum.GetNames(typeof(QuestionType));
 
         protected string SelectedQuestionType { get; set; } = Enum.GetName(typeof(QuestionType), QuestionType.Text) ?? "Text";
@@ -21,8 +22,6 @@ namespace JwtIdentity.Client.Pages.Survey
         protected string QuestionText { get; set; }
 
         protected string NewChoiceOptionText { get; set; }
-
-        protected int DragIndex { get; set; }
 
         protected bool AddQuestionToSurveyDisabled =>
             Survey.Published ||
@@ -52,7 +51,11 @@ namespace JwtIdentity.Client.Pages.Survey
         {
             if (SelectedQuestionType.Replace(" ", "") == Enum.GetName(typeof(QuestionType), QuestionType.MultipleChoice))
             {
-                MultipleChoiceQuestion.Options.Add(new ChoiceOptionViewModel { OptionText = NewChoiceOptionText });
+                MultipleChoiceQuestion.Options.Add(new ChoiceOptionViewModel
+                {
+                    OptionText = NewChoiceOptionText,
+                    Order = MultipleChoiceQuestion.Options.Count,
+                });
                 NewChoiceOptionText = null;
             }
         }
@@ -70,9 +73,26 @@ namespace JwtIdentity.Client.Pages.Survey
                     Survey.Questions.Add(new TrueFalseQuestionViewModel { Text = QuestionText, QuestionType = QuestionType.TrueFalse });
                     break;
                 case "MultipleChoice":
-                    Survey.Questions.Add(new MultipleChoiceQuestionViewModel { Text = QuestionText, QuestionType = QuestionType.MultipleChoice, Options = MultipleChoiceQuestion.Options });
+                    if (SelectedQuestion.Id == 0)
+                    {
+                        Survey.Questions.Add(new MultipleChoiceQuestionViewModel { Text = QuestionText, QuestionType = QuestionType.MultipleChoice, Options = MultipleChoiceQuestion.Options });
+                    }
+                    else
+                    {
+                        var questionToUpdate = Survey.Questions.FirstOrDefault(x => x.Id == SelectedQuestion.Id) as MultipleChoiceQuestionViewModel;
+                        if (questionToUpdate != null)
+                        {
+                            SelectedQuestion.Text = QuestionText;
+
+                            _ = Survey.Questions.Remove(questionToUpdate);
+                            Survey.Questions.Add(SelectedQuestion);
+                        }
+                    }
+
                     break;
             }
+
+            SelectedQuestion = null;
 
             if (await UpdateSurvey())
             {
@@ -151,62 +171,33 @@ namespace JwtIdentity.Client.Pages.Survey
 
         protected void QuestionSelected(ListBoxChangeEventArgs<int, QuestionViewModel> args)
         {
-            QuestionViewModel selectedQuestion = Survey.Questions.FirstOrDefault(x => x.Id == args.Value);
+            SelectedQuestion = Survey.Questions.FirstOrDefault(x => x.Id == args.Value);
 
-            if (selectedQuestion != null)
+            if (SelectedQuestion != null)
             {
-                SelectedQuestionType = Enum.GetName(typeof(QuestionType), selectedQuestion.QuestionType);
-                QuestionText = selectedQuestion.Text;
+                SelectedQuestionType = Enum.GetName(typeof(QuestionType), SelectedQuestion.QuestionType);
+                QuestionText = SelectedQuestion.Text;
 
-                if (selectedQuestion.QuestionType == QuestionType.MultipleChoice)
+                if (SelectedQuestion.QuestionType == QuestionType.MultipleChoice)
                 {
-                    MultipleChoiceQuestion = selectedQuestion as MultipleChoiceQuestionViewModel;
+                    MultipleChoiceQuestion = SelectedQuestion as MultipleChoiceQuestionViewModel;
                 }
             }
         }
 
-        protected void OnDragStart(DragEventArgs args, int index)
+        protected async Task DroppedChoiceOption(List<ChoiceOptionViewModel> choices)
         {
-            DragIndex = index;
-            ResetQuestions = false;
-        }
-
-        protected void OnDragOver(DragEventArgs args, int index)
-        {
-            // this method is required to allow the drop event to fire
-        }
-
-        // PSEUDOCODE:
-        // 1) Find the MultipleChoiceQuestion in Survey.Questions with the same Id as MultipleChoiceQuestion.Id
-        // 2) Replace its Options list with the newly reordered MultipleChoiceQuestion.Options
-        // 3) Proceed with the existing 'await UpdateSurvey()' call
-
-        // CODE:
-        protected async Task OnDrop(DragEventArgs args, int index)
-        {
-            if (DragIndex == index)
-            {
-                return;
-            }
-
-            // reorder MultipleChoiceQuestion.Options according to the drag and drop
-            var movedItem = MultipleChoiceQuestion.Options[DragIndex];
-            MultipleChoiceQuestion.Options.RemoveAt(DragIndex);
-            MultipleChoiceQuestion.Options.Insert(index, movedItem);
-
             // update Order property for each item according to its new order
-            for (int i = 0; i < MultipleChoiceQuestion.Options.Count; i++)
+            for (int i = 0; i < choices.Count; i++)
             {
-                MultipleChoiceQuestion.Options[i].Order = i;
+                choices[i].Order = i;
             }
 
             // update Survey.Questions with the new order in MultipleChoiceQuestion.Options
             var questionToUpdate = Survey.Questions.FirstOrDefault(x => x.Id == MultipleChoiceQuestion.Id) as MultipleChoiceQuestionViewModel;
             if (questionToUpdate != null)
             {
-                questionToUpdate.Options = MultipleChoiceQuestion.Options.ToList();
-
-
+                questionToUpdate.Options = choices.ToList();
             }
 
             if (await UpdateSurvey())

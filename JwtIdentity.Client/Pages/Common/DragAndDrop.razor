@@ -1,0 +1,22 @@
+﻿@inherits DragAndDropModel<TItem>
+@typeparam TItem
+
+@if (DragOverIndex == Items.IndexOf(Item) && DragOverIndex < DragIndex)
+{
+    <div style="height: 10px; background-color: #007bff; width: 100%;"></div>
+}
+
+<div draggable="true"
+     @ondragstart="@((e) => OnDragStart(e, Items.IndexOf(Item)))"
+     @ondragover="@((e) => OnDragOver(e, Items.IndexOf(Item)))"
+     @ondrop="@((e) => OnDrop(e, Items.IndexOf(Item)))"
+     @ondragleave="OnDragLeave"
+     @ondragover:preventDefault="true"
+     @ondrop:preventDefault="true">     
+    @ChildContent
+</div>
+
+@if (DragOverIndex == Items.IndexOf(Item) && DragOverIndex > DragIndex)
+{
+    <div style="height: 10px; background-color: #007bff; width: 100%;"></div>
+}

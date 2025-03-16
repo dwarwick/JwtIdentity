@@ -22,7 +22,8 @@
                     Variant="Variant.Filled"
                     Immediate="true"
                     ErrorText="Please select a type"
-                    Error="@(string.IsNullOrWhiteSpace(SelectedQuestionType))">
+                    Error="@(string.IsNullOrWhiteSpace(SelectedQuestionType))"
+                    Disabled="@(SelectedQuestion != null)">
                         @foreach (var questionType in QuestionTypes)
                         {
                             <MudSelectItem Value="@(StringHelper.PascalCaseToWords( questionType))" />
@@ -48,14 +49,13 @@
                         <MudList T="string" ReadOnly="true" Dense="true">
                             @foreach (var choice in MultipleChoiceQuestion.Options)
                             {
-                                <div draggable="true"
-                                     @ondragstart="@((e) => OnDragStart(e, MultipleChoiceQuestion.Options.IndexOf(choice)))"
-                                     @ondragover="@((e) => OnDragOver(e, MultipleChoiceQuestion.Options.IndexOf(choice)))"
-                                     @ondrop="@((e) => OnDrop(e, MultipleChoiceQuestion.Options.IndexOf(choice)))"
-                                     @ondragover:preventDefault="true"
-                                    @ondrop:preventDefault="true">
-                                    <MudListItem Text="@choice.OptionText" />
-                                </div>
+                                <DragAndDrop TItem="ChoiceOptionViewModel" Items="MultipleChoiceQuestion.Options" Item="choice" ItemsChanged="DroppedChoiceOption">
+                                    <MudStack Class=".d-flex.flex-row.gap-3.ai-style-change-1" Row="true" AlignItems="AlignItems.Center">
+                                        <MudIcon Class="drag-icon ai-style-change-9" Icon="@Icons.Material.Filled.DragIndicator" />
+                                        <MudListItem Class="ai-style-change-3 ai-style-change-6" Text="@choice.OptionText" />
+                                    </MudStack>
+                                    <div style="height: 2px; background-color: blueviolet; width: 100%;"></div>
+                                </DragAndDrop>
                             }
                         </MudList>
                     </div>

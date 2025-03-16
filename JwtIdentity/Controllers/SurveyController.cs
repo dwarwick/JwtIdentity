@@ -119,7 +119,7 @@ namespace JwtIdentity.Controllers
                                 var existingTrueFalseQuestion = await _context.Questions.OfType<TrueFalseQuestion>().FirstOrDefaultAsync(q => q.Id == passedInQuestion.Id);
                                 break;
                             case QuestionType.MultipleChoice:
-                                var existingMCQuestion = await _context.Questions.OfType<MultipleChoiceQuestion>().Include(x => x.Options).FirstOrDefaultAsync(q => q.Id == passedInQuestion.Id);
+                                var existingMCQuestion = await _context.Questions.OfType<MultipleChoiceQuestion>().AsNoTracking().Include(x => x.Options).FirstOrDefaultAsync(q => q.Id == passedInQuestion.Id);
 
                                 if (existingMCQuestion != null && (existingMCQuestion.Text != passedInQuestion.Text
                                         || passedInQuestion.QuestionNumber != existingMCQuestion.QuestionNumber

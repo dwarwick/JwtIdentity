@@ -138,6 +138,23 @@ h1:focus {
 
 .disabled {
     background-color: var(--mud-palette-action-disabled-background) !important;    
-    cursor: default;
-    
+    cursor: default;    
+}
+
+.d-flex.flex-row.gap-3.ai-style-change-1 {
+    gap: 2px;
+}
+
+.mud-list-item.mud-list-item-dense.mud-list-item-gutters.ai-style-change-3 {
+    width: auto;
+    padding-right: 0px;
+}
+
+.mud-list-item-text.ai-style-change-6 {
+    width: auto;
+    margin-left: -14px;
+}
+
+svg.mud-icon-root.mud-svg-icon.mud-icon-size-medium.drag-icon.ai-style-change-9 {
+    margin-right: -34px;
 }
