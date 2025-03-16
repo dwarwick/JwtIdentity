@@ -1,9 +1,12 @@
-﻿using Syncfusion.Blazor.DropDowns;
+﻿using Microsoft.AspNetCore.Components.Web;
+using Syncfusion.Blazor.DropDowns;
 
 namespace JwtIdentity.Client.Pages.Survey
 {
     public class CreateQuestionsModel : BlazorBase
     {
+        private bool ResetQuestions;
+
         [Parameter]
         public string SurveyId { get; set; }
 
@@ -18,6 +21,8 @@ namespace JwtIdentity.Client.Pages.Survey
         protected string QuestionText { get; set; }
 
         protected string NewChoiceOptionText { get; set; }
+
+        protected int DragIndex { get; set; }
 
         protected bool AddQuestionToSurveyDisabled =>
             Survey.Published ||
@@ -54,6 +59,8 @@ namespace JwtIdentity.Client.Pages.Survey
 
         protected async Task AddQuestionToSurvey()
         {
+            ResetQuestions = true;
+
             switch (SelectedQuestionType.Replace(" ", ""))
             {
                 case "Text":
@@ -67,14 +74,8 @@ namespace JwtIdentity.Client.Pages.Survey
                     break;
             }
 
-            var response = await ApiService.PostAsync(ApiEndpoints.Survey, Survey);
-            if (response != null && response.Id > 0)
+            if (await UpdateSurvey())
             {
-                await LoadData();
-
-                QuestionText = null;
-                MultipleChoiceQuestion.Options.Clear();
-
                 _ = Snackbar.Add("Question Added", MudBlazor.Severity.Success);
             }
             else
@@ -145,6 +146,97 @@ namespace JwtIdentity.Client.Pages.Survey
             else
             {
                 _ = Snackbar.Add("Unable to publish survey", Severity.Error);
+            }
+        }
+
+        protected void QuestionSelected(ListBoxChangeEventArgs<int, QuestionViewModel> args)
+        {
+            QuestionViewModel selectedQuestion = Survey.Questions.FirstOrDefault(x => x.Id == args.Value);
+
+            if (selectedQuestion != null)
+            {
+                SelectedQuestionType = Enum.GetName(typeof(QuestionType), selectedQuestion.QuestionType);
+                QuestionText = selectedQuestion.Text;
+
+                if (selectedQuestion.QuestionType == QuestionType.MultipleChoice)
+                {
+                    MultipleChoiceQuestion = selectedQuestion as MultipleChoiceQuestionViewModel;
+                }
+            }
+        }
+
+        protected void OnDragStart(DragEventArgs args, int index)
+        {
+            DragIndex = index;
+            ResetQuestions = false;
+        }
+
+        protected void OnDragOver(DragEventArgs args, int index)
+        {
+            // this method is required to allow the drop event to fire
+        }
+
+        // PSEUDOCODE:
+        // 1) Find the MultipleChoiceQuestion in Survey.Questions with the same Id as MultipleChoiceQuestion.Id
+        // 2) Replace its Options list with the newly reordered MultipleChoiceQuestion.Options
+        // 3) Proceed with the existing 'await UpdateSurvey()' call
+
+        // CODE:
+        protected async Task OnDrop(DragEventArgs args, int index)
+        {
+            if (DragIndex == index)
+            {
+                return;
+            }
+
+            // reorder MultipleChoiceQuestion.Options according to the drag and drop
+            var movedItem = MultipleChoiceQuestion.Options[DragIndex];
+            MultipleChoiceQuestion.Options.RemoveAt(DragIndex);
+            MultipleChoiceQuestion.Options.Insert(index, movedItem);
+
+            // update Order property for each item according to its new order
+            for (int i = 0; i < MultipleChoiceQuestion.Options.Count; i++)
+            {
+                MultipleChoiceQuestion.Options[i].Order = i;
+            }
+
+            // update Survey.Questions with the new order in MultipleChoiceQuestion.Options
+            var questionToUpdate = Survey.Questions.FirstOrDefault(x => x.Id == MultipleChoiceQuestion.Id) as MultipleChoiceQuestionViewModel;
+            if (questionToUpdate != null)
+            {
+                questionToUpdate.Options = MultipleChoiceQuestion.Options.ToList();
+
+
+            }
+
+            if (await UpdateSurvey())
+            {
+                _ = Snackbar.Add("Options order updated", MudBlazor.Severity.Success);
+            }
+            else
+            {
+                _ = Snackbar.Add("Options order Not Updated", MudBlazor.Severity.Error);
+            }
+        }
+
+        private async Task<bool> UpdateSurvey()
+        {
+            var response = await ApiService.PostAsync(ApiEndpoints.Survey, Survey);
+            if (response != null && response.Id > 0)
+            {
+                await LoadData();
+
+                if (ResetQuestions)
+                {
+                    QuestionText = null;
+                    MultipleChoiceQuestion.Options.Clear();
+                }
+
+                return true;
+            }
+            else
+            {
+                return false;
             }
         }
     }

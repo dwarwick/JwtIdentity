@@ -48,7 +48,14 @@
                         <MudList T="string" ReadOnly="true" Dense="true">
                             @foreach (var choice in MultipleChoiceQuestion.Options)
                             {
-                                <MudListItem Text="@choice.OptionText" />
+                                <div draggable="true"
+                                     @ondragstart="@((e) => OnDragStart(e, MultipleChoiceQuestion.Options.IndexOf(choice)))"
+                                     @ondragover="@((e) => OnDragOver(e, MultipleChoiceQuestion.Options.IndexOf(choice)))"
+                                     @ondrop="@((e) => OnDrop(e, MultipleChoiceQuestion.Options.IndexOf(choice)))"
+                                     @ondragover:preventDefault="true"
+                                    @ondrop:preventDefault="true">
+                                    <MudListItem Text="@choice.OptionText" />
+                                </div>
                             }
                         </MudList>
                     </div>
@@ -84,7 +91,8 @@
                 </ListBoxTemplates>
 
                 <!-- Use ListBoxEvents so we can handle reordering when the drag stops -->
-                <ListBoxEvents TItem="QuestionViewModel" TValue="int" OnDrop="ItemUpdated" />
+                <ListBoxEvents TItem="QuestionViewModel" TValue="int" OnDrop="ItemUpdated" ValueChange="QuestionSelected" />
+                
             </SfListBox>
         </MudPaper>
     }

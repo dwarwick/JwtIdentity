@@ -15,39 +15,48 @@
             _ = CreateMap<RoleClaim, RoleClaimViewModel>().ReverseMap();
 
             _ = CreateMap<Question, QuestionViewModel>().IncludeAllDerived();
-            _ = CreateMap<Answer, AnswerViewModel>().IncludeAllDerived();
-
-
             _ = CreateMap<QuestionViewModel, Question>().IncludeAllDerived()
-                .ForMember(x => x.CreatedBy, options => options.Ignore())
-                .ForMember(x => x.CreatedById, options => options.Ignore());
+                .ForMember(x => x.CreatedBy, options => options.Ignore());
 
+            _ = CreateMap<TextQuestion, TextQuestionViewModel>();
+            _ = CreateMap<TextQuestionViewModel, TextQuestion>()
+                .ForMember(x => x.CreatedBy, options => options.Ignore());
+
+            _ = CreateMap<TrueFalseQuestion, TrueFalseQuestionViewModel>();
+            _ = CreateMap<TrueFalseQuestionViewModel, TrueFalseQuestion>()
+                .ForMember(x => x.CreatedBy, options => options.Ignore());
+
+            _ = CreateMap<MultipleChoiceQuestion, MultipleChoiceQuestionViewModel>();
+            _ = CreateMap<MultipleChoiceQuestionViewModel, MultipleChoiceQuestion>()
+                .ForMember(x => x.CreatedBy, options => options.Ignore());
+
+
+            _ = CreateMap<Answer, AnswerViewModel>().IncludeAllDerived();
             _ = CreateMap<AnswerViewModel, Answer>().IncludeAllDerived()
-                .ForMember(x => x.CreatedBy, options => options.Ignore())
-                .ForMember(x => x.CreatedById, options => options.Ignore());
+                .ForMember(x => x.CreatedBy, options => options.Ignore());
 
+            _ = CreateMap<TextAnswer, TextAnswerViewModel>();
+            _ = CreateMap<TextAnswerViewModel, TextAnswer>()
+                .ForMember(x => x.CreatedBy, options => options.Ignore());
 
-            _ = CreateMap<TextAnswer, TextAnswerViewModel>().ReverseMap();
-            _ = CreateMap<TrueFalseAnswer, TrueFalseAnswerViewModel>().ReverseMap();
+            _ = CreateMap<TrueFalseAnswer, TrueFalseAnswerViewModel>();
+            _ = CreateMap<TrueFalseAnswerViewModel, TrueFalseAnswer>()
+                .ForMember(x => x.CreatedBy, options => options.Ignore());
+
             _ = CreateMap<MultipleChoiceAnswer, MultipleChoiceAnswerViewModel>();
             _ = CreateMap<MultipleChoiceAnswerViewModel, MultipleChoiceAnswer>()
-                .ForMember(x => x.CreatedBy, options => options.Ignore())
-                .ForMember(x => x.CreatedById, options => options.Ignore());
+                .ForMember(x => x.CreatedBy, options => options.Ignore());
 
-            _ = CreateMap<SingleChoiceAnswer, SingleChoiceAnswerViewModel>().ReverseMap();
+            _ = CreateMap<SingleChoiceAnswer, SingleChoiceAnswerViewModel>();
+            _ = CreateMap<SingleChoiceAnswerViewModel, SingleChoiceAnswer>()
+                .ForMember(x => x.CreatedById, options => options.Ignore());
 
             _ = CreateMap<ChoiceOption, ChoiceOptionViewModel>().ReverseMap();
 
 
 
 
-            _ = CreateMap<TextQuestion, TextQuestionViewModel>().ReverseMap();
-            _ = CreateMap<TrueFalseQuestion, TrueFalseQuestionViewModel>().ReverseMap();
 
-            _ = CreateMap<MultipleChoiceQuestion, MultipleChoiceQuestionViewModel>();
-            _ = CreateMap<MultipleChoiceQuestionViewModel, MultipleChoiceQuestion>()
-                .ForMember(x => x.CreatedBy, options => options.Ignore())
-                .ForMember(x => x.CreatedById, options => options.Ignore());
 
             _ = CreateMap<Survey, SurveyViewModel>().ReverseMap();
 
