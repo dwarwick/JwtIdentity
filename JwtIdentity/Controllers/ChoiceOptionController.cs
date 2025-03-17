@@ -64,16 +64,19 @@
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteChoiceOption(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            var choiceOption = await _context.ChoiceOptions.FindAsync(id);
-            if (choiceOption == null)
+            var choice = await _context.ChoiceOptions.FindAsync(id);
+            if (choice == null)
             {
                 return NotFound();
             }
-            _ = _context.ChoiceOptions.Remove(choiceOption);
+
+            _ = _context.ChoiceOptions.Remove(choice);
+
             _ = await _context.SaveChangesAsync();
-            return NoContent();
+
+            return Ok("Choice Deleted");
         }
 
         private bool ChoiceOptionExists(int id)

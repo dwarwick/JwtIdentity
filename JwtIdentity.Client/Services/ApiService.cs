@@ -84,7 +84,12 @@ namespace JwtIdentity.Client.Services
         public async Task<bool> DeleteAsync(string endpoint)
         {
             var response = await _httpClient.DeleteAsync($"{endpoint}");
-            _ = EnsureSuccess(response);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                _ = snackbar.Add("There was a problem with the request", Severity.Error);
+            }
+
             return response.IsSuccessStatusCode;
         }
 

@@ -59,7 +59,7 @@ namespace JwtIdentity.Controllers
         {
             var createdById = authService.GetUserId(User);
             var surveys = await _context.Surveys
-                .Include(s => s.Questions)
+                .Include(s => s.Questions.OrderBy(q => q.QuestionNumber))
                 .Where(s => s.CreatedById == createdById)
                 .ToListAsync();
 
@@ -82,8 +82,6 @@ namespace JwtIdentity.Controllers
                 survey.CreatedById = createdById;
 
                 _ = _context.Surveys.Add(survey);
-
-                _ = await _context.SaveChangesAsync();
             }
             else
             { // existing survey
@@ -114,18 +112,34 @@ namespace JwtIdentity.Controllers
                         {
                             case QuestionType.Text:
                                 var existingTextQuestion = await _context.Questions.OfType<TextQuestion>().FirstOrDefaultAsync(q => q.Id == passedInQuestion.Id);
+
+                                if (existingTextQuestion != null && (existingTextQuestion.Text != passedInQuestion.Text
+                                        || passedInQuestion.QuestionNumber != existingTextQuestion.QuestionNumber))
+                                {
+                                    existingTextQuestion.Text = passedInQuestion.Text;
+                                    existingTextQuestion.QuestionNumber = passedInQuestion.QuestionNumber;
+
+                                    _ = _context.Questions.Update(existingTextQuestion);
+                                }
+
                                 break;
                             case QuestionType.TrueFalse:
                                 var existingTrueFalseQuestion = await _context.Questions.OfType<TrueFalseQuestion>().FirstOrDefaultAsync(q => q.Id == passedInQuestion.Id);
+                                existingTrueFalseQuestion.Text = passedInQuestion.Text;
+                                existingTrueFalseQuestion.QuestionNumber = passedInQuestion.QuestionNumber;
+
+                                _ = _context.Questions.Update(existingTrueFalseQuestion);
                                 break;
                             case QuestionType.MultipleChoice:
                                 var existingMCQuestion = await _context.Questions.OfType<MultipleChoiceQuestion>().AsNoTracking().Include(x => x.Options).FirstOrDefaultAsync(q => q.Id == passedInQuestion.Id);
 
                                 if (existingMCQuestion != null && (existingMCQuestion.Text != passedInQuestion.Text
-                                        || passedInQuestion.QuestionNumber != existingMCQuestion.QuestionNumber
-                                        || passedInQuestion.QuestionType != existingMCQuestion.QuestionType))
+                                        || passedInQuestion.QuestionNumber != existingMCQuestion.QuestionNumber))
                                 {
-                                    _context.Entry(passedInQuestion).State = EntityState.Modified;
+                                    existingMCQuestion.Text = passedInQuestion.Text;
+                                    existingMCQuestion.QuestionNumber = passedInQuestion.QuestionNumber;
+
+                                    _ = _context.Questions.Update(existingMCQuestion);
                                 }
 
                                 var newMCQuestion = passedInQuestion as MultipleChoiceQuestion;
@@ -149,22 +163,18 @@ namespace JwtIdentity.Controllers
                                             {
                                                 existingOption.OptionText = newOption.OptionText;
                                                 existingOption.Order = newOption.Order;
-                                                _context.Entry(existingOption).State = EntityState.Modified;
+                                                _ = _context.ChoiceOptions.Update(existingOption);
                                             }
                                         }
                                     }
                                 }
                                 break;
                         }
-
-
-
                     }
                 }
-
-                _ = await _context.SaveChangesAsync();
             }
 
+            _ = await _context.SaveChangesAsync();
             return CreatedAtAction(nameof(PostSurvey), new { id = survey.Id }, _mapper.Map<SurveyViewModel>(survey));
         }
 

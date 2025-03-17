@@ -158,3 +158,7 @@ h1:focus {
 svg.mud-icon-root.mud-svg-icon.mud-icon-size-medium.drag-icon.ai-style-change-9 {
     margin-right: -34px;
 }
+
+.mud-ripple::after {
+    content: unset !important;
+}
