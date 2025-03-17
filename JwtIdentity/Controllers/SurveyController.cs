@@ -46,7 +46,7 @@ namespace JwtIdentity.Controllers
             await _context.Questions
                 .OfType<MultipleChoiceQuestion>()
                 .Where(mc => mcIds.Contains(mc.Id))
-                .Include(mc => mc.Options)
+                .Include(mc => mc.Options.OrderBy(o => o.Order))
                 .LoadAsync();
 
             return Ok(_mapper.Map<SurveyViewModel>(survey));
@@ -59,7 +59,7 @@ namespace JwtIdentity.Controllers
         {
             var createdById = authService.GetUserId(User);
             var surveys = await _context.Surveys
-                .Include(s => s.Questions)
+                .Include(s => s.Questions.OrderBy(q => q.QuestionNumber))
                 .Where(s => s.CreatedById == createdById)
                 .ToListAsync();
 
@@ -85,11 +85,96 @@ namespace JwtIdentity.Controllers
             }
             else
             { // existing survey
-                _ = _context.Surveys.Update(survey);
+
+                // check if survey name has changed. If so, update the survey
+                var existingSurvey = await _context.Surveys.FindAsync(survey.Id);
+                if (existingSurvey != null && existingSurvey.Title != survey.Title)
+                {
+                    _context.Entry(survey).State = EntityState.Modified;
+                }
+
+                foreach (var passedInQuestion in survey.Questions)
+                {
+                    if (passedInQuestion.Id == 0)
+                    { // new question
+                        passedInQuestion.CreatedById = createdById;
+                        passedInQuestion.SurveyId = survey.Id;
+
+                        _ = _context.Questions.Add(passedInQuestion);
+                    }
+                    else
+                    { // existing question
+
+                        // check if question text has changed. If so, update the question
+
+
+                        switch (passedInQuestion.QuestionType)
+                        {
+                            case QuestionType.Text:
+                                var existingTextQuestion = await _context.Questions.OfType<TextQuestion>().FirstOrDefaultAsync(q => q.Id == passedInQuestion.Id);
+
+                                if (existingTextQuestion != null && (existingTextQuestion.Text != passedInQuestion.Text
+                                        || passedInQuestion.QuestionNumber != existingTextQuestion.QuestionNumber))
+                                {
+                                    existingTextQuestion.Text = passedInQuestion.Text;
+                                    existingTextQuestion.QuestionNumber = passedInQuestion.QuestionNumber;
+
+                                    _ = _context.Questions.Update(existingTextQuestion);
+                                }
+
+                                break;
+                            case QuestionType.TrueFalse:
+                                var existingTrueFalseQuestion = await _context.Questions.OfType<TrueFalseQuestion>().FirstOrDefaultAsync(q => q.Id == passedInQuestion.Id);
+                                existingTrueFalseQuestion.Text = passedInQuestion.Text;
+                                existingTrueFalseQuestion.QuestionNumber = passedInQuestion.QuestionNumber;
+
+                                _ = _context.Questions.Update(existingTrueFalseQuestion);
+                                break;
+                            case QuestionType.MultipleChoice:
+                                var existingMCQuestion = await _context.Questions.OfType<MultipleChoiceQuestion>().AsNoTracking().Include(x => x.Options).FirstOrDefaultAsync(q => q.Id == passedInQuestion.Id);
+
+                                if (existingMCQuestion != null && (existingMCQuestion.Text != passedInQuestion.Text
+                                        || passedInQuestion.QuestionNumber != existingMCQuestion.QuestionNumber))
+                                {
+                                    existingMCQuestion.Text = passedInQuestion.Text;
+                                    existingMCQuestion.QuestionNumber = passedInQuestion.QuestionNumber;
+
+                                    _ = _context.Questions.Update(existingMCQuestion);
+                                }
+
+                                var newMCQuestion = passedInQuestion as MultipleChoiceQuestion;
+
+                                if (existingMCQuestion != null && newMCQuestion != null)
+                                {
+                                    // check if any options have changed
+                                    foreach (var newOption in newMCQuestion.Options ?? new List<ChoiceOption>())
+                                    {
+                                        if (newOption.Id == 0)
+                                        { // new option
+
+                                            newOption.MultipleChoiceQuestionId = passedInQuestion.Id;
+                                            _ = _context.ChoiceOptions.Add(newOption);
+                                        }
+                                        else
+                                        { // existing option                                            
+                                            var existingOption = existingMCQuestion.Options.FirstOrDefault(o => o.Id == newOption.Id);
+
+                                            if (existingOption != null && (existingOption.OptionText != newOption.OptionText || existingOption.Order != newOption.Order))
+                                            {
+                                                existingOption.OptionText = newOption.OptionText;
+                                                existingOption.Order = newOption.Order;
+                                                _ = _context.ChoiceOptions.Update(existingOption);
+                                            }
+                                        }
+                                    }
+                                }
+                                break;
+                        }
+                    }
+                }
             }
 
             _ = await _context.SaveChangesAsync();
-
             return CreatedAtAction(nameof(PostSurvey), new { id = survey.Id }, _mapper.Map<SurveyViewModel>(survey));
         }
 

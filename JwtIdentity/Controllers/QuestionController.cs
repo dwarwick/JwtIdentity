@@ -104,10 +104,17 @@ namespace JwtIdentity.Controllers
                 return NotFound();
             }
 
+            // delete all choiceoptions for multiple choice questions
+            if (question.QuestionType == QuestionType.MultipleChoice)
+            {
+                var existingMCQuestion = await _context.Questions.OfType<MultipleChoiceQuestion>().AsNoTracking().Include(x => x.Options).FirstOrDefaultAsync(q => q.Id == id);
+                _context.ChoiceOptions.RemoveRange(existingMCQuestion.Options);
+            }
+
             _ = _context.Questions.Remove(question);
             _ = await _context.SaveChangesAsync();
 
-            return NoContent();
+            return Ok("Questions Deleted");
         }
 
         private bool QuestionExists(int id)
