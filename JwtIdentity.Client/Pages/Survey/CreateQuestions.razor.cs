@@ -13,13 +13,25 @@ namespace JwtIdentity.Client.Pages.Survey
 
         protected MultipleChoiceQuestionViewModel MultipleChoiceQuestion { get; set; } = new MultipleChoiceQuestionViewModel();
 
-        protected QuestionViewModel SelectedQuestion { get; set; }
+        private QuestionViewModel _selectedQuestion;
+        protected QuestionViewModel SelectedQuestion
+        {
+            get => _selectedQuestion;
+            set
+            {
+                // If user "re-selects" the same question, unselect
+                if (value == _selectedQuestion)
+                    _selectedQuestion = null;
+                else
+                    _selectedQuestion = value;
+            }
+        }
 
         private readonly DialogOptions _topCenter = new() { Position = DialogPosition.TopCenter, CloseButton = false, CloseOnEscapeKey = false };
 
         protected static string[] QuestionTypes => Enum.GetNames(typeof(QuestionType));
 
-        protected string SelectedQuestionType { get; set; } = Enum.GetName(typeof(QuestionType), QuestionType.Text) ?? "Text";
+        protected string SelectedQuestionType { get; set; } = Enum.GetName(QuestionType.Text) ?? "Text";
 
         protected string QuestionText { get; set; }
 
@@ -137,10 +149,36 @@ namespace JwtIdentity.Client.Pages.Survey
             switch (SelectedQuestionType.Replace(" ", ""))
             {
                 case "Text":
-                    Survey.Questions.Add(new TextQuestionViewModel { Text = QuestionText, QuestionType = QuestionType.Text, QuestionNumber = Survey.Questions.Count });
+                    if ((SelectedQuestion?.Id ?? 0) == 0)
+                    {
+                        Survey.Questions.Add(new TextQuestionViewModel { Text = QuestionText, QuestionType = QuestionType.Text, QuestionNumber = Survey.Questions.Count + 1 });
+                    }
+                    else
+                    {
+                        var questionToUpdate = Survey.Questions.FirstOrDefault(x => x.Id == SelectedQuestion.Id) as TextQuestionViewModel;
+                        if (questionToUpdate != null)
+                        {
+                            SelectedQuestion.Text = QuestionText;
+                            _ = Survey.Questions.Remove(questionToUpdate);
+                            Survey.Questions.Add(SelectedQuestion);
+                        }
+                    }
                     break;
                 case "TrueFalse":
-                    Survey.Questions.Add(new TrueFalseQuestionViewModel { Text = QuestionText, QuestionType = QuestionType.TrueFalse, QuestionNumber = Survey.Questions.Count });
+                    if ((SelectedQuestion?.Id ?? 0) == 0)
+                    {
+                        Survey.Questions.Add(new TrueFalseQuestionViewModel { Text = QuestionText, QuestionType = QuestionType.TrueFalse, QuestionNumber = Survey.Questions.Count + 1 });
+                    }
+                    else
+                    {
+                        var questionToUpdate = Survey.Questions.FirstOrDefault(x => x.Id == SelectedQuestion.Id) as TrueFalseQuestionViewModel;
+                        if (questionToUpdate != null)
+                        {
+                            SelectedQuestion.Text = QuestionText;
+                            _ = Survey.Questions.Remove(questionToUpdate);
+                            Survey.Questions.Add(SelectedQuestion);
+                        }
+                    }
                     break;
                 case "MultipleChoice":
                     if ((SelectedQuestion?.Id ?? 0) == 0)
@@ -213,6 +251,16 @@ namespace JwtIdentity.Client.Pages.Survey
 
         protected void QuestionSelected(QuestionViewModel input)
         {
+            if (input == null)
+            {
+                SelectedQuestion = null;
+                SelectedQuestionType = Enum.GetName(QuestionType.Text) ?? "Text";
+                QuestionText = null;
+                MultipleChoiceQuestion = null;
+
+                return;
+            }
+
             SelectedQuestion = Survey.Questions.FirstOrDefault(x => x.Id == input.Id);
 
             if (SelectedQuestion != null)

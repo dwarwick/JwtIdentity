@@ -86,11 +86,15 @@ namespace JwtIdentity.Controllers
             else
             { // existing survey
 
-                // check if survey name has changed. If so, update the survey
+                // check if survey title or description has changed. If so, update the survey
                 var existingSurvey = await _context.Surveys.FindAsync(survey.Id);
-                if (existingSurvey != null && existingSurvey.Title != survey.Title)
+
+                if (existingSurvey != null &&
+                    (existingSurvey.Title != survey.Title || existingSurvey.Description != survey.Description))
                 {
-                    _context.Entry(survey).State = EntityState.Modified;
+                    existingSurvey.Title = survey.Title;
+                    existingSurvey.Description = survey.Description;
+                    _ = _context.Surveys.Update(existingSurvey);
                 }
 
                 foreach (var passedInQuestion in survey.Questions)
@@ -106,7 +110,6 @@ namespace JwtIdentity.Controllers
                     { // existing question
 
                         // check if question text has changed. If so, update the question
-
 
                         switch (passedInQuestion.QuestionType)
                         {

@@ -73,7 +73,7 @@
     @if (Survey?.Questions != null && Survey.Questions.Count > 0)
     {
         <MudPaper Class="p-2 flex-1">
-            <MudList T="QuestionViewModel" Dense="true" SelectedValue="SelectedQuestion" SelectionMode="MudBlazor.SelectionMode.SingleSelection" SelectedValueChanged="QuestionSelected">
+            <MudList T="QuestionViewModel" Dense="true" SelectedValue="SelectedQuestion" SelectionMode="MudBlazor.SelectionMode.ToggleSelection" SelectedValueChanged="QuestionSelected">
                 @foreach (var question in Survey.Questions)
                 {
                     <DragAndDrop TItem="QuestionViewModel" Items="Survey.Questions" Item="question" ItemsChanged="DroppedQuestion">
