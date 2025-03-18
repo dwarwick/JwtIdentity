@@ -112,6 +112,13 @@ namespace JwtIdentity.Controllers
             }
 
             _ = _context.Questions.Remove(question);
+
+            _ = await _context.SaveChangesAsync();
+
+            List<Question> questions = await _context.Questions.Where(q => q.SurveyId == question.SurveyId).OrderBy(q => q.QuestionNumber).ToListAsync();
+
+            questions.ForEach(q => q.QuestionNumber = questions.IndexOf(q) + 1);
+
             _ = await _context.SaveChangesAsync();
 
             return Ok("Questions Deleted");
