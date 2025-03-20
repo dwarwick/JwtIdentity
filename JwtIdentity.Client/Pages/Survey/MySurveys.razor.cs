@@ -1,9 +1,10 @@
-﻿
-
-namespace JwtIdentity.Client.Pages.Survey
+﻿namespace JwtIdentity.Client.Pages.Survey
 {
-    public class MySurveysModel : BlazorBase
+    public class MySurveysModel : BlazorBase, IBrowserViewportObserver, IAsyncDisposable
     {
+        [Inject]
+        protected IBrowserViewportService BrowserViewportService { get; set; }
+
         public List<SurveyViewModel> UserSurveys { get; set; } = new();
 
         protected HashSet<SurveyViewModel> _filterItems = new();
@@ -16,9 +17,19 @@ namespace JwtIdentity.Client.Pages.Survey
 
         protected FilterDefinition<SurveyViewModel> _filterDefinition { get; set; }
 
+        protected int FrozenColumns { get; set; }
+
         protected static string GetTitleText(bool published) => published ? "Copy Survey Link" : "Survey not published";
 
         protected static string ShareButtonDisabled(bool published, bool disabledCondition) => published == disabledCondition ? "" : "disabled";
+
+        Guid IBrowserViewportObserver.Id => Guid.NewGuid();
+
+        ResizeOptions IBrowserViewportObserver.ResizeOptions { get; } = new()
+        {
+            ReportRate = 250,
+            NotifyOnBreakpointOnly = true
+        };
 
         protected override async Task OnInitializedAsync()
         {
@@ -30,6 +41,16 @@ namespace JwtIdentity.Client.Pages.Survey
             {
                 FilterFunction = x => _filterItems.Contains(x)
             };
+        }
+
+        protected override async Task OnAfterRenderAsync(bool firstRender)
+        {
+            if (firstRender)
+            {
+                await BrowserViewportService.SubscribeAsync(this, fireImmediately: true);
+            }
+
+            await base.OnAfterRenderAsync(firstRender);
         }
 
         protected async Task CopySurveyLinkAsync(string guid)
@@ -79,5 +100,23 @@ namespace JwtIdentity.Client.Pages.Survey
 
             NavigationManager.NavigateTo($"/survey/createquestions/{guid}");
         }
+
+        Task IBrowserViewportObserver.NotifyBrowserViewportChangeAsync(BrowserViewportEventArgs browserViewportEventArgs)
+        {
+            Breakpoint breakpoint = browserViewportEventArgs.Breakpoint;
+
+            if (breakpoint == Breakpoint.Sm || breakpoint == Breakpoint.Xs)
+            {
+                FrozenColumns = 0;
+            }
+            else
+            {
+                FrozenColumns = 1;
+            }
+
+            return InvokeAsync(StateHasChanged);
+        }
+
+        public async ValueTask DisposeAsync() => await BrowserViewportService.UnsubscribeAsync(this);
     }
 }
