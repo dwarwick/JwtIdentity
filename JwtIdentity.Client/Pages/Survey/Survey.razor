@@ -57,6 +57,7 @@ else
             }
         }
 
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => SubmitSurvey())">Submit</MudButton>
+
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => SubmitSurvey())" Disabled="@Preview" title="@(Preview ? "Survey cannot be submitted in Preview mode" : "Submit")">Submit</MudButton>
     }
 }

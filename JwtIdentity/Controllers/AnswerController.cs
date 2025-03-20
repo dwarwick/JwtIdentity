@@ -40,7 +40,7 @@ namespace JwtIdentity.Controllers
         }
 
         [HttpGet("getanswersforsurvey/{guid}")]
-        public async Task<ActionResult<AnswerViewModel>> GetAnswersForSurvey(string guid)
+        public async Task<ActionResult<AnswerViewModel>> GetAnswersForSurvey(string guid, [FromQuery] bool Preview)
         {
             // get the ip address of the user
             var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
@@ -72,7 +72,7 @@ namespace JwtIdentity.Controllers
 
             if (survey == null) return BadRequest("Survey does not exist");
 
-            if (!survey.Published) return BadRequest("This survey has not been published");
+            if (!Preview && !survey.Published) return BadRequest("This survey has not been published");
 
             // Pull out the IDs of any multiple-choice questions in memory
             var mcIds = survey.Questions

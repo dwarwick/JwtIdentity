@@ -4,20 +4,18 @@
 @attribute [Authorize(Policy = Permissions.CreateSurvey)]
 <h3>My Surveys</h3>
 
-<SfGrid DataSource="@UserSurveys" AllowPaging="true" AllowSorting="true" AllowFiltering="true">
+<SfGrid DataSource="@UserSurveys" AllowPaging="true" AllowSorting="true" AllowFiltering="true"  AllowResizing="true" FrozenColumns="@FrozenColumns">
     <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel"></GridFilterSettings>
     <GridColumns>
-        <GridColumn Field="Title" HeaderText="Title" Width="120" />
-        <GridColumn Field="Description" HeaderText="Description" Width="120" />
-        <GridColumn Field="CreatedDate" HeaderText="Created Date" Width="120" Type=" ColumnType.Date" Format="d" />
-        <GridColumn HeaderText="Copy Link or Share">
+        <GridColumn HeaderText="Actions" AutoFit="true"  AllowResizing="false" AllowReordering="false">
             <Template>
                 <MudStack Spacing="2" Row="true" Class="py-1" >
-                @{
-                    var guid = (context as SurveyViewModel).Guid;
 
-                    <MudButton Class=@($"mysurvey_buttons copy_button {ShareButtonDisabled((context as SurveyViewModel).Published, true)}") Variant="Variant.Filled" Color="Color.Primary" OnClick="@(async () => await CopySurveyLinkAsync(guid))" title="@(GetTitleText((context as SurveyViewModel).Published))">Copy Survey Link</MudButton>
-                }
+                @{
+                        var guid = (context as SurveyViewModel).Guid;
+                            <MudButton Class="mysurvey_buttons" Href=@($"survey/{guid}?Preview=true") Target="_blank" title="Preview Survey" Color="Color.Success" Variant="Variant.Filled">Preview</MudButton>
+                        <MudButton Class=@($"mysurvey_buttons copy_button {ShareButtonDisabled((context as SurveyViewModel).Published, true)}") Variant="Variant.Filled" Color="Color.Primary" OnClick="@(async () => await CopySurveyLinkAsync(guid))" title="@(GetTitleText((context as SurveyViewModel).Published))">Copy Link</MudButton>
+                    }
 
                     <div class=@($"fb-share-button d-flex {ShareButtonDisabled((context as SurveyViewModel).Published, true)}")
                          data-href=@($"https://www.davidtest.xyz/survey/{guid}")
@@ -35,5 +33,8 @@
                 </MudStack>
             </Template>
         </GridColumn>
+        <GridColumn Field="Title" HeaderText="Title" Width="200" />
+        <GridColumn Field="Description" HeaderText="Description" Width="400" />
+        <GridColumn Field="CreatedDate" HeaderText="Created Date" Width="160" Type=" ColumnType.Date" Format="d" />        
     </GridColumns>
 </SfGrid>
