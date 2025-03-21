@@ -1,0 +1,23 @@
+﻿@page "/survey/responses/{SurveyId}"
+@inherits BarChartModel
+
+@if (SurveyData != null && SurveyChartData != null && SelectedQuestion != null)
+{
+    <MudSelect T="QuestionViewModel" Label="Select Question" Value="SelectedQuestion" Variant="Variant.Filled" Class="w-100 mb-1" ValueChanged="@((e) => HandleSelectQuestion(e))">
+        @foreach (var question in SurveyData.Select(x => x.Question))
+        {
+            <MudSelectItem T="QuestionViewModel" Value="@question">@question.Text</MudSelectItem>
+        }
+    </MudSelect>
+    
+    <SfChart Title="@SelectedQuestion.Text" Theme="@CurrentTheme">
+        <ChartTooltipSettings Enable="true" />
+        <ChartPrimaryXAxis ValueType="Syncfusion.Blazor.Charts.ValueType.Category" />
+        <ChartPrimaryYAxis Interval="1"  />
+        <ChartSeriesCollection>
+            <ChartSeries DataSource="@SurveyChartData" XName="X" YName="Y" Type="ChartSeriesType.Column" Fill="rgba(61, 44, 191, 1)" />          
+        </ChartSeriesCollection>
+    </SfChart>
+}
+
+

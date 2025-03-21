@@ -12,12 +12,13 @@
                 <MudStack Spacing="2" Row="true" Class="py-1" >
 
                 @{
-                        var guid = (context as SurveyViewModel).Guid;
-                            <MudButton Class="mysurvey_buttons" Href=@($"survey/{guid}?Preview=true") Target="_blank" title="Preview Survey" Color="Color.Success" Variant="Variant.Filled">Preview</MudButton>
-                        <MudButton Class=@($"mysurvey_buttons copy_button {ShareButtonDisabled((context as SurveyViewModel).Published, true)}") Variant="Variant.Filled" Color="Color.Primary" OnClick="@(async () => await CopySurveyLinkAsync(guid))" title="@(GetTitleText((context as SurveyViewModel).Published))">Copy Link</MudButton>
-                    }
+                    var guid = (context as SurveyViewModel).Guid;
 
-                    <div class=@($"fb-share-button d-flex {ShareButtonDisabled((context as SurveyViewModel).Published, true)}")
+                    <MudButton Class="mysurvey_buttons" Href=@($"survey/{guid}?Preview=true") Target="_blank" title="Preview Survey" Color="Color.Success" Variant="Variant.Filled">Preview</MudButton>
+                    <MudButton Class=@($"mysurvey_buttons copy_button {ShareButtonDisabled((context as SurveyViewModel).Published, false)}") Variant="Variant.Filled" Color="Color.Primary" OnClick="@(async () => await CopySurveyLinkAsync(guid))" title="@(GetTitleText((context as SurveyViewModel).Published))">Copy Link</MudButton>
+                }
+
+                    <div class=@($"fb-share-button d-flex {ShareButtonDisabled((context as SurveyViewModel).Published, false)}")
                          data-href=@($"https://www.davidtest.xyz/survey/{guid}")
                          data-layout="button_count"
                          data-size="small"
@@ -29,7 +30,8 @@
                         </svg>
                     </div>
 
-                    <MudButton Class=@($"mysurvey_buttons addEditQuestions_button {ShareButtonDisabled((context as SurveyViewModel).Published, false)}") Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => AddEditQuestions((context as SurveyViewModel).Guid, (context as SurveyViewModel).Published))">Add/Edit Questions</MudButton>
+                    <MudButton Class=@($"mysurvey_buttons edit_button {ShareButtonDisabled((context as SurveyViewModel).Published, true)}") Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => AddEditQuestions((context as SurveyViewModel).Guid, (context as SurveyViewModel).Published))">Edit</MudButton>
+                    <MudButton Class=@($"mysurvey_buttons results_button {ShareButtonDisabled((context as SurveyViewModel).Published, false)}") Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => ViewResults((context as SurveyViewModel).Guid, (context as SurveyViewModel).Published))">Results</MudButton>
                 </MudStack>
             </Template>
         </GridColumn>

@@ -21,7 +21,7 @@
 
         protected static string GetTitleText(bool published) => published ? "Copy Survey Link" : "Survey not published";
 
-        protected static string ShareButtonDisabled(bool published, bool disabledCondition) => published == disabledCondition ? "" : "disabled";
+        protected static string ShareButtonDisabled(bool published, bool disabledCondition) => published == disabledCondition ? "disabled" : "";
 
         Guid IBrowserViewportObserver.Id => Guid.NewGuid();
 
@@ -94,11 +94,22 @@
         {
             if (published)
             {
-                _ = Snackbar.Add("Survey published. You cannot edit survey questions once it has been published", Severity.Error);
+                _ = Snackbar.Add("Survey published. You cannot edit survey questions once it has been published.", Severity.Error);
                 return;
             }
 
             NavigationManager.NavigateTo($"/survey/createquestions/{guid}");
+        }
+
+        protected void ViewResults(string guid, bool published)
+        {
+            if (!published)
+            {
+                _ = Snackbar.Add("Survey not published. You cannot view results if it has not been published.", Severity.Error);
+                return;
+            }
+
+            NavigationManager.NavigateTo($"/survey/responses/{guid}");
         }
 
         Task IBrowserViewportObserver.NotifyBrowserViewportChangeAsync(BrowserViewportEventArgs browserViewportEventArgs)
