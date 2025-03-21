@@ -1,27 +1,29 @@
-﻿@using System.Net.Http
-@using System.Net.Http.Json
-@using System.Text.Json
+﻿@using Blazored.LocalStorage
+@using JwtIdentity.Client
+@using JwtIdentity.Client.Pages.Auth
+@using JwtIdentity.Client.Pages.Common
+@using JwtIdentity.Client.Pages.Navigation
+@using JwtIdentity.Client.Pages.Survey.Charts
 @using JwtIdentity.Client.Services
+@using JwtIdentity.Common.Helpers
+@using JwtIdentity.Common.ViewModels
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.AspNetCore.Components.Routing
 @using Microsoft.AspNetCore.Components.Web
-@using static Microsoft.AspNetCore.Components.Web.RenderMode
 @using Microsoft.AspNetCore.Components.Web.Virtualization
 @using Microsoft.JSInterop
-@using JwtIdentity.Client
-@using Microsoft.AspNetCore.Components.Authorization
-@using JwtIdentity.Client.Pages.Auth
-@using JwtIdentity.Client.Pages.Navigation
-@using Microsoft.AspNetCore.Authorization
 @using MudBlazor
-@using Blazored.LocalStorage
-@using JwtIdentity.Client.Pages.Common
-@using JwtIdentity.Common.Helpers
-@using JwtIdentity.Common.ViewModels
+@using static Microsoft.AspNetCore.Components.Web.RenderMode
 @using Syncfusion.Blazor
 @using Syncfusion.Blazor.Buttons
-@using Syncfusion.Blazor.Grids
+@using Syncfusion.Blazor.Charts
 @using Syncfusion.Blazor.DropDowns
+@using Syncfusion.Blazor.Grids
 @using Syncfusion.Licensing
+@using System.Net.Http
+@using System.Net.Http.Json
+@using System.Text.Json
 
 @inject IDialogService Dialog

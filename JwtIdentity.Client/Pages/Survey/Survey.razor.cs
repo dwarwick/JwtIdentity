@@ -97,7 +97,7 @@ namespace JwtIdentity.Client.Pages.Survey
         private async Task LoadData()
         {
             // get the survey based on the SurveyId
-            Survey = await ApiService.GetAsync<SurveyViewModel>($"{ApiEndpoints.Answer}/getanswersforsurvey/{SurveyId}?Preview={Preview}");
+            Survey = await ApiService.GetAsync<SurveyViewModel>($"{ApiEndpoints.Answer}/getanswersforsurveyforloggedinuser/{SurveyId}?Preview={Preview}");
 
             if (Survey != null && Survey.Id > 0)
             {
