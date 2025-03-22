@@ -13,6 +13,23 @@ namespace JwtIdentity.Common.ViewModels
 
         [JsonPropertyName("answerType")]
         public AnswerType AnswerType { get; set; }
+
+        // For TrueFalse answers, cast
+        public bool? TrueFalseValue
+            => this is TrueFalseAnswerViewModel tf ? tf.Value : null;
+
+        // For Text answers, cast
+        public string? TextValue
+            => this is TextAnswerViewModel ta ? ta.Text : null;
+
+        // For multiple/single choice, etc. 
+        public int? SelectedOptionValue
+            => this switch
+            {
+                MultipleChoiceAnswerViewModel m => m.SelectedOptionId,
+                SingleChoiceAnswerViewModel s => s.SelectedOptionId,
+                _ => null
+            };
     }
 
     public class TextAnswerViewModel : AnswerViewModel
@@ -28,11 +45,22 @@ namespace JwtIdentity.Common.ViewModels
     public class MultipleChoiceAnswerViewModel : AnswerViewModel
     {
         public int SelectedOptionId { get; set; }
+
+        public List<ChoiceOptionViewModel> Options { get; set; }
     }
 
     public class SingleChoiceAnswerViewModel : AnswerViewModel
     {
         public int SelectedOptionId { get; set; }
+    }
+
+    public class SurveyResponseViewModel
+    {
+        public int ResponseId { get; set; }
+        public string IpAddress { get; set; }
+
+        // Key = QuestionId, Value = an actual AnswerViewModel (TextAnswer, TrueFalseAnswer, etc.)
+        public Dictionary<int, AnswerViewModel> Answers { get; } = new();
     }
 
     public class AnswerViewModelConverter : JsonConverter<AnswerViewModel>

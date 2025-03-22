@@ -1,4 +1,3 @@
-using MudBlazor;
 using System.Security.Claims;
 
 namespace JwtIdentity.Controllers
@@ -46,7 +45,7 @@ namespace JwtIdentity.Controllers
             // get the ip address of the user
             var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
 
-            // get the usename of the user
+            // generate code to get the usename of the user
             var username = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             int userId = apiAuthService.GetUserId(User);
@@ -73,6 +72,31 @@ namespace JwtIdentity.Controllers
             if (survey == null) return BadRequest("Survey does not exist");
 
             if (!Preview && !survey.Published) return BadRequest("This survey has not been published");
+
+            // Pull out the IDs of any multiple-choice questions in memory
+            var mcIds = survey.Questions
+                .OfType<MultipleChoiceQuestion>()
+                .Select(mc => mc.Id)
+                .ToList();
+
+            // Now load each one’s Options
+            await _context.Questions
+                .OfType<MultipleChoiceQuestion>()
+                .Where(mc => mcIds.Contains(mc.Id))
+                .Include(mc => mc.Options)
+                .LoadAsync();
+
+            return Ok(_mapper.Map<SurveyViewModel>(survey));
+        }
+
+        [HttpGet("getsurveyresults/{guid}")]
+        public async Task<ActionResult<SurveyViewModel>> GetSurveyResults(string guid)
+        {
+            var survey = await _context.Surveys
+                .Where(s => s.Guid == guid)
+                .Include(s => s.Questions).ThenInclude(q => q.Answers)
+                .FirstOrDefaultAsync();
+            if (survey == null) return BadRequest("Survey does not exist");
 
             // Pull out the IDs of any multiple-choice questions in memory
             var mcIds = survey.Questions

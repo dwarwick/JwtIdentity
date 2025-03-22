@@ -31,7 +31,8 @@
                     </div>
 
                     <MudButton Class=@($"mysurvey_buttons edit_button {ShareButtonDisabled((context as SurveyViewModel).Published, true)}") Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => AddEditQuestions((context as SurveyViewModel).Guid, (context as SurveyViewModel).Published))">Edit</MudButton>
-                    <MudButton Class=@($"mysurvey_buttons results_button {ShareButtonDisabled((context as SurveyViewModel).Published, false)}") Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => ViewResults((context as SurveyViewModel).Guid, (context as SurveyViewModel).Published))">Results</MudButton>
+                    <MudButton Class=@($"mysurvey_buttons charts_button {ShareButtonDisabled((context as SurveyViewModel).Published, false)}") Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => ViewCharts((context as SurveyViewModel).Guid, (context as SurveyViewModel).Published))">Charts</MudButton>
+                    <MudButton Class=@($"mysurvey_buttons grid_button {ShareButtonDisabled((context as SurveyViewModel).Published, false)}") Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => ViewGrid((context as SurveyViewModel).Guid, (context as SurveyViewModel).Published))">Grid</MudButton>
                 </MudStack>
             </Template>
         </GridColumn>

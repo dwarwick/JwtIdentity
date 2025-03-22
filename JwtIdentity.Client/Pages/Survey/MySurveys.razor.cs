@@ -7,16 +7,6 @@
 
         public List<SurveyViewModel> UserSurveys { get; set; } = new();
 
-        protected HashSet<SurveyViewModel> _filterItems = new();
-        // Added HashSet for the CreatedDate filter operators
-        protected HashSet<string> FilterOperators { get; set; } = new()
-        {
-            FilterOperator.DateTime.OnOrAfter,
-            FilterOperator.DateTime.OnOrBefore
-        };
-
-        protected FilterDefinition<SurveyViewModel> _filterDefinition { get; set; }
-
         protected int FrozenColumns { get; set; }
 
         protected static string GetTitleText(bool published) => published ? "Copy Survey Link" : "Survey not published";
@@ -34,13 +24,6 @@
         protected override async Task OnInitializedAsync()
         {
             UserSurveys = (await ApiService.GetAllAsync<SurveyViewModel>("api/Survey/MySurveys")).ToList();
-
-            _filterItems = UserSurveys.ToHashSet();
-
-            _filterDefinition = new FilterDefinition<SurveyViewModel>
-            {
-                FilterFunction = x => _filterItems.Contains(x)
-            };
         }
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -101,15 +84,26 @@
             NavigationManager.NavigateTo($"/survey/createquestions/{guid}");
         }
 
-        protected void ViewResults(string guid, bool published)
+        protected void ViewCharts(string guid, bool published)
         {
             if (!published)
             {
-                _ = Snackbar.Add("Survey not published. You cannot view results if it has not been published.", Severity.Error);
+                _ = Snackbar.Add("Survey not published. You cannot view charts if it has not been published.", Severity.Error);
                 return;
             }
 
             NavigationManager.NavigateTo($"/survey/responses/{guid}");
+        }
+
+        protected void ViewGrid(string guid, bool published)
+        {
+            if (!published)
+            {
+                _ = Snackbar.Add("Survey not published. You cannot view the grid if it has not been published.", Severity.Error);
+                return;
+            }
+
+            NavigationManager.NavigateTo($"/survey/filter/{guid}");
         }
 
         Task IBrowserViewportObserver.NotifyBrowserViewportChangeAsync(BrowserViewportEventArgs browserViewportEventArgs)
