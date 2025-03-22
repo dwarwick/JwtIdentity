@@ -1,4 +1,4 @@
-﻿namespace JwtIdentity.Client.Pages.Survey.Charts
+﻿namespace JwtIdentity.Client.Pages.Survey.Results
 {
     public class BarChartModel : BlazorBase
     {

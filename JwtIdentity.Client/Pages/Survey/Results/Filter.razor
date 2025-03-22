@@ -1,0 +1,11 @@
+﻿@page "/survey/filter/{SurveyId}"
+@inherits FilterModel
+
+<h3>Filter</h3>
+
+<SfGrid @ref="Grid" TValue="object" DataSource="@SurveyRows" Height="315" AllowPaging="true" AllowSorting="true" AllowFiltering="true" AllowResizing="true">
+    <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel"></GridFilterSettings>
+    <GridColumns>
+            
+    </GridColumns>
+</SfGrid>
