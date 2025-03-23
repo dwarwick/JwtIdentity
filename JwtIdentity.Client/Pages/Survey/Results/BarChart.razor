@@ -1,4 +1,5 @@
 ﻿@page "/survey/responses/{SurveyId}"
+@using ExportType = Syncfusion.Blazor.Charts.ExportType
 @inherits BarChartModel
 
 @if (SurveyData != null && SurveyChartData != null && SelectedQuestion != null)
@@ -9,8 +10,19 @@
             <MudSelectItem T="QuestionViewModel" Value="@question">@question.Text</MudSelectItem>
         }
     </MudSelect>
-    
-    <SfChart Title="@SelectedQuestion.Text" Theme="@CurrentTheme">
+
+    <MudStack Row="true" Class="mb-1">
+        <MudSelect T="ExportType" Label="Select Export Type" @bind-Value="SelectedExportType" Variant="Variant.Filled" Class="mb-1">
+            @foreach (var exportType in Enum.GetValues(typeof(ExportType)).Cast<ExportType>())
+            {
+                <MudSelectItem T="ExportType" Value="@exportType">@exportType.ToString()</MudSelectItem>
+            }
+        </MudSelect>
+        
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="my-1" OnClick="ExportChart" Size="MudBlazor.Size.Small">Export Chart</MudButton>
+    </MudStack>    
+
+    <SfChart @ref="chartObj" Title="@SelectedQuestion.Text" Theme="@CurrentTheme" Width="@ChartWidth" Height="@ChartHeight">
         <ChartTooltipSettings Enable="true" />
         <ChartPrimaryXAxis ValueType="Syncfusion.Blazor.Charts.ValueType.Category" />
         <ChartPrimaryYAxis Interval="1"  />

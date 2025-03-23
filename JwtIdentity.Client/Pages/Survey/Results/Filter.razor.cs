@@ -7,7 +7,7 @@ namespace JwtIdentity.Client.Pages.Survey.Results
         [Parameter]
         public string SurveyId { get; set; }
 
-        protected SfGrid<object> Grid;
+        protected SfGrid<object> Grid { get; set; }
 
         protected SurveyViewModel Survey { get; set; }
 
@@ -57,10 +57,7 @@ namespace JwtIdentity.Client.Pages.Survey.Results
         }
 
         // Suppose we have a method to build "row objects" for each response
-        public IEnumerable<object> BuildSurveyRows(
-            Type dynamicSurveyType,
-            Dictionary<int, string> propertyMap,
-            List<AnswerViewModel> answersForAllResponses)
+        private IEnumerable<object> BuildSurveyRows(Type dynamicSurveyType, Dictionary<int, string> propertyMap, List<AnswerViewModel> answersForAllResponses)
         {
             // Group answers by some "ResponseId" or "IpAddress" etc.
             var grouped = answersForAllResponses
@@ -81,7 +78,7 @@ namespace JwtIdentity.Client.Pages.Survey.Results
                         // This means "Q_29" or "Q_42", etc.
 
                         // We'll figure out how to convert 'ans' to the correct property value
-                        object? propValue = ConvertAnswerValue(ans);
+                        object propValue = ConvertAnswerValue(ans);
 
                         // Finally set the property on rowInstance
                         dynamicSurveyType.GetProperty(propName)?.SetValue(rowInstance, propValue);
@@ -94,7 +91,7 @@ namespace JwtIdentity.Client.Pages.Survey.Results
             return rowObjects;
         }
 
-        private object? ConvertAnswerValue(AnswerViewModel ans)
+        private object ConvertAnswerValue(AnswerViewModel ans)
         {
             // You might switch on ans.AnswerType or check the derived class
             // to return the correct .NET type (string, bool?, int?, etc.)
@@ -135,11 +132,13 @@ namespace JwtIdentity.Client.Pages.Survey.Results
                 // For question ID 29, property name is "Q_29"
                 string propertyName = _propertyMap[q.Id];
 
+#pragma warning disable BL0005 // Component parameter should not be set outside of its component.
                 var gridColumn = new GridColumn
                 {
                     Field = propertyName,
                     HeaderText = q.Text
                 };
+
 
                 // Decide the column type based on the question type
                 switch (q.QuestionType)
@@ -152,11 +151,8 @@ namespace JwtIdentity.Client.Pages.Survey.Results
                     case QuestionType.TrueFalse:
                         gridColumn.Type = ColumnType.Boolean;
                         break;
-
-                        // If you had a numeric question type,
-                        // you might do: gridColumn.Type = ColumnType.Number;
                 }
-
+#pragma warning restore BL0005 // Component parameter should not be set outside of its component.
                 Grid.Columns.Add(gridColumn);
             }
         }
