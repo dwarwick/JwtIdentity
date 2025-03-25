@@ -12,24 +12,45 @@
     </MudSelect>
 
     <MudStack Row="true" Class="mb-1">
+        <MudSelect T="string" Label="Select Chart Type" @bind-Value="SelectedChartType" Variant="Variant.Filled" Class="mb-1">
+            <MudSelectItem T="string" Value="@("Bar")" >Bar</MudSelectItem>
+            <MudSelectItem T="string" Value="@("Pie")">Pie</MudSelectItem>
+        </MudSelect>
+
         <MudSelect T="ExportType" Label="Select Export Type" @bind-Value="SelectedExportType" Variant="Variant.Filled" Class="mb-1">
             @foreach (var exportType in Enum.GetValues(typeof(ExportType)).Cast<ExportType>())
             {
                 <MudSelectItem T="ExportType" Value="@exportType">@exportType.ToString()</MudSelectItem>
             }
         </MudSelect>
-        
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="my-1" OnClick="ExportChart" Size="MudBlazor.Size.Small">Export Chart</MudButton>
-    </MudStack>    
 
-    <SfChart @ref="chartObj" Title="@SelectedQuestion.Text" Theme="@CurrentTheme" Width="@ChartWidth" Height="@ChartHeight">
-        <ChartTooltipSettings Enable="true" />
-        <ChartPrimaryXAxis ValueType="Syncfusion.Blazor.Charts.ValueType.Category" />
-        <ChartPrimaryYAxis Interval="1"  />
-        <ChartSeriesCollection>
-            <ChartSeries DataSource="@SurveyChartData" XName="X" YName="Y" Type="ChartSeriesType.Column" Fill="rgba(61, 44, 191, 1)" />          
-        </ChartSeriesCollection>
-    </SfChart>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="my-1" OnClick="ExportChart" Size="MudBlazor.Size.Small">Export Chart</MudButton>
+    </MudStack>
+
+    @switch (SelectedChartType)
+    {
+        case "Bar":
+            <SfChart @ref="chartObj" Title="@SelectedQuestion.Text" Theme="@CurrentTheme" Width="@ChartWidth" Height="@ChartHeight">
+                <ChartTooltipSettings Enable="true" />
+                <ChartPrimaryXAxis ValueType="Syncfusion.Blazor.Charts.ValueType.Category" />
+                <ChartPrimaryYAxis Interval="1" />
+                <ChartSeriesCollection>
+                    <ChartSeries DataSource="@SurveyChartData" XName="X" YName="Y" Type="ChartSeriesType.Column" Fill="rgba(61, 44, 191, 1)" />
+                </ChartSeriesCollection>
+            </SfChart>
+            break;
+
+        case "Pie":
+            <SfAccumulationChart @ref="pieChartObj" Title="@SelectedQuestion.Text" Theme="@CurrentTheme" Width="@ChartWidth" Height="@ChartHeight">
+                <AccumulationChartTooltipSettings Enable="true" />
+                <AccumulationChartSeriesCollection>
+                    <AccumulationChartSeries DataSource="@PieChartData" XName="X" YName="Y" Radius="70%">
+                        <AccumulationDataLabelSettings Visible="true" Position="AccumulationLabelPosition.Outside" Format="{value}%" />
+                    </AccumulationChartSeries>
+                </AccumulationChartSeriesCollection>
+            </SfAccumulationChart>
+            break;
+    }
 }
 
 
