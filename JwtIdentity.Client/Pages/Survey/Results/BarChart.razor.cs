@@ -10,11 +10,15 @@ namespace JwtIdentity.Client.Pages.Survey.Results
         [Parameter]
         public string SurveyId { get; set; }
 
-        protected SfChart chartObj;
+        protected SfChart chartObj { get; set; }
+
+        protected SfAccumulationChart pieChartObj { get; set; }
 
         protected List<SurveyDataViewModel> SurveyData { get; set; } = new();
 
         protected List<ChartData> SurveyChartData { get; set; } = new List<ChartData>();
+
+        protected List<ChartData> PieChartData { get; set; } = new List<ChartData>();
 
         protected QuestionViewModel SelectedQuestion { get; set; }
 
@@ -26,9 +30,13 @@ namespace JwtIdentity.Client.Pages.Survey.Results
 
         protected ExportType SelectedExportType { get; set; } = ExportType.PDF;
 
+        protected string SelectedChartType { get; set; } = "Bar";
+
         protected override async Task OnInitializedAsync()
         {
             await LoadData();
+
+            StateHasChanged();
         }
 
         private async Task LoadData()
@@ -47,14 +55,35 @@ namespace JwtIdentity.Client.Pages.Survey.Results
             SelectedQuestion = question;
 
             SurveyChartData = SurveyData.Where(x => x.Question == question).Select(x => x.SurveyData).FirstOrDefault();
+
+            PieChartData = new List<ChartData>();
+
+            foreach (ChartData data in SurveyChartData)
+            {
+
+                PieChartData.Add(new ChartData() { X = data.X, Y = data.Y / SurveyChartData.Sum(d => d.Y) * 100 });
+            }
         }
 
         protected async Task ExportChart()
         {
-            ChartWidth = "1000";
-            ChartHeight = "650";
+            switch (SelectedChartType)
+            {
+                case "Bar":
+                    ChartWidth = "1000";
+                    ChartHeight = "650";
+                    await chartObj.ExportAsync(SelectedExportType, $"Chart.{SelectedExportType}", Syncfusion.PdfExport.PdfPageOrientation.Landscape, true);
+                    break;
 
-            await chartObj.ExportAsync(SelectedExportType, $"Chart.{SelectedExportType}", Syncfusion.PdfExport.PdfPageOrientation.Landscape, true);
+                case "Pie":
+                    ChartWidth = "1000";
+                    ChartHeight = "700";
+
+                    await Task.Delay(100);
+
+                    await pieChartObj.ExportAsync(SelectedExportType, $"Chart.{SelectedExportType}", Syncfusion.PdfExport.PdfPageOrientation.Landscape, true);
+                    break;
+            }
 
             ChartWidth = "100%";
             ChartHeight = "100%";
