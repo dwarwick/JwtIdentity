@@ -14,13 +14,21 @@ namespace JwtIdentity.Client.Pages.Survey.Results
 
         protected SfAccumulationChart pieChartObj { get; set; }
 
+        protected List<SfChart> BarCharts { get; set; } = new();
+
+        protected List<SfAccumulationChart> PieCharts { get; set; } = new();
+
         protected List<SurveyDataViewModel> SurveyData { get; set; } = new();
 
-        protected List<ChartData> SurveyChartData { get; set; } = new List<ChartData>();
+        protected List<ChartData> BarChartData { get; set; } = new();
 
-        protected List<ChartData> PieChartData { get; set; } = new List<ChartData>();
+        protected List<ChartData> PieChartData { get; set; } = new();
 
-        protected QuestionViewModel SelectedQuestion { get; set; }
+        protected List<List<ChartData>> BarChartDataForPrint { get; set; } = new();
+
+        protected List<List<ChartData>> PieChartDataForPrint { get; set; } = new();
+
+        protected QuestionViewModel? SelectedQuestion { get; set; }
 
         protected Theme CurrentTheme => Theme == "dark" ? Syncfusion.Blazor.Theme.Tailwind3Dark : Syncfusion.Blazor.Theme.Material3;
 
@@ -32,11 +40,19 @@ namespace JwtIdentity.Client.Pages.Survey.Results
 
         protected string SelectedChartType { get; set; } = "Bar";
 
+        protected bool IsLoading { get; set; } = true;
+
+        protected ElementReference Element { get; set; }
+
         protected override async Task OnInitializedAsync()
         {
+            IsLoading = true;
+            await base.OnInitializedAsync();
+
+            // Load your survey data here
             await LoadData();
 
-            StateHasChanged();
+            IsLoading = false;
         }
 
         private async Task LoadData()
@@ -52,41 +68,164 @@ namespace JwtIdentity.Client.Pages.Survey.Results
 
         protected void HandleSelectQuestion(QuestionViewModel question)
         {
+            IsLoading = true;
+
             SelectedQuestion = question;
 
-            SurveyChartData = SurveyData.Where(x => x.Question == question).Select(x => x.SurveyData).FirstOrDefault();
+            BarChartDataForPrint.Clear();
+            PieChartDataForPrint.Clear();
 
-            PieChartData = new List<ChartData>();
+            BarCharts.Clear();
+            PieCharts.Clear();
 
-            foreach (ChartData data in SurveyChartData)
+            if (question != null)
             {
+                BarChartData = SurveyData.Where(x => x.Question == question).Select(x => x.SurveyData).FirstOrDefault();
 
-                PieChartData.Add(new ChartData() { X = data.X, Y = data.Y / SurveyChartData.Sum(d => d.Y) * 100 });
+                PieChartData = new List<ChartData>();
+
+                foreach (ChartData data in BarChartData)
+                {
+
+                    PieChartData.Add(new ChartData() { X = data.X, Y = data.Y / BarChartData.Sum(d => d.Y) * 100 });
+                }
             }
+            else
+            {
+                // Initialize with null values
+                for (int i = 0; i < SurveyData.Count; i++)
+                {
+                    BarCharts.Add(null);
+                    PieCharts.Add(null);
+                }
+
+                GetDataToPrintAllCharts();
+            }
+
+            IsLoading = false;
+            StateHasChanged();
+        }
+
+        protected void GetDataToPrintAllCharts()
+        {
+            IsLoading = true;
+
+            // Clear previous data to avoid duplication
+            BarChartDataForPrint.Clear();
+            PieChartDataForPrint.Clear();
+
+            foreach (var question in SurveyData.Select(x => x.Question))
+            {
+                var barData = SurveyData.Where(x => x.Question == question).Select(x => x.SurveyData).FirstOrDefault();
+                var pieData = new List<ChartData>();
+
+                if (barData != null)
+                {
+                    foreach (ChartData data in barData)
+                    {
+                        pieData.Add(new ChartData() { X = data.X, Y = data.Y / barData.Sum(d => d.Y) * 100 });
+                    }
+                    BarChartDataForPrint.Add(barData);
+                    PieChartDataForPrint.Add(pieData);
+                }
+            }
+
+            IsLoading = false;
+            StateHasChanged(); // Explicitly tell Blazor to update the UI
         }
 
         protected async Task ExportChart()
         {
-            switch (SelectedChartType)
+            if (SelectedQuestion != null)
             {
-                case "Bar":
-                    ChartWidth = "1000";
-                    ChartHeight = "650";
-                    await chartObj.ExportAsync(SelectedExportType, $"Chart.{SelectedExportType}", Syncfusion.PdfExport.PdfPageOrientation.Landscape, true);
-                    break;
+                switch (SelectedChartType)
+                {
+                    case "Bar":
+                        ChartWidth = "1000";
+                        ChartHeight = "650";
+                        await chartObj.ExportAsync(SelectedExportType, $"{SelectedChartType}_Chart_Q{SelectedQuestion.QuestionNumber}.{SelectedExportType}", Syncfusion.PdfExport.PdfPageOrientation.Landscape, true);
+                        break;
 
-                case "Pie":
-                    ChartWidth = "1000";
-                    ChartHeight = "700";
+                    case "Pie":
+                        ChartWidth = "1000";
+                        ChartHeight = "700";
 
-                    await Task.Delay(100);
+                        await Task.Delay(100);
 
-                    await pieChartObj.ExportAsync(SelectedExportType, $"Chart.{SelectedExportType}", Syncfusion.PdfExport.PdfPageOrientation.Landscape, true);
-                    break;
+                        await pieChartObj.ExportAsync(SelectedExportType, $"{SelectedChartType}_Chart_Q{SelectedQuestion.QuestionNumber}.{SelectedExportType}", Syncfusion.PdfExport.PdfPageOrientation.Landscape, true);
+                        break;
+                }
+            }
+            else
+            {
+                switch (SelectedChartType)
+                {
+                    case "Bar":
+                        ChartWidth = "950";
+                        ChartHeight = "700";
+
+                        for (int i = 0; i < BarCharts.Count; i++)
+                        {
+                            await Task.Delay(100);
+                            await BarCharts[i].ExportAsync(SelectedExportType, $"{SelectedChartType}_Chart_Q{i + 1}.{SelectedExportType}", Syncfusion.PdfExport.PdfPageOrientation.Landscape, true);
+                        }
+                        break;
+                    case "Pie":
+                        ChartWidth = "1000";
+                        ChartHeight = "700";
+
+                        for (int i = 0; i < BarCharts.Count; i++)
+                        {
+                            await Task.Delay(100);
+                            await PieCharts[i].ExportAsync(SelectedExportType, $"{SelectedChartType}_Chart_Q{i + 1}.{SelectedExportType}", Syncfusion.PdfExport.PdfPageOrientation.Landscape, true);
+                        }
+                        break;
+                }
             }
 
             ChartWidth = "100%";
             ChartHeight = "100%";
+        }
+
+        protected async Task PrintChart()
+        {
+            switch (SelectedChartType)
+            {
+                case "Bar":
+                    ChartWidth = "950";
+                    ChartHeight = "700";
+
+                    await Task.Delay(100);
+
+                    await chartObj.PrintAsync(Element);
+                    break;
+                case "Pie":
+                    ChartWidth = "1000";
+                    ChartHeight = "700";
+                    await Task.Delay(100);
+                    await pieChartObj.PrintAsync(Element);
+                    break;
+            }
+            ChartWidth = "100%";
+            ChartHeight = "100%";
+        }
+
+        protected Func<QuestionViewModel, string> QuestionDropdownConverter = p => p == null ? "All Questions" : $"{p?.QuestionNumber}. {p?.Text}";
+
+        private string GetRootDomain()
+        {
+            var uri = new Uri(NavigationManager.Uri);
+            return uri.Host;
+        }
+
+        private static string GetCurrentYear()
+        {
+            return DateTime.Now.Year.ToString();
+        }
+
+        protected string GetSubtitle()
+        {
+            return $"© {GetCurrentYear()} {GetRootDomain()}";
         }
     }
 }

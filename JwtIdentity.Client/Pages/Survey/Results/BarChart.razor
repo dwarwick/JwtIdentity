@@ -2,54 +2,115 @@
 @using ExportType = Syncfusion.Blazor.Charts.ExportType
 @inherits BarChartModel
 
-@if (SurveyData != null && SurveyChartData != null && SelectedQuestion != null)
+@if (SurveyData != null && (BarChartData != null || SelectedQuestion == null))
 {
-    <MudSelect T="QuestionViewModel" Label="Select Question" Value="SelectedQuestion" Variant="Variant.Filled" Class="w-100 mb-1" ValueChanged="@((e) => HandleSelectQuestion(e))">
-        @foreach (var question in SurveyData.Select(x => x.Question))
-        {
-            <MudSelectItem T="QuestionViewModel" Value="@question">@question.Text</MudSelectItem>
-        }
-    </MudSelect>
 
-    <MudStack Row="true" Class="mb-1">
-        <MudSelect T="string" Label="Select Chart Type" @bind-Value="SelectedChartType" Variant="Variant.Filled" Class="mb-1">
-            <MudSelectItem T="string" Value="@("Bar")" >Bar</MudSelectItem>
-            <MudSelectItem T="string" Value="@("Pie")">Pie</MudSelectItem>
-        </MudSelect>
+    <div class="d-flex flex-column">
+        <div class="row">
+            <div class="col-11">
+                <MudSelect T="QuestionViewModel" Label="Select Question" Value="SelectedQuestion" Variant="Variant.Filled" Class="w-100 mb-1" ValueChanged="@((e) => HandleSelectQuestion(e))" ToStringFunc="@QuestionDropdownConverter">
+                    <MudSelectItem Value="@((QuestionViewModel?)null)">All Questions</MudSelectItem>
+                    @foreach (var question in SurveyData.OrderBy(x => x.Question.QuestionNumber).Select(x => x.Question))
+                    {
+                        <MudSelectItem T="QuestionViewModel" Value="@question">@($"{question.QuestionNumber}. {question.Text}")</MudSelectItem>
+                    }
+                </MudSelect>
+            </div>
+            <div class="col-1">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="my-1 w-100" OnClick="PrintChart"> Print</MudButton>
+            </div>
+        </div>
 
-        <MudSelect T="ExportType" Label="Select Export Type" @bind-Value="SelectedExportType" Variant="Variant.Filled" Class="mb-1">
-            @foreach (var exportType in Enum.GetValues(typeof(ExportType)).Cast<ExportType>())
-            {
-                <MudSelectItem T="ExportType" Value="@exportType">@exportType.ToString()</MudSelectItem>
-            }
-        </MudSelect>
+        <div class="row">
+            <div class="col-6">
+                <MudSelect T="string" Label="Select Chart Type" @bind-Value="SelectedChartType" Variant="Variant.Filled" Class="mb-1">
+                    <MudSelectItem T="string" Value="@("Bar")">Bar</MudSelectItem>
+                    <MudSelectItem T="string" Value="@("Pie")">Pie</MudSelectItem>
+                </MudSelect>
+            </div>
 
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="my-1" OnClick="ExportChart" Size="MudBlazor.Size.Small">Export Chart</MudButton>
-    </MudStack>
+            <div class="col-5">
 
-    @switch (SelectedChartType)
+                <MudSelect T="ExportType" Label="Select Export Type" @bind-Value="SelectedExportType" Variant="Variant.Filled" Class="mb-1">
+                    @foreach (var exportType in Enum.GetValues(typeof(ExportType)).Cast<ExportType>())
+                    {
+                        <MudSelectItem T="ExportType" Value="@exportType">@exportType.ToString()</MudSelectItem>
+                    }
+                </MudSelect>
+            </div>
+            <div class="col-1">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="my-1 w-100" OnClick="ExportChart">Export</MudButton>
+            </div>
+        </div>
+    </div>
+
+
+    @if (!IsLoading && SelectedQuestion != null)
     {
-        case "Bar":
-            <SfChart @ref="chartObj" Title="@SelectedQuestion.Text" Theme="@CurrentTheme" Width="@ChartWidth" Height="@ChartHeight">
-                <ChartTooltipSettings Enable="true" />
-                <ChartPrimaryXAxis ValueType="Syncfusion.Blazor.Charts.ValueType.Category" />
-                <ChartPrimaryYAxis Interval="1" />
-                <ChartSeriesCollection>
-                    <ChartSeries DataSource="@SurveyChartData" XName="X" YName="Y" Type="ChartSeriesType.Column" Fill="rgba(61, 44, 191, 1)" />
-                </ChartSeriesCollection>
-            </SfChart>
-            break;
+        <span id="AllCharts" @ref="Element">
+            @switch (SelectedChartType)
+            {
+                case "Bar":
+                    <SfChart @ref="chartObj" Title="@($"{SelectedQuestion.QuestionNumber}. {SelectedQuestion.Text}")" SubTitle="@(GetSubtitle())" Theme="@CurrentTheme" Width="@ChartWidth" Height="@ChartHeight">
+                        <ChartTooltipSettings Enable="true" />
+                        <ChartPrimaryXAxis ValueType="Syncfusion.Blazor.Charts.ValueType.Category" />
+                        <ChartPrimaryYAxis Interval="1" />
+                        <ChartSeriesCollection>
+                            <ChartSeries DataSource="@BarChartData" XName="X" YName="Y" Type="ChartSeriesType.Column" Fill="rgba(61, 44, 191, 1)" />
+                        </ChartSeriesCollection>
+                    </SfChart>
+                    break;
 
-        case "Pie":
-            <SfAccumulationChart @ref="pieChartObj" Title="@SelectedQuestion.Text" Theme="@CurrentTheme" Width="@ChartWidth" Height="@ChartHeight">
-                <AccumulationChartTooltipSettings Enable="true" />
-                <AccumulationChartSeriesCollection>
-                    <AccumulationChartSeries DataSource="@PieChartData" XName="X" YName="Y" Radius="70%">
-                        <AccumulationDataLabelSettings Visible="true" Position="AccumulationLabelPosition.Outside" Format="{value}%" />
-                    </AccumulationChartSeries>
-                </AccumulationChartSeriesCollection>
-            </SfAccumulationChart>
-            break;
+                case "Pie":
+                    <SfAccumulationChart @ref="pieChartObj" Title="@($"{SelectedQuestion.QuestionNumber}. {SelectedQuestion.Text}")" SubTitle="@(GetSubtitle())" Theme="@CurrentTheme" Width="@ChartWidth" Height="@ChartHeight">
+                        <AccumulationChartTooltipSettings Enable="true" />
+                        <AccumulationChartSeriesCollection>
+                            <AccumulationChartSeries DataSource="@PieChartData" XName="X" YName="Y" Radius="70%">
+                                <AccumulationDataLabelSettings Visible="true" Position="AccumulationLabelPosition.Outside" Format="{value}%" />
+                            </AccumulationChartSeries>
+                        </AccumulationChartSeriesCollection>
+                    </SfAccumulationChart>
+                    break;
+            }
+        </span>
+    }
+    else if (!IsLoading && SurveyData.Count > 0 && BarChartDataForPrint.Count == SurveyData.Count && PieChartDataForPrint.Count == SurveyData.Count)
+    {
+        int questionIndex = 0;
+        <span id="AllCharts" @ref="Element">
+            <MudStack Spacing="1">                
+
+                @foreach (var question in SurveyData.OrderBy(x => x.Question.QuestionNumber).Select(x => x.Question.Text))
+                {
+                    var localIndex = questionIndex; // Create a local copy for closure
+                    @switch (SelectedChartType)
+                    {
+                        case "Bar":
+                            <SfChart @ref="BarCharts[localIndex]" Title="@($"{localIndex + 1}. {question}")" SubTitle="@(GetSubtitle())" Theme="@CurrentTheme" Width="@ChartWidth" Height="@ChartHeight">
+                                <ChartTooltipSettings Enable="true" />
+                                <ChartPrimaryXAxis ValueType="Syncfusion.Blazor.Charts.ValueType.Category" />
+                                <ChartPrimaryYAxis Interval="1" />
+                                <ChartSeriesCollection>
+                                    <ChartSeries DataSource="@(BarChartDataForPrint[localIndex])" XName="X" YName="Y" Type="ChartSeriesType.Column" Fill="rgba(61, 44, 191, 1)" />
+                                </ChartSeriesCollection>
+                            </SfChart>
+                            break;
+
+                        case "Pie":
+                            <SfAccumulationChart @ref="PieCharts[localIndex]" Title="@($"{localIndex + 1}. {question}")" SubTitle="@(GetSubtitle())" Theme="@CurrentTheme" Width="@ChartWidth" Height="@ChartHeight">
+                                <AccumulationChartTooltipSettings Enable="true" />
+                                <AccumulationChartSeriesCollection>
+                                    <AccumulationChartSeries DataSource="@(PieChartDataForPrint[localIndex])" XName="X" YName="Y" Radius="70%">
+                                        <AccumulationDataLabelSettings Visible="true" Position="AccumulationLabelPosition.Outside" Format="{value}%" />
+                                    </AccumulationChartSeries>
+                                </AccumulationChartSeriesCollection>
+                            </SfAccumulationChart>
+                            break;
+                    }
+                    questionIndex++;
+                }
+            </MudStack>
+        </span>
     }
 }
 
