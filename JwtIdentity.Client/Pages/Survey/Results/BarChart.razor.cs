@@ -138,6 +138,7 @@ namespace JwtIdentity.Client.Pages.Survey.Results
         {
             if (SelectedQuestion != null)
             {
+                _ = Snackbar.Add("Exporting chart", Severity.Info);
                 switch (SelectedChartType)
                 {
                     case "Bar":
@@ -155,9 +156,12 @@ namespace JwtIdentity.Client.Pages.Survey.Results
                         await pieChartObj.ExportAsync(SelectedExportType, $"{SelectedChartType}_Chart_Q{SelectedQuestion.QuestionNumber}.{SelectedExportType}", Syncfusion.PdfExport.PdfPageOrientation.Landscape, true);
                         break;
                 }
+
+                _ = Snackbar.Add("Export complete", Severity.Success);
             }
             else
             {
+                _ = Snackbar.Add("Exporting all charts", Severity.Info);
                 switch (SelectedChartType)
                 {
                     case "Bar":
@@ -181,6 +185,8 @@ namespace JwtIdentity.Client.Pages.Survey.Results
                         }
                         break;
                 }
+
+                _ = Snackbar.Add("Export complete", Severity.Success);
             }
 
             ChartWidth = "100%";
