@@ -138,6 +138,16 @@ namespace JwtIdentity.Client.Pages.Survey
 
                             question.Answers.Add(answer);
                         }
+                        else if (question.QuestionType == QuestionType.Rating1To10)
+                        {
+                            Rating1To10AnswerViewModel answer = new()
+                            {
+                                AnswerType = AnswerType.Rating1To10,
+                                QuestionId = question.Id
+                            };
+
+                            question.Answers.Add(answer);
+                        }
                     }
                     else
                     { // this user or ip address has answered this before
@@ -153,9 +163,15 @@ namespace JwtIdentity.Client.Pages.Survey
 
         protected async Task HandleAnswerQuestion(AnswerViewModel answer, object selectedAnswer)
         {
+            AnswerViewModel response = null;
+
             if (answer is MultipleChoiceAnswerViewModel multipleChoiceAnswer)
             {
                 multipleChoiceAnswer.SelectedOptionId = (int)selectedAnswer;
+            }
+            else if (answer is Rating1To10AnswerViewModel rating1To10Answer)
+            {
+                rating1To10Answer.SelectedOptionId = (int)selectedAnswer;
             }
             else if (answer is TextAnswerViewModel textAnswerViewModel)
             {
@@ -166,9 +182,12 @@ namespace JwtIdentity.Client.Pages.Survey
                 trueFalseAnswerViewModel.Value = (bool)selectedAnswer;
             }
 
-            var response = await ApiService.PostAsync(ApiEndpoints.Answer, answer);
+            if (!Preview)
+            {
+                response = await ApiService.PostAsync(ApiEndpoints.Answer, answer);
+            }
 
-            if (response != null)
+            if (response != null || Preview)
             {
                 // copy answer to Survey.Questions.Answers
                 foreach (var question in Survey.Questions)
@@ -179,7 +198,7 @@ namespace JwtIdentity.Client.Pages.Survey
                         {
                             if (question.Answers[i].Id == answer.Id)
                             {
-                                question.Answers[i] = response;
+                                question.Answers[i] = !Preview ? response : answer;
                             }
                         }
                     }
@@ -255,20 +274,40 @@ namespace JwtIdentity.Client.Pages.Survey
         {
             if (AllQuestionsAnswered())
             {
-                Survey.Complete = true;
-
-                SurveyViewModel submittedSurvey = await ApiService.UpdateAsync(ApiEndpoints.Survey, Survey);
-
-                if (submittedSurvey?.Complete ?? false)
+                // Mark all answers as complete when submitting the survey
+                foreach (var question in Survey.Questions)
                 {
-                    _ = Snackbar.Add("Survey submitted", Severity.Success);
+                    // First, mark all answers as complete
+                    foreach (var answer in question.Answers.ToList()) // Create a copy to avoid modifying the collection while enumerating
+                    {
+                        answer.Complete = true;
 
-                    Navigation.NavigateTo("/");
+                        // Submit the updated answer
+                        var updatedAnswer = await ApiService.PostAsync(ApiEndpoints.Answer, answer);
+
+                        // Update local answer reference with the response
+                        if (updatedAnswer != null)
+                        {
+                            var questionRef = Survey.Questions.FirstOrDefault(q => q.Id == updatedAnswer.QuestionId);
+                            if (questionRef != null)
+                            {
+                                var answerIndex = questionRef.Answers.FindIndex(a => a.Id == updatedAnswer.Id);
+                                if (answerIndex >= 0)
+                                {
+                                    questionRef.Answers[answerIndex] = updatedAnswer;
+                                }
+                            }
+                        }
+                    }
                 }
-                else
-                {
-                    _ = Snackbar.Add("There was a problem submitting the survey", Severity.Error);
-                }
+
+                // No need to mark Survey.Complete as true anymore
+                _ = Snackbar.Add("Survey submitted successfully", Severity.Success);
+                Navigation.NavigateTo("/");
+            }
+            else
+            {
+                _ = Snackbar.Add("Please answer all questions before submitting", Severity.Warning);
             }
         }
 
@@ -287,6 +326,12 @@ namespace JwtIdentity.Client.Pages.Survey
                         break;
                     case QuestionType.TrueFalse:
                         if (((TrueFalseAnswerViewModel)question.Answers[0]).Value == null)
+                        {
+                            return false;
+                        }
+                        break;
+                    case QuestionType.Rating1To10:
+                        if (((Rating1To10AnswerViewModel)question.Answers[0]).SelectedOptionId == 0)
                         {
                             return false;
                         }

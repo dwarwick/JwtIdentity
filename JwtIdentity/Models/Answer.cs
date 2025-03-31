@@ -7,6 +7,8 @@
 
         public string IpAddress { get; set; }
 
+        public bool Complete { get; set; }
+
         // EF Core navigation
         public Question Question { get; set; }
 
@@ -39,6 +41,11 @@
         // Possibly store the chosen option(s).
         // If multiple selections are allowed, you could keep a list of chosen option IDs,
         // or store them in a separate linking table. For simplicity:
+        public int SelectedOptionId { get; set; }
+    }
+
+    public class Rating1To10Answer : Answer
+    {
         public int SelectedOptionId { get; set; }
     }
 }

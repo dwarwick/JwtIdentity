@@ -26,6 +26,11 @@ namespace JwtIdentity.Models
         // Possibly no extra fields, but you might store a “default” or “explanation”
     }
 
+    public class Rating1To10Question : Question
+    {
+        // No additional fields for Rating1To10Question
+    }
+
     public class MultipleChoiceQuestion : Question
     {
         // For multiple-choice, you might store a list of possible options

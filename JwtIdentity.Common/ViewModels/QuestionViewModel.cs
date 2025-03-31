@@ -28,6 +28,11 @@ namespace JwtIdentity.Common.ViewModels
         // No additional fields for TrueFalseQuestion
     }
 
+    public class Rating1To10QuestionViewModel : QuestionViewModel
+    {
+        // No additional fields for Rating1To10Question
+    }
+
     public class MultipleChoiceQuestionViewModel : QuestionViewModel
     {
         public List<ChoiceOptionViewModel> Options { get; set; } = new List<ChoiceOptionViewModel>();
@@ -46,6 +51,7 @@ namespace JwtIdentity.Common.ViewModels
                     QuestionType.Text => JsonSerializer.Deserialize<TextQuestionViewModel>(doc.RootElement.GetRawText(), options),
                     QuestionType.TrueFalse => JsonSerializer.Deserialize<TrueFalseQuestionViewModel>(doc.RootElement.GetRawText(), options),
                     QuestionType.MultipleChoice => JsonSerializer.Deserialize<MultipleChoiceQuestionViewModel>(doc.RootElement.GetRawText(), options),
+                    QuestionType.Rating1To10 => JsonSerializer.Deserialize<Rating1To10QuestionViewModel>(doc.RootElement.GetRawText(), options),
                     _ => throw new NotSupportedException($"Unsupported QuestionType: {questionType}")
                 };
             }

@@ -2,7 +2,7 @@
 @namespace JwtIdentity.Client.Pages.Survey
 @inherits SurveyModel
 
-@if (!isCaptchaVerified)
+@if (!isCaptchaVerified && !Preview)
 {
     <div id="captcha-container">
         <!-- reCAPTCHA widget with data-callback pointing to our JS function -->
@@ -12,6 +12,11 @@
 }
 else
 {
+    @if (Preview)
+    {
+        <MudAlert Severity="Severity.Info">You are in Preview Mode. You can answer the questions, but the answers will not be recorded. You cannot submit the survey.</MudAlert>
+    }
+
     @if (Survey != null && Survey.Id > 0 && !Loading)
     {
         <MudText Typo="Typo.h4">@Survey.Title</MudText>
@@ -33,6 +38,19 @@ else
                             @foreach (var option in ((MultipleChoiceQuestionViewModel)question).Options)
                             {
                                 <MudRadio Label="@option.OptionText" Value="@option.Id" />
+                            }
+                        </MudStack>
+                    </MudRadioGroup>
+                }
+                else if (question.QuestionType == QuestionType.Rating1To10)
+                {
+                    Rating1To10AnswerViewModel answer = question.Answers.FirstOrDefault() as Rating1To10AnswerViewModel;
+
+                    <MudRadioGroup @key="question" T="int" Value="answer.SelectedOptionId" ValueChanged="@((v) => HandleAnswerQuestion(answer, v))">
+                        <MudStack Row="true" Spacing="0">
+                            @for (int i = 1; i <= 10; i++)
+                            {
+                                <MudRadio Label="@i.ToString()" Value="@i" LabelPlacement="Placement.Top"  />
                             }
                         </MudStack>
                     </MudRadioGroup>

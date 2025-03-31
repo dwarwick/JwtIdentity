@@ -4,6 +4,7 @@ using JwtIdentity.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace JwtIdentity.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250330214649_AddRating1To10")]
+    partial class AddRating1To10
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -32,9 +35,6 @@ namespace JwtIdentity.Migrations
 
                     b.Property<int>("AnswerType")
                         .HasColumnType("int");
-
-                    b.Property<bool>("Complete")
-                        .HasColumnType("bit");
 
                     b.Property<int>("CreatedById")
                         .HasColumnType("int");
@@ -398,6 +398,9 @@ namespace JwtIdentity.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Complete")
+                        .HasColumnType("bit");
 
                     b.Property<int>("CreatedById")
                         .HasColumnType("int");

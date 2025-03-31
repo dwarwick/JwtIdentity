@@ -6,6 +6,7 @@
         TrueFalse = 2,
         SingleChoice = 3,
         MultipleChoice = 4,
+        Rating1To10 = 5,
         // etc.
     }
 }
