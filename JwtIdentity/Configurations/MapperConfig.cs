@@ -30,6 +30,10 @@
             _ = CreateMap<MultipleChoiceQuestionViewModel, MultipleChoiceQuestion>()
                 .ForMember(x => x.CreatedBy, options => options.Ignore());
 
+            _ = CreateMap<Rating1To10Question, Rating1To10QuestionViewModel>();
+            _ = CreateMap<Rating1To10QuestionViewModel, Rating1To10Question>()
+                .ForMember(x => x.CreatedBy, options => options.Ignore());
+
 
             _ = CreateMap<Answer, AnswerViewModel>().IncludeAllDerived();
             _ = CreateMap<AnswerViewModel, Answer>().IncludeAllDerived()
@@ -50,6 +54,10 @@
             _ = CreateMap<SingleChoiceAnswer, SingleChoiceAnswerViewModel>();
             _ = CreateMap<SingleChoiceAnswerViewModel, SingleChoiceAnswer>()
                 .ForMember(x => x.CreatedById, options => options.Ignore());
+
+            _ = CreateMap<Rating1To10Answer, Rating1To10AnswerViewModel>();
+            _ = CreateMap<Rating1To10AnswerViewModel, Rating1To10Answer>()
+                .ForMember(x => x.CreatedBy, options => options.Ignore());
 
             _ = CreateMap<ChoiceOption, ChoiceOptionViewModel>().ReverseMap();
 

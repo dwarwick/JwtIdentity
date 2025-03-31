@@ -180,6 +180,22 @@ namespace JwtIdentity.Client.Pages.Survey
                         }
                     }
                     break;
+                case "Rating1To10":
+                    if ((SelectedQuestion?.Id ?? 0) == 0)
+                    {
+                        Survey.Questions.Add(new Rating1To10QuestionViewModel { Text = QuestionText, QuestionType = QuestionType.Rating1To10, QuestionNumber = Survey.Questions.Count + 1 });
+                    }
+                    else
+                    {
+                        var questionToUpdate = Survey.Questions.FirstOrDefault(x => x.Id == SelectedQuestion.Id) as Rating1To10QuestionViewModel;
+                        if (questionToUpdate != null)
+                        {
+                            SelectedQuestion.Text = QuestionText;
+                            _ = Survey.Questions.Remove(questionToUpdate);
+                            Survey.Questions.Add(SelectedQuestion);
+                        }
+                    }
+                    break;
                 case "MultipleChoice":
                     if ((SelectedQuestion?.Id ?? 0) == 0)
                     {

@@ -52,18 +52,24 @@ namespace JwtIdentity.Controllers
 
             Survey survey = null;
 
-            if (!Preview && ((username == "anonymous" && await _context.Answers.AnyAsync(a =>
-              a.IpAddress == ipAddress &&
-              a.CreatedById == userId &&
-              _context.Surveys.Any(s => s.Id == a.Question.SurveyId && s.Guid == guid && s.Complete)))
+            if (!Preview && ((username == "anonymous" &&
+            await _context.Answers
+            .Where(a =>
+                a.IpAddress == ipAddress &&
+                a.CreatedById == userId &&
+                _context.Surveys.Any(s => s.Id == a.Question.SurveyId && s.Guid == guid))
+            .GroupBy(a => a.Question.SurveyId)
+            .AnyAsync(g => g.All(a => a.Complete)))
 
-              || await _context.Answers.AnyAsync(a =>
-              a.CreatedById == userId &&
-              _context.Surveys.Any(s => s.Id == a.Question.SurveyId && s.Guid == guid && s.Complete))))
+        || await _context.Answers
+            .Where(a =>
+                a.CreatedById == userId &&
+                _context.Surveys.Any(s => s.Id == a.Question.SurveyId && s.Guid == guid))
+            .GroupBy(a => a.Question.SurveyId)
+            .AnyAsync(g => g.All(a => a.Complete))))
             {
                 return BadRequest("You have already taken this survey");
             }
-
 
             survey = await _context.Surveys
             .Where(s => s.Guid == guid)
@@ -163,6 +169,14 @@ namespace JwtIdentity.Controllers
                         surveyDataViewModel.SurveyData = new List<ChartData>() { new ChartData() { X = "True", Y = trueFalseAnswers.Count(a => a.Value == true) }, new ChartData() { X = "False", Y = trueFalseAnswers.Count(a => a.Value == false) } };
                         surveyDataViewModel.TrueFalseQuestion = _mapper.Map<TrueFalseQuestionViewModel>(question);
                         break;
+                    case QuestionType.Rating1To10:
+                        // add to the chart series the count of each rating
+                        // get the question.Answers as Rating1To10Answer
+                        var ratingAnswers = await _context.Answers.OfType<Rating1To10Answer>().AsNoTracking().Where(a => a.QuestionId == question.Id).ToListAsync();
+                        var ratingGroups = ratingAnswers.GroupBy(a => a.SelectedOptionId).ToDictionary(g => g.Key, g => g.Count());
+                        surveyDataViewModel.SurveyData = Enumerable.Range(1, 10).Select(i => new ChartData { X = i.ToString(), Y = ratingGroups.ContainsKey(i) ? ratingGroups[i] : 0 }).ToList();
+                        surveyDataViewModel.Rating1To10Question = _mapper.Map<Rating1To10QuestionViewModel>(question);
+                        break;
                     case QuestionType.MultipleChoice:
                         // Retrieve the multiple-choice question with its options
                         var mcQuestion = await _context.Questions.OfType<MultipleChoiceQuestion>()
@@ -227,16 +241,19 @@ namespace JwtIdentity.Controllers
                 switch (answer.AnswerType)
                 {
                     case AnswerType.Text:
-                        if (((TextAnswer)answer).Text != ((TextAnswer)existingAnswer).Text) _ = _context.Answers.Update(answer);
+                        if (((TextAnswer)answer).Text != ((TextAnswer)existingAnswer).Text || ((TextAnswer)answer).Complete != ((TextAnswer)existingAnswer).Complete) _ = _context.Answers.Update(answer);
                         break;
                     case AnswerType.TrueFalse:
-                        if (((TrueFalseAnswer)answer).Value != ((TrueFalseAnswer)existingAnswer).Value) _ = _context.Answers.Update(answer);
+                        if (((TrueFalseAnswer)answer).Value != ((TrueFalseAnswer)existingAnswer).Value || ((TrueFalseAnswer)answer).Complete != ((TrueFalseAnswer)existingAnswer).Complete) _ = _context.Answers.Update(answer);
                         break;
                     case AnswerType.SingleChoice:
-                        if (((SingleChoiceAnswer)answer).SelectedOptionId != ((SingleChoiceAnswer)existingAnswer).SelectedOptionId) _ = _context.Answers.Update(answer);
+                        if (((SingleChoiceAnswer)answer).SelectedOptionId != ((SingleChoiceAnswer)existingAnswer).SelectedOptionId || ((SingleChoiceAnswer)answer).Complete != ((SingleChoiceAnswer)existingAnswer).Complete) _ = _context.Answers.Update(answer);
                         break;
                     case AnswerType.MultipleChoice:
-                        if (((MultipleChoiceAnswer)answer).SelectedOptionId != ((MultipleChoiceAnswer)existingAnswer).SelectedOptionId) _ = _context.Answers.Update(answer);
+                        if (((MultipleChoiceAnswer)answer).SelectedOptionId != ((MultipleChoiceAnswer)existingAnswer).SelectedOptionId || ((MultipleChoiceAnswer)answer).Complete != ((MultipleChoiceAnswer)existingAnswer).Complete) _ = _context.Answers.Update(answer);
+                        break;
+                    case AnswerType.Rating1To10:
+                        if (((Rating1To10Answer)answer).SelectedOptionId != ((Rating1To10Answer)existingAnswer).SelectedOptionId || ((Rating1To10Answer)answer).Complete != ((Rating1To10Answer)existingAnswer).Complete) _ = _context.Answers.Update(answer);
                         break;
                     default:
                         break;

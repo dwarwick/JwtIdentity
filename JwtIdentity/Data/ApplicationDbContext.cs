@@ -126,7 +126,8 @@ namespace JwtIdentity.Data
                 .HasDiscriminator(q => q.QuestionType)
                 .HasValue<TextQuestion>(QuestionType.Text)
                 .HasValue<TrueFalseQuestion>(QuestionType.TrueFalse)
-                .HasValue<MultipleChoiceQuestion>(QuestionType.MultipleChoice);
+                .HasValue<MultipleChoiceQuestion>(QuestionType.MultipleChoice)
+                .HasValue<Rating1To10Question>(QuestionType.Rating1To10);
 
             // TPH for Answers
             _ = builder.Entity<Answer>()
@@ -134,7 +135,8 @@ namespace JwtIdentity.Data
                 .HasValue<TextAnswer>(AnswerType.Text)
                 .HasValue<TrueFalseAnswer>(AnswerType.TrueFalse)
                 .HasValue<SingleChoiceAnswer>(AnswerType.SingleChoice)
-                .HasValue<MultipleChoiceAnswer>(AnswerType.MultipleChoice);
+                .HasValue<MultipleChoiceAnswer>(AnswerType.MultipleChoice)
+                .HasValue<Rating1To10Answer>(AnswerType.Rating1To10);
         }
 
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

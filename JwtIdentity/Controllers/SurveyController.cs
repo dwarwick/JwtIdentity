@@ -133,6 +133,12 @@ namespace JwtIdentity.Controllers
 
                                 _ = _context.Questions.Update(existingTrueFalseQuestion);
                                 break;
+                            case QuestionType.Rating1To10:
+                                var existingRatingQuestion = await _context.Questions.OfType<Rating1To10Question>().FirstOrDefaultAsync(q => q.Id == passedInQuestion.Id);
+                                existingRatingQuestion.Text = passedInQuestion.Text;
+                                existingRatingQuestion.QuestionNumber = passedInQuestion.QuestionNumber;
+                                _ = _context.Questions.Update(existingRatingQuestion);
+                                break;
                             case QuestionType.MultipleChoice:
                                 var existingMCQuestion = await _context.Questions.OfType<MultipleChoiceQuestion>().AsNoTracking().Include(x => x.Options).FirstOrDefaultAsync(q => q.Id == passedInQuestion.Id);
 
@@ -181,7 +187,7 @@ namespace JwtIdentity.Controllers
             return CreatedAtAction(nameof(PostSurvey), new { id = survey.Id }, _mapper.Map<SurveyViewModel>(survey));
         }
 
-        // PUT: api/Survey/5
+        // PUT: api/Survey
         [HttpPut]
         public async Task<IActionResult> PutSurvey(SurveyViewModel surveyViewModel)
         {
@@ -195,22 +201,33 @@ namespace JwtIdentity.Controllers
                 return NotFound("Survey not found");
             }
 
-            var survey = _mapper.Map<Survey>(surveyViewModel);
-            _context.Entry(survey).State = EntityState.Modified;
+            var survey = await _context.Surveys
+                .Include(s => s.Questions)
+                .FirstOrDefaultAsync(s => s.Id == surveyViewModel.Id);
+
+            if (survey == null)
+            {
+                return NotFound("Survey not found");
+            }
+
+            // Update basic properties only
+            survey.Title = surveyViewModel.Title;
+            survey.Description = surveyViewModel.Description;
+            survey.Published = surveyViewModel.Published;
+
+            // We don't update the Complete property here as we now rely on Answer.Complete
 
             try
             {
                 _ = await _context.SaveChangesAsync();
-
-                surveyViewModel = _mapper.Map<SurveyViewModel>(survey);
+                return Ok(_mapper.Map<SurveyViewModel>(survey));
             }
             catch (DbUpdateConcurrencyException)
             {
                 return BadRequest("Concurrency Exception");
             }
-
-            return Ok(surveyViewModel);
         }
+
 
         // DELETE: api/Survey/5
         [HttpDelete("{id}")]
