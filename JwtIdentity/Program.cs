@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.OData;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models; // Add this using statement
 using Serilog;
@@ -136,6 +137,10 @@ builder.Services.AddControllers(options =>
 {
     opts.JsonSerializerOptions.Converters.Add(new AnswerViewModelConverter());
     opts.JsonSerializerOptions.Converters.Add(new QuestionViewModelConverter());
+}).AddOData(options =>
+{
+    _ = options.Select().Filter().OrderBy().Count().Expand().SetMaxTop(null);
+    _ = options.AddRouteComponents("odata", EdmModelBuilder.GetEdmModel());
 });
 
 // add an AllowAll Cors policy
