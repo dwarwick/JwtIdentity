@@ -1,4 +1,5 @@
 ﻿using JwtIdentity.Client.Pages.Common;
+using Syncfusion.Blazor.Data;
 
 namespace JwtIdentity.Client.Pages.Survey
 {
@@ -26,6 +27,10 @@ namespace JwtIdentity.Client.Pages.Survey
                     _selectedQuestion = value;
             }
         }
+
+        protected QuestionViewModel SelectedExistingQuestion { get; set; }
+
+        protected Query Query { get; set; } = new Query().Take(10);
 
         private readonly DialogOptions _topCenter = new() { Position = DialogPosition.TopCenter, CloseButton = false, CloseOnEscapeKey = false };
 
@@ -357,5 +362,35 @@ namespace JwtIdentity.Client.Pages.Survey
                 return false;
             }
         }
+
+        protected async Task<IEnumerable<QuestionViewModel>> SearchExistingQuestions(string userInput, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var response = await ApiService.GetAsync<List<QuestionViewModel>>($"{ApiEndpoints.Question}/GetQuestionsContainingQuestionText");
+
+                return response ?? new List<QuestionViewModel>();
+            }
+            catch
+            {
+                // You may wish to log / handle the error more gracefully.
+                return Array.Empty<QuestionViewModel>();
+            }
+        }
+
+        protected void HandleSelectedExistingQuestion(QuestionViewModel question)
+        {
+            SelectedExistingQuestion = question;
+        }
+
+        protected async Task<DataResult> RemoteDataQuery(DataManagerRequest dm)
+        {
+            Query query = new Query().AddParams("search", dm.Search);
+            DataResult result = await ApiService.PostAsync<Query, DataResult>("api/Question/GetQuestionsContainingQuestionText", query);
+
+            // var data = await result.Content.ReadFromJsonAsync<DataResult>();
+            return result;
+        }
+
     }
 }

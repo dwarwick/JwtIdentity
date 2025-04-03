@@ -14,7 +14,9 @@
             _ = CreateMap<ApplicationRole, ApplicationRoleViewModel>().ReverseMap();
             _ = CreateMap<RoleClaim, RoleClaimViewModel>().ReverseMap();
 
-            _ = CreateMap<Question, QuestionViewModel>().IncludeAllDerived();
+            _ = CreateMap<Question, QuestionViewModel>().IncludeAllDerived()
+                .Include<MultipleChoiceQuestion, MultipleChoiceQuestionViewModel>();
+
             _ = CreateMap<QuestionViewModel, Question>().IncludeAllDerived()
                 .ForMember(x => x.CreatedBy, options => options.Ignore());
 
@@ -26,7 +28,8 @@
             _ = CreateMap<TrueFalseQuestionViewModel, TrueFalseQuestion>()
                 .ForMember(x => x.CreatedBy, options => options.Ignore());
 
-            _ = CreateMap<MultipleChoiceQuestion, MultipleChoiceQuestionViewModel>();
+            _ = CreateMap<MultipleChoiceQuestion, MultipleChoiceQuestionViewModel>()
+                .ForMember(dest => dest.Options, opt => opt.MapFrom(src => src.Options));
             _ = CreateMap<MultipleChoiceQuestionViewModel, MultipleChoiceQuestion>()
                 .ForMember(x => x.CreatedBy, options => options.Ignore());
 
@@ -61,29 +64,7 @@
 
             _ = CreateMap<ChoiceOption, ChoiceOptionViewModel>().ReverseMap();
 
-
-
-
-
-
             _ = CreateMap<Survey, SurveyViewModel>().ReverseMap();
-
-            //this.CreateMap<BaseModel, BaseViewModel>().ReverseMap();
-
-            //this.CreateMap<Forum, ForumViewModel>();
-
-            //this.CreateMap<ForumViewModel, Forum>()
-            //    .ForMember(q => q.CreatedBy, options => options.Ignore());
-
-            //this.CreateMap<Post, PostViewModel>();
-            //this.CreateMap<PostViewModel, Post>()
-            //    .ForMember(x => x.CreatedBy, options => options.Ignore());
-
-            //this.CreateMap<Tag, TagViewModel>();
-            //this.CreateMap<TagViewModel, Tag>()
-            //    .ForMember(x => x.Id, options => options.Ignore());
-
-            //this.CreateMap<VoteViewModel, Vote>().ReverseMap();
         }
     }
 }
