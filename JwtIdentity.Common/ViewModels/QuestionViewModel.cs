@@ -3,10 +3,6 @@ using System.Text.Json.Serialization;
 
 namespace JwtIdentity.Common.ViewModels
 {
-    //[JsonPolymorphic(TypeDiscriminatorPropertyName = nameof(QuestionType))]
-    //[JsonDerivedType(typeof(TextQuestionViewModel), (int)QuestionType.Text)]
-    //[JsonDerivedType(typeof(TrueFalseQuestionViewModel), (int)QuestionType.TrueFalse)]
-    //[JsonDerivedType(typeof(MultipleChoiceQuestionViewModel), (int)QuestionType.MultipleChoice)]
     public abstract class QuestionViewModel : BaseViewModel
     {
         public int Id { get; set; }
@@ -36,6 +32,18 @@ namespace JwtIdentity.Common.ViewModels
     public class MultipleChoiceQuestionViewModel : QuestionViewModel
     {
         public List<ChoiceOptionViewModel> Options { get; set; } = new List<ChoiceOptionViewModel>();
+    }
+
+    public class BaseQuestionDto
+    {
+        public int Id { get; set; }
+        public int SurveyId { get; set; }
+        public string Text { get; set; }
+        public int QuestionNumber { get; set; }
+        public QuestionType QuestionType { get; set; }
+        public DateTime CreatedDate { get; set; }
+        public DateTime UpdatedDate { get; set; }
+        // etc. — but *no* Answers or derived class fields
     }
 
     public class QuestionViewModelConverter : JsonConverter<QuestionViewModel>
