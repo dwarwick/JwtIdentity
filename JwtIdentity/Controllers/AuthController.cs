@@ -1,8 +1,14 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
+using System.Net;
 using System.Text;
+
+#nullable enable
 
 namespace JwtIdentity.Controllers
 {
@@ -260,6 +266,134 @@ namespace JwtIdentity.Controllers
             }
 
             return LocalRedirect("/users/emailnotconfirmed");
+        }
+
+        [HttpPost("forgotpassword")]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordViewModel model)
+        {
+            if (!ModelState.IsValid || string.IsNullOrEmpty(model.Email))
+            {
+                return BadRequest(new { Success = false, Message = "Invalid request" });
+            }
+
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user == null)
+            {
+                // Don't reveal that the user does not exist
+                return Ok(new { Success = true, Message = "If your email exists in our system, you will receive a password reset link" });
+            }
+
+            // Generate password reset token
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            
+            // Encode the token for safe URL transmission
+            byte[] tokenGeneratedBytes = Encoding.UTF8.GetBytes(token);
+            var encodedToken = WebEncoders.Base64UrlEncode(tokenGeneratedBytes);
+
+            // Create the reset link
+            var baseUrl = _configuration["ApiBaseAddress"] ?? string.Empty;
+            var resetUrl = $"{baseUrl}/reset-password?email={WebUtility.UrlEncode(user.Email)}&token={encodedToken}";
+            
+            // Send email with reset link
+            _emailService.SendPasswordResetEmail(user.Email, resetUrl);
+            
+            // Log the event
+            _dbContext.LogEntries.Add(new LogEntry
+            {
+                Message = $"Password reset requested for user {user.Email} at {DateTime.UtcNow}",
+                Level = "Info",
+                LoggedAt = DateTime.UtcNow
+            });
+            await _dbContext.SaveChangesAsync();
+
+            return Ok(new { Success = true, Message = "Password reset link has been sent to your email" });
+        }
+
+        [HttpPost("resetpassword")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new { Success = false, Message = "Invalid request" });
+            }
+
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user == null)
+            {
+                // Don't reveal that the user does not exist
+                return BadRequest(new { Success = false, Message = "Failed to reset password" });
+            }
+
+            // Decode the token
+            byte[] decodedToken;
+            try
+            {
+                decodedToken = WebEncoders.Base64UrlDecode(model.Token);
+            }
+            catch
+            {
+                return BadRequest(new { Success = false, Message = "Invalid token format" });
+            }
+            
+            var token = Encoding.UTF8.GetString(decodedToken);
+            
+            // Reset the password
+            var result = await _userManager.ResetPasswordAsync(user, token, model.Password);
+            
+            if (result.Succeeded)
+            {
+                // Log the successful password reset
+                _dbContext.LogEntries.Add(new LogEntry
+                {
+                    Message = $"Password reset successful for user {user.Email} at {DateTime.UtcNow}",
+                    Level = "Info",
+                    LoggedAt = DateTime.UtcNow
+                });
+                await _dbContext.SaveChangesAsync();
+                
+                return Ok(new { Success = true, Message = "Password has been reset successfully" });
+            }
+            
+            // Return errors if password reset failed
+            var errors = result.Errors.Select(e => e.Description).ToList();
+            return BadRequest(new { Success = false, Message = "Failed to reset password", Errors = errors });
+        }
+
+        [HttpGet("handlepasswordresetemailclick")]
+        public IActionResult HandlePasswordResetEmailClick(string email, string token)
+        {
+            if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(token))
+            {
+                return BadRequest("Invalid password reset request. Missing email or token.");
+            }
+
+            // Redirect to the client-side reset password page with the token and email as query parameters
+            var baseUrl = _configuration["ApiBaseAddress"] ?? string.Empty;
+            var clientResetUrl = $"{baseUrl}/reset-password?email={WebUtility.UrlEncode(email)}&token={WebUtility.UrlEncode(token)}";
+            
+            return Redirect(clientResetUrl);
+        }
+
+        // Create model classes at the end of the AuthController class
+        public class ForgotPasswordViewModel
+        {
+            [Required]
+            [EmailAddress]
+            public string Email { get; set; }
+        }
+
+        public class ResetPasswordViewModel
+        {
+            [Required]
+            [EmailAddress]
+            public string Email { get; set; }
+            
+            [Required]
+            public string Token { get; set; }
+            
+            [Required]
+            [StringLength(100, MinimumLength = 6, ErrorMessage = "Password must be at least 6 characters long")]
+            public string Password { get; set; }
         }
     }
 }
