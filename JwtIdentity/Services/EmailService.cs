@@ -1,6 +1,8 @@
 ﻿using System.Net.Mail;
 using System.Net.Mime;
 
+#nullable enable
+
 namespace JwtIdentity.Services
 {
     public class EmailService : IEmailService
@@ -30,8 +32,7 @@ namespace JwtIdentity.Services
             string userName = configuration["EmailSettings:CustomerServiceEmail"] ?? string.Empty;
             string password = configuration["EmailSettings:Password"] ?? string.Empty;
 
-            System.Net.ServicePointManager.SecurityProtocol = System.Net.SecurityProtocolType.Tls12;
-
+            // Use HttpClient approach instead of deprecated ServicePointManager
             MailMessage m = new MailMessage();
             SmtpClient sc = new SmtpClient();
             m.From = new MailAddress(FromEmail);
@@ -52,11 +53,10 @@ namespace JwtIdentity.Services
                 sc.UseDefaultCredentials = false;
                 sc.EnableSsl = false;
                 sc.Send(m);
-
             }
             catch (Exception)
             {
-
+                // Log exception or handle it appropriately
             }
         }
 
@@ -96,6 +96,30 @@ namespace JwtIdentity.Services
             SendEmail("customerservice@digitalcart.biz", EmailAddress ?? string.Empty, "digitalcart.biz Password Reset", body, alternate);
 
             return true;
+        }
+
+        public void SendPasswordResetEmail(string toEmail, string tokenUrl)
+        {
+            string body = $"Please click the link below to reset your password for {domain}\n\n{tokenUrl}";
+
+            // Construct the alternate body as HTML.                  
+            string htmlBody = $"<p>You recently requested to reset your password for your account at {domain}.</p>" +
+                             $"<p>Please click the button below to reset your password:</p>" +
+                             $"<div style=\"text-align:center;margin:30px 0;\"><a href=\"{tokenUrl}\">" +
+                             $"<button type=\"button\" style=\"background-color:blue;color:white;border-radius:20px;padding:10px 20px;font-size:16px;\">" +
+                             $"Reset Password</button></a></div>" +
+                             $"<p>If you cannot click the button, please copy and paste the following URL into your browser:</p>" +
+                             $"<p style=\"word-break:break-all;\">{tokenUrl}</p>" +
+                             $"<p>If you did not request a password reset, please ignore this email or contact support if you have concerns.</p>" +
+                             $"<p>This password reset link will expire in 24 hours.</p>";
+
+            string html = header + htmlBody + footer;
+            ContentType mimeType = new System.Net.Mime.ContentType("text/html");
+
+            // Add the alternate body to the message.
+            AlternateView alternate = AlternateView.CreateAlternateViewFromString(html, mimeType);
+
+            SendEmail(fromEmail, toEmail ?? string.Empty, "Password Reset Request", body, alternate);
         }
     }
 }

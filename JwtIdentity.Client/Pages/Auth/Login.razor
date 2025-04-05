@@ -9,5 +9,8 @@
         <MudTextField id="username" @bind-Value="applicationUserViewModel.UserName" InputType="InputType.Text" autocomplete="username" For="@(() => applicationUserViewModel.UserName)" Label="Email" />
     <MudTextField id="password" InputType="InputType.Password" autocomplete="current-password" @bind-Value="applicationUserViewModel.Password" For="@(() => applicationUserViewModel.Password)" Label="Password" />
 
-    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="mt-1">Login</MudButton>
+    <MudStack Row="true" Class="mt-3">
+        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary">Login</MudButton>
+        <MudLink Href="/forgot-password" Class="ml-auto align-self-center">Forgot Password?</MudLink>
+    </MudStack>
 </EditForm>
