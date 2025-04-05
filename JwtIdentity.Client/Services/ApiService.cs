@@ -106,6 +106,19 @@ namespace JwtIdentity.Client.Services
             return await response.Content.ReadFromJsonAsync<T>(_options);
         }
 
+        public async Task<R> PostAsync<T, R>(string endpoint, T viewModel)
+        {
+            var response = await _httpClient.PostAsJsonAsync($"{endpoint}", viewModel, _options);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                _ = snackbar.Add("There was a problem with the request", Severity.Error);
+                return default;
+            }
+
+            return await response.Content.ReadFromJsonAsync<R>(_options);
+        }
+
         private HttpResponseMessage EnsureSuccess(HttpResponseMessage response)
         {
             try

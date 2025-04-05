@@ -14,54 +14,65 @@
     @if (!Survey.Published)
     {
         <MudStack Class="flex-1">
-            <MudPaper Class="p-2">
+            <MudExpansionPanels MultiExpansion="true">
+                <MudExpansionPanel @ref="ManualQuestionPanel" @bind-Expanded="@ManualQuestionPanelExpanded" Text="Create Question Manually">
+                    <MudPaper Class="p-2">
+                        <MudStack Spacing="1">
+                            <MudSelect Label="Select the Question Type"
+                                       @bind-Value="@SelectedQuestionType"
+                                       Variant="Variant.Filled"
+                                       Immediate="true"
+                                       ErrorText="Please select a type"
+                                       Error="@(string.IsNullOrWhiteSpace(SelectedQuestionType))"
+                                       Disabled="@(SelectedQuestion != null)">
+                                @foreach (var questionType in QuestionTypes)
+                                {
+                                    <MudSelectItem Value="@(StringHelper.PascalCaseToWords( questionType))" />
+                                }
+                            </MudSelect>
 
-                <MudStack Spacing="1">
-                    <MudSelect Label="Select the Question Type"
-                    @bind-Value="@SelectedQuestionType"
-                    Variant="Variant.Filled"
-                    Immediate="true"
-                    ErrorText="Please select a type"
-                    Error="@(string.IsNullOrWhiteSpace(SelectedQuestionType))"
-                    Disabled="@(SelectedQuestion != null)">
-                        @foreach (var questionType in QuestionTypes)
-                        {
-                            <MudSelectItem Value="@(StringHelper.PascalCaseToWords( questionType))" />
-                        }
-                    </MudSelect>
+                            <MudText Typo="Typo.h6" Class="mt-5">Create a @StringHelper.PascalCaseToWords(SelectedQuestionType) Question</MudText>
+                            <MudTextField id="Text" Label="Question Text" @bind-Value="QuestionText" Variant="Variant.Filled" Lines="1" MaxLines="5" AutoGrow="true" Immediate="true" Counter="50" MaxLength="50" />
+                        </MudStack>
 
-                    <MudText Typo="Typo.h6" Class="mt-5">Create a @StringHelper.PascalCaseToWords(SelectedQuestionType) Question</MudText>
-                    <MudTextField id="Text" Label="Question Text" @bind-Value="QuestionText" Variant="Variant.Filled" Lines="1" MaxLines="5" AutoGrow="true" Immediate="true" Counter="50" MaxLength="50" />
-                </MudStack>
+                        <MudButton ButtonType="ButtonType.Button" Variant="Variant.Filled" Color="Color.Primary" OnClick="AddQuestionToSurvey" Disabled="@AddQuestionToSurveyDisabled">Submit Question</MudButton>
+                    </MudPaper>
 
-                <MudButton ButtonType="ButtonType.Button" Variant="Variant.Filled" Color="Color.Primary" OnClick="AddQuestionToSurvey" Disabled="@AddQuestionToSurveyDisabled">Submit Question</MudButton>
-            </MudPaper>
+                    @if (SelectedQuestionType.Replace(" ", "") == Enum.GetName(QuestionType.MultipleChoice))
+                    {
+                        <MudPaper>
+                            <MudText Typo="Typo.h6" Class="mb-1">Add the Question Choices</MudText>
+                            <MudTextField id="Choice" Label="Choice Text" @bind-Value="NewChoiceOptionText" Variant="Variant.Filled" Lines="1" MaxLines="5" AutoGrow="true" Immediate="true" Counter="50" MaxLength="50" />
 
-            @if (SelectedQuestionType.Replace(" ", "") == Enum.GetName(QuestionType.MultipleChoice))
-            {
-                <MudPaper>
-                    <MudText Typo="Typo.h6" Class="mb-1">Add the Question Choices</MudText>
-                    <MudTextField id="Choice" Label="Choice Text" @bind-Value="NewChoiceOptionText" Variant="Variant.Filled" Lines="1" MaxLines="5" AutoGrow="true" Immediate="true" Counter="50" MaxLength="50" />
+                            <MudButton ButtonType="ButtonType.Button" Variant="Variant.Filled" Color="Color.Primary" OnClick="@AddChoiceOption" Disabled="@(string.IsNullOrWhiteSpace(NewChoiceOptionText))">Add Choice</MudButton>
 
-                    <MudButton ButtonType="ButtonType.Button" Variant="Variant.Filled" Color="Color.Primary" OnClick="@AddChoiceOption" Disabled="@(string.IsNullOrWhiteSpace(NewChoiceOptionText))">Add Choice</MudButton>
+                            <div style="height:150px;overflow:auto;" class="mt-2">
+                                <MudList T="string" ReadOnly="true" Dense="true">
+                                    @foreach (var choice in MultipleChoiceQuestion.Options)
+                                    {
+                                        <DragAndDrop TItem="ChoiceOptionViewModel" Items="MultipleChoiceQuestion.Options" Item="choice" ItemsChanged="DroppedChoiceOption">
+                                            <MudStack Class=".d-flex.flex-row.gap-3.ai-style-change-1" Row="true" AlignItems="AlignItems.Center">
+                                                <MudIconButton Icon="@Icons.Material.Filled.Delete" ButtonType="ButtonType.Button" OnClick="@(() =>DeleteChoiceOption(choice))" />
+                                                <MudIcon Class="drag-icon ai-style-change-9" Icon="@Icons.Material.Filled.DragIndicator" />
+                                                <MudListItem Class="ai-style-change-3 ai-style-change-6" Text="@choice.OptionText" />
+                                            </MudStack>
+                                            <div style="height: 2px; background-color: blueviolet; width: 100%;"></div>
+                                        </DragAndDrop>
+                                    }
+                                </MudList>
+                            </div>
+                        </MudPaper>
+                    }
+                </MudExpansionPanel>
 
-                    <div style="height:150px;overflow:auto;" class="mt-2">
-                        <MudList T="string" ReadOnly="true" Dense="true">
-                            @foreach (var choice in MultipleChoiceQuestion.Options)
-                            {
-                                <DragAndDrop TItem="ChoiceOptionViewModel" Items="MultipleChoiceQuestion.Options" Item="choice" ItemsChanged="DroppedChoiceOption">
-                                    <MudStack Class=".d-flex.flex-row.gap-3.ai-style-change-1" Row="true" AlignItems="AlignItems.Center">
-                                        <MudIconButton Icon="@Icons.Material.Filled.Delete" ButtonType="ButtonType.Button" OnClick="@(() =>DeleteChoiceOption(choice))" />
-                                        <MudIcon Class="drag-icon ai-style-change-9" Icon="@Icons.Material.Filled.DragIndicator" />
-                                        <MudListItem Class="ai-style-change-3 ai-style-change-6" Text="@choice.OptionText" />
-                                    </MudStack>
-                                    <div style="height: 2px; background-color: blueviolet; width: 100%;"></div>
-                                </DragAndDrop>
-                            }
-                        </MudList>
-                    </div>
-                </MudPaper>
-            }
+                <MudExpansionPanel @ref="ExistingQuestionPanel" Text="Start with Existing Question" @bind-Expanded="@ExistingQuestionPanelExpanded">
+                    <SfAutoComplete TValue="BaseQuestionDto" TItem="BaseQuestionDto" PopupHeight="130px" EnableVirtualization="true" Placeholder="Start Typing to Search Existing Questions" Query="@RemoteDataQuery" Value="SelectedExistingQuestion" ValueChanged="HandleSelectedExistingQuestion" ShowPopupButton="true">
+                        <SfDataManager Url="odata/odataquestion" CrossDomain="true" Adaptor="Adaptors.ODataV4Adaptor" />
+                        <AutoCompleteFieldSettings Text="Text" Value="Text"/>
+                    </SfAutoComplete>
+
+                </MudExpansionPanel>
+            </MudExpansionPanels>
         </MudStack>
     }
     else
@@ -85,7 +96,7 @@
                         <div style="height: 2px; background-color: blueviolet; width: 100%;"></div>
                     </DragAndDrop>
                 }
-            </MudList>            
+            </MudList>
         </MudPaper>
     }
 

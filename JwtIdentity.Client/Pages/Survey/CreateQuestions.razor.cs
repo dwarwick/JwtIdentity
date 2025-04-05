@@ -1,4 +1,5 @@
 ﻿using JwtIdentity.Client.Pages.Common;
+using Syncfusion.Blazor.Data;
 
 namespace JwtIdentity.Client.Pages.Survey
 {
@@ -12,6 +13,8 @@ namespace JwtIdentity.Client.Pages.Survey
         protected SurveyViewModel Survey { get; set; } = new();
 
         protected MultipleChoiceQuestionViewModel MultipleChoiceQuestion { get; set; } = new MultipleChoiceQuestionViewModel();
+
+        protected Query RemoteDataQuery { get; set; } = new Query().Take(6);
 
         private QuestionViewModel _selectedQuestion;
         protected QuestionViewModel SelectedQuestion
@@ -27,6 +30,8 @@ namespace JwtIdentity.Client.Pages.Survey
             }
         }
 
+        protected BaseQuestionDto SelectedExistingQuestion { get; set; }
+
         private readonly DialogOptions _topCenter = new() { Position = DialogPosition.TopCenter, CloseButton = false, CloseOnEscapeKey = false };
 
         protected static string[] QuestionTypes => Enum.GetNames(typeof(QuestionType));
@@ -41,6 +46,14 @@ namespace JwtIdentity.Client.Pages.Survey
             Survey.Published ||
             string.IsNullOrWhiteSpace(QuestionText) ||
             (SelectedQuestionType.Replace(" ", "") == Enum.GetName(QuestionType.MultipleChoice) && MultipleChoiceQuestion.Options.Count == 0);
+
+        protected MudExpansionPanel ExistingQuestionPanel { get; set; }
+
+        protected MudExpansionPanel ManualQuestionPanel { get; set; }
+
+        protected bool ExistingQuestionPanelExpanded { get; set; } = false;
+        protected bool ManualQuestionPanelExpanded { get; set; } = true;
+
 
         protected override async Task OnInitializedAsync()
         {
@@ -217,6 +230,7 @@ namespace JwtIdentity.Client.Pages.Survey
             }
 
             SelectedQuestion = null;
+            SelectedExistingQuestion = null;
 
             if (await UpdateSurvey())
             {
@@ -277,7 +291,10 @@ namespace JwtIdentity.Client.Pages.Survey
                 return;
             }
 
-            SelectedQuestion = Survey.Questions.FirstOrDefault(x => x.Id == input.Id);
+            if (SelectedExistingQuestion == null)
+            {
+                SelectedQuestion = Survey.Questions.FirstOrDefault(x => x.Id == input.Id);
+            }
 
             if (SelectedQuestion != null)
             {
@@ -289,6 +306,9 @@ namespace JwtIdentity.Client.Pages.Survey
                     MultipleChoiceQuestion = SelectedQuestion as MultipleChoiceQuestionViewModel;
                 }
             }
+
+            ManualQuestionPanelExpanded = true;
+            ExistingQuestionPanelExpanded = false;
         }
 
         protected async Task DroppedChoiceOption(List<ChoiceOptionViewModel> choices)
@@ -356,6 +376,36 @@ namespace JwtIdentity.Client.Pages.Survey
             {
                 return false;
             }
+        }
+
+        protected async Task HandleSelectedExistingQuestion(BaseQuestionDto question)
+        {
+            SelectedExistingQuestion = question;
+
+            if (question != null)
+            {
+                SelectedQuestion = await ApiService.GetAsync<QuestionViewModel>($"{ApiEndpoints.Question}/QuestionAndOptions/{question.Id}");
+
+                SelectedQuestion.Id = 0;
+
+                if (SelectedQuestion.QuestionType == QuestionType.MultipleChoice)
+                {
+                    foreach (var option in ((MultipleChoiceQuestionViewModel)SelectedQuestion).Options)
+                    {
+                        option.Id = 0;
+                    }
+                }
+            }
+            else
+            {
+                SelectedQuestion = null;
+            }
+
+            QuestionSelected(SelectedQuestion);
+
+            ExistingQuestionPanelExpanded = false;
+            ManualQuestionPanelExpanded = true;
+
         }
     }
 }

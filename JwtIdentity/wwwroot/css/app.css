@@ -162,3 +162,10 @@ svg.mud-icon-root.mud-svg-icon.mud-icon-size-medium.drag-icon.ai-style-change-9 
 .mud-ripple::after {
     content: unset !important;
 }
+
+
+
+.dark-mode {
+    background-color: var(--mud-palette-background);     
+    color: #ffffff;
+}
