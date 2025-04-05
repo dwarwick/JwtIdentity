@@ -22,30 +22,18 @@ namespace JwtIdentity.Controllers
         }
 
         // GET: api/Question
-        [HttpPost("GetQuestionsContainingQuestionText")]
-        public async Task<ActionResult<IEnumerable<QuestionViewModel>>> GetQuestionsContainingQuestionText()
+        [HttpGet("QuestionAndOptions/{id}")]
+        public async Task<ActionResult<QuestionViewModel>> GetQuestionsContainingQuestionText(int id)
         {
-            List<Question> questions = null;
+            Question question = await _context.Questions.FirstOrDefaultAsync(x => x.Id == id);
 
+            if (question.QuestionType == QuestionType.MultipleChoice)
+            {
+                var mcQuestion = await _context.Questions.OfType<MultipleChoiceQuestion>().Include(x => x.Options).FirstOrDefaultAsync(x => x.Id == id);
+                return Ok(_mapper.Map<QuestionViewModel>(mcQuestion));
+            }
 
-            questions = await _context.Questions.ToListAsync();
-
-
-
-            // Pull out the IDs of any multiple-choice questions in memory
-            var mcIds = questions
-                .OfType<MultipleChoiceQuestion>()
-                .Select(mc => mc.Id)
-                .ToList();
-
-            // Now load each one’s Options
-            await _context.Questions
-                .OfType<MultipleChoiceQuestion>()
-                .Where(mc => mcIds.Contains(mc.Id))
-                .Include(mc => mc.Options)
-                .LoadAsync();
-
-            return Ok(_mapper.Map<IEnumerable<QuestionViewModel>>(questions));
+            return Ok(_mapper.Map<QuestionViewModel>(question));
         }
 
         // GET: api/Question/5

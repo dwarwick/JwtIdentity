@@ -14,8 +14,8 @@
     @if (!Survey.Published)
     {
         <MudStack Class="flex-1">
-            <MudExpansionPanels>
-                <MudExpansionPanel Expanded="false" Text="Create Question Manually">
+            <MudExpansionPanels MultiExpansion="true">
+                <MudExpansionPanel @ref="ManualQuestionPanel" @bind-Expanded="@ManualQuestionPanelExpanded" Text="Create Question Manually">
                     <MudPaper Class="p-2">
                         <MudStack Spacing="1">
                             <MudSelect Label="Select the Question Type"
@@ -65,9 +65,10 @@
                     }
                 </MudExpansionPanel>
 
-                <MudExpansionPanel Text="Start with Existing Question">
-                    <SfAutoComplete TValue="QuestionViewModel" TItem="QuestionViewModel" PopupHeight="130px" EnableVirtualization="true" Placeholder="Search Existing Questions"  Query="@Query">
-                        <AutoCompleteFieldSettings Text="Text" Value="Id" />
+                <MudExpansionPanel @ref="ExistingQuestionPanel" Text="Start with Existing Question" @bind-Expanded="@ExistingQuestionPanelExpanded">
+                    <SfAutoComplete TValue="BaseQuestionDto" TItem="BaseQuestionDto" PopupHeight="130px" EnableVirtualization="true" Placeholder="Start Typing to Search Existing Questions" Query="@RemoteDataQuery" Value="SelectedExistingQuestion" ValueChanged="HandleSelectedExistingQuestion" ShowPopupButton="true">
+                        <SfDataManager Url="odata/odataquestion" CrossDomain="true" Adaptor="Adaptors.ODataV4Adaptor" />
+                        <AutoCompleteFieldSettings Text="Text" Value="Text"/>
                     </SfAutoComplete>
 
                 </MudExpansionPanel>
