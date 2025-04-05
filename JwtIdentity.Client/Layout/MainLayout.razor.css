@@ -76,6 +76,23 @@ main {
     }
 }*/
 
+.content-wrapper {
+    position: relative;
+    min-height: calc(100vh - 64px);
+}
+
+.footer-bar {
+    height: 40px !important;
+    min-height: 40px !important;
+    margin-top: 20px;
+    z-index: 1000;
+}
+
+/* This handles the bottom padding in smaller viewports */
+.pb-16 {
+    padding-bottom: 4rem !important;
+}
+
 #blazor-error-ui {
     color-scheme: light only;
     background: lightyellow;
