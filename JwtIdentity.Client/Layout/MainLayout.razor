@@ -16,19 +16,22 @@
 <MudSnackbarProvider />
 
 <CascadingValue Value="_theme" Name="Theme">
-<main>
-
-
-    <MudLayout>
-
+<main class="d-flex flex-column min-vh-100">
+    <MudLayout class="flex-grow-1">
         <MyNavMenu @bind-DarkTheme="@_isDarkMode" @bind-DarkTheme:after="HandleThemeChanged" />
 
-        <MudMainContent>
-            <MudContainer>
+        <MudMainContent Class="content-wrapper">
+            <MudContainer Class="pt-2 pb-16"> @* Added pb-16 class for padding bottom *@
                 @Body
             </MudContainer>
         </MudMainContent>
     </MudLayout>
+    
+    <MudAppBar Bottom="true" Fixed="true" Elevation="1" Class="footer-bar">
+        <MudText Typo="Typo.body2" Class="mx-auto">
+            © @DateTime.Now.Year davidtest.xyz - All Rights Reserved
+        </MudText>
+    </MudAppBar>
 </main>
 </CascadingValue>
 
