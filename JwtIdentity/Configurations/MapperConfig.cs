@@ -42,6 +42,10 @@
             _ = CreateMap<Rating1To10QuestionViewModel, Rating1To10Question>()
                 .ForMember(x => x.CreatedBy, options => options.Ignore());
 
+            _ = CreateMap<SelectAllThatApplyQuestion, SelectAllThatApplyQuestionViewModel>()
+                .ForMember(dest => dest.Options, opt => opt.MapFrom(src => src.Options));
+            _ = CreateMap<SelectAllThatApplyQuestionViewModel, SelectAllThatApplyQuestion>()
+                .ForMember(x => x.CreatedBy, options => options.Ignore());
 
             _ = CreateMap<Answer, AnswerViewModel>().IncludeAllDerived();
             _ = CreateMap<AnswerViewModel, Answer>().IncludeAllDerived()
@@ -67,7 +71,14 @@
             _ = CreateMap<Rating1To10AnswerViewModel, Rating1To10Answer>()
                 .ForMember(x => x.CreatedBy, options => options.Ignore());
 
-            _ = CreateMap<ChoiceOption, ChoiceOptionViewModel>().ReverseMap();
+            _ = CreateMap<SelectAllThatApplyAnswer, SelectAllThatApplyAnswerViewModel>();
+            _ = CreateMap<SelectAllThatApplyAnswerViewModel, SelectAllThatApplyAnswer>()
+                .ForMember(x => x.CreatedBy, options => options.Ignore());
+
+            _ = CreateMap<ChoiceOption, ChoiceOptionViewModel>().ReverseMap()
+                .ForMember(dest => dest.MultipleChoiceQuestionId, opt => opt.MapFrom(src => src.MultipleChoiceQuestionId))
+                .ForMember(dest => dest.SelectAllThatApplyQuestionId, opt => opt.MapFrom(src => src.SelectAllThatApplyQuestionId));
+
 
             _ = CreateMap<Survey, SurveyViewModel>().ReverseMap();
         }

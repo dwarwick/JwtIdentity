@@ -94,6 +94,91 @@ namespace JwtIdentity.Client.Pages.Survey
             }
         }
 
+        /*    private async Task LoadData()
+            {
+                // get the survey based on the SurveyId
+                Survey = await ApiService.GetAsync<SurveyViewModel>($"{ApiEndpoints.Answer}/getanswersforsurveyforloggedinuser/{SurveyId}?Preview={Preview}");
+
+                if (Survey != null && Survey.Id > 0)
+                {
+                    foreach (var question in Survey.Questions)
+                    {
+                        if (question.Answers.Count == 0)
+                        {
+                            if (question.QuestionType == QuestionType.MultipleChoice)
+                            {
+                                MultipleChoiceAnswerViewModel answer = new()
+                                {
+                                    AnswerType = AnswerType.MultipleChoice,
+                                    QuestionId = question.Id
+                                };
+
+                                question.Answers.Add(answer);
+                            }
+
+                            else if (question.QuestionType == QuestionType.Text)
+                            {
+                                TextAnswerViewModel answer = new()
+                                {
+                                    AnswerType = AnswerType.Text,
+                                    QuestionId = question.Id
+                                };
+
+                                question.Answers.Add(answer);
+                            }
+
+                            else if (question.QuestionType == QuestionType.TrueFalse)
+                            {
+                                TrueFalseAnswerViewModel answer = new()
+                                {
+                                    AnswerType = AnswerType.TrueFalse,
+                                    QuestionId = question.Id,
+                                    Value = null
+                                };
+
+                                question.Answers.Add(answer);
+                            }
+                            else if (question.QuestionType == QuestionType.Rating1To10)
+                            {
+                                Rating1To10AnswerViewModel answer = new()
+                                {
+                                    AnswerType = AnswerType.Rating1To10,
+                                    QuestionId = question.Id
+                                };
+
+                                question.Answers.Add(answer);
+                            }
+                            else if (question.QuestionType == QuestionType.SelectAllThatApply)
+                            {
+                                SelectAllThatApplyAnswerViewModel answer = new()
+                                {
+                                    AnswerType = AnswerType.SelectAllThatApply,
+                                    QuestionId = question.Id,
+                                    Options = ((SelectAllThatApplyQuestionViewModel)question).Options,
+                                    SelectedOptions = new List<bool>()
+                                };
+
+                                // Initialize the SelectedOptions list with false values for each option
+                                for (int i = 0; i < ((SelectAllThatApplyQuestionViewModel)question).Options.Count; i++)
+                                {
+                                    answer.SelectedOptions.Add(false);
+                                }
+
+                                question.Answers.Add(answer);
+                            }
+                        }
+                        else
+                        { // this user or ip address has answered this before
+
+                        }
+                    }
+                }
+                else
+                {
+                    NavigationManager.NavigateTo("/");
+                }
+            }*/
+
         private async Task LoadData()
         {
             // get the survey based on the SurveyId
@@ -103,9 +188,10 @@ namespace JwtIdentity.Client.Pages.Survey
             {
                 foreach (var question in Survey.Questions)
                 {
-                    if (question.Answers.Count == 0)
+
+                    if (question.QuestionType == QuestionType.MultipleChoice)
                     {
-                        if (question.QuestionType == QuestionType.MultipleChoice)
+                        if (question.Answers.Count == 0)
                         {
                             MultipleChoiceAnswerViewModel answer = new()
                             {
@@ -115,8 +201,10 @@ namespace JwtIdentity.Client.Pages.Survey
 
                             question.Answers.Add(answer);
                         }
-
-                        else if (question.QuestionType == QuestionType.Text)
+                    }
+                    else if (question.QuestionType == QuestionType.Text)
+                    {
+                        if (question.Answers.Count == 0)
                         {
                             TextAnswerViewModel answer = new()
                             {
@@ -126,8 +214,10 @@ namespace JwtIdentity.Client.Pages.Survey
 
                             question.Answers.Add(answer);
                         }
-
-                        else if (question.QuestionType == QuestionType.TrueFalse)
+                    }
+                    else if (question.QuestionType == QuestionType.TrueFalse)
+                    {
+                        if (question.Answers.Count == 0)
                         {
                             TrueFalseAnswerViewModel answer = new()
                             {
@@ -138,7 +228,10 @@ namespace JwtIdentity.Client.Pages.Survey
 
                             question.Answers.Add(answer);
                         }
-                        else if (question.QuestionType == QuestionType.Rating1To10)
+                    }
+                    else if (question.QuestionType == QuestionType.Rating1To10)
+                    {
+                        if (question.Answers.Count == 0)
                         {
                             Rating1To10AnswerViewModel answer = new()
                             {
@@ -149,9 +242,50 @@ namespace JwtIdentity.Client.Pages.Survey
                             question.Answers.Add(answer);
                         }
                     }
-                    else
-                    { // this user or ip address has answered this before
+                    else if (question.QuestionType == QuestionType.SelectAllThatApply)
+                    {
+                        var saQuestion = question as SelectAllThatApplyQuestionViewModel;
 
+                        if (question.Answers.Count == 0)
+                        {
+                            SelectAllThatApplyAnswerViewModel answer = new()
+                            {
+                                AnswerType = AnswerType.SelectAllThatApply,
+                                QuestionId = question.Id,
+                                Options = ((SelectAllThatApplyQuestionViewModel)question).Options,
+                                SelectedOptions = new List<bool>()
+                            };
+
+                            // Initialize the SelectedOptions list with false values for each option
+                            for (int i = 0; i < ((SelectAllThatApplyQuestionViewModel)question).Options.Count; i++)
+                            {
+                                answer.SelectedOptions.Add(false);
+                            }
+
+                            question.Answers.Add(answer);
+                        }
+                        else
+                        {
+                            // Populate the SelectedOptions list with values from the database
+                            if (question.QuestionType == QuestionType.SelectAllThatApply)
+                            {
+                                var answer = question.Answers.FirstOrDefault() as SelectAllThatApplyAnswerViewModel;
+
+                                if (answer != null)
+                                {
+                                    while (answer.SelectedOptions.Count < saQuestion.Options.Count)
+                                    {
+                                        answer.SelectedOptions.Add(false);
+                                    }
+
+                                    var selectedOptionIds = answer.SelectedOptionIds?.Split(',').Select(int.Parse).ToList() ?? new List<int>();
+                                    for (int i = 0; i < saQuestion.Options.Count; i++)
+                                    {
+                                        answer.SelectedOptions[i] = selectedOptionIds.Contains(saQuestion.Options[i].Id);
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -342,11 +476,66 @@ namespace JwtIdentity.Client.Pages.Survey
                             return false;
                         }
                         break;
+                    case QuestionType.SelectAllThatApply:
+                        // Check if at least one option is selected for SelectAllThatApply questions
+                        var selectAllAnswer = (SelectAllThatApplyAnswerViewModel)question.Answers[0];
+                        if (string.IsNullOrEmpty(selectAllAnswer.SelectedOptionIds) ||
+                            !selectAllAnswer.SelectedOptions.Any(opt => opt))
+                        {
+                            return false;
+                        }
+                        break;
                     default:
                         break;
                 }
             }
             return true;
+        }
+
+        protected async Task HandleSelectAllThatApplyOption(SelectAllThatApplyAnswerViewModel answer, int index, bool isChecked, int optionId)
+        {
+            // Update the selected option in the SelectedOptions list
+            answer.SelectedOptions[index] = isChecked;
+
+            // Update the SelectedOptionIds string (comma-separated values)
+            var selectedIds = new List<int>();
+            for (int i = 0; i < answer.SelectedOptions.Count; i++)
+            {
+                if (answer.SelectedOptions[i])
+                {
+                    var option = ((SelectAllThatApplyQuestionViewModel)Survey.Questions.First(q => q.Id == answer.QuestionId)).Options[i];
+                    selectedIds.Add(option.Id);
+                }
+            }
+
+            answer.SelectedOptionIds = string.Join(",", selectedIds);
+
+            // Save the answer
+            if (!Preview)
+            {
+                var response = await ApiService.PostAsync(ApiEndpoints.Answer, answer);
+                if (response != null)
+                {
+                    // Update the answer in the Survey.Questions
+                    //foreach (var question in Survey.Questions)
+                    //{
+                    //    if (question.Id == answer.QuestionId)
+                    //    {
+                    //        for (int i = 0; i < question.Answers.Count; i++)
+                    //        {
+                    //            if (question.Answers[i].Id == answer.Id)
+                    //            {
+                    //                question.Answers[i] = response;
+                    //            }
+                    //        }
+                    //    }
+                    //}
+
+                    await LoadData(); // Reload the data to reflect the changes
+                }
+            }
+
+            StateHasChanged();
         }
     }
 }

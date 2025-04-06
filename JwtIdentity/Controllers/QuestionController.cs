@@ -32,6 +32,11 @@ namespace JwtIdentity.Controllers
                 var mcQuestion = await _context.Questions.OfType<MultipleChoiceQuestion>().Include(x => x.Options).FirstOrDefaultAsync(x => x.Id == id);
                 return Ok(_mapper.Map<QuestionViewModel>(mcQuestion));
             }
+            else if (question.QuestionType == QuestionType.SelectAllThatApply)
+            {
+                var selectAllQuestion = await _context.Questions.OfType<SelectAllThatApplyQuestion>().Include(x => x.Options).FirstOrDefaultAsync(x => x.Id == id);
+                return Ok(_mapper.Map<QuestionViewModel>(selectAllQuestion));
+            }
 
             return Ok(_mapper.Map<QuestionViewModel>(question));
         }
@@ -124,6 +129,11 @@ namespace JwtIdentity.Controllers
             {
                 var existingMCQuestion = await _context.Questions.OfType<MultipleChoiceQuestion>().AsNoTracking().Include(x => x.Options).FirstOrDefaultAsync(q => q.Id == id);
                 _context.ChoiceOptions.RemoveRange(existingMCQuestion.Options);
+            }
+            else if (question.QuestionType == QuestionType.SelectAllThatApply)
+            {
+                var existingSelectAllQuestion = await _context.Questions.OfType<SelectAllThatApplyQuestion>().AsNoTracking().Include(x => x.Options).FirstOrDefaultAsync(q => q.Id == id);
+                _context.ChoiceOptions.RemoveRange(existingSelectAllQuestion.Options);
             }
 
             _ = _context.Questions.Remove(question);

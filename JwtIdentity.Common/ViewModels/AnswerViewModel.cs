@@ -31,6 +31,7 @@ namespace JwtIdentity.Common.ViewModels
                 MultipleChoiceAnswerViewModel m => m.SelectedOptionId,
                 SingleChoiceAnswerViewModel s => s.SelectedOptionId,
                 Rating1To10AnswerViewModel r => r.SelectedOptionId,
+                SelectAllThatApplyAnswerViewModel => null, // Multiple selections, no single value
                 _ => null
             };
     }
@@ -62,6 +63,13 @@ namespace JwtIdentity.Common.ViewModels
         public int SelectedOptionId { get; set; }
     }
 
+    public class SelectAllThatApplyAnswerViewModel : AnswerViewModel
+    {
+        public string SelectedOptionIds { get; set; }
+        public List<bool> SelectedOptions { get; set; } = new List<bool>();
+        public List<ChoiceOptionViewModel> Options { get; set; }
+    }
+
     public class SurveyResponseViewModel
     {
         public int ResponseId { get; set; }
@@ -86,6 +94,7 @@ namespace JwtIdentity.Common.ViewModels
                     AnswerType.MultipleChoice => JsonSerializer.Deserialize<MultipleChoiceAnswerViewModel>(doc.RootElement.GetRawText(), options),
                     AnswerType.SingleChoice => JsonSerializer.Deserialize<SingleChoiceAnswerViewModel>(doc.RootElement.GetRawText(), options),
                     AnswerType.Rating1To10 => JsonSerializer.Deserialize<Rating1To10AnswerViewModel>(doc.RootElement.GetRawText(), options),
+                    AnswerType.SelectAllThatApply => JsonSerializer.Deserialize<SelectAllThatApplyAnswerViewModel>(doc.RootElement.GetRawText(), options),
                     _ => throw new NotSupportedException($"Unsupported AnswerType: {answerType}")
                 };
             }

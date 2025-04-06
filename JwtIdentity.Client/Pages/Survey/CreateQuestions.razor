@@ -32,13 +32,14 @@
                             </MudSelect>
 
                             <MudText Typo="Typo.h6" Class="mt-5">Create a @StringHelper.PascalCaseToWords(SelectedQuestionType) Question</MudText>
-                            <MudTextField id="Text" Label="Question Text" @bind-Value="QuestionText" Variant="Variant.Filled" Lines="1" MaxLines="5" AutoGrow="true" Immediate="true" Counter="50" MaxLength="50" />
+                            <MudTextField id="Text" Label="Question Text" @bind-Value="QuestionText" Variant="Variant.Filled" Lines="1" MaxLines="5" AutoGrow="true" Immediate="true" Counter="500" MaxLength="500" />
                         </MudStack>
 
-                        <MudButton ButtonType="ButtonType.Button" Variant="Variant.Filled" Color="Color.Primary" OnClick="AddQuestionToSurvey" Disabled="@AddQuestionToSurveyDisabled">Submit Question</MudButton>
+                        <MudButton ButtonType="ButtonType.Button" Variant="Variant.Filled" Color="Color.Primary" OnClick="AddQuestionToSurvey" Disabled="@AddQuestionToSurveyDisabled">Save Question</MudButton>
                     </MudPaper>
 
-                    @if (SelectedQuestionType.Replace(" ", "") == Enum.GetName(QuestionType.MultipleChoice))
+                    @if (SelectedQuestionType.Replace(" ", "") == Enum.GetName(QuestionType.MultipleChoice) || 
+                        SelectedQuestionType.Replace(" ", "") == Enum.GetName(QuestionType.SelectAllThatApply))
                     {
                         <MudPaper>
                             <MudText Typo="Typo.h6" Class="mb-1">Add the Question Choices</MudText>

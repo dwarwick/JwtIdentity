@@ -67,6 +67,8 @@ namespace JwtIdentity.Common.Helpers
                 QuestionType.Text => typeof(string),
                 QuestionType.TrueFalse => typeof(bool?),
                 QuestionType.MultipleChoice => typeof(string),
+                QuestionType.Rating1To10 => typeof(int?), // or byte? if you prefer
+                QuestionType.SelectAllThatApply => typeof(string), // Store as comma-separated values string
                 _ => typeof(string) // fallback
             };
         }

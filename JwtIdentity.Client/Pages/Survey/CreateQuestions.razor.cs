@@ -45,7 +45,9 @@ namespace JwtIdentity.Client.Pages.Survey
         protected bool AddQuestionToSurveyDisabled =>
             Survey.Published ||
             string.IsNullOrWhiteSpace(QuestionText) ||
-            (SelectedQuestionType.Replace(" ", "") == Enum.GetName(QuestionType.MultipleChoice) && MultipleChoiceQuestion.Options.Count == 0);
+            ((SelectedQuestionType.Replace(" ", "") == Enum.GetName(QuestionType.MultipleChoice) || 
+              SelectedQuestionType.Replace(" ", "") == Enum.GetName(QuestionType.SelectAllThatApply)) && 
+              MultipleChoiceQuestion.Options.Count == 0);
 
         protected MudExpansionPanel ExistingQuestionPanel { get; set; }
 
@@ -76,7 +78,8 @@ namespace JwtIdentity.Client.Pages.Survey
 
         protected void AddChoiceOption()
         {
-            if (SelectedQuestionType.Replace(" ", "") == Enum.GetName(typeof(QuestionType), QuestionType.MultipleChoice))
+            if (SelectedQuestionType.Replace(" ", "") == Enum.GetName(typeof(QuestionType), QuestionType.MultipleChoice) ||
+                SelectedQuestionType.Replace(" ", "") == Enum.GetName(typeof(QuestionType), QuestionType.SelectAllThatApply))
             {
                 MultipleChoiceQuestion.Options.Add(new ChoiceOptionViewModel
                 {
@@ -227,6 +230,24 @@ namespace JwtIdentity.Client.Pages.Survey
                     }
 
                     break;
+                    
+                case "SelectAllThatApply":
+                    if ((SelectedQuestion?.Id ?? 0) == 0)
+                    {
+                        Survey.Questions.Add(new SelectAllThatApplyQuestionViewModel { Text = QuestionText, QuestionType = QuestionType.SelectAllThatApply, QuestionNumber = Survey.Questions.Count + 1, Options = MultipleChoiceQuestion.Options });
+                    }
+                    else
+                    {
+                        var questionToUpdate = Survey.Questions.FirstOrDefault(x => x.Id == SelectedQuestion.Id) as SelectAllThatApplyQuestionViewModel;
+                        if (questionToUpdate != null)
+                        {
+                            SelectedQuestion.Text = QuestionText;
+
+                            _ = Survey.Questions.Remove(questionToUpdate);
+                            Survey.Questions.Add(SelectedQuestion);
+                        }
+                    }
+                    break;
             }
 
             SelectedQuestion = null;
@@ -258,8 +279,15 @@ namespace JwtIdentity.Client.Pages.Survey
                         if (((MultipleChoiceQuestionViewModel)question).Options.Count == 0)
                         {
                             _ = Snackbar.Add("A multiple choice question must have at least 1 option", Severity.Error);
+                            return;
                         }
-
+                        break;
+                    case QuestionType.SelectAllThatApply:
+                        if (((SelectAllThatApplyQuestionViewModel)question).Options.Count == 0)
+                        {
+                            _ = Snackbar.Add("A 'select all that apply' question must have at least 1 option", Severity.Error);
+                            return;
+                        }
                         break;
                 }
             }
@@ -304,6 +332,16 @@ namespace JwtIdentity.Client.Pages.Survey
                 if (SelectedQuestion.QuestionType == QuestionType.MultipleChoice)
                 {
                     MultipleChoiceQuestion = SelectedQuestion as MultipleChoiceQuestionViewModel;
+                }
+                else if (SelectedQuestion.QuestionType == QuestionType.SelectAllThatApply)
+                {
+                    // When a SelectAllThatApply question is selected, use its options for the MultipleChoiceQuestion property
+                    // so they can be displayed and edited in the UI
+                    var selectAllQuestion = SelectedQuestion as SelectAllThatApplyQuestionViewModel;
+                    MultipleChoiceQuestion = new MultipleChoiceQuestionViewModel
+                    {
+                        Options = selectAllQuestion.Options
+                    };
                 }
             }
 
@@ -391,6 +429,13 @@ namespace JwtIdentity.Client.Pages.Survey
                 if (SelectedQuestion.QuestionType == QuestionType.MultipleChoice)
                 {
                     foreach (var option in ((MultipleChoiceQuestionViewModel)SelectedQuestion).Options)
+                    {
+                        option.Id = 0;
+                    }
+                }
+                else if (SelectedQuestion.QuestionType == QuestionType.SelectAllThatApply)
+                {
+                    foreach (var option in ((SelectAllThatApplyQuestionViewModel)SelectedQuestion).Options)
                     {
                         option.Id = 0;
                     }

@@ -15,6 +15,8 @@
         public MultipleChoiceQuestionViewModel MultipleChoiceQuestion { get; set; }
 
         public Rating1To10QuestionViewModel Rating1To10Question { get; set; }
+
+        public SelectAllThatApplyQuestionViewModel SelectAllThatApplyQuestion { get; set; }
     }
 
     public class ChartData
