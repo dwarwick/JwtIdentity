@@ -1,8 +1,48 @@
 ﻿@page "/"
 @using Syncfusion.Blazor.Calendars
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Survey Platform - Create and Share Surveys</PageTitle>
 
-<h1>Hello, world!</h1>
+<MudContainer Class="mt-4">
+    <MudGrid>
+        <MudItem xs="12" Class="d-flex justify-center">
+            <MudText Typo="Typo.h3" Class="text-center">Create and Share Surveys</MudText>
+        </MudItem>
+        <MudItem xs="12" Class="d-flex justify-center mb-4">
+            <MudText Typo="Typo.subtitle1" Class="text-center">Our powerful survey platform helps you gather valuable feedback and insights.</MudText>
+        </MudItem>
+    </MudGrid>
 
-Welcome to your new app.
+    <MudGrid Spacing="3">
+        <MudItem xs="12" sm="4">
+            <MudCard Elevation="3" Class="h-100">
+                <MudCardContent>
+                    <MudText Typo="Typo.h5"><MudIcon Icon="@Icons.Material.Filled.Create" Class="mr-2" /> Create</MudText>
+                    <MudText Typo="Typo.body2">Design professional surveys with our intuitive tools. Add various question types and customize your survey to match your needs.</MudText>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+        <MudItem xs="12" sm="4">
+            <MudCard Elevation="3" Class="h-100">
+                <MudCardContent>
+                    <MudText Typo="Typo.h5"><MudIcon Icon="@Icons.Material.Filled.Share" Class="mr-2" /> Share</MudText>
+                    <MudText Typo="Typo.body2">Distribute your surveys across social media platforms, websites, or via direct links. Reach your audience wherever they are.</MudText>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+        <MudItem xs="12" sm="4">
+            <MudCard Elevation="3" Class="h-100">
+                <MudCardContent>
+                    <MudText Typo="Typo.h5"><MudIcon Icon="@Icons.Material.Filled.BarChart" Class="mr-2" /> Analyze</MudText>
+                    <MudText Typo="Typo.body2">Get valuable insights with real-time reporting and analytics. Make data-driven decisions based on your survey results.</MudText>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+    
+    <MudGrid Class="mt-4">
+        <MudItem xs="12" Class="d-flex justify-center">
+            <MudButton Href="/survey/create" Variant="Variant.Filled" Color="Color.Primary" Size="MudBlazor.Size.Large" Class="mt-3">Get Started</MudButton>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
