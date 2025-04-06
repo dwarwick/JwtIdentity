@@ -169,3 +169,25 @@ svg.mud-icon-root.mud-svg-icon.mud-icon-size-medium.drag-icon.ai-style-change-9 
     background-color: var(--mud-palette-background);     
     color: #ffffff;
 }
+
+.footer-bar {    
+    color: var(--mud-palette-appbar-text) !important;
+    padding: 10px;
+    text-align: center;
+    border-top: 1px solid var(--mud-palette-divider);
+}
+
+.footer-bar a {
+    color: var(--mud-palette-appbar-text) !important;
+    text-decoration: none;
+    font-size: var(--mud-typography-body2-size);
+    font-family: var(--mud-typography-body2-family);
+    font-weight: var(--mud-typography-body2-weight);
+    line-height: var(--mud-typography-body2-lineheight);
+    letter-spacing: var(--mud-typography-body2-letterspacing);
+    text-transform: var(--mud-typography-body2-text-transform);
+}
+
+.footer-bar a:hover {
+    text-decoration: underline;
+}

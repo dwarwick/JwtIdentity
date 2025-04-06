@@ -29,7 +29,11 @@
     
     <MudAppBar Bottom="true" Fixed="true" Elevation="1" Class="footer-bar">
         <MudText Typo="Typo.body2" Class="mx-auto">
-            © @DateTime.Now.Year davidtest.xyz - All Rights Reserved
+            <MudStack Row="true" Spacing="2">
+                © @DateTime.Now.Year davidtest.xyz - All Rights Reserved 
+                <span>|</span> 
+                <MudLink Href="/feedback" Underline="Underline.None">Leave Feedback</MudLink>
+            </MudStack>
         </MudText>
     </MudAppBar>
 </main>

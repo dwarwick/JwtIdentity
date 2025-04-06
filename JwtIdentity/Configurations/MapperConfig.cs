@@ -14,6 +14,11 @@
             _ = CreateMap<ApplicationRole, ApplicationRoleViewModel>().ReverseMap();
             _ = CreateMap<RoleClaim, RoleClaimViewModel>().ReverseMap();
 
+            // Updated mapping for Feedback
+            _ = CreateMap<Feedback, FeedbackViewModel>();
+            _ = CreateMap<FeedbackViewModel, Feedback>()
+                .ForMember(x => x.CreatedBy, options => options.Ignore());
+
             _ = CreateMap<Question, QuestionViewModel>().IncludeAllDerived()
                 .Include<MultipleChoiceQuestion, MultipleChoiceQuestionViewModel>();
 

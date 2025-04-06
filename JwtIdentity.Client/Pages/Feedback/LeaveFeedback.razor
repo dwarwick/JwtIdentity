@@ -1,0 +1,34 @@
+@page "/feedback"
+@using JwtIdentity.Common.ViewModels
+@using System.ComponentModel.DataAnnotations
+@inherits LeaveFeedbackModel
+
+<MudContainer Class="mt-4 px-8" MaxWidth="MaxWidth.Medium">
+    <MudCard>
+        <MudCardHeader>
+            <MudText Typo="Typo.h5">Leave Feedback</MudText>
+        </MudCardHeader>
+        <MudCardContent>
+            <MudForm @ref="form" @bind-IsValid="@success">
+                <MudTextField T="string" Label="Title" @bind-Value="feedback.Title" Required="true" RequiredError="Title is required" />
+                
+                <MudSelect T="FeedbackType" Label="Feedback Type" @bind-Value="feedback.Type" Required="true" RequiredError="Please select a feedback type">
+                    <MudSelectItem Value="FeedbackType.Problem">Problem/Complaint</MudSelectItem>
+                    <MudSelectItem Value="FeedbackType.FeatureRequest">Feature Request</MudSelectItem>
+                    <MudSelectItem Value="FeedbackType.GeneralFeedback">General Feedback</MudSelectItem>
+                </MudSelect>
+                
+                <MudTextField T="string" Label="Description" @bind-Value="feedback.Description" 
+                              Required="true" RequiredError="Description is required"
+                              Lines="5" />
+                
+                <MudTextField T="string" Label="Email (optional)" @bind-Value="feedback.Email" 
+                             Validation="@(new EmailAddressAttribute() {ErrorMessage = "The email address is invalid"})" />
+            </MudForm>
+        </MudCardContent>
+        <MudCardActions>
+            <MudButton OnClick="@Cancel" Variant="Variant.Outlined" Color="Color.Secondary" Class="ml-auto">Cancel</MudButton>
+            <MudButton OnClick="@Submit" Disabled="@(!success)" Variant="Variant.Filled" Color="Color.Primary" Class="ml-2">Submit</MudButton>
+        </MudCardActions>
+    </MudCard>
+</MudContainer>
