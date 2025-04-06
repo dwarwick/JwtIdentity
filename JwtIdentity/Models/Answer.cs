@@ -48,4 +48,12 @@
     {
         public int SelectedOptionId { get; set; }
     }
+
+    public class SelectAllThatApplyAnswer : Answer
+    {
+        // For select all that apply, we'll store selected options as a comma-separated string
+        // This will allow us to store multiple selections
+        public string SelectedOptionIds { get; set; }
+
+    }
 }

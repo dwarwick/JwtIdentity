@@ -36,4 +36,10 @@ namespace JwtIdentity.Models
         // For multiple-choice, you might store a list of possible options
         public List<ChoiceOption> Options { get; set; }
     }
+
+    public class SelectAllThatApplyQuestion : Question
+    {
+        // For select-all-that-apply, store a list of possible options like multiple choice
+        public List<ChoiceOption> Options { get; set; }
+    }
 }

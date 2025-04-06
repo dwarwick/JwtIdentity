@@ -127,7 +127,8 @@ namespace JwtIdentity.Data
                 .HasValue<TextQuestion>(QuestionType.Text)
                 .HasValue<TrueFalseQuestion>(QuestionType.TrueFalse)
                 .HasValue<MultipleChoiceQuestion>(QuestionType.MultipleChoice)
-                .HasValue<Rating1To10Question>(QuestionType.Rating1To10);
+                .HasValue<Rating1To10Question>(QuestionType.Rating1To10)
+                .HasValue<SelectAllThatApplyQuestion>(QuestionType.SelectAllThatApply);
 
             // TPH for Answers
             _ = builder.Entity<Answer>()
@@ -136,7 +137,20 @@ namespace JwtIdentity.Data
                 .HasValue<TrueFalseAnswer>(AnswerType.TrueFalse)
                 .HasValue<SingleChoiceAnswer>(AnswerType.SingleChoice)
                 .HasValue<MultipleChoiceAnswer>(AnswerType.MultipleChoice)
-                .HasValue<Rating1To10Answer>(AnswerType.Rating1To10);
+                .HasValue<Rating1To10Answer>(AnswerType.Rating1To10)
+                .HasValue<SelectAllThatApplyAnswer>(AnswerType.SelectAllThatApply);
+
+            _ = builder.Entity<ChoiceOption>()
+            .HasOne(co => co.MultipleChoiceQuestion)
+            .WithMany(mcq => mcq.Options)
+            .HasForeignKey(co => co.MultipleChoiceQuestionId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+            _ = builder.Entity<ChoiceOption>()
+                .HasOne(co => co.SelectAllThatApplyQuestion)
+                .WithMany(satq => satq.Options)
+                .HasForeignKey(co => co.SelectAllThatApplyQuestionId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
 
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

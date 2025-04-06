@@ -4,6 +4,7 @@ using JwtIdentity.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace JwtIdentity.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250406173223_AddSelectAllThatApplyQuestion")]
+    partial class AddSelectAllThatApplyQuestion
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -264,7 +267,7 @@ namespace JwtIdentity.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("MultipleChoiceQuestionId")
+                    b.Property<int>("MultipleChoiceQuestionId")
                         .HasColumnType("int");
 
                     b.Property<string>("OptionText")
@@ -698,19 +701,15 @@ namespace JwtIdentity.Migrations
 
             modelBuilder.Entity("JwtIdentity.Models.ChoiceOption", b =>
                 {
-                    b.HasOne("JwtIdentity.Models.MultipleChoiceQuestion", "MultipleChoiceQuestion")
+                    b.HasOne("JwtIdentity.Models.MultipleChoiceQuestion", null)
                         .WithMany("Options")
                         .HasForeignKey("MultipleChoiceQuestionId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.HasOne("JwtIdentity.Models.SelectAllThatApplyQuestion", "SelectAllThatApplyQuestion")
+                    b.HasOne("JwtIdentity.Models.SelectAllThatApplyQuestion", null)
                         .WithMany("Options")
-                        .HasForeignKey("SelectAllThatApplyQuestionId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.Navigation("MultipleChoiceQuestion");
-
-                    b.Navigation("SelectAllThatApplyQuestion");
+                        .HasForeignKey("SelectAllThatApplyQuestionId");
                 });
 
             modelBuilder.Entity("JwtIdentity.Models.Feedback", b =>

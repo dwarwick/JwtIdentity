@@ -33,6 +33,11 @@ namespace JwtIdentity.Common.ViewModels
     {
         public List<ChoiceOptionViewModel> Options { get; set; } = new List<ChoiceOptionViewModel>();
     }
+    
+    public class SelectAllThatApplyQuestionViewModel : QuestionViewModel
+    {
+        public List<ChoiceOptionViewModel> Options { get; set; } = new List<ChoiceOptionViewModel>();
+    }
 
     public class BaseQuestionDto
     {
@@ -43,7 +48,7 @@ namespace JwtIdentity.Common.ViewModels
         public QuestionType QuestionType { get; set; }
         public DateTime CreatedDate { get; set; }
         public DateTime UpdatedDate { get; set; }
-        // etc. — but *no* Answers or derived class fields
+        // etc. ï¿½ but *no* Answers or derived class fields
     }
 
     public class QuestionViewModelConverter : JsonConverter<QuestionViewModel>
@@ -60,6 +65,7 @@ namespace JwtIdentity.Common.ViewModels
                     QuestionType.TrueFalse => JsonSerializer.Deserialize<TrueFalseQuestionViewModel>(doc.RootElement.GetRawText(), options),
                     QuestionType.MultipleChoice => JsonSerializer.Deserialize<MultipleChoiceQuestionViewModel>(doc.RootElement.GetRawText(), options),
                     QuestionType.Rating1To10 => JsonSerializer.Deserialize<Rating1To10QuestionViewModel>(doc.RootElement.GetRawText(), options),
+                    QuestionType.SelectAllThatApply => JsonSerializer.Deserialize<SelectAllThatApplyQuestionViewModel>(doc.RootElement.GetRawText(), options),
                     _ => throw new NotSupportedException($"Unsupported QuestionType: {questionType}")
                 };
             }

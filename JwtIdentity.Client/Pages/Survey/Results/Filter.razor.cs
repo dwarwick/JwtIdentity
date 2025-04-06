@@ -104,6 +104,9 @@ namespace JwtIdentity.Client.Pages.Survey.Results
                 case AnswerType.TrueFalse:
                     return (ans as TrueFalseAnswerViewModel)?.Value;
 
+                case AnswerType.Rating1To10:
+                    return (ans as Rating1To10AnswerViewModel)?.SelectedOptionId;
+
                 case AnswerType.MultipleChoice:
                 case AnswerType.SingleChoice:
 
@@ -117,6 +120,32 @@ namespace JwtIdentity.Client.Pages.Survey.Results
                             .FirstOrDefault(o => o.Id == ans.SelectedOptionValue);
 
                         return option?.OptionText;
+                    }
+                    return null;
+
+                case AnswerType.SelectAllThatApply:
+                    var selectAllQuestion = Survey.Questions
+                        .OfType<SelectAllThatApplyQuestionViewModel>()
+                        .FirstOrDefault(q => q.Id == ans.QuestionId);
+
+                    if (selectAllQuestion != null && ans is SelectAllThatApplyAnswerViewModel selectAllAns)
+                    {
+                        if (string.IsNullOrEmpty(selectAllAns.SelectedOptionIds))
+                            return null;
+
+                        // Get the IDs of the selected options
+                        var selectedIds = selectAllAns.SelectedOptionIds
+                            .Split(',')
+                            .Select(int.Parse)
+                            .ToHashSet();
+
+                        // Get the text of the selected options
+                        var selectedOptions = selectAllQuestion.Options
+                            .Where(o => selectedIds.Contains(o.Id))
+                            .Select(o => o.OptionText);
+
+                        // Join them with commas for display
+                        return string.Join(", ", selectedOptions);
                     }
                     return null;
 
@@ -145,11 +174,16 @@ namespace JwtIdentity.Client.Pages.Survey.Results
                 {
                     case QuestionType.Text:
                     case QuestionType.MultipleChoice:
+                    case QuestionType.SelectAllThatApply:
                         gridColumn.Type = ColumnType.String;
                         break;
 
                     case QuestionType.TrueFalse:
                         gridColumn.Type = ColumnType.Boolean;
+                        break;
+
+                    case QuestionType.Rating1To10:
+                        gridColumn.Type = ColumnType.Integer;
                         break;
                 }
 #pragma warning restore BL0005 // Component parameter should not be set outside of its component.

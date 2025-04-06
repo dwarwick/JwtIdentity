@@ -85,11 +85,24 @@ namespace JwtIdentity.Controllers
                 .Select(mc => mc.Id)
                 .ToList();
 
-            // Now load each one’s Options
+            // Pull out the IDs of any select-all-that-apply questions in memory
+            var selectAllIds = survey.Questions
+                .OfType<SelectAllThatApplyQuestion>()
+                .Select(sa => sa.Id)
+                .ToList();
+
+            // Now load each one's Options
             await _context.Questions
                 .OfType<MultipleChoiceQuestion>()
                 .Where(mc => mcIds.Contains(mc.Id))
                 .Include(mc => mc.Options)
+                .LoadAsync();
+                
+            // Now load each select-all-that-apply question's Options
+            await _context.Questions
+                .OfType<SelectAllThatApplyQuestion>()
+                .Where(sa => selectAllIds.Contains(sa.Id))
+                .Include(sa => sa.Options)
                 .LoadAsync();
 
             return Ok(_mapper.Map<SurveyViewModel>(survey));
@@ -109,12 +122,25 @@ namespace JwtIdentity.Controllers
                 .OfType<MultipleChoiceQuestion>()
                 .Select(mc => mc.Id)
                 .ToList();
+                
+            // Pull out the IDs of any select-all-that-apply questions in memory
+            var selectAllIds = survey.Questions
+                .OfType<SelectAllThatApplyQuestion>()
+                .Select(sa => sa.Id)
+                .ToList();
 
-            // Now load each one’s Options
+            // Now load each one's Options
             await _context.Questions
                 .OfType<MultipleChoiceQuestion>()
                 .Where(mc => mcIds.Contains(mc.Id))
                 .Include(mc => mc.Options)
+                .LoadAsync();
+                
+            // Now load each select-all-that-apply question's Options
+            await _context.Questions
+                .OfType<SelectAllThatApplyQuestion>()
+                .Where(sa => selectAllIds.Contains(sa.Id))
+                .Include(sa => sa.Options)
                 .LoadAsync();
 
             return Ok(_mapper.Map<SurveyViewModel>(survey));
@@ -140,12 +166,25 @@ namespace JwtIdentity.Controllers
                 .OfType<MultipleChoiceQuestion>()
                 .Select(mc => mc.Id)
                 .ToList();
+                
+            // Pull out the IDs of any select-all-that-apply questions in memory
+            var selectAllIds = survey.Questions
+                .OfType<SelectAllThatApplyQuestion>()
+                .Select(sa => sa.Id)
+                .ToList();
 
-            // Now load each one’s Options
+            // Now load each one's Options
             await _context.Questions
                 .OfType<MultipleChoiceQuestion>()
                 .Where(mc => mcIds.Contains(mc.Id))
                 .Include(mc => mc.Options)
+                .LoadAsync();
+                
+            // Now load each select-all-that-apply question's Options
+            await _context.Questions
+                .OfType<SelectAllThatApplyQuestion>()
+                .Where(sa => selectAllIds.Contains(sa.Id))
+                .Include(sa => sa.Options)
                 .LoadAsync();
 
             List<SurveyDataViewModel> surveyData = new List<SurveyDataViewModel>();
@@ -207,6 +246,51 @@ namespace JwtIdentity.Controllers
 
                         surveyDataViewModel.MultipleChoiceQuestion = _mapper.Map<MultipleChoiceQuestionViewModel>(mcQuestion);
                         break;
+                    case QuestionType.SelectAllThatApply:
+                        // Retrieve the select-all-that-apply question with its options
+                        var saQuestion = await _context.Questions.OfType<SelectAllThatApplyQuestion>()
+                            .AsNoTracking()
+                            .Where(a => a.Id == question.Id)
+                            .Include(x => x.Options)
+                            .FirstOrDefaultAsync();
+
+                        // Retrieve all the answers for this question
+                        var saAnswers = await _context.Answers.OfType<SelectAllThatApplyAnswer>()
+                            .AsNoTracking()
+                            .Where(a => a.QuestionId == question.Id)
+                            .ToListAsync();
+
+                        // Initialize a dictionary to count selections for each option
+                        var optionSelectionCounts = saQuestion.Options.ToDictionary(o => o.Id, _ => 0);
+
+                        // Count selections for each option across all answers
+                        foreach (var saAnswer in saAnswers)
+                        {
+                            if (!string.IsNullOrEmpty(saAnswer.SelectedOptionIds))
+                            {
+                                var selectedIds = saAnswer.SelectedOptionIds.Split(',').Select(int.Parse);
+                                foreach (var id in selectedIds)
+                                {
+                                    if (optionSelectionCounts.ContainsKey(id))
+                                    {
+                                        optionSelectionCounts[id]++;
+                                    }
+                                }
+                            }
+                        }
+
+                        // Create chart data for each option
+                        surveyDataViewModel.SurveyData = saQuestion.Options
+                            .OrderBy(o => o.Order)
+                            .Select(o => new ChartData
+                            {
+                                X = o.OptionText,
+                                Y = optionSelectionCounts[o.Id]
+                            })
+                            .ToList();
+
+                        surveyDataViewModel.SelectAllThatApplyQuestion = _mapper.Map<SelectAllThatApplyQuestionViewModel>(saQuestion);
+                        break;
 
                     default:
                         break;
@@ -254,6 +338,9 @@ namespace JwtIdentity.Controllers
                         break;
                     case AnswerType.Rating1To10:
                         if (((Rating1To10Answer)answer).SelectedOptionId != ((Rating1To10Answer)existingAnswer).SelectedOptionId || ((Rating1To10Answer)answer).Complete != ((Rating1To10Answer)existingAnswer).Complete) _ = _context.Answers.Update(answer);
+                        break;
+                    case AnswerType.SelectAllThatApply:
+                        if (((SelectAllThatApplyAnswer)answer).SelectedOptionIds != ((SelectAllThatApplyAnswer)existingAnswer).SelectedOptionIds || ((SelectAllThatApplyAnswer)answer).Complete != ((SelectAllThatApplyAnswer)existingAnswer).Complete) _ = _context.Answers.Update(answer);
                         break;
                     default:
                         break;

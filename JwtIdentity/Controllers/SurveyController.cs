@@ -49,6 +49,18 @@ namespace JwtIdentity.Controllers
                 .Include(mc => mc.Options.OrderBy(o => o.Order))
                 .LoadAsync();
 
+            var allIds = survey.Questions
+                .OfType<SelectAllThatApplyQuestion>()
+                .Select(mc => mc.Id)
+                .ToList();
+
+            // Now load each one’s Options
+            await _context.Questions
+                .OfType<SelectAllThatApplyQuestion>()
+                .Where(mc => allIds.Contains(mc.Id))
+                .Include(mc => mc.Options.OrderBy(o => o.Order))
+                .LoadAsync();
+
             return Ok(_mapper.Map<SurveyViewModel>(survey));
         }
 
@@ -167,6 +179,45 @@ namespace JwtIdentity.Controllers
                                         else
                                         { // existing option                                            
                                             var existingOption = existingMCQuestion.Options.FirstOrDefault(o => o.Id == newOption.Id);
+
+                                            if (existingOption != null && (existingOption.OptionText != newOption.OptionText || existingOption.Order != newOption.Order))
+                                            {
+                                                existingOption.OptionText = newOption.OptionText;
+                                                existingOption.Order = newOption.Order;
+                                                _ = _context.ChoiceOptions.Update(existingOption);
+                                            }
+                                        }
+                                    }
+                                }
+                                break;
+
+                            case QuestionType.SelectAllThatApply:
+                                var existingSAQuestion = await _context.Questions.OfType<SelectAllThatApplyQuestion>().AsNoTracking().Include(x => x.Options).FirstOrDefaultAsync(q => q.Id == passedInQuestion.Id);
+
+                                if (existingSAQuestion != null && (existingSAQuestion.Text != passedInQuestion.Text
+                                        || passedInQuestion.QuestionNumber != existingSAQuestion.QuestionNumber))
+                                {
+                                    existingSAQuestion.Text = passedInQuestion.Text;
+                                    existingSAQuestion.QuestionNumber = passedInQuestion.QuestionNumber;
+
+                                    _ = _context.Questions.Update(existingSAQuestion);
+                                }
+
+                                var newSAQuestion = passedInQuestion as SelectAllThatApplyQuestion;
+
+                                if (existingSAQuestion != null && newSAQuestion != null)
+                                {
+                                    // check if any options have changed
+                                    foreach (var newOption in newSAQuestion.Options ?? new List<ChoiceOption>())
+                                    {
+                                        if (newOption.Id == 0)
+                                        { // new option
+                                            newOption.SelectAllThatApplyQuestionId = passedInQuestion.Id;
+                                            _ = _context.ChoiceOptions.Add(newOption);
+                                        }
+                                        else
+                                        { // existing option
+                                            var existingOption = existingSAQuestion.Options.FirstOrDefault(o => o.Id == newOption.Id);
 
                                             if (existingOption != null && (existingOption.OptionText != newOption.OptionText || existingOption.Order != newOption.Order))
                                             {
