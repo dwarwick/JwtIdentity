@@ -4,6 +4,7 @@
     <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="ToggleDrawer" />
     <MudImage Src="images/logo_200_60.png" />
     <MudSpacer />
+    <MudSwitch Value="@DarkTheme" Label="Dark Theme" ValueChanged="DarkThemeChanged" />
     <MudHidden Breakpoint="Breakpoint.SmAndDown">
         <MudButton Variant="Variant.Text" Color="Color.Inherit" Class="mx-2" Href="/">Home</MudButton>
         <AuthorizeView Policy="@Permissions.ManageUsers">
@@ -21,7 +22,6 @@
                 </MudMenu>
             </Authorized>
         </AuthorizeView>        
-        <MudSwitch Value="@DarkTheme" Label="Dark Theme" ValueChanged="DarkThemeChanged" />
         <div class="mx-1">
             <AuthorizeView>
                 <Authorized>
@@ -33,8 +33,7 @@
                 </NotAuthorized>
             </AuthorizeView>
         </div>
-    </MudHidden>
-    <MudIconButton Icon="@Icons.Material.Filled.AccountCircle" Color="Color.Inherit" Edge="Edge.End" />
+    </MudHidden>    
 </MudAppBar>
 
 <MudDrawer @bind-Open="_drawerOpen" Anchor="MudBlazor.Anchor.Left" Variant="DrawerVariant.Temporary" Elevation="1">

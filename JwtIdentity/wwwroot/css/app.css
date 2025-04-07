@@ -1,3 +1,7 @@
+:root {
+    --mud-palette-appbar-background: rgb(13 6 76) !important;
+}
+
 /* Add these styles to control scrollbar behavior */
 html, body {
     margin: 0;
