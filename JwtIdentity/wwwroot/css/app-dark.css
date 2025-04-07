@@ -1,4 +1,8 @@
-﻿/*:root {
+﻿:root {
+    --mud-palette-appbar-background: var(--mud-palette-background) !important;
+    }
+
+/*:root {
     --bodyBackgroundColor: #160F1E;
     --textColor: #F0F8FF;
     --textBoxBackgroundColor: #021630;
