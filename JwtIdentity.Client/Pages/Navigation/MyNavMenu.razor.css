@@ -1,0 +1,14 @@
+/* CSS for MyNavMenu component */
+
+.mud-appbar {
+    overflow: hidden !important; /* Prevent scrollbar from appearing in header */
+}
+
+.mud-drawer {
+    overflow: hidden !important;
+}
+
+.mud-drawer-content {
+    overflow-y: auto; /* Allow scrolling in the drawer content */
+    overflow-x: hidden;
+}

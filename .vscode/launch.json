@@ -7,7 +7,43 @@
         "request": "launch",
         "projectPath": "${workspaceFolder}\\JwtIdentity\\JwtIdentity.csproj",
         "launchConfigurationId": "TargetFramework=;https",
-        "preLaunchTask": "launch-chrome"
+        "serverReadyAction": {
+          "action": "openExternally",
+          "pattern": "\\bNow listening on:\\s+(https?://\\S+)",
+          "uriFormat": "%s",
+          "webRoot": "${workspaceFolder}",
+          "command": "chrome.exe"
+        }
+      },
+      {
+        "name": "watch-https",
+        "type": "coreclr",
+        "request": "launch",
+        "preLaunchTask": "build",
+        "program": "dotnet",
+        "args": [
+          "watch",
+          "run",
+          "--project",
+          "${workspaceFolder}/JwtIdentity/JwtIdentity.csproj",
+          "--launch-profile",
+          "https"
+        ],
+        "cwd": "${workspaceFolder}/JwtIdentity",
+        "stopAtEntry": false,
+        "serverReadyAction": {
+          "action": "openExternally",
+          "pattern": "\\bNow listening on:\\s+(https?://\\S+)",
+          "uriFormat": "%s",
+          "webRoot": "${workspaceFolder}",
+          "command": "chrome.exe"
+        },
+        "env": {
+          "ASPNETCORE_ENVIRONMENT": "Development",
+          "ASPNETCORE_URLS": "https://localhost:5001",
+          "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES": "Microsoft.AspNetCore.Watch.BrowserRefresh",
+          "DOTNET_WATCH_SUPPRESS_BROWSER_REFRESH": "false"
+        }
       }
     ]
-  }  
+  }

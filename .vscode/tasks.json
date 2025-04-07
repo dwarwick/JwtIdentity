@@ -1,15 +1,31 @@
 {
     "version": "2.0.0",
-    "tasks": [
+    "tasks": [      
       {
-        "label": "launch-chrome",
-        "type": "shell",
-        "command": "start chrome https://localhost:5001",
+        "label": "build",
+        "command": "dotnet",
+        "type": "process",
+        "args": [
+          "build",
+          "${workspaceFolder}/JwtIdentity/JwtIdentity.csproj"
+        ],
+        "problemMatcher": "$msCompile",
         "group": {
           "kind": "build",
-          "isDefault": false
+          "isDefault": true
+        }
+      },
+      {
+        "label": "open-chrome",
+        "type": "shell",
+        "command": "start chrome https://localhost:5001",
+        "windows": {
+          "command": "start chrome https://localhost:5001"
+        },
+        "presentation": {
+          "reveal": "never"
         },
         "problemMatcher": []
       }
     ]
-  }  
+  }
