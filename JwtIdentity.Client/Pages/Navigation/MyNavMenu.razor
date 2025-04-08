@@ -7,6 +7,7 @@
     <MudSwitch Value="@DarkTheme" Label="Dark Theme" ValueChanged="DarkThemeChanged" />
     <MudHidden Breakpoint="Breakpoint.SmAndDown">
         <MudButton Variant="Variant.Text" Color="Color.Inherit" Class="mx-2" Href="/">Home</MudButton>
+        <MudButton Variant="Variant.Text" Color="Color.Inherit" Class="mx-2" Href="/documentation">Documentation</MudButton>
         <AuthorizeView Policy="@Permissions.ManageUsers">
             <Authorized>
                 <MudButton Variant="Variant.Text" Color="Color.Inherit" Class="mx-2" Href="/ManageRolePermissions">Manage Permissions</MudButton>
@@ -49,6 +50,7 @@
             </NotAuthorized>
         </AuthorizeView>
         <MudNavLink Href="/" Match="NavLinkMatch.All">Home</MudNavLink>
+        <MudNavLink Href="/documentation">Documentation</MudNavLink>
         <AuthorizeView Policy="@Permissions.ManageUsers">
             <Authorized>
                 <MudNavLink Href="/ManageRolePermissions">Manage Permissions</MudNavLink>

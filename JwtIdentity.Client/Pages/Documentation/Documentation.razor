@@ -1,0 +1,505 @@
+@page "/documentation"
+@inherits DocumentationModel
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="pt-4">
+    <MudText Typo="Typo.h3" Class="mb-4">Documentation</MudText>
+    
+    <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6">
+        <MudTabPanel Text="Getting Started">
+            <MudText Typo="Typo.h4" Class="mb-3">Getting Started</MudText>
+            
+            <MudCard Class="mb-4">
+                <MudCardHeader>
+                    <MudText Typo="Typo.h5">Creating an Account</MudText>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudList T="string">
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Person">
+                            Click on the <MudChip Size="@MudBlazor.Size.Small" Color="Color.Primary">Register</MudChip> button in the top navigation bar.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Email">
+                            Enter a valid email address that you have access to.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Lock">
+                            Create a strong password (minimum 8 characters, including at least one uppercase letter, one lowercase letter, one number, and one special character).
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.CheckCircle">
+                            Confirm your password by typing it again.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Send">
+                            Click <MudChip Size="@MudBlazor.Size.Small" Color="Color.Primary">Register</MudChip> to create your account.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.VerifiedUser">
+                            Check your email for a verification link and click it to complete your registration.
+                        </MudListItem>
+                    </MudList>
+                </MudCardContent>
+            </MudCard>
+            
+            <MudCard Class="mb-4">
+                <MudCardHeader>
+                    <MudText Typo="Typo.h5">Logging In</MudText>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudList T="string">
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Login">
+                            Click on the <MudChip Size="@MudBlazor.Size.Small" Color="Color.Primary">Login</MudChip> button in the top navigation bar.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Email">
+                            Enter your registered email address.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Password">
+                            Enter your password.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.CheckCircle">
+                            Click <MudChip Size="@MudBlazor.Size.Small" Color="Color.Primary">Login</MudChip> to access your account.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Help">
+                            If you've forgotten your password, click on <MudChip Size="@MudBlazor.Size.Small" Color="Color.Secondary">Forgot Password?</MudChip> to reset it.
+                        </MudListItem>
+                    </MudList>
+                </MudCardContent>
+            </MudCard>
+            
+            <MudCard Class="mb-4">
+                <MudCardHeader>
+                    <MudText Typo="Typo.h5">Logging Out</MudText>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudList T="string">
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Logout">
+                            Click on the <MudChip Size="@MudBlazor.Size.Small" Color="Color.Primary">Logout</MudChip> button in the top navigation bar to securely sign out of your account.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Security">
+                            For security reasons, always log out when using a shared or public computer.
+                        </MudListItem>
+                    </MudList>
+                </MudCardContent>
+            </MudCard>
+        </MudTabPanel>
+        
+        <MudTabPanel Text="Creating Surveys">
+            <MudText Typo="Typo.h4" Class="mb-3">Creating and Managing Surveys</MudText>
+            
+            <MudCard Class="mb-4">
+                <MudCardHeader>
+                    <MudText Typo="Typo.h5">Creating a New Survey</MudText>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudList T="string">
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Login">
+                            Ensure you are logged in to your account.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.AddCircle">
+                            From the <MudChip Size="@MudBlazor.Size.Small" Color="Color.Primary">Surveys</MudChip> menu in the navigation bar, select <MudChip Size="@MudBlazor.Size.Small" Color="Color.Primary">Create Survey</MudChip>.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Title">
+                            Enter a title for your survey - make it clear and descriptive.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Description">
+                            Provide a detailed description of your survey to inform participants about its purpose.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Save">
+                            Click <MudChip Size="@MudBlazor.Size.Small" Color="Color.Primary">Create</MudChip> to save your survey.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.ArrowForward">
+                            You will be automatically redirected to the question creation page.
+                        </MudListItem>
+                    </MudList>
+                </MudCardContent>
+            </MudCard>
+            
+            <MudCard Class="mb-4">
+                <MudCardHeader>
+                    <MudText Typo="Typo.h5">Creating Questions</MudText>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudList T="string">
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.QuestionAnswer">
+                            After creating your survey, you'll be taken to the question creation page.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Category">
+                            Select the question type from the dropdown menu:
+                            <MudList T="string" Dense="true" Clickable="false" DisablePadding="false">
+                                <MudListItem T="string" Dense="true">Text - For open-ended responses</MudListItem>
+                                <MudListItem T="string" Dense="true">Multiple Choice - For single-selection options</MudListItem>
+                                <MudListItem T="string" Dense="true">Select All That Apply - For multiple-selection options</MudListItem>
+                                <MudListItem T="string" Dense="true">True/False - For binary responses</MudListItem>
+                                <MudListItem T="string" Dense="true">Rating 1 to 10 - For numerical scale responses</MudListItem>
+                            </MudList>
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Edit">
+                            Enter your question text in the provided field.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.PlaylistAdd">
+                            For Multiple Choice and Select All That Apply questions, add answer options by typing them in the "Option Text" field and clicking <MudChip Size="@MudBlazor.Size.Small" Color="Color.Primary">Add Option</MudChip>.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.AddTask">
+                            Click <MudChip Size="@MudBlazor.Size.Small" Color="Color.Primary">Add Question</MudChip> to add the question to your survey.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Repeat">
+                            Repeat the process to add all your desired questions.
+                        </MudListItem>
+                    </MudList>
+                </MudCardContent>
+            </MudCard>
+            
+            <MudCard Class="mb-4">
+                <MudCardHeader>
+                    <MudText Typo="Typo.h5">Editing Questions</MudText>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudList T="string">
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.BorderColor">
+                            In the "Create Questions" page, locate the question you want to edit in the question list on the right side.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.ListAlt">
+                            Click on the question to select it. The question details will appear in the editing panel.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Edit">
+                            Modify the question text or options as needed.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Save">
+                            Click <MudChip Size="@MudBlazor.Size.Small" Color="Color.Primary">Add Question</MudChip> to update the question. The system will recognize this as an edit since you selected an existing question.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Info">
+                            Note: You cannot change a question's type after creation. If you need to change the type, you'll need to delete the question and create a new one.
+                        </MudListItem>
+                    </MudList>
+                </MudCardContent>
+            </MudCard>
+            
+            <MudCard Class="mb-4">
+                <MudCardHeader>
+                    <MudText Typo="Typo.h5">Copying Existing Questions</MudText>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudList T="string">
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.ContentCopy">
+                            To save time when creating surveys, you can reuse questions from your existing question library.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.LibraryBooks">
+                            In the "Create Questions" page, click on the <MudChip Size="@MudBlazor.Size.Small" Color="Color.Primary">Start with Existing Question</MudChip> panel to expand it.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Search">
+                            Use the search box to find questions by typing keywords. The system will show matching questions as you type.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.SelectAll">
+                            Select a question from the dropdown results to use as a starting point. This will populate all the fields including:
+                            <MudList T="string" Dense="true" Clickable="false" DisablePadding="false">
+                                <MudListItem T="string" Dense="true">The question text</MudListItem>
+                                <MudListItem T="string" Dense="true">The question type</MudListItem>
+                                <MudListItem T="string" Dense="true">Answer options (for Multiple Choice and Select All That Apply questions)</MudListItem>
+                            </MudList>
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Edit">
+                            You can now modify any aspect of the copied question to fit your new survey's needs.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.AddTask">
+                            Click <MudChip Size="@MudBlazor.Size.Small" Color="Color.Primary">Add Question</MudChip> to add this question to your survey.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Lightbulb">
+                            This feature is particularly useful for:
+                            <MudList T="string" Dense="true" Clickable="false" DisablePadding="false">
+                                <MudListItem T="string" Dense="true">Creating similar surveys with standard questions</MudListItem>
+                                <MudListItem T="string" Dense="true">Building on previously successful surveys</MudListItem>
+                                <MudListItem T="string" Dense="true">Maintaining consistent question formatting across multiple surveys</MudListItem>
+                                <MudListItem T="string" Dense="true">Saving time when creating complex questions with multiple options</MudListItem>
+                            </MudList>
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Info">
+                            Note: When you copy a question, a new question is created in your survey - it does not link back to the original. Any changes you make will only affect this instance of the question.
+                        </MudListItem>
+                    </MudList>
+                </MudCardContent>
+            </MudCard>
+        </MudTabPanel>
+        
+        <MudTabPanel Text="Managing Content">
+            <MudText Typo="Typo.h4" Class="mb-3">Managing Survey Content</MudText>
+            
+            <MudCard Class="mb-4">
+                <MudCardHeader>
+                    <MudText Typo="Typo.h5">Reordering Questions</MudText>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudList T="string">
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.DragIndicator">
+                            In the question list on the right side of the "Create Questions" page, you'll see a drag handle icon next to each question.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.TouchApp">
+                            Click and hold on this drag handle to grab the question.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.SwapVert">
+                            Drag the question up or down to reposition it within the survey.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.DoneAll">
+                            Release to drop the question in its new position.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Update">
+                            The question order will automatically update and save.
+                        </MudListItem>
+                    </MudList>
+                </MudCardContent>
+            </MudCard>
+            
+            <MudCard Class="mb-4">
+                <MudCardHeader>
+                    <MudText Typo="Typo.h5">Reordering Multiple Choice Options</MudText>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudList T="string">
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.List">
+                            Select a Multiple Choice or Select All That Apply question to edit.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.DragIndicator">
+                            In the options list, you'll see a drag handle icon next to each option.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.TouchApp">
+                            Click and hold on this icon to grab the option.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.SwapVert">
+                            Drag the option up or down to reposition it within the list.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.DoneAll">
+                            Release to drop the option in its new position.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Update">
+                            The option order will automatically update and save.
+                        </MudListItem>
+                    </MudList>
+                </MudCardContent>
+            </MudCard>
+            
+            <MudCard Class="mb-4">
+                <MudCardHeader>
+                    <MudText Typo="Typo.h5">Deleting Questions and Options</MudText>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudList T="string">
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.DeleteForever">
+                            To delete a question, click the delete (trash) icon next to the question in the question list.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.WarningAmber">
+                            Confirm the deletion when prompted. This action cannot be undone.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.HighlightOff">
+                            To delete an option from a Multiple Choice or Select All That Apply question, select the question first.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Cancel">
+                            In the options list, click the delete (trash) icon next to the option you want to remove.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Warning">
+                            The option will be removed immediately. Be careful, as this action cannot be undone.
+                        </MudListItem>
+                    </MudList>
+                </MudCardContent>
+            </MudCard>
+        </MudTabPanel>
+        
+        <MudTabPanel Text="Publishing & Sharing">
+            <MudText Typo="Typo.h4" Class="mb-3">Publishing and Sharing Surveys</MudText>
+            
+            <MudCard Class="mb-4">
+                <MudCardHeader>
+                    <MudText Typo="Typo.h5">Publishing Your Survey</MudText>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudList T="string">
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Done">
+                            After adding all your questions, review your survey to ensure it's complete.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Preview">
+                            You can click the <MudChip Size="@MudBlazor.Size.Small" Color="Color.Success">Preview</MudChip> button in "My Surveys" to see how your survey will appear to respondents.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Publish">
+                            When you're ready to make your survey available to respondents, click the <MudChip Size="@MudBlazor.Size.Small" Color="Color.Primary">Publish Survey</MudChip> button at the top of the "Create Questions" page.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Warning">
+                            Important: Once a survey is published, you cannot edit its questions. This ensures data integrity for responses already collected.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.CheckCircle">
+                            After publishing, you'll be redirected to the home page, and you'll see a confirmation message that your survey has been published.
+                        </MudListItem>
+                    </MudList>
+                </MudCardContent>
+            </MudCard>
+            
+            <MudCard Class="mb-4">
+                <MudCardHeader>
+                    <MudText Typo="Typo.h5">Sharing Your Survey</MudText>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudList T="string">
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.FormatListBulleted">
+                            Go to the <MudChip Size="@MudBlazor.Size.Small" Color="Color.Primary">My Surveys</MudChip> page from the Surveys menu.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.ContentCopy">
+                            For a published survey, click the <MudChip Size="@MudBlazor.Size.Small" Color="Color.Primary">Copy Link</MudChip> button in the Actions column.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Link">
+                            The survey link will be copied to your clipboard. You can now paste and share this link via email, messaging apps, or anywhere you want.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Share">
+                            Alternatively, you can use the <MudChip Size="@MudBlazor.Size.Small" Color="Color.Primary">Share</MudChip> button to share your survey directly on social media platforms.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Info">
+                            Note: Only published surveys can be shared. If your survey hasn't been published yet, you'll need to publish it first.
+                        </MudListItem>
+                    </MudList>
+                </MudCardContent>
+            </MudCard>
+        </MudTabPanel>
+        
+        <MudTabPanel Text="Answering Surveys">
+            <MudText Typo="Typo.h4" Class="mb-3">Answering Surveys</MudText>
+            
+            <MudCard Class="mb-4">
+                <MudCardHeader>
+                    <MudText Typo="Typo.h5">Completing a Survey</MudText>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudList T="string">
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Link">
+                            Access the survey using the link provided by the survey creator.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.VerifiedUser">
+                            If required, complete the CAPTCHA verification to proceed.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Login">
+                            Depending on the survey settings, you may need to log in or you might be able to respond anonymously.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.ReadMore">
+                            Read the survey title and description to understand the survey's purpose.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.QuestionAnswer">
+                            Answer each question as presented:
+                            <MudList T="string" Dense="true" Clickable="false" DisablePadding="false">
+                                <MudListItem T="string" Dense="true">For text questions: Type your response in the text field</MudListItem>
+                                <MudListItem T="string" Dense="true">For multiple choice: Select one option by clicking on it</MudListItem>
+                                <MudListItem T="string" Dense="true">For select all that apply: Click on all options that you want to select</MudListItem>
+                                <MudListItem T="string" Dense="true">For true/false: Click either True or False</MudListItem>
+                                <MudListItem T="string" Dense="true">For rating: Click on the appropriate number on the scale</MudListItem>
+                            </MudList>
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.ArrowForward">
+                            Navigate through the survey by scrolling down the page.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Send">
+                            After answering all questions, click the <MudChip Size="@MudBlazor.Size.Small" Color="Color.Primary">Submit</MudChip> button at the bottom of the page.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Check">
+                            You'll see a confirmation message once your responses have been successfully recorded.
+                        </MudListItem>
+                    </MudList>
+                </MudCardContent>
+            </MudCard>
+        </MudTabPanel>
+        
+        <MudTabPanel Text="Viewing Results">
+            <MudText Typo="Typo.h4" Class="mb-3">Viewing Survey Results</MudText>
+            
+            <MudCard Class="mb-4">
+                <MudCardHeader>
+                    <MudText Typo="Typo.h5">Viewing Responses in Grid Format</MudText>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudList T="string">
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.ListAlt">
+                            Go to the <MudChip Size="@MudBlazor.Size.Small" Color="Color.Primary">My Surveys</MudChip> page from the Surveys menu.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.GridOn">
+                            For a published survey, click the <MudChip Size="@MudBlazor.Size.Small" Color="Color.Primary">Grid</MudChip> button in the Actions column.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.TableView">
+                            You'll be taken to a page showing a data grid with all responses to your survey.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.FilterList">
+                            Use the filter options at the top of each column to filter responses based on specific criteria.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Sort">
+                            Click on column headers to sort the data in ascending or descending order.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Search">
+                            Use the search function to quickly find specific responses.
+                        </MudListItem>
+                    </MudList>
+                </MudCardContent>
+            </MudCard>
+            
+            <MudCard Class="mb-4">
+                <MudCardHeader>
+                    <MudText Typo="Typo.h5">Viewing Responses in Charts</MudText>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudList T="string">
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.ListAlt">
+                            Go to the <MudChip Size="@MudBlazor.Size.Small" Color="Color.Primary">My Surveys</MudChip> page from the Surveys menu.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.BarChart">
+                            For a published survey, click the <MudChip Size="@MudBlazor.Size.Small" Color="Color.Primary">Charts</MudChip> button in the Actions column.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.InsertChart">
+                            You'll be taken to a page showing visual representations of your survey data.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.FilterAlt">
+                            Use the question dropdown to select a specific question or view all questions.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.PieChart">
+                            Toggle between different chart types (Bar, Pie) using the "Select Chart Type" dropdown.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Print">
+                            Use the <MudChip Size="@MudBlazor.Size.Small" Color="Color.Primary">Print</MudChip> button to print your charts.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Download">
+                            Use the <MudChip Size="@MudBlazor.Size.Small" Color="Color.Primary">Export</MudChip> button to save your charts in various formats (PDF, PNG, JPEG, SVG).
+                        </MudListItem>
+                    </MudList>
+                </MudCardContent>
+            </MudCard>
+        </MudTabPanel>
+        
+        <MudTabPanel Text="Feedback">
+            <MudText Typo="Typo.h4" Class="mb-3">Leaving Feedback</MudText>
+            
+            <MudCard Class="mb-4">
+                <MudCardHeader>
+                    <MudText Typo="Typo.h5">How to Leave Feedback</MudText>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudList T="string">
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Login">
+                            Make sure you are logged in to your account.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Feedback">
+                            Click on the <MudChip Size="@MudBlazor.Size.Small" Color="Color.Primary">Leave Feedback</MudChip> link in the footer of any page.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Title">
+                            Enter a concise title for your feedback.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Category">
+                            Select the type of feedback from the dropdown:
+                            <MudList T="string" Dense="true" Clickable="false" DisablePadding="false">
+                                <MudListItem T="string" Dense="true">Problem/Complaint - Report issues or bugs</MudListItem>
+                                <MudListItem T="string" Dense="true">Feature Request - Suggest new features</MudListItem>
+                                <MudListItem T="string" Dense="true">General Feedback - Share other thoughts</MudListItem>
+                            </MudList>
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Description">
+                            Provide a detailed description of your feedback in the text area.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Email">
+                            Optionally, enter your email if you want to be contacted about your feedback.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Send">
+                            Click the <MudChip Size="@MudBlazor.Size.Small" Color="Color.Primary">Submit</MudChip> button to send your feedback.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Check">
+                            You'll see a confirmation message once your feedback has been successfully submitted.
+                        </MudListItem>
+                    </MudList>
+                </MudCardContent>
+            </MudCard>
+        </MudTabPanel>
+    </MudTabs>
+</MudContainer>
