@@ -16,6 +16,8 @@
 
         public bool Published { get; set; }
 
+        public int NumberOfResponses { get; set; }
+
         public List<QuestionViewModel> Questions { get; set; }
     }
 }
