@@ -42,7 +42,7 @@ namespace JwtIdentity.Controllers
                 .Select(mc => mc.Id)
                 .ToList();
 
-            // Now load each one�s Options
+            // Now load each one's Options
             await _context.Questions
                 .OfType<MultipleChoiceQuestion>()
                 .Where(mc => mcIds.Contains(mc.Id))
@@ -71,7 +71,7 @@ namespace JwtIdentity.Controllers
         {
             var createdById = authService.GetUserId(User);
             var surveys = await _context.Surveys
-                .Include(s => s.Questions.OrderBy(q => q.QuestionNumber))                
+                .Include(s => s.Questions.OrderBy(q => q.QuestionNumber))
                 .Where(s => s.CreatedById == createdById)
                 .ToListAsync();
 
@@ -87,7 +87,7 @@ namespace JwtIdentity.Controllers
                     .Select(a => a.CreatedById)
                     .Distinct()
                     .CountAsync();
-                
+
                 // Assign the count to the corresponding view model
                 surveyViewModels[i].NumberOfResponses = responseCount;
             }
