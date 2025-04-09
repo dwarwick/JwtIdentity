@@ -42,7 +42,7 @@ namespace JwtIdentity.Controllers
                 .Select(mc => mc.Id)
                 .ToList();
 
-            // Now load each one’s Options
+            // Now load each one's Options
             await _context.Questions
                 .OfType<MultipleChoiceQuestion>()
                 .Where(mc => mcIds.Contains(mc.Id))
@@ -54,7 +54,7 @@ namespace JwtIdentity.Controllers
                 .Select(mc => mc.Id)
                 .ToList();
 
-            // Now load each one’s Options
+            // Now load each oneï¿½s Options
             await _context.Questions
                 .OfType<SelectAllThatApplyQuestion>()
                 .Where(mc => allIds.Contains(mc.Id))
@@ -75,7 +75,24 @@ namespace JwtIdentity.Controllers
                 .Where(s => s.CreatedById == createdById)
                 .ToListAsync();
 
-            return Ok(_mapper.Map<IEnumerable<SurveyViewModel>>(surveys));
+            // Map to view models
+            var surveyViewModels = _mapper.Map<IEnumerable<SurveyViewModel>>(surveys).ToList();
+
+            // For each survey, get the count of unique users who have completed the survey
+            for (int i = 0; i < surveys.Count; i++)
+            {
+                // Query to count distinct users who have completed answers for this survey
+                var responseCount = await _context.Answers
+                    .Where(a => a.Question.SurveyId == surveys[i].Id && a.Complete)
+                    .Select(a => a.CreatedById)
+                    .Distinct()
+                    .CountAsync();
+
+                // Assign the count to the corresponding view model
+                surveyViewModels[i].NumberOfResponses = responseCount;
+            }
+
+            return Ok(surveyViewModels);
         }
 
         // POST: api/Survey

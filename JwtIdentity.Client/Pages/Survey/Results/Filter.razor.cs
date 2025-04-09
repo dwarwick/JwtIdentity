@@ -190,5 +190,13 @@ namespace JwtIdentity.Client.Pages.Survey.Results
                 Grid.Columns.Add(gridColumn);
             }
         }
+
+        protected async Task ToolbarClickHandler(Syncfusion.Blazor.Navigations.ClickEventArgs args)
+        {
+            if (args.Item.Text == "Export to Excel") //Id is combination of Grid's ID and itemname
+            {
+                await this.Grid.ExportToExcelAsync();
+            }
+        }
     }
 }

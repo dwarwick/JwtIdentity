@@ -3,8 +3,20 @@
 
 <h3>Filter</h3>
 
-<SfGrid @ref="Grid" TValue="object" DataSource="@SurveyRows" Height="315" AllowPaging="true" AllowSorting="true" AllowFiltering="true" AllowResizing="true">
+<SfGrid ID="Grid" @ref="Grid" TValue="object" DataSource="@SurveyRows" Height="315" AllowPaging="true" AllowSorting="true" AllowFiltering="true" AllowResizing="true" AllowTextWrap="true" TextWrapSettings="@GridSettings.TextWrapSettings" GridLines="@GridSettings.GridLines" AllowExcelExport="true">
+    <GridTemplates>
+        <ToolbarTemplate>
+            <SfToolbar>
+                <ToolbarEvents Clicked="ToolbarClickHandler"></ToolbarEvents>
+                <ToolbarItems>
+                    <ToolbarItem Type="@ItemType.Button" PrefixIcon="e-export-excel icon" Id="exportExcel" Text="Export to Excel"></ToolbarItem>                    
+                </ToolbarItems>
+            </SfToolbar>
+        </ToolbarTemplate>
+    </GridTemplates>
+    <GridEvents OnToolbarClick="ToolbarClickHandler" TValue="object"></GridEvents>
     <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel"></GridFilterSettings>
+
     <GridColumns>
             
     </GridColumns>

@@ -4,7 +4,7 @@
 @attribute [Authorize(Policy = Permissions.CreateSurvey)]
 <h3>My Surveys</h3>
 
-<SfGrid DataSource="@UserSurveys" AllowPaging="true" AllowSorting="true" AllowFiltering="true"  AllowResizing="true" FrozenColumns="@FrozenColumns">
+<SfGrid DataSource="@UserSurveys" AllowPaging="true" AllowSorting="true" AllowFiltering="true"  AllowResizing="true" FrozenColumns="@FrozenColumns" AllowTextWrap="true" TextWrapSettings="@GridSettings.TextWrapSettings" GridLines="@GridSettings.GridLines" >
     <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel"></GridFilterSettings>
     <GridColumns>
         <GridColumn HeaderText="Actions" AutoFit="true"  AllowResizing="false" AllowReordering="false">
@@ -38,6 +38,7 @@
         </GridColumn>
         <GridColumn Field="Title" HeaderText="Title" Width="200" />
         <GridColumn Field="Description" HeaderText="Description" Width="400" />
-        <GridColumn Field="CreatedDate" HeaderText="Created Date" Width="160" Type=" ColumnType.Date" Format="d" />        
+        <GridColumn Field="NumberOfResponses" HeaderText="Responses" Width="120" TextAlign="TextAlign.Center" />
+        <GridColumn Field="CreatedDate" HeaderText="Created Date" Width="160" Type=" ColumnType.Date" Format="d" />
     </GridColumns>
 </SfGrid>

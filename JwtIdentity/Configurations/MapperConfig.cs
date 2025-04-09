@@ -79,8 +79,10 @@
                 .ForMember(dest => dest.MultipleChoiceQuestionId, opt => opt.MapFrom(src => src.MultipleChoiceQuestionId))
                 .ForMember(dest => dest.SelectAllThatApplyQuestionId, opt => opt.MapFrom(src => src.SelectAllThatApplyQuestionId));
 
-
-            _ = CreateMap<Survey, SurveyViewModel>().ReverseMap();
+            _ = CreateMap<Survey, SurveyViewModel>()
+                .ForMember(dest => dest.NumberOfResponses, opt => opt.Ignore()); // Don't map this property from Survey model
+            
+            _ = CreateMap<SurveyViewModel, Survey>();
         }
     }
 }
