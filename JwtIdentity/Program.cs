@@ -1,3 +1,4 @@
+using JwtIdentity.Extensions;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.OData;
@@ -34,6 +35,12 @@ builder.Configuration
 
 // Bind "AppSettings" section to the AppSettings class
 builder.Services.Configure<AppSettings>(builder.Configuration);
+
+// Register FeedbackSettings
+builder.Services.Configure<FeedbackSettings>(builder.Configuration.GetSection("FeedbackSettings"));
+builder.Services.AddScoped<ISettingsService, SettingsService>();
+builder.Services.AddScoped<FeedbackSettings>();
+builder.Services.AddScoped<SettingsMigrationService>();
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
@@ -155,7 +162,8 @@ builder.Services.AddCors(options =>
         });
 });
 
-builder.Services.AddCyclicalReferenceHandling();
+// Uncommenting the cyclical reference handling
+//builder.Services.AddCyclicalReferenceHandling();
 
 var app = builder.Build();
 
@@ -210,5 +218,27 @@ app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveWebAssemblyRenderMode()
     .AddAdditionalAssemblies(typeof(JwtIdentity.Client._Imports).Assembly);
+
+// Apply database migrations and seed initial settings at startup
+using (var scope = app.Services.CreateScope())
+{
+    var serviceProvider = scope.ServiceProvider;
+    
+    try
+    {
+        // Run database migrations
+        var dbContext = serviceProvider.GetRequiredService<ApplicationDbContext>();
+        dbContext.Database.Migrate();
+        
+        // Migrate settings from appsettings.json to database
+        var settingsMigration = serviceProvider.GetRequiredService<SettingsMigrationService>();
+        await settingsMigration.MigrateAllSettingsAsync();
+    }
+    catch (Exception ex)
+    {
+        var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred during startup");
+    }
+}
 
 app.Run();

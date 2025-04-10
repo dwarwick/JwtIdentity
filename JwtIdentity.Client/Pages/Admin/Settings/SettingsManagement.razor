@@ -1,0 +1,94 @@
+@page "/admin/settings"
+@inherits SettingsManagementModel
+@attribute [Authorize(Roles = "Admin")]
+
+<PageTitle>Settings Management</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    <MudCard>
+        <MudCardHeader>
+            <MudText Typo="Typo.h5">Settings Management</MudText>
+        </MudCardHeader>
+
+        <MudCardContent>
+            <MudGrid>
+                <MudItem xs="12" md="3">
+                    <MudSelect T="string" Label="Category" Value="@SelectedCategory" ValueChanged="OnCategoryChanged" 
+                               Margin="Margin.Dense" Variant="Variant.Outlined" 
+                               AnchorOrigin="Origin.BottomCenter">
+                        <MudSelectItem Value="@((string)null)">All Categories</MudSelectItem>
+                        @foreach (var category in Categories)
+                        {
+                            <MudSelectItem Value="@category">@category</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                
+                <MudItem xs="12" md="6">
+                    <MudTextField @bind-Value="SearchString" Placeholder="Search settings..." 
+                                 Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" 
+                                 Margin="Margin.Dense" Variant="Variant.Outlined" />
+                </MudItem>
+                
+                <MudItem xs="12" md="3" Class="d-flex justify-end">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" 
+                               StartIcon="@Icons.Material.Filled.Add" 
+                               OnClick="@(() => OpenDialogAsync())">
+                        Add Setting
+                    </MudButton>
+                </MudItem>
+            </MudGrid>
+
+            <MudDivider Class="my-3" />
+            
+            <MudButton Variant="Variant.Outlined" Color="Color.Secondary" 
+                       OnClick="@CreateTestSettingAsync" Class="mb-3">
+                Create Test Setting
+            </MudButton>
+
+            @if (IsLoading)
+            {
+                <div class="d-flex justify-center my-4">
+                    <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+                </div>
+            }
+            else
+            {
+                <MudTable Items="@Settings" Hover="true" Breakpoint="Breakpoint.Sm" Loading="@IsLoading" 
+                          LoadingProgressColor="Color.Info" Filter="FilterFunc" 
+                          T="SettingViewModel" Class="mt-4">
+                    <HeaderContent>
+                        <MudTh>Key</MudTh>
+                        <MudTh>Value</MudTh>
+                        <MudTh>Type</MudTh>
+                        <MudTh>Description</MudTh>
+                        <MudTh>Category</MudTh>
+                        <MudTh>Actions</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Key">@context.Key</MudTd>
+                        <MudTd DataLabel="Value" Style="max-width: 200px; overflow: hidden; text-overflow: ellipsis;">@context.Value</MudTd>
+                        <MudTd DataLabel="Type">@context.DataType</MudTd>
+                        <MudTd DataLabel="Description">@context.Description</MudTd>
+                        <MudTd DataLabel="Category">@context.Category</MudTd>
+                        <MudTd DataLabel="Actions">
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="@MudBlazor.Size.Small" 
+                                          OnClick="@(() => OpenDialogAsync(context))" 
+                                          Disabled="@(!context.IsEditable)"/>
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="@MudBlazor.Size.Small" 
+                                          Color="Color.Error"
+                                          OnClick="@(() => DeleteSettingAsync(context))" 
+                                          Disabled="@(!context.IsEditable)"/>
+                        </MudTd>
+                    </RowTemplate>
+                    <NoRecordsContent>
+                        <MudText>No settings found.</MudText>
+                    </NoRecordsContent>
+                    <PagerContent>
+                        <MudTablePager PageSizeOptions="new int[] { 10, 25, 50, 100 }" />
+                    </PagerContent>
+                </MudTable>
+            }
+        </MudCardContent>
+    </MudCard>
+</MudContainer>

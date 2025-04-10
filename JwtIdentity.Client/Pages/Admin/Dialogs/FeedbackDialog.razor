@@ -1,0 +1,78 @@
+@using JwtIdentity.Common.ViewModels
+@using MudBlazor
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudChip T="string" Color="@GetColorForFeedbackType(Feedback.Type)" Size="MudBlazor.Size.Small">@Feedback.Type.ToString()</MudChip>
+            @Feedback.Title
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudGrid>
+            <MudItem xs="12">
+                <MudTextField T="string" Label="Description" Value="@Feedback.Description"
+                              Lines="5" ReadOnly="true" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudTextField T="string" Label="Email" Value="@Feedback.Email" ReadOnly="true" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudTextField T="DateTime" Label="Date Submitted" Value="@Feedback.CreatedDate" Format="yyyy-MM-dd HH:mm" ReadOnly="true" />
+            </MudItem>
+            <MudItem xs="12">
+                <MudTextField T="string" @bind-Value="@AdminResponse" Label="Admin Response" Lines="3" />
+            </MudItem>
+        </MudGrid>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" 
+                   Color="@(Feedback.IsResolved ? Color.Warning : Color.Success)" 
+                   OnClick="ToggleResolvedStatus">
+            @(Feedback.IsResolved ? "Mark Unresolved" : "Mark Resolved")
+        </MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveAndClose">Save</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="Cancel">Close</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; }
+    
+    [Parameter] 
+    public FeedbackViewModel Feedback { get; set; } = new FeedbackViewModel();
+    
+    private string AdminResponse { get; set; }
+    
+    protected override void OnInitialized()
+    {
+        AdminResponse = Feedback.AdminResponse ?? "";
+    }
+    
+    private void Cancel() => MudDialog.Cancel();
+    
+    private void SaveAndClose()
+    {
+        Feedback.AdminResponse = AdminResponse;
+        MudDialog.Close(DialogResult.Ok(Feedback));
+    }
+    
+    private void ToggleResolvedStatus()
+    {
+        Feedback.IsResolved = !Feedback.IsResolved;
+        Feedback.AdminResponse = AdminResponse;
+        MudDialog.Close(DialogResult.Ok(Feedback));
+    }
+    
+    private Color GetColorForFeedbackType(FeedbackType type)
+    {
+        return type switch
+        {
+            FeedbackType.Problem => Color.Error,
+            FeedbackType.FeatureRequest => Color.Info,
+            FeedbackType.GeneralFeedback => Color.Default,
+            _ => Color.Default
+        };
+    }
+}
