@@ -1,14 +1,4 @@
-using AutoMapper;
-using JwtIdentity.Common.ViewModels;
-using JwtIdentity.Data;
-using JwtIdentity.Extensions;
-using JwtIdentity.Models;
-using JwtIdentity.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
 
 namespace JwtIdentity.Controllers
 {
@@ -22,11 +12,7 @@ namespace JwtIdentity.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IEmailService _emailService;
         private readonly IConfiguration _configuration;
-        private readonly ISettingsService _settingsService;
-
-        // FeedbackSettings keys
-        private const string AdminNotificationEmailsKey = "FeedbackSettings.AdminNotificationEmails";
-        private const string NotificationsSnoozeUntilKey = "FeedbackSettings.NotificationsSnoozeUntil";
+        private readonly ISettingsService _settingsService;        
         private const string SettingsCategory = "Feedback";
 
         public FeedbackController(
@@ -229,24 +215,8 @@ namespace JwtIdentity.Controllers
                     return;
                 }
 
-                // Get admin emails from settings
-                var adminEmails = await GetAdminNotificationEmailsAsync();
-
                 // Get the AdminEmail setting that was recently added
-                string adminEmail = await _settingsService.GetSettingAsync<string>("AdminEmail", null);
-                
-                // If we found a configured AdminEmail setting, add it to our list if it's not already there
-                if (!string.IsNullOrEmpty(adminEmail) && !adminEmails.Contains(adminEmail, StringComparer.OrdinalIgnoreCase))
-                {
-                    adminEmails.Add(adminEmail);
-                }
-
-                // Check if we have admin emails configured
-                if (adminEmails == null || !adminEmails.Any())
-                {
-                    // No admin emails configured
-                    return;
-                }
+                string adminEmail = await _settingsService.GetSettingAsync<string>("AdminEmail", null);                
 
                 // Get user information for the feedback submitter
                 var user = await _userManager.FindByIdAsync(feedback.CreatedById.ToString());
@@ -272,14 +242,11 @@ namespace JwtIdentity.Controllers
                 <p>Best regards,<br/>The System</p>
                 ";
                 
-                // Send email to each admin in the list
-                foreach (var email in adminEmails)
+                // Send email to admin               
+                if (!string.IsNullOrEmpty(adminEmail))
                 {
-                    if (!string.IsNullOrEmpty(email))
-                    {
-                        await _emailService.SendEmailAsync(email, subject, messageBody);
-                    }
-                }
+                    await _emailService.SendEmailAsync(adminEmail, subject, messageBody);
+                }                
             }
             catch (Exception ex)
             {
@@ -331,19 +298,12 @@ namespace JwtIdentity.Controllers
             return _context.Feedbacks.Any(e => e.Id == id);
         }
 
-        #region Settings Helper Methods
-        
-        private async Task<List<string>> GetAdminNotificationEmailsAsync()
-        {
-            return await _settingsService.GetSettingAsync(
-                AdminNotificationEmailsKey,
-                new List<string>());
-        }
+        #region Settings Helper Methods       
 
         private async Task<DateTime?> GetNotificationsSnoozeUntilAsync()
         {
             return await _settingsService.GetSettingAsync<DateTime?>(
-                NotificationsSnoozeUntilKey, 
+                "SnoozeUntilKey", 
                 null);
         }
 

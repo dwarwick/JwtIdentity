@@ -19,8 +19,6 @@ namespace JwtIdentity.Services
         private readonly string header;
         private readonly string footer;
 
-        private readonly string tableHtml = "<table bgcolor=\"#f6f9fc\" border=\"1\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\" style=\"margin:0;padding:2px;\">";
-
         public EmailService(IConfiguration configuration, ILogger<EmailService> logger)
         {
             _configuration = configuration;
@@ -37,10 +35,16 @@ namespace JwtIdentity.Services
             try
             {
                 var emailSettings = _configuration.GetSection("EmailSettings");
-                var fromEmail = emailSettings["CustomerServiceEmail"];
-                var password = emailSettings["Password"];
-                var server = emailSettings["Server"];
-                var domain = emailSettings["Domain"];
+                var fromEmail = emailSettings["CustomerServiceEmail"] ?? string.Empty;
+                var password = emailSettings["Password"] ?? string.Empty;
+                var server = emailSettings["Server"] ?? string.Empty;
+                var domain = emailSettings["Domain"] ?? string.Empty;
+
+                if (string.IsNullOrEmpty(fromEmail) || string.IsNullOrEmpty(password) || string.IsNullOrEmpty(server))
+                {
+                    _logger.LogError("Email configuration is missing required values");
+                    return;
+                }
 
                 var subject = "Email Verification";
                 var body = $@"
@@ -63,10 +67,16 @@ namespace JwtIdentity.Services
             try
             {
                 var emailSettings = _configuration.GetSection("EmailSettings");
-                var fromEmail = emailSettings["CustomerServiceEmail"];
-                var password = emailSettings["Password"];
-                var server = emailSettings["Server"];
-                var domain = emailSettings["Domain"];
+                var fromEmail = emailSettings["CustomerServiceEmail"] ?? string.Empty;
+                var password = emailSettings["Password"] ?? string.Empty;
+                var server = emailSettings["Server"] ?? string.Empty;
+                var domain = emailSettings["Domain"] ?? string.Empty;
+
+                if (string.IsNullOrEmpty(fromEmail) || string.IsNullOrEmpty(password) || string.IsNullOrEmpty(server))
+                {
+                    _logger.LogError("Email configuration is missing required values");
+                    return;
+                }
 
                 var subject = "Password Reset Request";
                 var body = $@"
@@ -89,10 +99,16 @@ namespace JwtIdentity.Services
             try
             {
                 var emailSettings = _configuration.GetSection("EmailSettings");
-                var fromEmail = emailSettings["CustomerServiceEmail"];
-                var password = emailSettings["Password"];
-                var server = emailSettings["Server"];
-                var domain = emailSettings["Domain"];
+                var fromEmail = emailSettings["CustomerServiceEmail"] ?? string.Empty;
+                var password = emailSettings["Password"] ?? string.Empty;
+                var server = emailSettings["Server"] ?? string.Empty;
+                var domain = emailSettings["Domain"] ?? string.Empty;
+
+                if (string.IsNullOrEmpty(fromEmail) || string.IsNullOrEmpty(password) || string.IsNullOrEmpty(server))
+                {
+                    _logger.LogError("Email configuration is missing required values");
+                    return;
+                }
 
                 await Task.Run(() => SendEmail(fromEmail, password, server, toEmail, subject, body));
             }
