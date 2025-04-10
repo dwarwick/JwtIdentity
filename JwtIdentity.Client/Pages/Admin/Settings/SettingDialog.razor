@@ -1,0 +1,96 @@
+@using JwtIdentity.Common.ViewModels
+@using JwtIdentity.Client.Services
+@inject IApiService ApiService
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        <MudGrid>
+            <MudItem xs="12">
+                <MudTextField @bind-Value="setting.Key" Label="Key" 
+                             Required="true" RequiredError="Key is required"
+                             ReadOnly="@(!isNew)" />
+            </MudItem>
+            
+            <MudItem xs="12" md="6">
+                <MudTextField @bind-Value="setting.Value" Label="Value" 
+                             Required="true" RequiredError="Value is required" />
+            </MudItem>
+            
+            <MudItem xs="12" md="6">
+                <MudSelect @bind-Value="setting.DataType" Label="Data Type" 
+                          ReadOnly="@(!isNew)">
+                    @foreach (var dataType in SettingViewModel.AvailableDataTypes)
+                    {
+                        <MudSelectItem Value="@dataType">@dataType</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            
+            <MudItem xs="12">
+                <MudTextField @bind-Value="setting.Description" Label="Description" />
+            </MudItem>
+            
+            <MudItem xs="12">
+                <MudTextField @bind-Value="setting.Category" Label="Category" />
+            </MudItem>
+            
+            <MudItem xs="12">
+                <MudCheckBox T="bool" @bind-Checked="setting.IsEditable" Label="Editable" 
+                            Color="Color.Primary" />
+            </MudItem>
+        </MudGrid>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit" Disabled="@(!IsValid())">Save</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; }
+    
+    [Parameter] public SettingViewModel Setting { get; set; }
+    [Parameter] public bool IsNew { get; set; }
+    
+    private SettingViewModel setting;
+    private bool isNew;
+    
+    protected override void OnInitialized()
+    {
+        setting = Setting ?? new SettingViewModel();
+        isNew = IsNew;
+    }
+    
+    private bool IsValid()
+    {
+        return !string.IsNullOrWhiteSpace(setting.Key) && 
+               !string.IsNullOrWhiteSpace(setting.Value) &&
+               !string.IsNullOrWhiteSpace(setting.DataType);
+    }
+    
+    private async Task Submit()
+    {
+        try
+        {
+            if (isNew)
+            {
+                await ApiService.PostAsync<SettingViewModel>("api/settings", setting);
+                Snackbar.Add($"Setting '{setting.Key}' created successfully", Severity.Success);
+            }
+            else
+            {
+                await ApiService.UpdateAsync<SettingViewModel>($"api/settings/{setting.Key}", setting);
+                Snackbar.Add($"Setting '{setting.Key}' updated successfully", Severity.Success);
+            }
+            
+            MudDialog.Close(DialogResult.Ok(setting));
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error saving setting: {ex.Message}", Severity.Error);
+        }
+    }
+    
+    private void Cancel() => MudDialog.Cancel();
+}

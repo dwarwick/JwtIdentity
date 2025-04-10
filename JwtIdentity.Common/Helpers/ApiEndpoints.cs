@@ -7,5 +7,6 @@
         public const string Survey = "api/survey";
         public const string Question = "api/question";
         public const string ChoiceOption = "api/choiceoption";
+        public const string Feedback = "api/feedback";
     }
 }

@@ -1,0 +1,126 @@
+@page "/feedback/my"
+@using JwtIdentity.Common.ViewModels
+@attribute [Authorize]
+@inherits MyFeedbackModel
+
+<MudContainer Class="mt-4 px-8" MaxWidth="MaxWidth.ExtraLarge">
+    <MudText Typo="Typo.h4" Class="mb-4">My Feedback</MudText>
+
+    <MudGrid>
+        <MudItem xs="12">
+            @if (_loading)
+            {
+                <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+                <MudText Class="ml-2">Loading your feedback...</MudText>
+            }
+            else if (MyFeedbackItems.Count == 0)
+            {
+                <MudPaper Class="pa-4">
+                    <MudText Typo="Typo.h6">No feedback submitted yet</MudText>
+                    <MudText Class="mt-2">
+                        You haven't submitted any feedback yet. Feel free to 
+                        <MudLink Href="/feedback/new">leave some feedback</MudLink> about your experience.
+                    </MudText>
+                </MudPaper>
+            }
+            else
+            {
+                <MudPaper Class="pa-4">
+                    <MudDataGrid T="FeedbackViewModel" Items="@MyFeedbackItems" 
+                                Filterable="true"
+                                SortMode="SortMode.Multiple"
+                                Hideable="true">
+                        <ToolBarContent>
+                            <MudText Typo="Typo.h6">Your Submitted Feedback</MudText>
+                            <MudSpacer />
+                            <MudButton Variant="Variant.Filled" 
+                                       Color="Color.Primary" 
+                                       StartIcon="@Icons.Material.Filled.Add"
+                                       Href="/feedback/new"
+                                       Class="ml-2">
+                                New Feedback
+                            </MudButton>
+                        </ToolBarContent>
+                        <Columns>
+                            <PropertyColumn Property="x => x.Title" Title="Title" Sortable="true" />
+                            <PropertyColumn Property="x => x.Type" Title="Type" Sortable="true">
+                                <CellTemplate>
+                                    <MudChip T="string" Color="@(GetColorForFeedbackType(context.Item.Type))" Size="MudBlazor.Size.Small">@context.Item.Type</MudChip>
+                                </CellTemplate>
+                            </PropertyColumn>
+                            <TemplateColumn Title="Description" Sortable="false">
+                                <CellTemplate>
+                                    <MudText>@(context.Item.Description?.Length > 50 ? context.Item.Description.Substring(0, 47) + "..." : context.Item.Description)</MudText>
+                                </CellTemplate>
+                            </TemplateColumn>
+                            <PropertyColumn Property="x => x.CreatedDate" Title="Date" Sortable="true" Format="yyyy-MM-dd HH:mm" />
+                            <PropertyColumn Property="x => x.IsResolved" Title="Status" Sortable="true">
+                                <CellTemplate>
+                                    <MudChip T="string" Color="@(context.Item.IsResolved ? Color.Success : Color.Warning)">
+                                        @(context.Item.IsResolved ? "Resolved" : "Pending")
+                                    </MudChip>
+                                </CellTemplate>
+                            </PropertyColumn>
+                            <TemplateColumn Title="Actions">
+                                <CellTemplate>
+                                    <MudButton Variant="Variant.Filled" 
+                                              Color="Color.Primary" 
+                                              Size="MudBlazor.Size.Small"
+                                              OnClick="@(() => OpenFeedbackDialog(context.Item))">
+                                        View Details
+                                    </MudButton>
+                                </CellTemplate>
+                            </TemplateColumn>
+                        </Columns>
+                        <PagerContent>
+                            <MudDataGridPager T="FeedbackViewModel" />
+                        </PagerContent>
+                    </MudDataGrid>
+                </MudPaper>
+            }
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+@if (_dialogVisible)
+{
+    <MudDialog Open="_dialogVisible" Options="dialogOptions">
+        <TitleContent>
+            <MudText Typo="Typo.h6">
+                <MudChip T="string" Color="@GetColorForFeedbackType(_selectedFeedback.Type)" Class="mr-2">@_selectedFeedback.Type</MudChip>
+                @_selectedFeedback.Title
+            </MudText>
+        </TitleContent>
+        <DialogContent>
+            <MudGrid>
+                <MudItem xs="12">
+                    <MudTextField T="string" Label="Your Description" Value="@_selectedFeedback.Description"
+                                Lines="3" ReadOnly="true" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField T="DateTime" Label="Submitted on" Value="@_selectedFeedback.CreatedDate" Format="yyyy-MM-dd HH:mm" ReadOnly="true" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudText>Status: 
+                        <MudChip T="string" Color="@(_selectedFeedback.IsResolved ? Color.Success : Color.Warning)">
+                            @(_selectedFeedback.IsResolved ? "Resolved" : "Pending")
+                        </MudChip>
+                    </MudText>
+                </MudItem>
+
+                @if (!string.IsNullOrEmpty(_selectedFeedback.AdminResponse))
+                {
+                    <MudItem xs="12">
+                        <MudPaper Elevation="0" Class="pa-4 mud-background-gray rounded-lg">
+                            <MudText Typo="Typo.subtitle1" Class="mb-2">Admin Response:</MudText>
+                            <MudText>@_selectedFeedback.AdminResponse</MudText>
+                        </MudPaper>
+                    </MudItem>
+                }
+            </MudGrid>
+        </DialogContent>
+        <DialogActions>
+            <MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="CloseDialog">Close</MudButton>
+        </DialogActions>
+    </MudDialog>
+}

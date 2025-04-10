@@ -15,5 +15,6 @@ namespace JwtIdentity.Models
         public FeedbackType Type { get; set; }
         public string Email { get; set; }
         public bool IsResolved { get; set; }
+        public string AdminResponse { get; set; }
     }
 }

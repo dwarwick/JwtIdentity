@@ -8,21 +8,31 @@
     <MudHidden Breakpoint="Breakpoint.SmAndDown">
         <MudButton Variant="Variant.Text" Color="Color.Inherit" Class="mx-2" Href="/">Home</MudButton>
         <MudButton Variant="Variant.Text" Color="Color.Inherit" Class="mx-2" Href="/documentation">Documentation</MudButton>
-        <AuthorizeView Policy="@Permissions.ManageUsers">
+        <AuthorizeView Roles="Admin">
             <Authorized>
-                <MudButton Variant="Variant.Text" Color="Color.Inherit" Class="mx-2" Href="/ManageRolePermissions">Manage Permissions</MudButton>
+                <MudMenu Label="Admin" Variant="Variant.Text" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Color="Color.Inherit">
+                    <MudMenuItem Href="/admin/feedback">Manage Feedback</MudMenuItem>                    
+                    <MudMenuItem Href="/admin/settings">Settings Management</MudMenuItem>
+                    <MudMenuItem Href="/ManageRolePermissions">Manage Permissions</MudMenuItem>
+                </MudMenu>
             </Authorized>
         </AuthorizeView>
         <AuthorizeView Policy="@Permissions.CreateSurvey">
             <Authorized>
                 <MudMenu Label="Surveys" Variant="Variant.Text" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Color="Color.Inherit">
-
                     <MudMenuItem Href="/survey/create">Create Survey</MudMenuItem>
                     <MudMenuItem Href="/survey/mysurveys">My Surveys</MudMenuItem>
-
                 </MudMenu>
             </Authorized>
-        </AuthorizeView>        
+        </AuthorizeView>
+        <AuthorizeView>
+            <Authorized>
+                <MudMenu Label="Feedback" Variant="Variant.Text" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Color="Color.Inherit">
+                    <MudMenuItem Href="/feedback">Submit Feedback</MudMenuItem>
+                    <MudMenuItem Href="/feedback/my">My Feedback</MudMenuItem>
+                </MudMenu>
+            </Authorized>            
+        </AuthorizeView>
         <div class="mx-1">
             <AuthorizeView>
                 <Authorized>
@@ -51,20 +61,30 @@
         </AuthorizeView>
         <MudNavLink Href="/" Match="NavLinkMatch.All">Home</MudNavLink>
         <MudNavLink Href="/documentation">Documentation</MudNavLink>
-        <AuthorizeView Policy="@Permissions.ManageUsers">
+        <AuthorizeView Roles="Admin">
             <Authorized>
-                <MudNavLink Href="/ManageRolePermissions">Manage Permissions</MudNavLink>
+                <MudNavGroup Title="Admin" Expanded="false">
+                    <MudNavLink Href="/admin/feedback">Manage Feedback</MudNavLink>
+                    <MudNavLink Href="/admin/settings">Settings Management</MudNavLink>
+                    <MudNavLink Href="/ManageRolePermissions">Manage Permissions</MudNavLink>
+                </MudNavGroup>
             </Authorized>
         </AuthorizeView>
         <AuthorizeView Policy="@Permissions.CreateSurvey">
             <Authorized>
-                <MudMenu Label="Surveys" Variant="Variant.Text" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Color="Color.Inherit">
-
-                    <MudMenuItem Href="/survey/create">Create Survey</MudMenuItem>
-                    <MudMenuItem Href="/survey/mysurveys">My Surveys</MudMenuItem>
-
-                </MudMenu>
+                <MudNavGroup Title="Surveys" Expanded="false">
+                    <MudNavLink Href="/survey/create">Create Survey</MudNavLink>
+                    <MudNavLink Href="/survey/mysurveys">My Surveys</MudNavLink>
+                </MudNavGroup>
             </Authorized>
-        </AuthorizeView>       
+        </AuthorizeView>
+        <AuthorizeView>
+            <Authorized>
+                <MudNavGroup Title="Feedback" Expanded="false">
+                    <MudNavLink Href="/feedback">Submit Feedback</MudNavLink>
+                    <MudNavLink Href="/feedback/my">My Feedback</MudNavLink>
+                </MudNavGroup>
+            </Authorized>            
+        </AuthorizeView>
     </MudNavMenu>
 </MudDrawer>

@@ -1,4 +1,7 @@
-﻿using System.Net.Mail;
+﻿using System.Net;
+using System.Net.Mail;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using System.Net.Mime;
 
 #nullable enable
@@ -7,7 +10,8 @@ namespace JwtIdentity.Services
 {
     public class EmailService : IEmailService
     {
-        private readonly IConfiguration configuration;
+        private readonly IConfiguration _configuration;
+        private readonly ILogger<EmailService> _logger;
 
         private readonly string domain;
         private readonly string fromEmail;
@@ -17,9 +21,10 @@ namespace JwtIdentity.Services
 
         private readonly string tableHtml = "<table bgcolor=\"#f6f9fc\" border=\"1\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\" style=\"margin:0;padding:2px;\">";
 
-        public EmailService(IConfiguration configuration)
+        public EmailService(IConfiguration configuration, ILogger<EmailService> logger)
         {
-            this.configuration = configuration;
+            _configuration = configuration;
+            _logger = logger;
 
             domain = configuration["EmailSettings:Domain"] ?? string.Empty;
             fromEmail = configuration["EmailSettings:CustomerServiceEmail"] ?? string.Empty;
@@ -27,99 +32,95 @@ namespace JwtIdentity.Services
             footer = $"<div style=\"text-align:center;margin-top:20px;\">&#169; {DateTime.Now.Year} {domain}</div></body></html>";
         }
 
-        public void SendEmail(string FromEmail, string ToEmail, string Subject, string Body, AlternateView? alternate = null)
+        public void SendEmailVerificationMessage(string email, string tokenUrl)
         {
-            string userName = configuration["EmailSettings:CustomerServiceEmail"] ?? string.Empty;
-            string password = configuration["EmailSettings:Password"] ?? string.Empty;
-
-            // Use HttpClient approach instead of deprecated ServicePointManager
-            MailMessage m = new MailMessage();
-            SmtpClient sc = new SmtpClient();
-            m.From = new MailAddress(FromEmail);
-            m.To.Add(ToEmail);
-            m.Subject = Subject;
-            m.Body = Body;
-
-            if (alternate != null)
-            {
-                m.AlternateViews.Add(alternate);
-            }
-
-            sc.Host = configuration["EmailSettings:Server"] ?? string.Empty;
             try
             {
-                sc.Port = 8889;
-                sc.Credentials = new System.Net.NetworkCredential(userName, password);
-                sc.UseDefaultCredentials = false;
-                sc.EnableSsl = false;
-                sc.Send(m);
+                var emailSettings = _configuration.GetSection("EmailSettings");
+                var fromEmail = emailSettings["CustomerServiceEmail"];
+                var password = emailSettings["Password"];
+                var server = emailSettings["Server"];
+                var domain = emailSettings["Domain"];
+
+                var subject = "Email Verification";
+                var body = $@"
+                <h2>Verify Your Email</h2>
+                <p>Thank you for registering. Please click the link below to verify your email address:</p>
+                <p><a href='{tokenUrl}'>Verify Email</a></p>
+                <p>If you didn't request this verification, please ignore this email.</p>
+                ";
+
+                SendEmail(fromEmail, password, server, email, subject, body);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // Log exception or handle it appropriately
+                _logger.LogError(ex, "Error sending email verification message");
             }
         }
 
-        #region Email Verification
-        public void SendEmailVerificationMessage(string toEmail, string tokenUrl)
+        public void SendPasswordResetEmail(string email, string tokenUrl)
         {
-            string body = $"Please click the link below to verify your email address to complete your registration for {domain}\n\n{tokenUrl}";
+            try
+            {
+                var emailSettings = _configuration.GetSection("EmailSettings");
+                var fromEmail = emailSettings["CustomerServiceEmail"];
+                var password = emailSettings["Password"];
+                var server = emailSettings["Server"];
+                var domain = emailSettings["Domain"];
 
-            // Construct the alternate body as HTML.                  
-            string HtmlBody = $"<p>Please click the button below to verify your email address to complete your registration for {domain}.</p></br></br><div style=\"text-align:center;\"><a href=\"{tokenUrl}\"><button type=\"button\" style=\"background-color:blue;color:white;border-radius:20px;padding:5px 15px;\">Verify</button></a></div><p>If you cannot click the button, please navigate to the following URL to verify your email address.</p><p>{tokenUrl}</p>";
+                var subject = "Password Reset Request";
+                var body = $@"
+                <h2>Reset Your Password</h2>
+                <p>You requested a password reset. Please click the link below to reset your password:</p>
+                <p><a href='{tokenUrl}'>Reset Password</a></p>
+                <p>If you didn't request a password reset, please ignore this email.</p>
+                ";
 
-            string html = header + HtmlBody + footer;
-            ContentType mimeType = new System.Net.Mime.ContentType("text/html");
-
-            // Add the alternate body to the message.
-            AlternateView alternate = AlternateView.CreateAlternateViewFromString(html, mimeType);
-
-            SendEmail(fromEmail, toEmail ?? string.Empty, "Please Verify Your Email Address", body, alternate);
-        }
-        #endregion
-
-        public bool SendPasswordResetMessage(string EmailAddress, string token)
-        {
-            string baseUrl = configuration["Url"] ?? string.Empty;
-            string tokenUrl = $"{baseUrl}/api/auth/handlepasswordresetemailclick?email={EmailAddress}&token={System.Web.HttpUtility.UrlEncode(token)}";
-            string body = $"Please click the link below to reset your password for {baseUrl}\n\n{tokenUrl}";
-
-            // Construct the alternate body as HTML.                  
-            string HtmlBody = $"<p>Please click the link below to reset your password for digitalcart.biz.</p></br></br><div style=\"text-align:center;\"><a href=\"{tokenUrl}\"><button type=\"button\" style=\"background-color:blue;color:white;border-radius:20px;padding:5px 15px;\">Verify</button></a></div><p>If you cannot click the button, please navigate to the following URL to reset your password.</p><p>{tokenUrl}</p>";
-
-            string html = header + HtmlBody + footer;
-            ContentType mimeType = new System.Net.Mime.ContentType("text/html");
-
-            // Add the alternate body to the message.
-            AlternateView alternate = AlternateView.CreateAlternateViewFromString(html, mimeType);
-
-            SendEmail("customerservice@digitalcart.biz", EmailAddress ?? string.Empty, "digitalcart.biz Password Reset", body, alternate);
-
-            return true;
+                SendEmail(fromEmail, password, server, email, subject, body);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error sending password reset email");
+            }
         }
 
-        public void SendPasswordResetEmail(string toEmail, string tokenUrl)
+        public async Task SendEmailAsync(string toEmail, string subject, string body)
         {
-            string body = $"Please click the link below to reset your password for {domain}\n\n{tokenUrl}";
+            try
+            {
+                var emailSettings = _configuration.GetSection("EmailSettings");
+                var fromEmail = emailSettings["CustomerServiceEmail"];
+                var password = emailSettings["Password"];
+                var server = emailSettings["Server"];
+                var domain = emailSettings["Domain"];
 
-            // Construct the alternate body as HTML.                  
-            string htmlBody = $"<p>You recently requested to reset your password for your account at {domain}.</p>" +
-                             $"<p>Please click the button below to reset your password:</p>" +
-                             $"<div style=\"text-align:center;margin:30px 0;\"><a href=\"{tokenUrl}\">" +
-                             $"<button type=\"button\" style=\"background-color:blue;color:white;border-radius:20px;padding:10px 20px;font-size:16px;\">" +
-                             $"Reset Password</button></a></div>" +
-                             $"<p>If you cannot click the button, please copy and paste the following URL into your browser:</p>" +
-                             $"<p style=\"word-break:break-all;\">{tokenUrl}</p>" +
-                             $"<p>If you did not request a password reset, please ignore this email or contact support if you have concerns.</p>" +
-                             $"<p>This password reset link will expire in 24 hours.</p>";
+                await Task.Run(() => SendEmail(fromEmail, password, server, toEmail, subject, body));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error sending email asynchronously");
+            }
+        }
 
-            string html = header + htmlBody + footer;
-            ContentType mimeType = new System.Net.Mime.ContentType("text/html");
+        private void SendEmail(string fromEmail, string password, string server, string toEmail, string subject, string body)
+        {
+            using (var message = new MailMessage())
+            {
+                message.From = new MailAddress(fromEmail);
+                message.Subject = subject;
+                message.Body = body;
+                message.IsBodyHtml = true;
+                message.To.Add(new MailAddress(toEmail));
 
-            // Add the alternate body to the message.
-            AlternateView alternate = AlternateView.CreateAlternateViewFromString(html, mimeType);
+                using (var client = new SmtpClient(server))
+                {
+                    client.Port = 587;
+                    client.Credentials = new NetworkCredential(fromEmail, password);
+                    client.EnableSsl = true;
 
-            SendEmail(fromEmail, toEmail ?? string.Empty, "Password Reset Request", body, alternate);
+                    client.Send(message);
+                }
+            }
         }
     }
 }

@@ -33,6 +33,7 @@ namespace JwtIdentity.Data
         public DbSet<Answer> Answers { get; set; }
         public DbSet<ChoiceOption> ChoiceOptions { get; set; }
         public DbSet<Feedback> Feedbacks { get; set; }
+        public DbSet<Setting> Settings { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -173,12 +174,22 @@ namespace JwtIdentity.Data
 
                     if (((BaseModel)entityEntry.Entity).CreatedById == 0)
                     {
-                        ClaimsPrincipal user = httpContextAccessor.HttpContext.User;
-
-                        var nameIdentifierClaim = user.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier && int.TryParse(x.Value, out _));
-                        if (nameIdentifierClaim != null && int.TryParse(nameIdentifierClaim.Value, out int userId))
+                        // Add null check for HttpContext to avoid NullReferenceException
+                        if (httpContextAccessor.HttpContext != null)
                         {
-                            ((BaseModel)entityEntry.Entity).CreatedById = userId;
+                            ClaimsPrincipal user = httpContextAccessor.HttpContext.User;
+
+                            var nameIdentifierClaim = user.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier && int.TryParse(x.Value, out _));
+                            if (nameIdentifierClaim != null && int.TryParse(nameIdentifierClaim.Value, out int userId))
+                            {
+                                ((BaseModel)entityEntry.Entity).CreatedById = userId;
+                            }
+                        }
+                        else
+                        {
+                            // When no HttpContext is available (e.g., background services), use a default user (like system user)
+                            // Here we're using the admin user (ID 1) as a fallback
+                            ((BaseModel)entityEntry.Entity).CreatedById = 1;
                         }
                     }
                 }
