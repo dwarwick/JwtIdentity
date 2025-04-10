@@ -1,6 +1,5 @@
 using AutoMapper;
 using JwtIdentity.Common.ViewModels;
-using JwtIdentity.Configurations;
 using JwtIdentity.Data;
 using JwtIdentity.Extensions;
 using JwtIdentity.Models;
@@ -9,7 +8,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using System.Security.Claims;
 
 namespace JwtIdentity.Controllers
@@ -23,9 +21,13 @@ namespace JwtIdentity.Controllers
         private readonly IApiAuthService _authService;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IEmailService _emailService;
-        private readonly FeedbackSettings _feedbackSettings;
         private readonly IConfiguration _configuration;
         private readonly ISettingsService _settingsService;
+
+        // FeedbackSettings keys
+        private const string AdminNotificationEmailsKey = "FeedbackSettings.AdminNotificationEmails";
+        private const string NotificationsSnoozeUntilKey = "FeedbackSettings.NotificationsSnoozeUntil";
+        private const string SettingsCategory = "Feedback";
 
         public FeedbackController(
             ApplicationDbContext context, 
@@ -33,7 +35,6 @@ namespace JwtIdentity.Controllers
             IApiAuthService authService,
             UserManager<ApplicationUser> userManager,
             IEmailService emailService,
-            FeedbackSettings feedbackSettings,
             IConfiguration configuration,
             ISettingsService settingsService)
         {
@@ -42,7 +43,6 @@ namespace JwtIdentity.Controllers
             _authService = authService;
             _userManager = userManager;
             _emailService = emailService;
-            _feedbackSettings = feedbackSettings;
             _configuration = configuration;
             _settingsService = settingsService;
         }
@@ -223,14 +223,14 @@ namespace JwtIdentity.Controllers
             try 
             {
                 // Check if notifications are enabled (not snoozed)
-                if (!await _feedbackSettings.AreNotificationsEnabledAsync())
+                if (!await AreNotificationsEnabledAsync())
                 {
                     // Notifications are snoozed, don't send emails
                     return;
                 }
 
                 // Get admin emails from settings
-                var adminEmails = await _feedbackSettings.GetAdminNotificationEmailsAsync();
+                var adminEmails = await GetAdminNotificationEmailsAsync();
 
                 // Get the AdminEmail setting that was recently added
                 string adminEmail = await _settingsService.GetSettingAsync<string>("AdminEmail", null);
@@ -330,5 +330,35 @@ namespace JwtIdentity.Controllers
         {
             return _context.Feedbacks.Any(e => e.Id == id);
         }
+
+        #region Settings Helper Methods
+        
+        private async Task<List<string>> GetAdminNotificationEmailsAsync()
+        {
+            return await _settingsService.GetSettingAsync(
+                AdminNotificationEmailsKey,
+                new List<string>());
+        }
+
+        private async Task<DateTime?> GetNotificationsSnoozeUntilAsync()
+        {
+            return await _settingsService.GetSettingAsync<DateTime?>(
+                NotificationsSnoozeUntilKey, 
+                null);
+        }
+
+        private async Task<bool> AreNotificationsEnabledAsync()
+        {
+            var snoozeUntil = await GetNotificationsSnoozeUntilAsync();
+            
+            if (!snoozeUntil.HasValue)
+            {
+                return true; // No snooze time set, so notifications are enabled
+            }
+
+            return DateTime.Now > snoozeUntil.Value;
+        }
+        
+        #endregion
     }
 }

@@ -268,15 +268,6 @@ namespace JwtIdentity.Controllers
             }
         }
 
-        // GET api/settings/migrate
-        [HttpGet("migrate")]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> MigrateSettings([FromServices] SettingsMigrationService migrationService)
-        {
-            await migrationService.MigrateAllSettingsAsync();
-            return Ok("Settings migration triggered. Please check logs for details.");
-        }
-
         // GET api/settings/seed
         [HttpGet("seed")]
         [Authorize(Roles = "Admin")]

@@ -36,11 +36,8 @@ builder.Configuration
 // Bind "AppSettings" section to the AppSettings class
 builder.Services.Configure<AppSettings>(builder.Configuration);
 
-// Register FeedbackSettings
-builder.Services.Configure<FeedbackSettings>(builder.Configuration.GetSection("FeedbackSettings"));
+// Register Settings service
 builder.Services.AddScoped<ISettingsService, SettingsService>();
-builder.Services.AddScoped<FeedbackSettings>();
-builder.Services.AddScoped<SettingsMigrationService>();
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
@@ -219,7 +216,7 @@ app.MapRazorComponents<App>()
     .AddInteractiveWebAssemblyRenderMode()
     .AddAdditionalAssemblies(typeof(JwtIdentity.Client._Imports).Assembly);
 
-// Apply database migrations and seed initial settings at startup
+// Apply database migrations at startup
 using (var scope = app.Services.CreateScope())
 {
     var serviceProvider = scope.ServiceProvider;
@@ -229,10 +226,6 @@ using (var scope = app.Services.CreateScope())
         // Run database migrations
         var dbContext = serviceProvider.GetRequiredService<ApplicationDbContext>();
         dbContext.Database.Migrate();
-        
-        // Migrate settings from appsettings.json to database
-        var settingsMigration = serviceProvider.GetRequiredService<SettingsMigrationService>();
-        await settingsMigration.MigrateAllSettingsAsync();
     }
     catch (Exception ex)
     {
