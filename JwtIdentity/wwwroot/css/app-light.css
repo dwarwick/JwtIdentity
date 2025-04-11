@@ -13,6 +13,19 @@
     --disabledTextBoxBackgroundColor: #4a5a6a;
     --disabledTextBoxForegroundColor: #ff0000;
     --enabledTextBoxBackgroundColorFocused: #010150;
+    
+    /* Survey-specific colors for light mode */
+    --survey-container-bg: #ffffff;
+    --survey-container-shadow: rgba(0, 0, 0, 0.1);
+    --survey-title-color: #1b6ec2;
+    --survey-title-border: #1b6ec2;
+    --survey-question-bg: #f7f9fc;
+    --survey-question-border: #1b6ec2;
+    --survey-question-hover-shadow: rgba(0, 0, 0, 0.15);
+    --survey-question-number-color: #1b6ec2;
+    --survey-submit-btn-bg: #1b6ec2;
+    --survey-submit-btn-color: #ffffff;
+    --survey-submit-hover-bg: #155ba0;
 }
 
 html, body {

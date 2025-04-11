@@ -1,6 +1,19 @@
 ﻿:root {
     --mud-palette-appbar-background: var(--mud-palette-background) !important;
-    }
+    
+    /* Survey-specific colors for dark mode */
+    --survey-container-bg: #1e1e2d;
+    --survey-container-shadow: rgba(0, 0, 0, 0.25);
+    --survey-title-color: #7e9bff;
+    --survey-title-border: #5472ea;
+    --survey-question-bg: #2d2d3d;
+    --survey-question-border: #5472ea;
+    --survey-question-hover-shadow: rgba(84, 114, 234, 0.3);
+    --survey-question-number-color: #7e9bff;
+    --survey-submit-btn-bg: #5472ea;
+    --survey-submit-btn-color: #ffffff;
+    --survey-submit-hover-bg: #4361d6;
+}
 
 /*:root {
     --bodyBackgroundColor: #160F1E;
