@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using System.Linq;
 using JwtIdentity.Client.Pages.Admin.Dialogs;
+using JwtIdentity.Client.Helpers;
+using Syncfusion.Blazor.Grids;
 
 namespace JwtIdentity.Client.Pages.Admin
 {
@@ -18,6 +20,9 @@ namespace JwtIdentity.Client.Pages.Admin
         protected string _searchString = "";
         protected string _statusFilter = "all";
         protected string _typeFilter = "all";
+        
+        // Syncfusion Grid properties
+        protected int FrozenColumns { get; set; } = 1;
 
         protected override async Task OnInitializedAsync()
         {

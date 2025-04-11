@@ -144,7 +144,7 @@ namespace JwtIdentity.Controllers
             bool statusChanged = isAdmin && feedback.IsResolved != feedbackViewModel.IsResolved;
 
             // Only allow admins to set admin responses or mark as resolved
-            if (!isAdmin)
+            if (!isAdmin && adminResponseChanged)
             {
                 feedbackViewModel.AdminResponse = feedback.AdminResponse;
                 feedbackViewModel.IsResolved = feedback.IsResolved;
@@ -184,7 +184,7 @@ namespace JwtIdentity.Controllers
                 }
             }
 
-            return NoContent();
+            return Ok(feedbackViewModel);
         }
 
         // DELETE: api/Feedback/5
