@@ -8,79 +8,118 @@
 
     <MudGrid>
         <MudItem xs="12">
-            <MudPaper Class="pa-4">
-                <MudDataGrid T="FeedbackViewModel" Items="@FeedbackItems" 
-                             Filterable="true"
-                             SortMode="SortMode.Multiple"
-                             Hideable="true"
-                             Loading="@_loading">
-                    <ToolBarContent>
-                        <MudText Typo="Typo.h6">Feedback</MudText>
-                        <MudSpacer />
-                        <MudTextField @bind-Value="@_searchString" Placeholder="Search" 
+            @if (_loading)
+            {
+                <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+                <MudText Class="ml-2">Loading feedback...</MudText>
+            }
+            else
+            {
+                <MudPaper Class="pa-4">
+                    <!-- Filters above the grid -->
+                    <MudGrid>
+                        <MudItem xs="12" md="4">
+                            <MudTextField @bind-Value="@_searchString" Placeholder="Search" 
                                      Adornment="Adornment.Start" 
                                      AdornmentIcon="@Icons.Material.Filled.Search" 
-                                     IconSize="MudBlazor.Size.Medium" 
-                                     Class="mt-0"></MudTextField>
-                                     
-                        <MudSelect T="string" Label="Status Filter" Value="@_statusFilter" ValueChanged="@(value => FilterByStatus(value))" Class="ml-2">
-                            <MudSelectItem Value="@("all")">All</MudSelectItem>
-                            <MudSelectItem Value="@("resolved")">Resolved</MudSelectItem>
-                            <MudSelectItem Value="@("unresolved")">Unresolved</MudSelectItem>
-                        </MudSelect>
-                        
-                        <MudSelect T="string" Label="Type Filter" Value="@_typeFilter" ValueChanged="@(value => FilterByType(value))" Class="ml-2">
-                            <MudSelectItem Value="@("all")">All Types</MudSelectItem>
-                            <MudSelectItem Value="@(FeedbackType.Problem.ToString())">Problem/Complaint</MudSelectItem>
-                            <MudSelectItem Value="@(FeedbackType.FeatureRequest.ToString())">Feature Request</MudSelectItem>
-                            <MudSelectItem Value="@(FeedbackType.GeneralFeedback.ToString())">General Feedback</MudSelectItem>
-                        </MudSelect>
-                    </ToolBarContent>
-                    <Columns>
-                        <PropertyColumn Property="x => x.Id" Title="ID" Sortable="true" />
-                        <PropertyColumn Property="x => x.Title" Title="Title" Sortable="true" />
-                        <PropertyColumn Property="x => x.Type" Title="Type" Sortable="true">
-                            <CellTemplate>
-                                <MudChip T="string" Color="@(GetColorForFeedbackType(context.Item.Type))" Size="MudBlazor.Size.Small">@context.Item.Type</MudChip>
-                            </CellTemplate>
-                        </PropertyColumn>
-                        <TemplateColumn Title="Description" Sortable="false">
-                            <CellTemplate>
-                                <MudText>@(context.Item.Description?.Length > 50 ? context.Item.Description.Substring(0, 47) + "..." : context.Item.Description)</MudText>
-                            </CellTemplate>
-                        </TemplateColumn>
-                        <PropertyColumn Property="x => x.Email" Title="Email" Sortable="true" />
-                        <PropertyColumn Property="x => x.CreatedDate" Title="Date" Sortable="true" Format="yyyy-MM-dd HH:mm" />
-                        <PropertyColumn Property="x => x.IsResolved" Title="Status" Sortable="true">
-                            <CellTemplate>
-                                <MudChip T="string" Color="@(context.Item.IsResolved ? Color.Success : Color.Warning)">
-                                    @(context.Item.IsResolved ? "Resolved" : "Pending")
-                                </MudChip>
-                            </CellTemplate>
-                        </PropertyColumn>
-                        <TemplateColumn Title="Actions">
-                            <CellTemplate>
-                                <MudButton Variant="Variant.Filled" 
-                                           Color="Color.Primary" 
-                                           Size="MudBlazor.Size.Small"
-                                           OnClick="@(() => OpenFeedbackDialog(context.Item))">
-                                    View Details
-                                </MudButton>
-                                <MudButton Variant="Variant.Filled" 
-                                           Color="@(context.Item.IsResolved ? Color.Warning : Color.Success)" 
-                                           Size="MudBlazor.Size.Small"
-                                           Class="ml-2"
-                                           OnClick="@(() => ToggleResolvedStatus(context.Item))">
-                                    @(context.Item.IsResolved ? "Mark Unresolved" : "Mark Resolved")
-                                </MudButton>
-                            </CellTemplate>
-                        </TemplateColumn>
-                    </Columns>
-                    <PagerContent>
-                        <MudDataGridPager T="FeedbackViewModel" />
-                    </PagerContent>
-                </MudDataGrid>
-            </MudPaper>
+                                     IconSize="MudBlazor.Size.Medium"
+                                     Immediate="true"
+                                     OnKeyDown="@(e => { if (e.Key == "Enter") ApplyFilters(); })"
+                                     Class="mb-3"></MudTextField>
+                        </MudItem>
+                        <MudItem xs="12" md="3">                
+                            <MudSelect T="string" Label="Status Filter" Value="@_statusFilter" ValueChanged="@(value => FilterByStatus(value))" Class="mb-3">
+                                <MudSelectItem Value="@("all")">All</MudSelectItem>
+                                <MudSelectItem Value="@("resolved")">Resolved</MudSelectItem>
+                                <MudSelectItem Value="@("unresolved")">Unresolved</MudSelectItem>
+                            </MudSelect>
+                        </MudItem>
+                        <MudItem xs="12" md="3">
+                            <MudSelect T="string" Label="Type Filter" Value="@_typeFilter" ValueChanged="@(value => FilterByType(value))" Class="mb-3">
+                                <MudSelectItem Value="@("all")">All Types</MudSelectItem>
+                                <MudSelectItem Value="@(FeedbackType.Problem.ToString())">Problem/Complaint</MudSelectItem>
+                                <MudSelectItem Value="@(FeedbackType.FeatureRequest.ToString())">Feature Request</MudSelectItem>
+                                <MudSelectItem Value="@(FeedbackType.GeneralFeedback.ToString())">General Feedback</MudSelectItem>
+                            </MudSelect>
+                        </MudItem>
+                        <MudItem xs="12" md="2" Class="d-flex align-center justify-end">
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => ApplyFilters())" Class="mb-3">
+                                Apply Filters
+                            </MudButton>
+                        </MudItem>
+                    </MudGrid>
+
+                    <!-- Syncfusion Grid -->
+                    <SfGrid DataSource="@FeedbackItems" AllowPaging="true" AllowSorting="true" AllowFiltering="true" AllowResizing="true" FrozenColumns="@FrozenColumns" AllowTextWrap="true" TextWrapSettings="@GridSettings.TextWrapSettings" GridLines="@GridSettings.GridLines">
+                        <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel"></GridFilterSettings>
+                        <GridColumns>
+                            <GridColumn HeaderText="Actions" Width="250" AutoFit="true" AllowResizing="false" AllowReordering="false">
+                                <Template Context="feedbackContext">
+                                    @{
+                                        var feedback = feedbackContext as FeedbackViewModel;
+                                        if (feedback != null)
+                                        {
+                                            <MudStack Row="true" Spacing="1">
+                                                <MudButton Variant="Variant.Filled" 
+                                                          Color="Color.Primary" 
+                                                          Size="MudBlazor.Size.Small"
+                                                          OnClick="@(() => OpenFeedbackDialog(feedback))">
+                                                    View Details
+                                                </MudButton>
+                                                <MudButton Variant="Variant.Filled" 
+                                                          Color="@(feedback.IsResolved ? Color.Warning : Color.Success)" 
+                                                          Size="MudBlazor.Size.Small"
+                                                          OnClick="@(() => ToggleResolvedStatus(feedback))">
+                                                    @(feedback.IsResolved ? "Mark Unresolved" : "Mark Resolved")
+                                                </MudButton>
+                                            </MudStack>
+                                        }
+                                    }
+                                </Template>
+                            </GridColumn>
+                            <GridColumn Field="Id" HeaderText="ID" Width="70" TextAlign="TextAlign.Right" />
+                            <GridColumn Field="Title" HeaderText="Title" Width="200" />
+                            <GridColumn Field="Type" HeaderText="Type" Width="140">
+                                <Template Context="feedbackContext">
+                                    @{
+                                        var feedback = feedbackContext as FeedbackViewModel;
+                                        if (feedback != null)
+                                        {
+                                            <MudChip T="string" Color="@(GetColorForFeedbackType(feedback.Type))" Size="MudBlazor.Size.Small">@(feedback.Type)</MudChip>
+                                        }
+                                    }
+                                </Template>
+                            </GridColumn>
+                            <GridColumn Field="Description" HeaderText="Description" Width="350">
+                                <Template Context="feedbackContext">
+                                    @{
+                                        var feedback = feedbackContext as FeedbackViewModel;
+                                        if (feedback != null)
+                                        {
+                                            <MudText>@(feedback.Description?.Length > 50 ? feedback.Description.Substring(0, 47) + "..." : feedback.Description)</MudText>
+                                        }
+                                    }
+                                </Template>
+                            </GridColumn>
+                            <GridColumn Field="Email" HeaderText="Email" Width="200" />
+                            <GridColumn Field="CreatedDate" HeaderText="Date" Width="160" Type="ColumnType.Date" Format="yyyy-MM-dd HH:mm" />
+                            <GridColumn Field="IsResolved" HeaderText="Status" Width="120">
+                                <Template Context="feedbackContext">
+                                    @{
+                                        var feedback = feedbackContext as FeedbackViewModel;
+                                        if (feedback != null)
+                                        {
+                                            <MudChip T="string" Color="@(feedback.IsResolved ? Color.Success : Color.Warning)">
+                                                @(feedback.IsResolved ? "Resolved" : "Pending")
+                                            </MudChip>
+                                        }
+                                    }
+                                </Template>
+                            </GridColumn>
+                        </GridColumns>
+                    </SfGrid>
+                </MudPaper>
+            }
         </MudItem>
     </MudGrid>
 </MudContainer>
