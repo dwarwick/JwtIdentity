@@ -1,5 +1,5 @@
 :root {
-    --mud-palette-appbar-background: rgb(13 6 76) !important;
+    --mud-palette-appbar-background: rgb(22 22 24) !important;
 }
 
 /* Add these styles to control scrollbar behavior */
@@ -338,7 +338,7 @@ svg.mud-icon-root.mud-svg-icon.mud-icon-size-medium.drag-icon.ai-style-change-9 
 /* Responsive styles for survey */
 @media (max-width: 600px) {
     .survey-container {
-        padding: 1.5rem 1rem;
+        padding: 1.6rem 1rem;
     }
     
     .question-container {
@@ -351,3 +351,13 @@ svg.mud-icon-root.mud-svg-icon.mud-icon-size-medium.drag-icon.ai-style-change-9 
     }
 }
 
+ /* Dark mode adjustments */
+ @media (prefers-color-scheme: dark) {
+    .survey-action-button:not(.disabled) {
+        box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+    
+    .survey-action-button:not(.disabled):hover {
+        box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+    }
+}

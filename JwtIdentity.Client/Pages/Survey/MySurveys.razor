@@ -2,6 +2,95 @@
 @namespace JwtIdentity.Client.Pages.Survey
 @inherits MySurveysModel
 @attribute [Authorize(Policy = Permissions.CreateSurvey)]
+
+<style>
+    /* Grid button styling */
+    .survey-action-button {
+        margin: 4px;
+        min-width: 80px;
+        height: 32px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        letter-spacing: 0.02em;
+        padding: 4px 10px;
+        border-radius: 4px;
+        transition: all 0.2s ease-in-out;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.12);
+    }
+
+    /* Button hover effects */
+    .survey-action-button:not(.disabled):hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+
+    /* Style for disabled buttons */
+    .survey-action-button.disabled {
+        opacity: 0.65;
+        cursor: not-allowed;
+        box-shadow: none !important;
+        transform: none !important;
+    }
+
+    /* Facebook share button */
+    .fb-share-button {
+        height: 32px;
+        margin: 4px;
+        padding: 4px 10px;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        transition: all 0.2s ease-in-out;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    .fb-share-button:not(.disabled):hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.25);
+    }
+    
+    .fb-share-button.disabled {
+        opacity: 0.65;
+        cursor: not-allowed;
+        box-shadow: none !important;
+        transform: none !important;
+    }
+    
+    /* Specific button colors */
+    .preview-button {
+        background-color: var(--mud-palette-success) !important;
+        color: var(--mud-palette-success-text) !important;
+    }
+    
+    .copy-button {
+        background-color: var(--mud-palette-info) !important;
+        color: var(--mud-palette-info-text) !important;
+    }
+    
+    .edit-button {
+        background-color: var(--mud-palette-warning) !important;
+        color: var(--mud-palette-warning-text) !important;
+    }
+    
+    .charts-button {
+        background-color: var(--mud-palette-tertiary) !important;
+        color: var(--mud-palette-tertiary-text) !important;
+    }
+    
+    .grid-button {
+        background-color: var(--mud-palette-secondary) !important;
+        color: var(--mud-palette-secondary-text) !important;
+    }
+
+    /* Action buttons container */
+    .action-buttons-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+        align-items: center;
+    }   
+</style>
+
 <h3>My Surveys</h3>
 
 <SfGrid DataSource="@UserSurveys" AllowPaging="true" AllowSorting="true" AllowFiltering="true"  AllowResizing="true" FrozenColumns="@FrozenColumns" AllowTextWrap="true" TextWrapSettings="@GridSettings.TextWrapSettings" GridLines="@GridSettings.GridLines" >
@@ -9,31 +98,56 @@
     <GridColumns>
         <GridColumn HeaderText="Actions" AutoFit="true"  AllowResizing="false" AllowReordering="false">
             <Template>
-                <MudStack Spacing="2" Row="true" Class="py-1" >
-
+                <div class="action-buttons-container">
                 @{
                     var guid = (context as SurveyViewModel).Guid;
+                    var isPublished = (context as SurveyViewModel).Published;
 
-                    <MudButton Class="mysurvey_buttons" Href=@($"survey/{guid}?Preview=true") Target="_blank" title="Preview Survey" Color="Color.Success" Variant="Variant.Filled">Preview</MudButton>
-                    <MudButton Class=@($"mysurvey_buttons copy_button {ShareButtonDisabled((context as SurveyViewModel).Published, false)}") Variant="Variant.Filled" Color="Color.Primary" OnClick="@(async () => await CopySurveyLinkAsync(guid))" title="@(GetTitleText((context as SurveyViewModel).Published))">Copy Link</MudButton>
-                }
+                    <MudButton Class="survey-action-button preview-button" 
+                              Href=@($"survey/{guid}?Preview=true") 
+                              Target="_blank" 
+                              title="Preview Survey" 
+                              Variant="Variant.Filled">
+                        <MudIcon Icon="@Icons.Material.Filled.Visibility" Class="mr-1" Size="MudBlazor.Size.Small" /> Preview
+                    </MudButton>
+                    
+                    <MudButton Class=@($"survey-action-button copy-button {ShareButtonDisabled(isPublished, false)}") 
+                              Variant="Variant.Filled" 
+                              OnClick="@(async () => await CopySurveyLinkAsync(guid))" 
+                              title="@(GetTitleText(isPublished))">
+                        <MudIcon Icon="@Icons.Material.Filled.ContentCopy" Class="mr-1" Size="MudBlazor.Size.Small" /> Copy Link
+                    </MudButton>
 
-                    <div class=@($"fb-share-button d-flex {ShareButtonDisabled((context as SurveyViewModel).Published, false)}")
+                    <div class=@($"fb-share-button d-flex {ShareButtonDisabled(isPublished, false)}")
                          data-href=@($"https://www.davidtest.xyz/survey/{guid}")
                          data-layout="button_count"
                          data-size="small"
-                         @onclick="@(() => HandleShareClick(guid, (context as SurveyViewModel).Published))">
-
+                         @onclick="@(() => HandleShareClick(guid, isPublished))">
                         <div class="fb-xfbml-parse-ignore mud-palette-white">Share</div>
                         <svg viewBox="0 0 12 12" preserveAspectRatio="xMidYMid meet">
                             <path class="svg-icon-path" d="M9.1,0.1V2H8C7.6,2,7.3,2.1,7.1,2.3C7,2.4,6.9,2.7,6.9,3v1.4H9L8.8,6.5H6.9V12H4.7V6.5H2.9V4.4h1.8V2.8 c0-0.9,0.3-1.6,0.7-2.1C6,0.2,6.6,0,7.5,0C8.2,0,8.7,0,9.1,0.1z"></path>
                         </svg>
                     </div>
 
-                    <MudButton Class=@($"mysurvey_buttons edit_button {ShareButtonDisabled((context as SurveyViewModel).Published, true)}") Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => AddEditQuestions((context as SurveyViewModel).Guid, (context as SurveyViewModel).Published))">Edit</MudButton>
-                    <MudButton Class=@($"mysurvey_buttons charts_button {ShareButtonDisabled((context as SurveyViewModel).Published, false)}") Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => ViewCharts((context as SurveyViewModel).Guid, (context as SurveyViewModel).Published))">Charts</MudButton>
-                    <MudButton Class=@($"mysurvey_buttons grid_button {ShareButtonDisabled((context as SurveyViewModel).Published, false)}") Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => ViewGrid((context as SurveyViewModel).Guid, (context as SurveyViewModel).Published))">Grid</MudButton>
-                </MudStack>
+                    <MudButton Class=@($"survey-action-button edit-button {ShareButtonDisabled(isPublished, true)}") 
+                              Variant="Variant.Filled" 
+                              OnClick="@(() => AddEditQuestions(guid, isPublished))">
+                        <MudIcon Icon="@Icons.Material.Filled.Edit" Class="mr-1" Size="MudBlazor.Size.Small" /> Edit
+                    </MudButton>
+                    
+                    <MudButton Class=@($"survey-action-button charts-button {ShareButtonDisabled(isPublished, false)}") 
+                              Variant="Variant.Filled" 
+                              OnClick="@(() => ViewCharts(guid, isPublished))">
+                        <MudIcon Icon="@Icons.Material.Filled.BarChart" Class="mr-1" Size="MudBlazor.Size.Small" /> Charts
+                    </MudButton>
+                    
+                    <MudButton Class=@($"survey-action-button grid-button {ShareButtonDisabled(isPublished, false)}") 
+                              Variant="Variant.Filled" 
+                              OnClick="@(() => ViewGrid(guid, isPublished))">
+                        <MudIcon Icon="@Icons.Material.Filled.TableChart" Class="mr-1" Size="MudBlazor.Size.Small" /> Grid
+                    </MudButton>
+                }
+                </div>
             </Template>
         </GridColumn>
         <GridColumn Field="Title" HeaderText="Title" Width="200" />

@@ -1,5 +1,6 @@
 ﻿@import url('open-iconic/font/css/open-iconic-bootstrap.min.css');
 :root {
+    --mud-palette-background: rgb(149,146,146) !important;
     --bodyBackgroundColor: #160F1E;
     --textColor: #F0F8FF;
     --textBoxBackgroundColor: #021630;
@@ -13,7 +14,6 @@
     --disabledTextBoxBackgroundColor: #4a5a6a;
     --disabledTextBoxForegroundColor: #ff0000;
     --enabledTextBoxBackgroundColorFocused: #010150;
-    
     /* Survey-specific colors for light mode */
     --survey-container-bg: #ffffff;
     --survey-container-shadow: rgba(0, 0, 0, 0.1);
