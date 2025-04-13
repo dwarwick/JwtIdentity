@@ -2,6 +2,8 @@
 @inherits ManageRolePermissionsModel
 @attribute [Authorize(Policy = Permissions.ManageUsers)]
 
+<PageTitle>Survey Shark - Manage Role Permissions</PageTitle>
+
 @if (applicationRoleViewModels != null)
 {
         <MudCard>

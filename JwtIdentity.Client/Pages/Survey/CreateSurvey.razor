@@ -2,6 +2,9 @@
 @namespace JwtIdentity.Client.Pages.Survey
 @inherits CreateSurveyModel
 @attribute [Authorize(Policy = Permissions.CreateSurvey)]
+
+<PageTitle>Survey Shark - Create Survey</PageTitle>
+
 <h3>Create Survey</h3>
 
 <EditForm Model="@Survey" OnValidSubmit="@CreateSurvey">

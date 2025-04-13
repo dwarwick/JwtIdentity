@@ -1,4 +1,5 @@
 using Blazored.LocalStorage;
+using JwtIdentity.Client.Helpers;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
@@ -23,7 +24,8 @@ builder.Services.AddSyncfusionBlazor();
 builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddAuthorizationCore();
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>(); // if using a custom provider
-builder.Services.AddScoped<CustomAuthStateProvider>(); // Add this line
+builder.Services.AddScoped<CustomAuthStateProvider>();
+builder.Services.AddScoped<IUtility, Utility>();
 builder.Services.AddCascadingAuthenticationState();
 
 builder.Services.AddAuthorizationCore(options =>

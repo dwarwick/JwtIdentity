@@ -3,6 +3,8 @@
 @inherits CreateQuestionsModel
 @attribute [Authorize(Policy = Permissions.CreateSurvey)]
 
+<PageTitle>Survey Shark - Create Questions</PageTitle>
+
 <MudStack Row="true" Justify="Justify.SpaceBetween">
     <MudText Typo="Typo.h4">Create Questions</MudText>
     <MudButton Class="mt-1" ButtonType="ButtonType.Button" Variant="Variant.Filled" Color="Color.Primary" OnClick="PublishSurvey" Disabled="@(Survey.Published)">Publish Survey</MudButton>
