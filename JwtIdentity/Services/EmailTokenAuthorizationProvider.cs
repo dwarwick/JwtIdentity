@@ -9,7 +9,7 @@ namespace JwtIdentity.Services
             IDataProtectionProvider dataProtectionProvider,
             IOptions<DataProtectionTokenProviderOptions> options,
             ILogger<EmailTokenAuthorizationProvider<TUser>> logger)
-            : base(dataProtectionProvider, options, logger)
+            : base(dataProtectionProvider.CreateProtector("EmailTokenAuthorizationProvider"), options, logger)
         {
         }
     }

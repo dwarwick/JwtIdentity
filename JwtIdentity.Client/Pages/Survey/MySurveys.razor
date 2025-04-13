@@ -121,7 +121,7 @@
                     </MudButton>
 
                     <div class=@($"fb-share-button d-flex {ShareButtonDisabled(isPublished, false)}")
-                         data-href=@($"https://www.davidtest.xyz/survey/{guid}")
+                         data-href=@($"https://{Utility.Domain}/survey/{guid}")
                          data-layout="button_count"
                          data-size="small"
                          @onclick="@(() => HandleShareClick(guid, isPublished))">

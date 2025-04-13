@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.OData;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models; // Add this using statement
@@ -140,11 +141,12 @@ builder.Services.AddControllers(options =>
 {
     opts.JsonSerializerOptions.Converters.Add(new AnswerViewModelConverter());
     opts.JsonSerializerOptions.Converters.Add(new QuestionViewModelConverter());
+    opts.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
 }).AddOData(options =>
 {
     _ = options.Select().Filter().OrderBy().Count().Expand().SetMaxTop(null);
     _ = options.AddRouteComponents("odata", EdmModelBuilder.GetEdmModel());
-});
+    });
 
 // add an AllowAll Cors policy
 builder.Services.AddCors(options =>
@@ -156,6 +158,18 @@ builder.Services.AddCors(options =>
                    .AllowAnyMethod()
                    .AllowAnyHeader();
         });
+});
+
+// Add Data Protection services with a persistent key ring
+builder.Services.AddDataProtection()
+    .PersistKeysToFileSystem(new DirectoryInfo(Path.Combine(AppContext.BaseDirectory, "KeyRing")))
+    .SetApplicationName("SurveyShark")
+    .SetDefaultKeyLifetime(TimeSpan.FromDays(90));
+
+// Ensure Antiforgery is configured
+builder.Services.AddAntiforgery(options =>
+{
+    options.HeaderName = "X-CSRF-TOKEN";
 });
 
 // Uncommenting the cyclical reference handling
@@ -219,7 +233,7 @@ app.MapRazorComponents<App>()
 using (var scope = app.Services.CreateScope())
 {
     var serviceProvider = scope.ServiceProvider;
-    
+
     try
     {
         // Run database migrations

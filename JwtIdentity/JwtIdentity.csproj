@@ -4,6 +4,7 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>disable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <Browser>chrome</Browser>
   </PropertyGroup>
 
   <ItemGroup>

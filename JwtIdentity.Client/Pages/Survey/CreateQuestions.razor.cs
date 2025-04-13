@@ -307,6 +307,14 @@ namespace JwtIdentity.Client.Pages.Survey
             }
         }
 
+        protected void HandleSelectedQuestionType(string questionType)
+        {
+            SelectedQuestionType = questionType;
+            QuestionText = null;
+            MultipleChoiceQuestion = new MultipleChoiceQuestionViewModel();
+            ResetQuestions = true;
+        }
+
         protected void QuestionSelected(QuestionViewModel input)
         {
             if (input == null)
@@ -397,21 +405,47 @@ namespace JwtIdentity.Client.Pages.Survey
 
         private async Task<bool> UpdateSurvey()
         {
-            var response = await ApiService.PostAsync(ApiEndpoints.Survey, Survey);
-            if (response != null && response.Id > 0)
+            try
             {
-                await LoadData();
-
-                if (ResetQuestions)
+                // To avoid potential circular references and excessive payload size,
+                // consider using a simplified DTO for update requests
+                var simplifiedSurvey = new SurveyViewModel
                 {
-                    QuestionText = null;
-                    MultipleChoiceQuestion.Options.Clear();
-                }
+                    Id = Survey.Id,
+                    Title = Survey.Title,
+                    Description = Survey.Description,
+                    Published = Survey.Published,
+                    CreatedById = Survey.CreatedById,
+                    CreatedDate = Survey.CreatedDate,
+                    Questions = Survey.Questions
+                };
 
-                return true;
+                var response = await ApiService.PostAsync(ApiEndpoints.Survey, simplifiedSurvey);
+                if (response != null && response.Id > 0)
+                {
+                    await LoadData();
+
+                    if (ResetQuestions)
+                    {
+                        QuestionText = null;
+                        MultipleChoiceQuestion = new MultipleChoiceQuestionViewModel();
+                    }
+
+                    return true;
+                }
+                else
+                {
+                    Console.Error.WriteLine("API returned null or invalid response");
+                    return false;
+                }
             }
-            else
+            catch (Exception ex)
             {
+                Console.Error.WriteLine($"Error updating survey: {ex.Message}");
+                if (ex.InnerException != null)
+                {
+                    Console.Error.WriteLine($"Inner exception: {ex.InnerException.Message}");
+                }
                 return false;
             }
         }

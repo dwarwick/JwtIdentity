@@ -67,7 +67,7 @@
             }
 
             // Construct the URL
-            string url = $"https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fwww.davidtest.xyz%2Fsurvey%2F{guid}&amp;src=sdkpreparse";
+            string url = $"https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2F{Utility.Domain}%2Fsurvey%2F{guid}&amp;src=sdkpreparse";
 
             // Open the URL in a new tab
             await JSRuntime.InvokeVoidAsync("open", url, "_blank");
