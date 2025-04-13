@@ -42,6 +42,13 @@
     <Content Remove="wwwroot\js\.editorconfig" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="Ads.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+ 
   <Target Name="ExcludeLogsFolder" AfterTargets="CollectFilesToPublish">
     <ItemGroup>
       <FileToPublish Remove="@(FileToPublish)" Condition="%(FileToPublish.RelativePath.StartsWith('logs\'))" />

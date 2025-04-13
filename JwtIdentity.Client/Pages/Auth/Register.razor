@@ -2,6 +2,8 @@
 @page "/register/{id}"
 @inherits RegisterModel
 
+<PageTitle>Survey Shark - Registration</PageTitle>
+
 <EditForm Model="registerModel" OnValidSubmit="HandleRegister">
     <MudTextField @bind-Value="@registerModel.Email" Label="Email" InputType="InputType.Email" />
     <MudTextField @bind-Value="@registerModel.Password" Label="Password" InputType="InputType.Password" />
