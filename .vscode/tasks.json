@@ -1,31 +1,207 @@
 {
     "version": "2.0.0",
-    "tasks": [      
-      {
-        "label": "build",
-        "command": "dotnet",
-        "type": "process",
-        "args": [
-          "build",
-          "${workspaceFolder}/JwtIdentity/JwtIdentity.csproj"
-        ],
-        "problemMatcher": "$msCompile",
-        "group": {
-          "kind": "build",
-          "isDefault": true
+    "tasks": [
+        {
+            "label": "build",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/JwtIdentity/JwtIdentity.csproj"
+            ],
+            "problemMatcher": "$msCompile",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "reveal": "always"
+            },
+            "options": {
+                "env": {
+                    "DOTNET_CLI_TELEMETRY_OPTOUT": "1"
+                }
+            }
+        },
+        {
+            "label": "open-chrome",
+            "type": "shell",
+            "command": "start chrome https://localhost:5001",
+            "windows": {
+                "command": "start chrome https://localhost:5001"
+            },
+            "presentation": {
+                "reveal": "never"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "launch-and-open-chrome",
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "launch-https-server",
+                "wait-and-open-chrome"
+            ],
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "launch-https-server",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "run",
+                "--project",
+                "${workspaceFolder}/JwtIdentity/JwtIdentity.csproj",
+                "--launch-profile",
+                "https"
+            ],
+            "isBackground": true,
+            "problemMatcher": {
+                "pattern": {
+                    "regexp": "^.*$"
+                },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": ".",
+                    "endsPattern": "Now listening on:"
+                }
+            }
+        },
+        {
+            "label": "wait-and-open-chrome",
+            "type": "shell",
+            "command": "timeout /t 3 && start chrome https://localhost:5001",
+            "windows": {
+                "command": "timeout /t 3 && start chrome https://localhost:5001"
+            }
+        },
+        {
+            "label": "run-and-wait-for-server",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-Command",
+                "Start-Sleep -Seconds 1; start chrome https://localhost:5001"
+            ],
+            "presentation": {
+                "reveal": "silent"
+            },
+            "isBackground": true,
+            "problemMatcher": {
+                "pattern": {
+                    "regexp": "^.*$"
+                },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": "^.*$",
+                    "endsPattern": "^.*$"
+                }
+            }
+        },
+        {
+            "label": "build-solution",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/JwtIdentity.sln",
+                "/p:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary"
+            ],
+            "problemMatcher": "$msCompile",
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "clear": true,
+                "echo": true,
+                "focus": false,
+                "showReuseMessage": false
+            },
+            "options": {
+                "env": {
+                    "DOTNET_CLI_TELEMETRY_OPTOUT": "1"
+                }
+            }
+        },
+        {
+            "label": "build-and-launch-blazor",
+            "dependsOn": [
+                "build-solution"
+            ],
+            "dependsOrder": "sequence",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            },
+            "group": {
+                "kind": "test",
+                "isDefault": false
+            }
+        },
+        {
+            "label": "build-and-wait",
+            "type": "shell",
+            "command": "dotnet",
+            "args": [
+                "build",
+                "${workspaceFolder}/JwtIdentity.sln",
+                "/p:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary"
+            ],
+            "problemMatcher": "$msCompile",
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "clear": true
+            },
+            "options": {
+                "env": {
+                    "DOTNET_CLI_TELEMETRY_OPTOUT": "1"
+                }
+            }
+        },
+        {
+            "label": "build-and-verify",
+            "type": "shell",
+            "windows": {
+                "command": "powershell.exe",
+                "args": [
+                    "-NoProfile",
+                    "-ExecutionPolicy", "Bypass",
+                    "-Command", "& { dotnet build \"${workspaceFolder}/JwtIdentity.sln\" /p:GenerateFullPaths=true /consoleloggerparameters:NoSummary; if ($LASTEXITCODE -eq 0) { Write-Host \"Build completed successfully.\" } else { Write-Host \"Build failed with exit code $LASTEXITCODE\"; exit 1 } }"
+                ]
+            },
+            "problemMatcher": "$msCompile",
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "clear": true
+            }
+        },
+        {
+            "label": "kill-debugger-and-build",
+            "type": "shell",
+            "windows": {
+                "command": "powershell.exe",
+                "args": [
+                    "-NoProfile",
+                    "-ExecutionPolicy", "Bypass",
+                    "-Command", "& { Get-Process -Name 'vsdbg' -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue; Start-Sleep -Seconds 1; dotnet build \"${workspaceFolder}/JwtIdentity.sln\" /p:GenerateFullPaths=true /consoleloggerparameters:NoSummary; exit $LASTEXITCODE }"
+                ]
+            },
+            "problemMatcher": "$msCompile",
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "clear": true
+            }
         }
-      },
-      {
-        "label": "open-chrome",
-        "type": "shell",
-        "command": "start chrome https://localhost:5001",
-        "windows": {
-          "command": "start chrome https://localhost:5001"
-        },
-        "presentation": {
-          "reveal": "never"
-        },
-        "problemMatcher": []
-      }
     ]
-  }
+}

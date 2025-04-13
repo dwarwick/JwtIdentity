@@ -1,49 +1,50 @@
 {
-    "version": "0.2.0",
-    "configurations": [
-      {
-        "name": "C#: JwtIdentity [https]",
-        "type": "dotnet",
-        "request": "launch",
-        "projectPath": "${workspaceFolder}\\JwtIdentity\\JwtIdentity.csproj",
-        "launchConfigurationId": "TargetFramework=;https",
-        "serverReadyAction": {
-          "action": "openExternally",
-          "pattern": "\\bNow listening on:\\s+(https?://\\S+)",
-          "uriFormat": "%s",
-          "webRoot": "${workspaceFolder}",
-          "command": "chrome.exe"
-        }
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Launch and Debug Blazor WebAssembly Application",
+      "type": "blazorwasm",
+      "request": "launch",
+      "hosted": true,
+      "program": "${workspaceFolder}/JwtIdentity/bin/Debug/net9.0/JwtIdentity.dll",
+      "cwd": "${workspaceFolder}/JwtIdentity",
+      "url": "https://localhost:5001",
+      "browser": "chrome",
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
       },
-      {
-        "name": "watch-https",
-        "type": "coreclr",
-        "request": "launch",
-        "preLaunchTask": "build",
-        "program": "dotnet",
-        "args": [
-          "watch",
-          "run",
-          "--project",
-          "${workspaceFolder}/JwtIdentity/JwtIdentity.csproj",
-          "--launch-profile",
-          "https"
-        ],
-        "cwd": "${workspaceFolder}/JwtIdentity",
-        "stopAtEntry": false,
-        "serverReadyAction": {
-          "action": "openExternally",
-          "pattern": "\\bNow listening on:\\s+(https?://\\S+)",
-          "uriFormat": "%s",
-          "webRoot": "${workspaceFolder}",
-          "command": "chrome.exe"
-        },
-        "env": {
-          "ASPNETCORE_ENVIRONMENT": "Development",
-          "ASPNETCORE_URLS": "https://localhost:5001",
-          "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES": "Microsoft.AspNetCore.Watch.BrowserRefresh",
-          "DOTNET_WATCH_SUPPRESS_BROWSER_REFRESH": "false"
-        }
+      "preLaunchTask": "build-and-verify"
+    },
+    {
+      "name": "C#: JwtIdentity [https]",
+      "type": "dotnet",
+      "request": "launch",
+      "projectPath": "${workspaceFolder}\\JwtIdentity\\JwtIdentity.csproj",
+      "launchConfigurationId": "TargetFramework=;https",
+      "preLaunchTask": "run-and-wait-for-server"
+    },
+    {
+      "name": "watch-https",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build",
+      "program": "dotnet",
+      "args": [
+        "watch",
+        "run",
+        "--project",
+        "${workspaceFolder}/JwtIdentity/JwtIdentity.csproj",
+        "--launch-profile",
+        "https"
+      ],
+      "cwd": "${workspaceFolder}/JwtIdentity",
+      "stopAtEntry": false,
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "https://localhost:5001",
+        "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES": "Microsoft.AspNetCore.Watch.BrowserRefresh",
+        "DOTNET_WATCH_SUPPRESS_BROWSER_REFRESH": "false"
       }
-    ]
-  }
+    }
+  ]
+}

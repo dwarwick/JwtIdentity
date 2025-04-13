@@ -17,7 +17,10 @@ namespace JwtIdentity.Client.Services
             {
                 PropertyNameCaseInsensitive = true,
                 ReferenceHandler = ReferenceHandler.IgnoreCycles, // Add this line                                                                  ,
-                Converters = { new AnswerViewModelConverter(), new QuestionViewModelConverter() }
+                Converters = { 
+                    new AnswerViewModelConverter(), 
+                    new QuestionViewModelConverter()
+                }
             };
             _httpClient = httpClientFactory.CreateClient("AuthorizedClient");
             this.navigationManager = navigationManager;
@@ -137,5 +140,4 @@ namespace JwtIdentity.Client.Services
             return response;
         }
     }
-
 }

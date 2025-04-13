@@ -21,7 +21,8 @@
                     <MudPaper Class="p-2">
                         <MudStack Spacing="1">
                             <MudSelect Label="Select the Question Type"
-                                       @bind-Value="@SelectedQuestionType"
+                                       Value="@SelectedQuestionType"
+                                       ValueChanged="@((string questionType) => HandleSelectedQuestionType(questionType))"
                                        Variant="Variant.Filled"
                                        Immediate="true"
                                        ErrorText="Please select a type"

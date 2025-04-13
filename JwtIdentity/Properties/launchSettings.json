@@ -1,26 +1,18 @@
 {
   "profiles": {
-    "http": {
-      "commandName": "Project",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      },
-      "dotnetRunMessages": true,
-      "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}",
-      "applicationUrl": "http://localhost:5166",
-      "browser": "chrome"
-    },
     "https": {
       "commandName": "Project",
       "launchBrowser": true,
+      "launchUrl": "https://localhost:5001",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "ASPNETCORE_BROWSER": "chrome"
+        "DOTNET_BROWSER": "chrome"
       },
       "dotnetRunMessages": true,
       "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}",
       "applicationUrl": "https://localhost:5001",
-      "browser": "chrome"
+      "hotReloadEnabled": false,
+      "hotReloadProfile": "aspnetcore"
     },
     "Swagger": {
       "commandName": "Project",
@@ -37,7 +29,8 @@
       "commandLineArgs": "watch run --launch-profile https",
       "workingDirectory": "$(ProjectDir)",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "DOTNET_WATCH_RESTART_ON_RUDE_EDIT": "true"
       },
       "hotReloadEnabled": true,
       "hotReloadProfile": "aspnetcore",

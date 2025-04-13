@@ -1,4 +1,5 @@
 ﻿using Blazored.LocalStorage;
+using JwtIdentity.Client.Helpers;
 
 namespace JwtIdentity.Client.Pages
 {
@@ -40,6 +41,9 @@ namespace JwtIdentity.Client.Pages
 
         [Inject]
         internal IDialogService MudDialog { get; set; }
+
+        [Inject]
+        internal IUtility Utility { get; set; }
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
     }
 }
