@@ -75,7 +75,7 @@
                 case "Pie":
                     <SfAccumulationChart @ref="pieChartObj" Title="@($"{SelectedQuestion.QuestionNumber}. {SelectedQuestion.Text}")" SubTitle="@(GetSubtitle())" Theme="@CurrentTheme" Width="@ChartWidth" Height="@ChartHeight">
                         <AccumulationChartTooltipSettings Enable="true" />
-                        @*<ChartTitleStyle TextOverflow="TextOverflow.Wrap" TextAlignment="Alignment.Center"></ChartTitleStyle>     *@  
+                        <AccumulationChartTitleStyle TextOverflow="TextOverflow.Wrap" TextAlignment="Alignment.Center"></AccumulationChartTitleStyle>
                         <AccumulationChartSeriesCollection>
                             <AccumulationChartSeries DataSource="@PieChartData" XName="X" YName="Y" Radius="70%">
                                 <AccumulationDataLabelSettings Visible="true" Position="AccumulationLabelPosition.Outside" Format="{value}%" />
