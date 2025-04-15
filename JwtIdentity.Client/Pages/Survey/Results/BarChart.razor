@@ -55,22 +55,40 @@
                 case "Bar":
                     <SfChart @ref="chartObj" Title="@($"{SelectedQuestion.QuestionNumber}. {SelectedQuestion.Text}")" SubTitle="@(GetSubtitle())" Theme="@CurrentTheme" Width="@ChartWidth" Height="@ChartHeight">
                         <ChartTooltipSettings Enable="true" />
+                        <ChartTitleStyle TextOverflow="TextOverflow.Wrap" TextAlignment="Alignment.Center"></ChartTitleStyle>                        
                         <ChartPrimaryXAxis ValueType="Syncfusion.Blazor.Charts.ValueType.Category" />
                         <ChartPrimaryYAxis Interval="1" />
                         <ChartSeriesCollection>
                             <ChartSeries DataSource="@BarChartData" XName="X" YName="Y" Type="ChartSeriesType.Column" Fill="rgba(61, 44, 191, 1)" />
                         </ChartSeriesCollection>
+                        <ChartAnnotations>
+                            <ChartAnnotation X="105" Y="35" CoordinateUnits="Units.Pixel" Region="Regions.Chart">
+                                <ContentTemplate>
+                                    <img src="/images/logo_200_60.png" alt="Website Logo" width="200" height="60"/>
+                                </ContentTemplate>
+                            </ChartAnnotation>
+                        </ChartAnnotations>
+                        <ChartMargin Left="5" Right="5" Top="65" Bottom="0"></ChartMargin>                        
                     </SfChart>
                     break;
 
                 case "Pie":
                     <SfAccumulationChart @ref="pieChartObj" Title="@($"{SelectedQuestion.QuestionNumber}. {SelectedQuestion.Text}")" SubTitle="@(GetSubtitle())" Theme="@CurrentTheme" Width="@ChartWidth" Height="@ChartHeight">
                         <AccumulationChartTooltipSettings Enable="true" />
+                        @*<ChartTitleStyle TextOverflow="TextOverflow.Wrap" TextAlignment="Alignment.Center"></ChartTitleStyle>     *@  
                         <AccumulationChartSeriesCollection>
                             <AccumulationChartSeries DataSource="@PieChartData" XName="X" YName="Y" Radius="70%">
                                 <AccumulationDataLabelSettings Visible="true" Position="AccumulationLabelPosition.Outside" Format="{value}%" />
                             </AccumulationChartSeries>
                         </AccumulationChartSeriesCollection>
+                        <AccumulationChartAnnotations>
+                            <AccumulationChartAnnotation X="105" Y="35" CoordinateUnits="Units.Pixel" Region="Regions.Chart">
+                                <ContentTemplate>
+                                    <img src="/images/logo_200_60.png" alt="Website Logo" width="200" height="60"/>
+                                </ContentTemplate>
+                            </AccumulationChartAnnotation>
+                        </AccumulationChartAnnotations>
+                        <AccumulationChartMargin Left="5" Right="5" Top="65" Bottom="0"></AccumulationChartMargin> 
                     </SfAccumulationChart>
                     break;
             }
