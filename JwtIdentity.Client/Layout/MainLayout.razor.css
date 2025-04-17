@@ -43,7 +43,8 @@ html, body {
 
 /* Fixed footer */
 .app-footer {
-    height: 40px;
+    min-height: 40px;
+    height: auto;
     flex-shrink: 0;
     position: fixed;
     bottom: 0;
@@ -56,6 +57,35 @@ html, body {
     color: var(--mud-palette-appbar-text);
     border-top: 1px solid var(--mud-palette-divider);
     z-index: 10;
+    padding: 5px 10px;
+}
+
+/* Footer text styles */
+.footer-text {
+    width: 100%;
+    text-align: center;
+}
+
+/* Responsive footer content */
+.footer-text :deep(.mud-stack) {
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+/* Space out footer elements on small screens */
+@media (max-width: 600px) {
+    .app-footer {
+        padding: 8px 5px;
+    }
+    
+    .footer-text :deep(.mud-stack) > * {
+        margin: 2px 4px !important;
+    }
+    
+    /* Hide dividers on very small screens */
+    .footer-text :deep(.mud-stack) > span:not(:first-child):not(:last-child) {
+        display: none;
+    }
 }
 
 /* Custom scrollbar styling */

@@ -12,7 +12,7 @@ namespace JwtIdentity.Client.Services
         public HttpClient _httpClient { get; set; }
 
 
-        public ApplicationUserViewModel? CurrentUser { get; set; }
+        public ApplicationUserViewModel CurrentUser { get; set; }
 
         public event Action OnLoggedOut;
 

@@ -44,12 +44,12 @@ namespace JwtIdentity.Controllers
             if (model.Username == "logmein")
             {
                 model.Username = "anonymous";
-                model.Password = _configuration["AnonymousPassword"];
+                model.Password = _configuration["AnonymousPassword"] ?? string.Empty;
             }
 
-            ApplicationUser user = await _userManager.FindByNameAsync(model.Username);
+            ApplicationUser? user = await _userManager.FindByNameAsync(model.Username);
 
-            if (user != null && await _userManager.CheckPasswordAsync(user, model.Password))
+            if (user != null && !string.IsNullOrEmpty(model.Password) && await _userManager.CheckPasswordAsync(user, model.Password))
             {
                 string Token = await _apiAuthService.GenerateJwtToken(user);
 
@@ -269,7 +269,7 @@ namespace JwtIdentity.Controllers
         [HttpPost("forgotpassword")]
         public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordViewModel model)
         {
-            if (!ModelState.IsValid || string.IsNullOrEmpty(model.Email))
+            if (!ModelState.IsValid || model.Email == null)
             {
                 return BadRequest(new { Success = false, Message = "Invalid request" });
             }
@@ -310,7 +310,7 @@ namespace JwtIdentity.Controllers
         [HttpPost("resetpassword")]
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordViewModel model)
         {
-            if (!ModelState.IsValid)
+            if (!ModelState.IsValid || model.Email == null || model.Token == null || model.Password == null)
             {
                 return BadRequest(new { Success = false, Message = "Invalid request" });
             }
@@ -377,21 +377,21 @@ namespace JwtIdentity.Controllers
         {
             [Required]
             [EmailAddress]
-            public string Email { get; set; }
+            public string? Email { get; set; }
         }
 
         public class ResetPasswordViewModel
         {
             [Required]
             [EmailAddress]
-            public string Email { get; set; }
+            public string? Email { get; set; }
 
             [Required]
-            public string Token { get; set; }
+            public string? Token { get; set; }
 
             [Required]
             [StringLength(100, MinimumLength = 6, ErrorMessage = "Password must be at least 6 characters long")]
-            public string Password { get; set; }
+            public string? Password { get; set; }
         }
     }
 }

@@ -1,0 +1,101 @@
+@page "/privacy-policy"
+@inherits PrivacyPolicyModel
+
+<PageTitle>Survey Shark - Privacy Policy</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="pt-4 pb-8">
+    <MudText Typo="Typo.h3" Class="mb-4">Privacy Policy</MudText>
+    
+    <MudPaper Elevation="3" Class="pa-4 mb-4">
+        <MudText Typo="Typo.h5" Class="mb-3">Last Updated: @DateTime.Now.ToString("MMMM d, yyyy")</MudText>
+        
+        <MudText Typo="Typo.body1" Class="mb-4">
+            This Privacy Policy describes how Survey Shark ("we", "us", or "our") collects, uses, and shares information 
+            about you when you use our website, services, and applications (collectively, the "Services").
+        </MudText>
+
+        <MudText Typo="Typo.h6" Class="mt-4">1. Information We Collect</MudText>
+        <MudText Typo="Typo.body1" Class="mb-3">
+            We collect several types of information from and about users of our Services, including:
+        </MudText>
+        <MudList T="string" Dense="true" Class="ml-4 mb-4">
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Person">
+                Personal Information: Email addresses and account credentials for user authentication and communication purposes.
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.QuestionAnswer">
+                Survey Responses: Information you provide when answering surveys on our platform.
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Computer">
+                Technical Data: IP addresses, browser information, and device information when you interact with our Services.
+            </MudListItem>
+        </MudList>
+
+        <MudText Typo="Typo.h6" Class="mt-4">2. How We Use Your Information</MudText>
+        <MudText Typo="Typo.body1" Class="mb-3">
+            We use the information we collect to:
+        </MudText>
+        <MudList T="string" Dense="true" Class="ml-4 mb-4">
+            <MudListItem T="string" Icon="@Icons.Material.Filled.AccountCircle">
+                Provide, maintain, and improve our Services.
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Email">
+                Communicate with you about your account, survey results, and other non-marketing related notifications.
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Security">
+                Protect the security and integrity of our Services.
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Analytics">
+                Analyze usage patterns to improve our Services.
+            </MudListItem>
+        </MudList>
+
+        <MudText Typo="Typo.h6" Class="mt-4">3. Information Sharing and Disclosure</MudText>
+        <MudText Typo="Typo.body1" Class="mb-4">
+            We do not sell or rent your personal information to third parties. We may use non-personally identifiable information collected from surveys in marketing campaigns, but this information will be aggregated and anonymized.
+        </MudText>
+
+        <MudText Typo="Typo.h6" Class="mt-4">4. Data Collection and Storage</MudText>
+        <MudText Typo="Typo.body1" Class="mb-3">
+            We collect and store:
+        </MudText>
+        <MudList T="string" Dense="true" Class="ml-4 mb-4">
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Computer">
+                IP Addresses: We collect and store your IP address when you submit responses to surveys. This helps us maintain the integrity of our survey data and prevent abuse.
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Email">
+                Email Addresses: We collect and store your email address during account creation and use it for account-related communications.
+            </MudListItem>
+        </MudList>
+
+        <MudText Typo="Typo.h6" Class="mt-4">5. Communications</MudText>
+        <MudText Typo="Typo.body1" Class="mb-4">
+            We may use your email address to send you important information about your account, survey results, or other non-marketing communications. We respect your privacy and will not send marketing emails without your explicit consent.
+        </MudText>
+
+        <MudText Typo="Typo.h6" Class="mt-4">6. Data Security</MudText>
+        <MudText Typo="Typo.body1" Class="mb-4">
+            We implement appropriate technical and organizational measures to protect your personal information. However, no method of transmission over the Internet or electronic storage is 100% secure, and we cannot guarantee absolute security.
+        </MudText>
+
+        <MudText Typo="Typo.h6" Class="mt-4">7. Your Rights</MudText>
+        <MudText Typo="Typo.body1" Class="mb-3">
+            Depending on your location, you may have certain rights regarding your personal information, including:
+        </MudText>
+        <MudList T="string" Dense="true" Class="ml-4 mb-4">
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Visibility">The right to access your personal information</MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Edit">The right to correct inaccurate information</MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Delete">The right to delete your personal information</MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Block">The right to object to or restrict processing</MudListItem>
+        </MudList>
+
+        <MudText Typo="Typo.h6" Class="mt-4">8. Changes to This Privacy Policy</MudText>
+        <MudText Typo="Typo.body1" Class="mb-4">
+            We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the "Last Updated" date.
+        </MudText>
+
+        <MudText Typo="Typo.h6" Class="mt-4">9. Contact Us</MudText>
+        <MudText Typo="Typo.body1" Class="mb-4">
+            If you have any questions about this Privacy Policy, please contact us at customerservice@surveyshark.site.
+        </MudText>
+    </MudPaper>
+</MudContainer>
