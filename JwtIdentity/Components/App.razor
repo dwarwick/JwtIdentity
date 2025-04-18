@@ -70,21 +70,40 @@
     private void GetMetaTags()
     {
         metaHtml = "";
-        if (path.StartsWith("survey/") && path.Count(x => x == '/') == 1)
+
+        if (path == "")
         {
+            // Meta tags for the Home page
+            var homeMetaTags = new Dictionary<string, string>
+            {
+                ["description"] = "Discover why creating online surveys with SurveyShark.site is essential for businesses, investors, educators, and more. Unlock actionable insights today!",
+                ["keywords"] = "online surveys, survey tools, business insights, market research, customer feedback, SurveyShark",
+                ["og:title"] = "Why Create Online Surveys? - SurveyShark.site",
+                ["og:description"] = "Learn how SurveyShark.site helps businesses, educators, and individuals create impactful surveys to gather valuable insights.",
+                ["og:image"] = $"{HttpContextAccessor.HttpContext?.Request.Scheme}://{HttpContextAccessor.HttpContext?.Request.Host}/images/logo_600_1080v1.png",
+                ["og:url"] = $"{HttpContextAccessor.HttpContext?.Request.Scheme}://{HttpContextAccessor.HttpContext?.Request.Host}{HttpContextAccessor.HttpContext?.Request.PathBase}/"
+            };
+
+            foreach (var tag in homeMetaTags)
+            {
+                metaHtml += $"<meta name='{tag.Key}' content='{tag.Value}'>";
+            }
+        }
+        else if (path.StartsWith("survey/") && path.Count(x => x == '/') == 1)
+        {
+            // Existing logic for survey-specific meta tags
             Survey survey = SurveyService.GetSurvey(path.Replace("survey/", ""));
             if (survey != null)
             {
                 var dict = new Dictionary<string, string>
-                    {
-                        ["fb:app_id"] = "1209050230789265",
-                        ["og:url"] = $"{HttpContextAccessor.HttpContext?.Request.Scheme}://{HttpContextAccessor.HttpContext?.Request.Host}{HttpContextAccessor.HttpContext?.Request.PathBase}{HttpContextAccessor.HttpContext?.Request.Path.Value}",
-                        ["og:type"] = "article",
-                        ["og:title"] = survey.Title,
-                        ["og:description"] = survey.Description,
-                        ["og:image"] = $"{HttpContextAccessor.HttpContext?.Request.Scheme}://{HttpContextAccessor.HttpContext?.Request.Host}{HttpContextAccessor.HttpContext?.Request.PathBase}/images/logo_600_1080v1.png"
-
-                    };
+                {
+                    ["fb:app_id"] = "1209050230789265",
+                    ["og:url"] = $"{HttpContextAccessor.HttpContext?.Request.Scheme}://{HttpContextAccessor.HttpContext?.Request.Host}{HttpContextAccessor.HttpContext?.Request.PathBase}{HttpContextAccessor.HttpContext?.Request.Path.Value}",
+                    ["og:type"] = "article",
+                    ["og:title"] = survey.Title,
+                    ["og:description"] = survey.Description,
+                    ["og:image"] = $"{HttpContextAccessor.HttpContext?.Request.Scheme}://{HttpContextAccessor.HttpContext?.Request.Host}{HttpContextAccessor.HttpContext?.Request.PathBase}/images/logo_600_1080v1.png"
+                };
 
                 foreach (var tag in dict)
                 {
