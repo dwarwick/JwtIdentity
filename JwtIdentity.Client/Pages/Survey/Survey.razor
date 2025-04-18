@@ -121,8 +121,8 @@
                                                          T="bool"
                                                          Color="Color.Primary"
                                                          Label="@option.OptionText"
-                                                         Checked="@saAnswer.SelectedOptions[index]"
-                                                         CheckedChanged="@((bool v) => HandleSelectAllThatApplyOption(saAnswer, index, v, option.Id))" />
+                                                         Value="@saAnswer.SelectedOptions[index]"
+                                                         ValueChanged="@((bool v) => HandleSelectAllThatApplyOption(saAnswer, index, v, option.Id))" />
                                         }
                                     </MudStack>
                                 </MudPaper>

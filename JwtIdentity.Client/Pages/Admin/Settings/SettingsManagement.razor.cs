@@ -1,18 +1,7 @@
-using JwtIdentity.Client.Services;
-using JwtIdentity.Common.ViewModels;
-using Microsoft.AspNetCore.Components;
-using MudBlazor;
-
 namespace JwtIdentity.Client.Pages.Admin.Settings
 {
     public class SettingsManagementModel : BlazorBase
     {
-        protected IApiService ApiService => base.ApiService;
-        protected ISnackbar Snackbar => base.Snackbar;
-        
-        [Inject]
-        protected IDialogService DialogService { get; set; }
-
         protected List<SettingViewModel> Settings { get; set; } = new();
         protected List<string> Categories { get; set; } = new();
         protected string SelectedCategory { get; set; } = null;
@@ -41,7 +30,7 @@ namespace JwtIdentity.Client.Pages.Admin.Settings
             }
             catch (Exception ex)
             {
-                Snackbar.Add($"Error loading categories: {ex.Message}", Severity.Error);
+                _ = Snackbar.Add($"Error loading categories: {ex.Message}", Severity.Error);
                 Categories = new List<string>();
             }
         }
@@ -65,7 +54,7 @@ namespace JwtIdentity.Client.Pages.Admin.Settings
             }
             catch (Exception ex)
             {
-                Snackbar.Add($"Error loading settings: {ex.Message}", Severity.Error);
+                _ = Snackbar.Add($"Error loading settings: {ex.Message}", Severity.Error);
                 Settings = new List<SettingViewModel>();
             }
             finally
@@ -86,7 +75,7 @@ namespace JwtIdentity.Client.Pages.Admin.Settings
                 return true;
 
             return setting.Key?.Contains(SearchString, StringComparison.OrdinalIgnoreCase) == true ||
-                   setting.Value?.Contains(SearchString, StringComparison.OrdinalIgnoreCase) == true || 
+                   setting.Value?.Contains(SearchString, StringComparison.OrdinalIgnoreCase) == true ||
                    setting.Description?.Contains(SearchString, StringComparison.OrdinalIgnoreCase) == true ||
                    setting.Category?.Contains(SearchString, StringComparison.OrdinalIgnoreCase) == true;
         }
@@ -96,7 +85,7 @@ namespace JwtIdentity.Client.Pages.Admin.Settings
             var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Medium };
             var parameters = new DialogParameters();
             var title = "Create New Setting";
-            
+
             if (setting == null)
             {
                 // Creating new setting
@@ -112,13 +101,13 @@ namespace JwtIdentity.Client.Pages.Admin.Settings
                 // Editing existing setting
                 title = "Edit Setting";
             }
-            
+
             parameters.Add("Setting", setting);
             parameters.Add("IsNew", setting.Id == 0);
-            
-            var dialog = await DialogService.ShowAsync<SettingDialog>(title, parameters, options);
+
+            var dialog = await MudDialog.ShowAsync<SettingDialog>(title, parameters, options);
             var result = await dialog.Result;
-            
+
             if (!result.Canceled)
             {
                 await LoadSettingsAsync();
@@ -137,18 +126,18 @@ namespace JwtIdentity.Client.Pages.Admin.Settings
             {
                 if (IsNewSetting)
                 {
-                    await ApiService.PostAsync<SettingViewModel>("api/settings", SettingForDialog);
-                    Snackbar.Add($"Setting '{SettingForDialog.Key}' created successfully", Severity.Success);
+                    _ = await ApiService.PostAsync<SettingViewModel>("api/settings", SettingForDialog);
+                    _ = Snackbar.Add($"Setting '{SettingForDialog.Key}' created successfully", Severity.Success);
                 }
                 else
                 {
-                    await ApiService.UpdateAsync<SettingViewModel>($"api/settings/{SettingForDialog.Key}", SettingForDialog);
-                    Snackbar.Add($"Setting '{SettingForDialog.Key}' updated successfully", Severity.Success);
+                    _ = await ApiService.UpdateAsync<SettingViewModel>($"api/settings/{SettingForDialog.Key}", SettingForDialog);
+                    _ = Snackbar.Add($"Setting '{SettingForDialog.Key}' updated successfully", Severity.Success);
                 }
 
                 DialogVisible = false;
                 await LoadSettingsAsync();
-                
+
                 // Reload categories in case we added a new one
                 if (IsNewSetting)
                 {
@@ -157,13 +146,13 @@ namespace JwtIdentity.Client.Pages.Admin.Settings
             }
             catch (Exception ex)
             {
-                Snackbar.Add($"Error saving setting: {ex.Message}", Severity.Error);
+                _ = Snackbar.Add($"Error saving setting: {ex.Message}", Severity.Error);
             }
         }
 
         protected async Task DeleteSettingAsync(SettingViewModel setting)
         {
-            bool? result = await DialogService.ShowMessageBox(
+            bool? result = await MudDialog.ShowMessageBox(
                 "Confirm Delete",
                 $"Are you sure you want to delete the setting '{setting.Key}'?",
                 yesText: "Delete",
@@ -173,13 +162,13 @@ namespace JwtIdentity.Client.Pages.Admin.Settings
             {
                 try
                 {
-                    await ApiService.DeleteAsync($"api/settings/{setting.Key}");
-                    Snackbar.Add($"Setting '{setting.Key}' deleted successfully", Severity.Success);
+                    _ = await ApiService.DeleteAsync($"api/settings/{setting.Key}");
+                    _ = Snackbar.Add($"Setting '{setting.Key}' deleted successfully", Severity.Success);
                     await LoadSettingsAsync();
                 }
                 catch (Exception ex)
                 {
-                    Snackbar.Add($"Error deleting setting: {ex.Message}", Severity.Error);
+                    _ = Snackbar.Add($"Error deleting setting: {ex.Message}", Severity.Error);
                 }
             }
         }
@@ -198,17 +187,17 @@ namespace JwtIdentity.Client.Pages.Admin.Settings
                     Category = "Test",
                     IsEditable = true
                 };
-                
-                await ApiService.PostAsync<SettingViewModel>("api/settings", testSetting);
-                Snackbar.Add("Test setting created successfully", Severity.Success);
-                
+
+                _ = await ApiService.PostAsync<SettingViewModel>("api/settings", testSetting);
+                _ = Snackbar.Add("Test setting created successfully", Severity.Success);
+
                 // Reload data
                 await LoadCategoriesAsync();
                 await LoadSettingsAsync();
             }
             catch (Exception ex)
             {
-                Snackbar.Add($"Error creating test setting: {ex.Message}", Severity.Error);
+                _ = Snackbar.Add($"Error creating test setting: {ex.Message}", Severity.Error);
             }
         }
     }

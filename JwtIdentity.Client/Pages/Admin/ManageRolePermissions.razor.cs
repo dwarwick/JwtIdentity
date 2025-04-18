@@ -1,17 +1,8 @@
-﻿using JwtIdentity.Client.Services;
-using Microsoft.AspNetCore.Components.Authorization;
-
-namespace JwtIdentity.Client.Pages.Admin
+﻿namespace JwtIdentity.Client.Pages.Admin
 {
     public class ManageRolePermissionsModel : BlazorBase, IDisposable
     {
         private bool _disposed = false;
-
-        [Inject]
-        public AuthenticationStateProvider AuthStateProvider { get; set; }
-
-        [Inject]
-        public NavigationManager Navigation { get; set; }
 
         protected List<ApplicationRoleViewModel> applicationRoleViewModels { get; set; }
 
