@@ -1,3 +1,4 @@
+@using MudBlazor
 @page "/register"
 @page "/register/{id}"
 @inherits RegisterModel
@@ -8,5 +9,17 @@
     <MudTextField @bind-Value="@registerModel.Email" Label="Email" InputType="InputType.Email" />
     <MudTextField @bind-Value="@registerModel.Password" Label="Password" InputType="InputType.Password" />
     <MudTextField @bind-Value="@registerModel.ConfirmPassword" Label="Confirm Password" InputType="InputType.Password" />
-    <MudButton ButtonType="ButtonType.Submit" Color="Color.Primary">Register</MudButton>
+    <MudCheckBox @bind-Value="@AgreedToTerms" Class="mt-2" Label="I agree to the Terms of Service and Privacy Policy"/>
+
+      <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Class="mt-2">
+        <MudText Typo="Typo.body2">By registering, you agree to our</MudText>
+        <MudLink Href="/terms-of-service" Target="_blank">Terms of Service</MudLink>
+        <MudText Typo="Typo.body2">and</MudText>
+        <MudLink Href="/privacy-policy" Target="_blank">Privacy Policy</MudLink>  
+    </MudStack>
+    <MudButton ButtonType="ButtonType.Submit" Color="Color.Primary" Disabled="@(!AgreedToTerms)">Register</MudButton>
 </EditForm>
+
+@code {
+    
+}
