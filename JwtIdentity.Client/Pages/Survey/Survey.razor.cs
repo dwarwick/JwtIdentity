@@ -1,5 +1,4 @@
-﻿using JwtIdentity.Client.Pages.Common;
-using System.Net.Http.Json;
+﻿using System.Net.Http.Json;
 using System.Security.Claims;
 
 namespace JwtIdentity.Client.Pages.Survey
@@ -20,8 +19,6 @@ namespace JwtIdentity.Client.Pages.Survey
         protected bool isCaptchaVerified { get; set; } = false;
 
         protected bool Preview { get; set; }
-
-        private readonly DialogOptions _topCenter = new() { Position = DialogPosition.TopCenter, CloseButton = false, CloseOnEscapeKey = false };
 
         private DotNetObjectReference<SurveyModel> objRef;
 
@@ -66,118 +63,13 @@ namespace JwtIdentity.Client.Pages.Survey
 
             if (!user.Identity.IsAuthenticated)
             {
-                DialogParameters keyValuePairs = new()
+                Response<ApplicationUserViewModel> loginResponse = await AuthService.Login(new ApplicationUserViewModel() { UserName = "logmein", Password = "123" });
+                if (!loginResponse.Success)
                 {
-                    { "Message", "You can take the survey annonymously, or you can create an account. If you create an account first, you will be able to access your survey results in the future. Would you like to create an account first?" },
-                    { "OkText" , "Yes" },
-                    { "CancelText" , "No" }
-                };
-
-                IDialogReference response = await MudDialog.ShowAsync<ConfirmDialog>("Create Account?", keyValuePairs, _topCenter);
-                var result = await response.Result;
-                if (!result.Canceled)
-                {
-                    // User pressed OK
-                    NavigationManager.NavigateTo($"/register/{SurveyId}");
-                }
-                else
-                {
-                    _ = Snackbar.Add("You are now being logged in as an anonymous user", Severity.Success);
-                    Response<ApplicationUserViewModel> loginResponse = await AuthService.Login(new ApplicationUserViewModel() { UserName = "logmein", Password = "123" });
-                    if (!loginResponse.Success)
-                    {
-                        _ = Snackbar.Add("Problem logging you in anonymously. You will not be able to complete the survey. You may be able to take the survey if you create an account and login.", Severity.Error);
-
-                        Navigation.NavigateTo("/");
-                    }
+                    Navigation.NavigateTo("/");
                 }
             }
         }
-
-        /*    private async Task LoadData()
-            {
-                // get the survey based on the SurveyId
-                Survey = await ApiService.GetAsync<SurveyViewModel>($"{ApiEndpoints.Answer}/getanswersforsurveyforloggedinuser/{SurveyId}?Preview={Preview}");
-
-                if (Survey != null && Survey.Id > 0)
-                {
-                    foreach (var question in Survey.Questions)
-                    {
-                        if (question.Answers.Count == 0)
-                        {
-                            if (question.QuestionType == QuestionType.MultipleChoice)
-                            {
-                                MultipleChoiceAnswerViewModel answer = new()
-                                {
-                                    AnswerType = AnswerType.MultipleChoice,
-                                    QuestionId = question.Id
-                                };
-
-                                question.Answers.Add(answer);
-                            }
-
-                            else if (question.QuestionType == QuestionType.Text)
-                            {
-                                TextAnswerViewModel answer = new()
-                                {
-                                    AnswerType = AnswerType.Text,
-                                    QuestionId = question.Id
-                                };
-
-                                question.Answers.Add(answer);
-                            }
-
-                            else if (question.QuestionType == QuestionType.TrueFalse)
-                            {
-                                TrueFalseAnswerViewModel answer = new()
-                                {
-                                    AnswerType = AnswerType.TrueFalse,
-                                    QuestionId = question.Id,
-                                    Value = null
-                                };
-
-                                question.Answers.Add(answer);
-                            }
-                            else if (question.QuestionType == QuestionType.Rating1To10)
-                            {
-                                Rating1To10AnswerViewModel answer = new()
-                                {
-                                    AnswerType = AnswerType.Rating1To10,
-                                    QuestionId = question.Id
-                                };
-
-                                question.Answers.Add(answer);
-                            }
-                            else if (question.QuestionType == QuestionType.SelectAllThatApply)
-                            {
-                                SelectAllThatApplyAnswerViewModel answer = new()
-                                {
-                                    AnswerType = AnswerType.SelectAllThatApply,
-                                    QuestionId = question.Id,
-                                    Options = ((SelectAllThatApplyQuestionViewModel)question).Options,
-                                    SelectedOptions = new List<bool>()
-                                };
-
-                                // Initialize the SelectedOptions list with false values for each option
-                                for (int i = 0; i < ((SelectAllThatApplyQuestionViewModel)question).Options.Count; i++)
-                                {
-                                    answer.SelectedOptions.Add(false);
-                                }
-
-                                question.Answers.Add(answer);
-                            }
-                        }
-                        else
-                        { // this user or ip address has answered this before
-
-                        }
-                    }
-                }
-                else
-                {
-                    NavigationManager.NavigateTo("/");
-                }
-            }*/
 
         private async Task LoadData()
         {
