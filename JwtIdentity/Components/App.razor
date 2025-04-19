@@ -22,12 +22,17 @@
 
     <link href="_content/Syncfusion.Blazor.Themes/bootstrap5.css" rel="stylesheet" class="theme" />
     
-    <script type="text/javascript">
-         //<![CDATA[
-        var tlJsHost = ((window.location.protocol == "https:") ? "https://secure.trust-provider.com/" : "http://www.trustlogo.com/");
-        document.write(unescape("%3Cscript src='" + tlJsHost + "trustlogo/javascript/trustlogo.js' type='text/javascript'%3E%3C/script%3E"));
-        //]]>
+    <script>
+        // Create a new script element
+        const script = document.createElement('script');
+        // Set the src attribute to the URL of the script
+        script.src = 'https://secure.trust-provider.com/trustlogo/javascript/trustlogo.js';
+        // Set the async attribute to true to load it asynchronously (non-blocking)
+        script.async = true;
+        // Append the script element to the document's head
+        document.head.appendChild(script);
     </script>
+
     
     <script src="_content/Syncfusion.Blazor/scripts/syncfusion-blazor.min.js" type="text/javascript"></script>
     

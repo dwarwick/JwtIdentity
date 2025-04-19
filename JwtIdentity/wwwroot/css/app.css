@@ -198,7 +198,7 @@ svg.mud-icon-root.mud-svg-icon.mud-icon-size-medium.drag-icon.ai-style-change-9 
 .survey-container {
     max-width: 800px;
     margin: 0 auto;
-    padding: 2rem 1.5rem;
+    padding: 2rem 1.5rem 4rem 1.5rem;
     background-color: var(--mud-palette-surface);
     border-radius: 8px;
     box-shadow: 0 2px 10px var(--survey-container-shadow, rgba(0, 0, 0, 0.1));
@@ -338,7 +338,7 @@ svg.mud-icon-root.mud-svg-icon.mud-icon-size-medium.drag-icon.ai-style-change-9 
 /* Responsive styles for survey */
 @media (max-width: 600px) {
     .survey-container {
-        padding: 1.6rem 1rem;
+        padding: 1.6rem 1rem 4rem 1rem;
     }
     
     .question-container {
