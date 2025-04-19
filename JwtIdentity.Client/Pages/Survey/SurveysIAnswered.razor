@@ -1,9 +1,9 @@
-﻿@page "/survey/mysurveys"
+﻿@page "/survey/surveysianswered"
 @namespace JwtIdentity.Client.Pages.Survey
-@inherits MySurveysModel
+@inherits SurveysIAnsweredModel
 @attribute [Authorize(Policy = Permissions.CreateSurvey)]
 
-<PageTitle>Survey Shark - My Surveys</PageTitle>
+<PageTitle>Survey Shark - Surveys I Answered</PageTitle>
 
 <style>
     /* Grid button styling */
@@ -93,7 +93,7 @@
     }   
 </style>
 
-<h3>My Surveys</h3>
+<h3>Surveys I've Answered</h3>
 
 <SfGrid DataSource="@UserSurveys" AllowPaging="true" AllowSorting="true" AllowFiltering="true"  AllowResizing="true" FrozenColumns="@FrozenColumns" AllowTextWrap="true" TextWrapSettings="@GridSettings.TextWrapSettings" GridLines="@GridSettings.GridLines" >
     <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel"></GridFilterSettings>
@@ -104,13 +104,22 @@
                 @{
                     var guid = (context as SurveyViewModel).Guid;
                     var isPublished = (context as SurveyViewModel).Published;
+                    var isComplete = !(context as SurveyViewModel).Questions.Any(q => q.Answers.Any(a  => a.Complete));
 
                     <MudButton Class="survey-action-button preview-button" 
-                              Href=@($"survey/{guid}?Preview=true") 
+                              Href=@($"survey/{guid}?ViewAnswers=true") 
                               Target="_blank" 
-                              title="Preview Survey" 
+                              title="View Answers" 
                               Variant="Variant.Filled">
-                        <MudIcon Icon="@Icons.Material.Filled.Visibility" Class="mr-1" Size="MudBlazor.Size.Small" /> Preview
+                        <MudIcon Icon="@Icons.Material.Filled.Visibility" Class="mr-1" Size="MudBlazor.Size.Small" /> View Answers
+                    </MudButton>
+
+                    <MudButton Class=@($"survey-action-button preview-button {ShareButtonDisabled(isComplete, false)}")
+                            Href=@($"survey/{guid}")
+                            Target="_blank"
+                            title="Finish Survey"
+                            Variant="Variant.Filled">
+                        <MudIcon Icon="@Icons.Material.Filled.Visibility" Class="mr-1" Size="MudBlazor.Size.Small" /> Finish Survey
                     </MudButton>
                     
                     <MudButton Class=@($"survey-action-button copy-button {ShareButtonDisabled(isPublished, false)}") 
@@ -129,32 +138,23 @@
                         <svg viewBox="0 0 12 12" preserveAspectRatio="xMidYMid meet">
                             <path class="svg-icon-path" d="M9.1,0.1V2H8C7.6,2,7.3,2.1,7.1,2.3C7,2.4,6.9,2.7,6.9,3v1.4H9L8.8,6.5H6.9V12H4.7V6.5H2.9V4.4h1.8V2.8 c0-0.9,0.3-1.6,0.7-2.1C6,0.2,6.6,0,7.5,0C8.2,0,8.7,0,9.1,0.1z"></path>
                         </svg>
-                    </div>
-
-                    <MudButton Class=@($"survey-action-button edit-button {ShareButtonDisabled(isPublished, true)}") 
-                              Variant="Variant.Filled" 
-                              OnClick="@(() => AddEditQuestions(guid, isPublished))">
-                        <MudIcon Icon="@Icons.Material.Filled.Edit" Class="mr-1" Size="MudBlazor.Size.Small" /> Edit
-                    </MudButton>
-                    
-                    <MudButton Class=@($"survey-action-button charts-button {ShareButtonDisabled(isPublished, false)}") 
-                              Variant="Variant.Filled" 
-                              OnClick="@(() => ViewCharts(guid, isPublished))">
-                        <MudIcon Icon="@Icons.Material.Filled.BarChart" Class="mr-1" Size="MudBlazor.Size.Small" /> Charts
-                    </MudButton>
-                    
-                    <MudButton Class=@($"survey-action-button grid-button {ShareButtonDisabled(isPublished, false)}") 
-                              Variant="Variant.Filled" 
-                              OnClick="@(() => ViewGrid(guid, isPublished))">
-                        <MudIcon Icon="@Icons.Material.Filled.TableChart" Class="mr-1" Size="MudBlazor.Size.Small" /> Grid
-                    </MudButton>
+                    </div>                    
                 }
                 </div>
             </Template>
         </GridColumn>
         <GridColumn Field="Title" HeaderText="Title" Width="200" />
-        <GridColumn Field="Description" HeaderText="Description" Width="400" />
-        <GridColumn Field="NumberOfResponses" HeaderText="Responses" Width="120" TextAlign="TextAlign.Center" />
-        <GridColumn Field="CreatedDate" HeaderText="Created Date" Width="160" Type=" ColumnType.Date" Format="d" />
+        <GridColumn Field="Description" HeaderText="Description" Width="400" />        
+        <GridColumn HeaderText="Completed Date" Width="160" Type=" ColumnType.Date" Format="d" TextAlign="TextAlign.Center" AllowSorting="true" AllowFiltering="true" AllowResizing="true" AllowReordering="true">
+            <Template>
+                @if (context is SurveyViewModel survey)
+                {
+                    if (survey.Questions.Any(q => q.Answers.Any(a => a.Complete)))
+                    {
+                        <span>@survey.Questions.FirstOrDefault(q => q.Answers.Any(a => a.Complete))?.Answers.FirstOrDefault(a => a.Complete)?.UpdatedDate.ToString("d")</span>
+                    }
+                }
+            </Template>
+        </GridColumn>
     </GridColumns>
 </SfGrid>

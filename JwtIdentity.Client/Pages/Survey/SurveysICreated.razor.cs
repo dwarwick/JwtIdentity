@@ -1,6 +1,6 @@
 ﻿namespace JwtIdentity.Client.Pages.Survey
 {
-    public class MySurveysModel : BlazorBase, IBrowserViewportObserver, IAsyncDisposable
+    public class SurveysICreatedModel : BlazorBase, IBrowserViewportObserver, IAsyncDisposable
     {
         [Inject]
         protected IBrowserViewportService BrowserViewportService { get; set; }
@@ -23,7 +23,7 @@
 
         protected override async Task OnInitializedAsync()
         {
-            UserSurveys = (await ApiService.GetAllAsync<SurveyViewModel>("api/Survey/MySurveys")).ToList();
+            UserSurveys = (await ApiService.GetAllAsync<SurveyViewModel>("api/Survey/surveysicreated")).ToList();
         }
 
         protected override async Task OnAfterRenderAsync(bool firstRender)

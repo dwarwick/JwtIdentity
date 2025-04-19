@@ -20,6 +20,8 @@ namespace JwtIdentity.Client.Pages.Survey
 
         protected bool Preview { get; set; }
 
+        protected bool ViewAnswers { get; set; }
+
         private DotNetObjectReference<SurveyModel> objRef;
 
         private bool disposed = false;
@@ -34,6 +36,10 @@ namespace JwtIdentity.Client.Pages.Survey
             if (queryParams.TryGetValue("Preview", out var preview))
             {
                 Preview = bool.Parse(preview);
+            }
+            else if (queryParams.TryGetValue("ViewAnswers", out var viewAnswers))
+            {
+                ViewAnswers = bool.Parse(viewAnswers);
             }
 
             await HandleLoggingInUser();
@@ -74,7 +80,7 @@ namespace JwtIdentity.Client.Pages.Survey
         private async Task LoadData()
         {
             // get the survey based on the SurveyId
-            Survey = await ApiService.GetAsync<SurveyViewModel>($"{ApiEndpoints.Answer}/getanswersforsurveyforloggedinuser/{SurveyId}?Preview={Preview}");
+            Survey = await ApiService.GetAsync<SurveyViewModel>($"{ApiEndpoints.Answer}/getanswersforsurveyforloggedinuser/{SurveyId}?Preview={Preview || ViewAnswers}");
 
             if (Survey != null && Survey.Id > 0)
             {
