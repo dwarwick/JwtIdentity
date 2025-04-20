@@ -35,8 +35,13 @@
                     <MudImage Src="images/sectigo_trust_seal_sm_82x32.png" />
                     <span>© @DateTime.Now.Year @Utility.Domain - All Rights Reserved</span>
                     <span>|</span>
-                    <MudLink Href="/feedback" Underline="Underline.None" Typo="Typo.inherit">Leave Feedback</MudLink>
-                    <span>|</span>
+                    
+                    @if (((CustomAuthStateProvider)AuthStateProvider).CurrentUser != null && (((CustomAuthStateProvider)AuthStateProvider!).CurrentUser?.Permissions.Contains(Permissions.LeaveFeedback) ?? false))
+                    {
+                        <MudLink Href="/feedback" Underline="Underline.None" Typo="Typo.inherit">Leave Feedback</MudLink>
+                        <span>|</span>
+                    }
+                    
                     <MudLink Href="/privacy-policy" Underline="Underline.None" Typo="Typo.inherit">Privacy Policy</MudLink>
                     <span>|</span>
                     <MudLink Href="/terms-of-service" Underline="Underline.None" Typo="Typo.inherit">Terms of Service</MudLink>

@@ -101,5 +101,26 @@ namespace JwtIdentity.Services
             }
             return 0;
         }
+
+        // generate a list of the logged in users roles and a list of the logged in users permissions
+        public async Task<List<string>> GetUserRoles(ClaimsPrincipal user)
+        {
+            var userId = GetUserId(user);
+            var roles = await _userManager.GetRolesAsync(await _userManager.FindByIdAsync(userId.ToString()));
+            return roles.ToList();
+        }
+
+
+        public List<string> GetUserPermissions(ClaimsPrincipal user)
+        {
+            var userId = GetUserId(user);
+            var rolePermissions = from ur in _dbContext.UserRoles
+                                      where ur.UserId == userId
+                                      join r in _dbContext.Roles on ur.RoleId equals r.Id
+                                      join rc in _dbContext.RoleClaims on r.Id equals rc.RoleId
+                                      select rc.ClaimValue;
+
+            return rolePermissions.Distinct().ToList();
+        }
     }
 }

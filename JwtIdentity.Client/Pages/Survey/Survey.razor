@@ -26,7 +26,34 @@
         @if (Survey != null && Survey.Id > 0 && !Loading)
         {
             <MudText Typo="Typo.h4" Class="survey-title">@Survey.Title</MudText>
-            <MudText Typo="Typo.subtitle1" Class="survey-description">@Survey.Description</MudText>
+            <MudText Typo="Typo.subtitle1" Class="survey-description">@Survey.Description</MudText>            
+
+            if (IsAnonymousUser)
+            {
+                <div class="question-container">
+                <MudText>
+                    <span class="question-number">0.</span>
+                    <span class="question-text">
+                        Since you are not logged in, you must agree to our <MudLink Href="/privacy-policy" Underline="Underline.None" Typo="Typo.inherit" Target="Target._blank">Privacy Policy<MudIcon Icon="@Icons.Material.Filled.OpenInNew" /></MudLink>
+                        <span> and </span>
+                        <MudLink Href="/terms-of-service" Underline="Underline.None" Typo="Typo.inherit" Target="Target._blank">Terms of Service<MudIcon Icon="@Icons.Material.Filled.OpenInNew" /></MudLink>
+                        before you can take this survey.
+                    </span>
+                </MudText>
+                <div class="options-container">
+                <MudPaper Elevation="0" Class="pa-2">
+                    <MudRadioGroup T="bool" @bind-Value="AgreedToTerms" Disabled="AgreedToTerms">
+                        <MudStack Spacing="2">
+                            
+                            <MudRadio Color="Color.Primary" Label="I Agree" Value="true" />
+                            <MudRadio Color="Color.Primary" Label="I Disagree" Value="false" />
+                            
+                        </MudStack>
+                    </MudRadioGroup>
+                </MudPaper>
+                </div>
+                </div>
+            }
 
             @foreach (var question in Survey.Questions.OrderBy(x => x.QuestionNumber))
             {
@@ -45,7 +72,7 @@
                                 MultipleChoiceAnswerViewModel answer = question.Answers.FirstOrDefault() as MultipleChoiceAnswerViewModel;
 
                                 <MudPaper Elevation="0" Class="pa-2">
-                                    <MudRadioGroup @key="question" T="int" Value="answer.SelectedOptionId" ValueChanged="@((v) => HandleAnswerQuestion(answer, v))" Disabled="ViewAnswers" >
+                                    <MudRadioGroup @key="question" T="int" Value="answer.SelectedOptionId" ValueChanged="@((v) => HandleAnswerQuestion(answer, v))" Disabled="@(ViewAnswers || (IsAnonymousUser && !AgreedToTerms))" >
                                         <MudStack Spacing="2">
                                             @foreach (var option in ((MultipleChoiceQuestionViewModel)question).Options.OrderBy(o => o.Order))
                                             {
@@ -60,7 +87,7 @@
                                 Rating1To10AnswerViewModel answer = question.Answers.FirstOrDefault() as Rating1To10AnswerViewModel;
 
                                 <MudPaper Elevation="0" Class="pa-2">
-                                    <MudRadioGroup @key="question" T="int" Value="answer.SelectedOptionId" ValueChanged="@((v) => HandleAnswerQuestion(answer, v))" Disabled="ViewAnswers">
+                                    <MudRadioGroup @key="question" T="int" Value="answer.SelectedOptionId" ValueChanged="@((v) => HandleAnswerQuestion(answer, v))" Disabled="@(ViewAnswers || (IsAnonymousUser && !AgreedToTerms))">
                                         <div class="rating-options">
                                             @for (int i = 1; i <= 10; i++)
                                             {
@@ -85,14 +112,14 @@
                                 Variant="Variant.Outlined"
                                 FullWidth="true"
                                 Lines="3"
-                                Disabled="ViewAnswers" />
+                                Disabled="@(ViewAnswers || (IsAnonymousUser && !AgreedToTerms))" />
                             }
                             else if (question.QuestionType == QuestionType.TrueFalse)
                             {
                                 TrueFalseAnswerViewModel answer = question.Answers.FirstOrDefault() as TrueFalseAnswerViewModel;
 
                                 <MudPaper Elevation="0" Class="pa-2">
-                                    <MudRadioGroup @key="question" T="bool?" Value="answer.Value" ValueChanged="@((v) => HandleAnswerQuestion(answer, v))" Disabled="ViewAnswers">
+                                    <MudRadioGroup @key="question" T="bool?" Value="answer.Value" ValueChanged="@((v) => HandleAnswerQuestion(answer, v))" Disabled="@(ViewAnswers || (IsAnonymousUser && !AgreedToTerms))">
                                         <MudStack Row="true" Spacing="4">
                                             <MudRadio Color="Color.Primary" T="bool?" Label="True" Value="@((bool?)true)" />
                                             <MudRadio Color="Color.Primary" T="bool?" Label="False" Value="@((bool?)false)" />
@@ -124,7 +151,7 @@
                                             Label="@option.OptionText"
                                             Value="@saAnswer.SelectedOptions[index]"
                                             ValueChanged="@((bool v) => HandleSelectAllThatApplyOption(saAnswer, index, v, option.Id))"
-                                            Disabled="ViewAnswers" />
+                                            Disabled="@(ViewAnswers || (IsAnonymousUser && !AgreedToTerms))" />
                                         }
                                     </MudStack>
                                 </MudPaper>
@@ -141,7 +168,7 @@
                                Color="Color.Primary"
                                Size="MudBlazor.Size.Large"
                                OnClick="@(() => SubmitSurvey())"
-                               Disabled="@Preview"
+                               Disabled="@(ViewAnswers || (IsAnonymousUser && !AgreedToTerms))"
                                title="@(Preview ? "Survey cannot be submitted in Preview mode" : "Submit")"
                                Class="survey-submit-btn">
                         Submit Survey

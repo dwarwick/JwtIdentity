@@ -1,4 +1,5 @@
-﻿using System.Net.Http.Json;
+﻿using System.Dynamic;
+using System.Net.Http.Json;
 using System.Security.Claims;
 
 namespace JwtIdentity.Client.Pages.Survey
@@ -27,6 +28,10 @@ namespace JwtIdentity.Client.Pages.Survey
         private bool disposed = false;
 
         protected bool Loading { get; set; } = true;
+
+        protected bool IsAnonymousUser { get; set; }
+
+        protected bool AgreedToTerms { get; set; }
 
         protected override async Task OnInitializedAsync()
         {
@@ -67,7 +72,9 @@ namespace JwtIdentity.Client.Pages.Survey
             var authState = await AuthStateProvider.GetAuthenticationStateAsync();
             ClaimsPrincipal user = authState.User;
 
-            if (!user.Identity.IsAuthenticated)
+            IsAnonymousUser = !user.Identity.IsAuthenticated;
+
+            if (IsAnonymousUser)
             {
                 Response<ApplicationUserViewModel> loginResponse = await AuthService.Login(new ApplicationUserViewModel() { UserName = "logmein", Password = "123" });
                 if (!loginResponse.Success)

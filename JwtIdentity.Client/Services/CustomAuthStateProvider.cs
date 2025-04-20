@@ -66,6 +66,8 @@ namespace JwtIdentity.Client.Services
             var user = new ClaimsPrincipal(new ClaimsIdentity(claims, "jwt"));
             var authState = Task.FromResult(new AuthenticationState(user));
             this.NotifyAuthenticationStateChanged(authState);
+
+            await GetAuthenticationStateAsync();
         }
 
         // ... other code ...
