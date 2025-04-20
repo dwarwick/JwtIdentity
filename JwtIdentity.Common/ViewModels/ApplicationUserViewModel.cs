@@ -22,5 +22,8 @@
         public string Theme { get; set; }
         public string Token { get; set; }
         public string Password { get; set; }
+
+        public List<string> Roles { get; set; } = new List<string>();
+        public List<string> Permissions { get; set; } = new List<string>();
     }
 }

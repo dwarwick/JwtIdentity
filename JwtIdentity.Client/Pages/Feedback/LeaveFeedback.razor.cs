@@ -15,15 +15,11 @@ namespace JwtIdentity.Client.Pages.Feedback
 
         protected override async Task OnInitializedAsync()
         {
-            // Check if user is authenticated
-            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
-            var user = authState.User;
-
-            if (!user.Identity.IsAuthenticated)
+            if (((CustomAuthStateProvider)AuthStateProvider).CurrentUser == null || !((CustomAuthStateProvider)AuthStateProvider).CurrentUser.Permissions.Contains(Permissions.LeaveFeedback))
             {
-                // Redirect to login page if not authenticated
-                Snackbar.Add("You must be logged in to leave feedback", Severity.Warning);
-                NavigationManager.NavigateTo("/login?returnUrl=/feedback");
+                // Redirect to home page if user does not have permission
+                Snackbar.Add("You do not have permission to leave feedback", Severity.Warning);
+                NavigationManager.NavigateTo("/");
                 return;
             }
 

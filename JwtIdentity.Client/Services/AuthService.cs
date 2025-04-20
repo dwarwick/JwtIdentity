@@ -33,8 +33,6 @@ namespace JwtIdentity.Client.Services
 
                 if (((CustomAuthStateProvider)_customAuthStateProvider).CurrentUser != null && !string.IsNullOrEmpty(((CustomAuthStateProvider)_customAuthStateProvider).CurrentUser?.Token))
                 {
-
-
                     response = new Response<ApplicationUserViewModel>
                     {
                         Data = ((CustomAuthStateProvider)_customAuthStateProvider).CurrentUser,

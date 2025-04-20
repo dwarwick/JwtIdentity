@@ -55,7 +55,7 @@ namespace JwtIdentity.Controllers
 
                 ApplicationUserViewModel applicationUserViewModel = _mapper.Map<ApplicationUserViewModel>(user);
 
-                applicationUserViewModel.Token = Token;
+                applicationUserViewModel.Token = Token;                
 
                 // 'Response' is the HttpResponse for the current request
                 Response.Cookies.Append(

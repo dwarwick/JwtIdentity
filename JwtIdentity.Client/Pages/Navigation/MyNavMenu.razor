@@ -34,10 +34,13 @@
         </AuthorizeView>
         <AuthorizeView>
             <Authorized>
-                <MudMenu Label="Feedback" Variant="Variant.Text" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Color="Color.Inherit">
-                    <MudMenuItem Href="/feedback">Submit Feedback</MudMenuItem>
-                    <MudMenuItem Href="/feedback/my">My Feedback</MudMenuItem>
-                </MudMenu>
+                @if (((CustomAuthStateProvider)AuthStateProvider).CurrentUser != null && (((CustomAuthStateProvider)AuthStateProvider!).CurrentUser?.Permissions.Contains(Permissions.LeaveFeedback) ?? false))
+                {
+                    <MudMenu Label="Feedback" Variant="Variant.Text" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Color="Color.Inherit">                    
+                        <MudMenuItem Href="/feedback">Leave Feedback</MudMenuItem>                                    
+                        <MudMenuItem Href="/feedback/my">My Feedback</MudMenuItem>
+                    </MudMenu>
+                }
             </Authorized>            
         </AuthorizeView>
         <div class="mx-1">
@@ -88,10 +91,13 @@
         </AuthorizeView>
         <AuthorizeView>
             <Authorized>
-                <MudNavGroup Title="Feedback" Expanded="false">
-                    <MudNavLink Href="/feedback">Submit Feedback</MudNavLink>
-                    <MudNavLink Href="/feedback/my">My Feedback</MudNavLink>
-                </MudNavGroup>
+                @if (((CustomAuthStateProvider)AuthStateProvider).CurrentUser != null && (((CustomAuthStateProvider)AuthStateProvider!).CurrentUser?.Permissions.Contains(Permissions.LeaveFeedback) ?? false))
+                {
+                    <MudNavGroup Title="Feedback" Expanded="false">                    
+                        <MudNavLink Href="/feedback">Leave Feedback</MudNavLink>                                    
+                        <MudNavLink Href="/feedback/my">My Feedback</MudNavLink>
+                    </MudNavGroup>
+                }   
             </Authorized>            
         </AuthorizeView>
     </MudNavMenu>
