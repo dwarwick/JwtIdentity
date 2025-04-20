@@ -21,7 +21,7 @@ using Microsoft.Extensions.Configuration;
 using Moq;
 using NUnit.Framework;
 
-namespace JwtIdentity.Tests
+namespace JwtIdentity.Tests.ControllerTests
 {
     [TestFixture]
     public class AuthControllerTests : TestBase

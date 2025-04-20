@@ -51,15 +51,19 @@
                 return BadRequest();
             }
 
-            ApplicationUser applicationUser = _mapper.Map<ApplicationUser>(applicationUserViewModel);
+            var applicationUser = await _context.ApplicationUsers.FindAsync(id);
+            if (applicationUser == null)
+            {
+                return NotFound();
+            }
 
+            // Map updated fields from the view model to the existing entity
+            _mapper.Map(applicationUserViewModel, applicationUser);
             applicationUser.UpdatedDate = DateTime.UtcNow;
-
-            _context.Entry(applicationUser).State = EntityState.Modified;
 
             try
             {
-                _ = await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)
             {

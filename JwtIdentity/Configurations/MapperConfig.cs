@@ -11,7 +11,11 @@
                 .ForMember(x => x.CreatedBy, options => options.Ignore());
 
             _ = CreateMap<ApplicationUser, ApplicationUserViewModel>().ReverseMap();
-            
+            _ = CreateMap<ApplicationUserViewModel, ApplicationUser>()
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.UserName))
+                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
+                .ForMember(dest => dest.Theme, opt => opt.MapFrom(src => src.Theme));
+
             // Updated mapping for ApplicationRole and RoleClaim
             _ = CreateMap<ApplicationRole, ApplicationRoleViewModel>()
                 .ForMember(dest => dest.Claims, opt => opt

@@ -89,7 +89,7 @@ namespace JwtIdentity.Tests
         {
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.NameIdentifier, username),
+                new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
                 new Claim(ClaimTypes.Name, username),
                 new Claim("uid", userId.ToString())
             };
