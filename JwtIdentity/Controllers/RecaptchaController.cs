@@ -7,10 +7,12 @@ namespace JwtIdentity.Controllers
     public class RecaptchaController : ControllerBase
     {
         private readonly IConfiguration configuration;
+        private readonly HttpClient _client;
 
-        public RecaptchaController(IConfiguration configuration)
+        public RecaptchaController(IConfiguration configuration, HttpClient client = null)
         {
             this.configuration = configuration;
+            _client = client ?? new HttpClient();
         }
 
         [HttpPost("validate")]
@@ -27,14 +29,13 @@ namespace JwtIdentity.Controllers
         {
             string secretKey = configuration["Recaptcha:SecretKey"];
             var parameters = new Dictionary<string, string>
-        {
-            { "secret", secretKey },
-            { "response", token },
-            { "remoteip", remoteIp }
-        };
+            {
+                { "secret", secretKey },
+                { "response", token },
+                { "remoteip", remoteIp }
+            };
 
-            using var client = new HttpClient();
-            var response = await client.PostAsync("https://www.google.com/recaptcha/api/siteverify", new FormUrlEncodedContent(parameters));
+            var response = await _client.PostAsync("https://www.google.com/recaptcha/api/siteverify", new FormUrlEncodedContent(parameters));
             if (response.IsSuccessStatusCode)
             {
                 var jsonString = await response.Content.ReadAsStringAsync();

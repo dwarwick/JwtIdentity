@@ -70,6 +70,8 @@ namespace JwtIdentity.Controllers
         public async Task<ActionResult<IEnumerable<SurveyViewModel>>> GetSurveysICreated()
         {
             var createdById = authService.GetUserId(User);
+            if (createdById == 0)
+                return Unauthorized();
             var surveys = await _context.Surveys
                 .Include(s => s.Questions.OrderBy(q => q.QuestionNumber))
                 .Where(s => s.CreatedById == createdById)
@@ -130,11 +132,12 @@ namespace JwtIdentity.Controllers
         [Authorize(Policy = $"{Permissions.CreateSurvey}")]
         public async Task<ActionResult<SurveyViewModel>> PostSurvey(SurveyViewModel surveyViewModel)
         {
+            int createdById = authService.GetUserId(User);
+            if (createdById == 0)
+                return Unauthorized();
             var survey = _mapper.Map<Survey>(surveyViewModel);
 
             if (survey == null) return BadRequest();
-
-            int createdById = authService.GetUserId(User);
 
             if (survey.Id == 0)
             { // new survey
