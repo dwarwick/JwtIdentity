@@ -107,7 +107,7 @@ namespace JwtIdentity.Data
             );
 
             var type = typeof(Permissions);
-            List<string>? AllPermissions;
+            List<string> AllPermissions;
 
             AllPermissions = type.GetFields().Select(q => q.Name).ToList();
 

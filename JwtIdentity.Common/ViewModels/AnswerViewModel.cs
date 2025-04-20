@@ -21,7 +21,7 @@ namespace JwtIdentity.Common.ViewModels
             => this is TrueFalseAnswerViewModel tf ? tf.Value : null;
 
         // For Text answers, cast
-        public string? TextValue
+        public string TextValue
             => this is TextAnswerViewModel ta ? ta.Text : null;
 
         // For multiple/single choice, etc. 

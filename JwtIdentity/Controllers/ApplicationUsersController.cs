@@ -6,11 +6,13 @@
     {
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
+        private readonly IApiAuthService _apiAuthService;
 
-        public ApplicationUserController(ApplicationDbContext context, IMapper mapper)
+        public ApplicationUserController(ApplicationDbContext context, IMapper mapper, IApiAuthService apiAuthService)
         {
             _context = context;
             _mapper = mapper;
+            _apiAuthService = apiAuthService;
         }
 
         // GET: api/ApplicationUsers
@@ -31,7 +33,12 @@
                 return NotFound();
             }
 
-            return _mapper.Map<ApplicationUserViewModel>(applicationUser);
+            // Map the ApplicationUser to ApplicationUserViewModel
+            ApplicationUserViewModel applicationUserViewModel = _mapper.Map<ApplicationUserViewModel>(applicationUser);
+            applicationUserViewModel.Roles = await _apiAuthService.GetUserRoles(User);
+            applicationUserViewModel.Permissions = _apiAuthService.GetUserPermissions(User);
+
+            return applicationUserViewModel;
         }
 
         // PUT: api/ApplicationUsers/5

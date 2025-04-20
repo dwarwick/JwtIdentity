@@ -65,14 +65,44 @@ namespace JwtIdentity.Controllers
         }
 
         // GET: api/Survey/MySurveys
-        [HttpGet("MySurveys")]
+        [HttpGet("surveysicreated")]
         [Authorize(Policy = $"{Permissions.CreateSurvey}")]
-        public async Task<ActionResult<IEnumerable<SurveyViewModel>>> GetMySurveys()
+        public async Task<ActionResult<IEnumerable<SurveyViewModel>>> GetSurveysICreated()
         {
             var createdById = authService.GetUserId(User);
             var surveys = await _context.Surveys
                 .Include(s => s.Questions.OrderBy(q => q.QuestionNumber))
                 .Where(s => s.CreatedById == createdById)
+                .ToListAsync();
+
+            // Map to view models
+            var surveyViewModels = _mapper.Map<IEnumerable<SurveyViewModel>>(surveys).ToList();
+
+            // For each survey, get the count of unique users who have completed the survey
+            for (int i = 0; i < surveys.Count; i++)
+            {
+                // Query to count distinct users who have completed answers for this survey
+                var responseCount = await _context.Answers
+                    .Where(a => a.Question.SurveyId == surveys[i].Id && a.Complete)
+                    .Select(a => a.CreatedById)
+                    .Distinct()
+                    .CountAsync();
+
+                // Assign the count to the corresponding view model
+                surveyViewModels[i].NumberOfResponses = responseCount;
+            }
+
+            return Ok(surveyViewModels);
+        }
+
+        [HttpGet("surveysianswered")]
+        [Authorize(Policy = $"{Permissions.CreateSurvey}")]
+        public async Task<ActionResult<IEnumerable<SurveyViewModel>>> GetSurveysIAnswered()
+        {
+            var createdById = authService.GetUserId(User);
+            var surveys = await _context.Surveys
+                .Include(s => s.Questions.OrderBy(q => q.QuestionNumber)).ThenInclude(q => q.Answers.Where(a => a.CreatedById == createdById))
+                .Where(s => s.Questions.Any(q => q.Answers.Any(a => a.CreatedById == createdById)))
                 .ToListAsync();
 
             // Map to view models

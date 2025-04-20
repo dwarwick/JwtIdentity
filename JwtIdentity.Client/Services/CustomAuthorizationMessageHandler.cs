@@ -5,7 +5,7 @@
         private readonly NavigationManager _navigationManager;
         private readonly ISnackbar snackbar;
 
-        public event Action? OnUnauthorized;
+        public event Action OnUnauthorized;
 
         public CustomAuthorizationMessageHandler(NavigationManager navigationManager, ISnackbar snackbar)
         {

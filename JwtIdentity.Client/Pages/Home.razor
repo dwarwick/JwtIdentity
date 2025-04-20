@@ -1,51 +1,75 @@
 ﻿@page "/"
-@using Syncfusion.Blazor.Calendars
 
-<PageTitle>Survey Shark - Create and Share Surveys</PageTitle>
+@* Add a comment to indicate that meta tags for this page are dynamically generated in App.razor *@
+@* Meta tags for SEO are handled in App.razor based on the current path *@
 
-<MudContainer Class="mt-4 pb-2">
+<PageTitle>Why Create Online Surveys?</PageTitle>
+
+<MudContainer Class="mt-4 pb-16">
     <MudGrid>
-        <MudItem xs="12" Class="d-flex justify-center">
-            <MudStack>
-                <MudImage Src="images/SurveySharkText_250_75.png" Alt="Survey Hero Image" Class="img-fluid align-self-center" Style="max-width: 50%; height: auto;" />
-                <MudText Typo="Typo.h3" Class="text-center">Create and Share Surveys</MudText>
-            </MudStack>
-        </MudItem>
-        <MudItem xs="12" Class="d-flex justify-center mb-4">
-            <MudText Typo="Typo.subtitle1" Class="text-center">Our powerful survey platform helps you gather valuable feedback and insights.</MudText>
+        <MudItem xs="12">
+            <MudText Typo="Typo.h3" Class="mb-2">Why Create Online Surveys?</MudText>
+            <MudText Typo="Typo.body1" Class="mb-4">
+                Surveys are powerful tools that help individuals, businesses, political campaigns, investors, and many other groups gather valuable insights and actionable data quickly and effectively. Below are practical examples of how surveys created on <b>SurveyShark.site</b> can add significant value to various activities:
+            </MudText>
         </MudItem>
     </MudGrid>
-
-    <MudGrid Spacing="3">
-        <MudItem xs="12" sm="4">
-            <MudCard Elevation="3" Class="h-100">
-                <MudCardContent>
-                    <MudText Typo="Typo.h5"><MudIcon Icon="@Icons.Material.Filled.Create" Class="mr-2" /> Create</MudText>
-                    <MudText Typo="Typo.body2">Design professional surveys with our intuitive tools. Add various question types and customize your survey to match your needs.</MudText>
-                </MudCardContent>
-            </MudCard>
+    <MudGrid>
+        <MudItem xs="12" sm="6">
+            <MudText Typo="Typo.h5" Class="mt-2 mb-1"><MudIcon Icon="@Icons.Material.Filled.Business" Class="mr-1" /> For Businesses</MudText>
+            <MudList T="string" Dense="true">
+                <MudListItem T="string">Customer Feedback: Gather feedback on products/services with rating scales (1-10), text responses, or multiple-choice questions.</MudListItem>
+                <MudListItem T="string">Market Research: Assess demand or interest in new products with targeted, visual surveys.</MudListItem>
+                <MudListItem T="string">Employee Engagement: Conduct internal surveys to understand satisfaction and identify improvement areas.</MudListItem>
+            </MudList>
+            <MudText Typo="Typo.h5" Class="mt-4 mb-1"><MudIcon Icon="@Icons.Material.Filled.AttachMoney" Class="mr-1" /> For Investors</MudText>
+            <MudList T="string" Dense="true">
+                <MudListItem T="string">Investment Validation: Use surveys to understand consumer sentiment and validate market assumptions.</MudListItem>
+                <MudListItem T="string">Due Diligence: Distribute surveys to management or customers for deeper qualitative insights.</MudListItem>
+            </MudList>
+            <MudText Typo="Typo.h5" Class="mt-4 mb-1"><MudIcon Icon="@Icons.Material.Filled.HowToVote" Class="mr-1" /> For Political Campaigns</MudText>
+            <MudList T="string" Dense="true">
+                <MudListItem T="string">Opinion Polling: Gather voter opinions on candidates, issues, or policies for rapid campaign adaptation.</MudListItem>
+                <MudListItem T="string">Volunteer & Supporter Feedback: Collect structured feedback to improve campaign efficiency.</MudListItem>
+            </MudList>
         </MudItem>
-        <MudItem xs="12" sm="4">
-            <MudCard Elevation="3" Class="h-100">
-                <MudCardContent>
-                    <MudText Typo="Typo.h5"><MudIcon Icon="@Icons.Material.Filled.Share" Class="mr-2" /> Share</MudText>
-                    <MudText Typo="Typo.body2">Distribute your surveys across social media platforms, websites, or via direct links. Reach your audience wherever they are.</MudText>
-                </MudCardContent>
-            </MudCard>
-        </MudItem>
-        <MudItem xs="12" sm="4">
-            <MudCard Elevation="3" Class="h-100">
-                <MudCardContent>
-                    <MudText Typo="Typo.h5"><MudIcon Icon="@Icons.Material.Filled.BarChart" Class="mr-2" /> Analyze</MudText>
-                    <MudText Typo="Typo.body2">Get valuable insights with real-time reporting and analytics. Make data-driven decisions based on your survey results.</MudText>
-                </MudCardContent>
-            </MudCard>
+        <MudItem xs="12" sm="6">
+            <MudText Typo="Typo.h5" Class="mt-2 mb-1"><MudIcon Icon="@Icons.Material.Filled.School" Class="mr-1" /> For Educators & Researchers</MudText>
+            <MudList T="string" Dense="true">
+                <MudListItem T="string">Academic Research: Collect data for studies, papers, or projects efficiently.</MudListItem>
+                <MudListItem T="string">Course Evaluation: Gather student feedback to enhance teaching and course content.</MudListItem>
+            </MudList>
+            <MudText Typo="Typo.h5" Class="mt-4 mb-1"><MudIcon Icon="@Icons.Material.Filled.Event" Class="mr-1" /> For Event Planners</MudText>
+            <MudList T="string" Dense="true">
+                <MudListItem T="string">Event Planning: Capture preferences or restrictions to streamline logistics.</MudListItem>
+                <MudListItem T="string">Post-Event Feedback: Measure success and gather insights for future events.</MudListItem>
+            </MudList>
+            <MudText Typo="Typo.h5" Class="mt-4 mb-1"><MudIcon Icon="@Icons.Material.Filled.VolunteerActivism" Class="mr-1" /> For Non-Profit Organizations</MudText>
+            <MudList T="string" Dense="true">
+                <MudListItem T="string">Donor Insights: Understand motivations and preferences to tailor fundraising.</MudListItem>
+                <MudListItem T="string">Community Needs Assessment: Evaluate priorities to direct resources effectively.</MudListItem>
+            </MudList>
+            <MudText Typo="Typo.h5" Class="mt-4 mb-1"><MudIcon Icon="@Icons.Material.Filled.Person" Class="mr-1" /> Personal Use</MudText>
+            <MudList T="string" Dense="true">
+                <MudListItem T="string">Social Events: Poll friends/family on dates, venues, or menus for gatherings.</MudListItem>
+                <MudListItem T="string">Hobby Groups: Survey members to coordinate activities and gather feedback.</MudListItem>
+            </MudList>
         </MudItem>
     </MudGrid>
-    
-    <MudGrid Class="mt-4">
-        <MudItem xs="12" Class="d-flex justify-center pb-4">
-            <MudButton Href="/survey/create" Variant="Variant.Filled" Color="Color.Primary" Size="MudBlazor.Size.Large" Class="mt-3 mb-16">Get Started</MudButton>
+    <MudDivider Class="my-4" />
+    <MudGrid>
+        <MudItem xs="12" Class="mb-16">
+            <MudText Typo="Typo.h4" Class="mb-2">Why Choose SurveyShark.site?</MudText>
+            <MudList T="string" Dense="true">
+                <MudListItem T="string"><MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Class="mr-1" /> <b>Easy to Create & Share:</b> Design surveys effortlessly and share instantly via Facebook, email, or social media.</MudListItem>
+                <MudListItem T="string"><MudIcon Icon="@Icons.Material.Filled.ListAlt" Color="Color.Info" Class="mr-1" /> <b>Versatile Question Types:</b> Use Text Responses, Multiple Choice, Select All That Apply, True/False, and Ratings (1-10).</MudListItem>
+                <MudListItem T="string"><MudIcon Icon="@Icons.Material.Filled.PieChart" Color="Color.Warning" Class="mr-1" /> <b>Visual Insights:</b> View responses as bar/pie charts or grids, and export to Excel, PDF, and more.</MudListItem>
+                <MudListItem T="string"><MudIcon Icon="@Icons.Material.Filled.Visibility" Color="Color.Primary" Class="mr-1" /> <b>Flexible Participation:</b> Allow anonymous or registered responses for tracking and follow-up.</MudListItem>
+            </MudList>
+            <MudText Typo="Typo.body1" Class="mt-3 mb-2">
+                <b>Sign up for your free SurveyShark.site account today and unlock the potential of your surveys!</b>
+            </MudText>
+            <MudButton Href="/register" Variant="Variant.Filled" Color="Color.Primary" Size="MudBlazor.Size.Large" Class="mx-2">Sign Up Free</MudButton>
         </MudItem>
     </MudGrid>
 </MudContainer>

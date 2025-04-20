@@ -2,6 +2,6 @@
 {
     public class ApplicationRole : IdentityRole<int>
     {
-        public ICollection<RoleClaim>? Claims { get; set; }
+        public ICollection<RoleClaim> Claims { get; set; }
     }
 }

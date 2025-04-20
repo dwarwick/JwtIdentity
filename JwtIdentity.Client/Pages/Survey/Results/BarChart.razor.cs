@@ -1,18 +1,20 @@
 ﻿using Syncfusion.Blazor.Charts;
 
+#nullable enable
+
 namespace JwtIdentity.Client.Pages.Survey.Results
 {
     public class BarChartModel : BlazorBase
     {
         [CascadingParameter(Name = "Theme")]
-        public string Theme { get; set; }
+        public string Theme { get; set; } = string.Empty;
 
         [Parameter]
-        public string SurveyId { get; set; }
+        public string SurveyId { get; set; } = string.Empty;
 
-        protected SfChart chartObj { get; set; }
+        protected SfChart? chartObj { get; set; }
 
-        protected SfAccumulationChart pieChartObj { get; set; }
+        protected SfAccumulationChart? pieChartObj { get; set; }
 
         protected List<SfChart> BarCharts { get; set; } = new();
 
@@ -80,7 +82,7 @@ namespace JwtIdentity.Client.Pages.Survey.Results
 
             if (question != null)
             {
-                BarChartData = SurveyData.Where(x => x.Question == question).Select(x => x.SurveyData).FirstOrDefault();
+                BarChartData = SurveyData.Where(x => x.Question == question).Select(x => x.SurveyData).FirstOrDefault() ?? new List<ChartData>();
 
                 PieChartData = new List<ChartData>();
 
@@ -216,7 +218,7 @@ namespace JwtIdentity.Client.Pages.Survey.Results
             ChartHeight = "100%";
         }
 
-        protected Func<QuestionViewModel, string> QuestionDropdownConverter = p => p == null ? "All Questions" : $"{p?.QuestionNumber}. {p?.Text}";
+        protected Func<QuestionViewModel, string> QuestionDropdownConverter = p => p == null ? "All Questions" : $"{p.QuestionNumber}. {p.Text}";
 
         private string GetRootDomain()
         {

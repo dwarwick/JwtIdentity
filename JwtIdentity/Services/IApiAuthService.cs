@@ -10,5 +10,9 @@ namespace JwtIdentity.Services
         Task<string> GenerateEmailVerificationLink(ApplicationUser user);
 
         int GetUserId(ClaimsPrincipal user);
+
+        Task<List<string>> GetUserRoles(ClaimsPrincipal user);
+
+        List<string> GetUserPermissions(ClaimsPrincipal user);
     }
 }

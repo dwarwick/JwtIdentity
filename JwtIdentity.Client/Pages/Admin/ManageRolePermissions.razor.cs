@@ -1,42 +1,33 @@
-﻿using JwtIdentity.Client.Services;
-using Microsoft.AspNetCore.Components.Authorization;
-
-namespace JwtIdentity.Client.Pages.Admin
+﻿namespace JwtIdentity.Client.Pages.Admin
 {
     public class ManageRolePermissionsModel : BlazorBase, IDisposable
     {
         private bool _disposed = false;
 
-        [Inject]
-        public AuthenticationStateProvider? AuthStateProvider { get; set; }
+        protected List<ApplicationRoleViewModel> applicationRoleViewModels { get; set; }
 
-        [Inject]
-        public NavigationManager? Navigation { get; set; }
+        protected ApplicationRoleViewModel RoleViewModel { get; set; } = new();
+        protected ApplicationUserViewModel applicationUserViewModel;
 
-        protected List<ApplicationRoleViewModel>? applicationRoleViewModels { get; set; }
+        protected List<string> AllPermissions { get; set; }
 
-        protected ApplicationRoleViewModel? RoleViewModel { get; set; } = new();
-        protected ApplicationUserViewModel? applicationUserViewModel;
+        protected List<string> UnusedPermissions { get; set; }
 
-        protected List<string>? AllPermissions { get; set; }
-
-        protected List<string>? UnusedPermissions { get; set; }
-
-        protected string? SelectedPermission { get; set; }
+        protected string SelectedPermission { get; set; }
 
         protected override async Task OnInitializedAsync()
         {
-            ((CustomAuthStateProvider)AuthStateProvider!).OnLoggedOut += NavigateLogin;
+            ((CustomAuthStateProvider)AuthStateProvider).OnLoggedOut += NavigateLogin;
 
             var type = typeof(Permissions);
 
             AllPermissions = type.GetFields().Select(q => q.Name).ToList();
 
-            if (((CustomAuthStateProvider)AuthStateProvider!).CurrentUser != null)
+            if (((CustomAuthStateProvider)AuthStateProvider).CurrentUser != null)
             {
-                applicationUserViewModel = ((CustomAuthStateProvider)AuthStateProvider!).CurrentUser;
+                applicationUserViewModel = ((CustomAuthStateProvider)AuthStateProvider).CurrentUser;
 
-                applicationRoleViewModels = await ApiService!.GetAsync<List<ApplicationRoleViewModel>>($"{ApiEndpoints.Auth}/GetRolesAndPermissions");
+                applicationRoleViewModels = await ApiService.GetAsync<List<ApplicationRoleViewModel>>($"{ApiEndpoints.Auth}/GetRolesAndPermissions");
 
 
                 applicationRoleViewModels = applicationRoleViewModels.Where(x => x.Name != "Administrator").ToList();
@@ -53,7 +44,7 @@ namespace JwtIdentity.Client.Pages.Admin
 
         protected async Task<List<string>> GetUnusedPermissions()
         {
-            var authState = await AuthStateProvider!.GetAuthenticationStateAsync();
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
 
             if (authState.User.Identity?.IsAuthenticated == false)
             {
@@ -85,7 +76,7 @@ namespace JwtIdentity.Client.Pages.Admin
 
         protected async Task AddPermission(string permission)
         {
-            var authState = await AuthStateProvider!.GetAuthenticationStateAsync();
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
 
             if (authState.User.Identity?.IsAuthenticated == false)
             {
@@ -102,7 +93,7 @@ namespace JwtIdentity.Client.Pages.Admin
                     RoleId = RoleViewModel.Id
                 };
 
-                RoleClaimViewModel response = await ApiService!.PostAsync($"{ApiEndpoints.Auth}/addpermission", newPermission);
+                RoleClaimViewModel response = await ApiService.PostAsync($"{ApiEndpoints.Auth}/addpermission", newPermission);
 
 
                 RoleViewModel.Claims.Add(response ?? new());
@@ -118,7 +109,7 @@ namespace JwtIdentity.Client.Pages.Admin
 
         protected async Task DeletePermission(RoleClaimViewModel permission)
         {
-            var authState = await AuthStateProvider!.GetAuthenticationStateAsync();
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
 
             if (authState.User.Identity?.IsAuthenticated == false)
             {
@@ -128,7 +119,7 @@ namespace JwtIdentity.Client.Pages.Admin
 
             if (RoleViewModel != null && RoleViewModel.Claims != null)
             {
-                bool success = await ApiService!.DeleteAsync($"{ApiEndpoints.Auth}/deletepermission/{permission.Id}");
+                bool success = await ApiService.DeleteAsync($"{ApiEndpoints.Auth}/deletepermission/{permission.Id}");
 
                 if (success)
                 {
@@ -158,7 +149,7 @@ namespace JwtIdentity.Client.Pages.Admin
             {
                 if (disposing)
                 {
-                    ((CustomAuthStateProvider)AuthStateProvider!).OnLoggedOut -= NavigateLogin;
+                    ((CustomAuthStateProvider)AuthStateProvider).OnLoggedOut -= NavigateLogin;
                 }
                 _disposed = true;
             }
