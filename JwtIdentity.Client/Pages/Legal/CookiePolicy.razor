@@ -1,0 +1,94 @@
+@page "/cookie-policy"
+@inherits CookiePolicyModel
+
+<PageTitle>Survey Shark - Cookie Policy</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="pt-4 pb-8">
+    <MudText Typo="Typo.h3" Class="mb-4">Survey Shark Cookie Policy</MudText>
+    
+    <MudPaper Elevation="3" Class="pa-4 mb-4">
+        <MudText Typo="Typo.h5" Class="mb-3">Last Updated: April 21, 2025</MudText>
+        
+        <MudText Typo="Typo.h6" Class="mt-4">What Are Cookies?</MudText>
+        <MudText Typo="Typo.body1" Class="mb-4">
+            Cookies are small text files stored on your device by your web browser when you visit a website. 
+            Cookies typically store information that helps improve user experience, functionality, and security.
+        </MudText>
+
+        <MudText Typo="Typo.h6" Class="mt-4">How Does SurveyShark Use Cookies?</MudText>
+        <MudText Typo="Typo.body1" Class="mb-4">
+            SurveyShark uses only essential cookies to securely authenticate users and maintain your login session. 
+            These cookies store a JSON Web Token (JWT) that allows our system to recognize you after you've logged in, 
+            enabling you to access your surveys and account settings without having to log in repeatedly.
+        </MudText>
+
+        <MudText Typo="Typo.h6" Class="mt-4">Cookie Details</MudText>
+        
+        <MudSimpleTable Hover="true" Bordered="true" Striped="true" Class="mb-4">
+            <thead>
+                <tr>
+                    <th>Cookie Name</th>
+                    <th>Purpose</th>
+                    <th>Duration</th>
+                    <th>Essential</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>authToken</td>
+                    <td>Stores your authentication token to keep you securely logged in while navigating the site.</td>
+                    <td>Expires when you log out or after a specified session duration</td>
+                    <td>Yes</td>
+                </tr>
+            </tbody>
+        </MudSimpleTable>
+
+        <MudText Typo="Typo.h6" Class="mt-4">Can I Opt-out?</MudText>
+        <MudText Typo="Typo.body1" Class="mb-4">
+            The authentication cookie we use is essential for providing a secure login experience. Without this cookie, 
+            you will not be able to log in or access your account or surveys. Therefore, opting out or rejecting this 
+            cookie means you will be unable to use SurveyShark's authenticated features.
+        </MudText>
+        
+        <MudText Typo="Typo.body1" Class="mb-4">
+            If you prefer not to accept this cookie, you may still browse publicly accessible areas of SurveyShark, 
+            but login and survey management functionality will not be available to you.
+        </MudText>
+
+        <MudText Typo="Typo.h6" Class="mt-4">Managing Cookies</MudText>
+        <MudText Typo="Typo.body1" Class="mb-4">
+            You can manage, block, or delete cookies through your browser settings. However, please be aware that 
+            disabling the authentication cookie (jwt-token) will prevent you from logging into your account.
+        </MudText>
+        
+        <MudText Typo="Typo.body1" Class="mb-3">
+            Here are links to guides on cookie management for popular browsers:
+        </MudText>
+        <MudList T="string" Dense="true" Class="ml-4 mb-4">
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Language">
+                <MudLink Href="https://support.google.com/chrome/answer/95647" Target="_blank">Google Chrome</MudLink>
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Language">
+                <MudLink Href="https://support.mozilla.org/en-US/kb/cookies-information-websites-store-on-your-computer" Target="_blank">Mozilla Firefox</MudLink>
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Language">
+                <MudLink Href="https://support.microsoft.com/en-us/microsoft-edge/delete-cookies-in-microsoft-edge-63947406-40ac-c3b8-57b9-2a946a29ae09" Target="_blank">Microsoft Edge</MudLink>
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Language">
+                <MudLink Href="https://support.apple.com/guide/safari/manage-cookies-sfri11471/mac" Target="_blank">Apple Safari</MudLink>
+            </MudListItem>
+        </MudList>
+
+        <MudText Typo="Typo.h6" Class="mt-4">Changes to this Policy</MudText>
+        <MudText Typo="Typo.body1" Class="mb-4">
+            We may update this policy from time to time to reflect changes in our practices or for other operational, 
+            legal, or regulatory reasons. Please review this page regularly to stay informed about our cookie usage.
+        </MudText>
+
+        <MudText Typo="Typo.h6" Class="mt-4">More Information</MudText>
+        <MudText Typo="Typo.body1" Class="mb-4">
+            If you have any questions or need further clarification about this policy, please contact us at 
+            <MudLink Href="mailto:customerservice@surveyshark.site">customerservice@surveyshark.site</MudLink>.
+        </MudText>
+    </MudPaper>
+</MudContainer>

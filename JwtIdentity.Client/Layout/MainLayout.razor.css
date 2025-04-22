@@ -147,3 +147,61 @@ html, body {
 body :deep(.mud-appbar.mud-appbar-fixed-top) {
     z-index: 100;
 }
+
+
+/* Cookie Banner Styles */
+.cookie-banner {
+    position: fixed;
+    bottom: -100%;
+    left: 0;
+    right: 0;
+    background-color: var(--mud-palette-surface);
+    color: var(--mud-palette-text-primary);
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
+    z-index: 1100; /* Above footer and most other content */
+    padding: 16px;
+    transition: bottom 0.5s ease;
+    border-top: 1px solid var(--mud-palette-divider);
+}
+
+.cookie-banner.visible {
+    bottom: 40px; /* Position above footer */
+}
+
+.cookie-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.cookie-actions {
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Responsive adjustments for small screens */
+@media (max-width: 600px) {
+    .cookie-banner.visible {
+        bottom: 40px; /* Match footer height */
+    }
+    
+    .cookie-content {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .cookie-actions {
+        margin-top: 16px;
+        flex-direction: column;
+    }
+    
+    .cookie-actions :deep(.mud-button) {
+        width: 100%;
+        margin-bottom: 8px;
+    }
+}

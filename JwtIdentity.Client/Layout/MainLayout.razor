@@ -44,10 +44,32 @@
                     
                     <MudLink Href="/privacy-policy" Underline="Underline.None" Typo="Typo.inherit">Privacy Policy</MudLink>
                     <span>|</span>
+                    <MudLink Href="/cookie-policy" Underline="Underline.None" Typo="Typo.inherit">Cookie Policy</MudLink>
+                    <span>|</span>
                     <MudLink Href="/terms-of-service" Underline="Underline.None" Typo="Typo.inherit">Terms of Service</MudLink>
                 </MudStack>
             </MudText>
         </div>
+        
+        <!-- Cookie Consent Banner -->
+        @if (!_cookiesAccepted)
+        {
+            <div class="cookie-banner @(_showCookieBanner ? "visible" : "")">
+                <div class="cookie-content">
+                    <MudText Typo="Typo.body1">
+                        This site uses cookies to securely authenticate your login session and enhance your browsing experience. By continuing to browse, you consent to our use of cookies. You can read our full cookie Policy<MudLink Href="/cookie-policy" Class="ml-3 mt-3" Underline="Underline.Always">here</MudLink>. 
+                    </MudText>
+                    <div class="cookie-actions">
+                        <MudButton Variant="Variant.Filled" 
+                                  Color="Color.Primary" 
+                                  OnClick="AcceptCookies"
+                                  Class="mt-2">
+                            Accept All Cookies
+                        </MudButton>                        
+                    </div>
+                </div>
+            </div>
+        }
     </div>
 </CascadingValue>
 
@@ -63,6 +85,8 @@
     MudTheme mudTheme = new();
     bool _isDarkMode;
     string _theme = "light";
+    bool _cookiesAccepted = false;
+    bool _showCookieBanner = false;
 
     MudTheme MyCustomLightTheme = new MudTheme()
     {
@@ -112,6 +136,17 @@
                 }
             }
             await SetTheme();
+            
+            // Check if cookies have been accepted
+            var cookiesAccepted = await LocalStorage.GetItemAsync<bool>("cookiesAccepted");
+            _cookiesAccepted = cookiesAccepted;
+            if (!_cookiesAccepted)
+            {
+                // Add a small delay to show the banner after the page loads
+                await Task.Delay(500);
+                _showCookieBanner = true;
+                StateHasChanged();
+            }
         }
         catch (Exception ex)
         {
@@ -156,5 +191,14 @@
     {
         _theme = _isDarkMode ? "dark" : "light";
         await SetTheme();
+    }
+    
+    private async Task AcceptCookies()
+    {
+        // Save cookie acceptance to local storage
+        await LocalStorage.SetItemAsync("cookiesAccepted", true);
+        _cookiesAccepted = true;
+        _showCookieBanner = false;
+        StateHasChanged();
     }
 }
