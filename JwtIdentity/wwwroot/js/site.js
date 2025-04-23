@@ -32,3 +32,346 @@ function renderReCaptcha(containerId, siteKey) {
 function registerCaptchaCallback(dotnetHelper) {
     window.dotnetHelper = dotnetHelper;
 }
+
+function loadGoogleAds() {
+    if (document.getElementById('google-ads-script')) {
+        return; // Avoid loading multiple times
+    }
+
+    const script = document.createElement('script');
+    script.id = 'google-ads-script';
+    script.async = true;
+    script.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6296355313447930';
+    script.crossOrigin = 'anonymous';
+
+    document.head.appendChild(script);
+}
+
+function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+}
+
+function userHasThirdPartyConsent() {
+    const consent = getCookie('ThirdPartyCookieConsent');
+    return consent === 'True' || consent === 'AllCookies';
+}
+
+// Function to set cookie consent through the API
+function setThirdPartyCookieConsent(consentType) {
+    return fetch(`/api/cookie/consent?consent=${consentType}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to save cookie consent');
+            }
+            return response;
+        })
+        .catch(error => {
+            console.error('Error saving cookie consent:', error);
+        });
+}
+
+// Helper functions with success callbacks
+function acceptAllCookies(successCallback) {
+    setThirdPartyCookieConsent('AllCookies')
+        .then(() => {
+            if (typeof successCallback === 'function') {
+                successCallback();
+            }
+            // Load third-party services like Google Ads
+            if (typeof loadGoogleAds === 'function') {
+                loadGoogleAds();
+            }
+        });
+}
+
+function rejectThirdPartyCookies(successCallback) {
+    setThirdPartyCookieConsent('EssentialOnly')
+        .then(() => {
+            if (typeof successCallback === 'function') {
+                successCallback();
+            }
+            // Don't load third-party services
+        });
+}
+
+// Function to delete a cookie by setting its expiration date to the past
+function deleteCookie(name) {
+    console.log(`Attempting to delete cookie: ${name}`);
+    
+    // Try deleting with various path and domain combinations
+    const paths = ['/', '', '/api', '.', null];
+    const domains = [window.location.hostname, '.' + window.location.hostname, null];
+    
+    // Try with many combinations of path/domain to ensure deletion
+    paths.forEach(path => {
+        domains.forEach(domain => {
+            // Standard cookie deletion with path/domain
+            document.cookie = name + '=' +
+                (path ? ';path=' + path : '') +
+                (domain ? ';domain=' + domain : '') +
+                ';expires=Thu, 01 Jan 1970 00:00:01 GMT';
+            
+            // Try with secure flag
+            document.cookie = name + '=' +
+                (path ? ';path=' + path : '') +
+                (domain ? ';domain=' + domain : '') +
+                ';expires=Thu, 01 Jan 1970 00:00:01 GMT;secure';
+            
+            // Try with SameSite flags
+            const sameSiteValues = ['Lax', 'Strict', 'None'];
+            sameSiteValues.forEach(sameSite => {
+                document.cookie = name + '=' +
+                    (path ? ';path=' + path : '') +
+                    (domain ? ';domain=' + domain : '') +
+                    ';expires=Thu, 01 Jan 1970 00:00:01 GMT;SameSite=' + sameSite +
+                    (sameSite === 'None' ? ';Secure' : '');
+            });
+        });
+    });
+    
+    // Verify if the cookie was successfully deleted
+    const stillExists = document.cookie.split(';').some(cookie => 
+        cookie.trim().startsWith(name + '=')
+    );
+    
+    if (stillExists) {
+        console.warn(`Failed to delete cookie: ${name}`);
+    } else {
+        console.log(`Successfully deleted cookie: ${name}`);
+    }
+}
+
+// Function to identify and delete common third-party cookies
+function deleteThirdPartyCookies() {
+    console.log('Deleting third-party cookies...');
+    
+    // Common tracking and analytics cookies - extended list
+    const thirdPartyCookieNames = [
+        // Google Analytics
+        '_ga', '_gid', '_gat', '_ga_', 'AMP_TOKEN', '_gac_',
+        // Google Ads and DoubleClick
+        'IDE', 'DSID', 'NID', 'ANID', 'CONSENT', 'DV', '1P_JAR', 'APISID', 'HSID',
+        'SAPISID', 'SID', 'SIDCC', 'SSID', 'SEARCH_SAMESITE', '__Secure-3PAPISID',
+        '__Secure-3PSID', '__Secure-3PSIDCC', 'PREF', 'VISITOR_INFO1_LIVE',
+        // Facebook
+        '_fbp', 'fr', 'datr', 'c_user', 'xs', 'spin', 'wd', 'sb', 'presence',
+        // Other common analytics
+        '_hjid', '_hjSessionUser', '_hjSession', '_hjAbsoluteSessionInProgress',
+        'amplitude_id', '__hstc', 'hubspotutk', '__hssrc', '__hssc',
+        '_mkto_trk', 'intercom-session-*', 'intercom-id-*'
+    ];
+    
+    // Get all cookies
+    const cookies = document.cookie.split(';');
+    console.log(`Found ${cookies.length} cookies total`);
+    
+    if (cookies.length > 0) {
+        console.log('Current cookies: ' + document.cookie);
+    }
+    
+    // Track essential cookies that should be preserved
+    const essentialCookies = ['authToken', 'ThirdPartyCookieConsent'];
+    
+    // Counter for deleted cookies
+    let deletedCount = 0;
+    
+    // First approach: Delete known third-party cookies by name
+    thirdPartyCookieNames.forEach(cookieName => {
+        deleteCookie(cookieName);
+        deletedCount++;
+    });
+    
+    // Second approach: Check all existing cookies
+    cookies.forEach(cookie => {
+        const cookieParts = cookie.trim().split('=');
+        if (cookieParts.length < 1) return;
+        
+        const cookieName = cookieParts[0].trim();
+        
+        // Skip essential cookies
+        if (essentialCookies.includes(cookieName)) {
+            console.log(`Preserving essential cookie: ${cookieName}`);
+            return;
+        }
+        
+        // If it's not in our essential list, delete it to be safe
+        if (!essentialCookies.includes(cookieName)) {
+            console.log(`Deleting cookie: ${cookieName}`);
+            deleteCookie(cookieName);
+            deletedCount++;
+        }
+    });
+    
+    // Third approach: Use a more aggressive approach to clear all cookies except essential ones
+    document.cookie.split(';').forEach(cookie => {
+        const cookieParts = cookie.trim().split('=');
+        if (cookieParts.length < 1) return;
+        
+        const cookieName = cookieParts[0].trim();
+        
+        // Skip essential cookies
+        if (essentialCookies.includes(cookieName)) {
+            return;
+        }
+        
+        // Delete everything else
+        deleteCookie(cookieName);
+    });
+    
+    // Clean up all third-party elements from the DOM
+    cleanupThirdPartyDomElements();
+    
+    console.log(`Attempted to delete ${deletedCount} third-party cookies`);
+    console.log('Remaining cookies: ' + document.cookie);
+    
+    return deletedCount > 0;
+}
+
+// Function to clean up third-party DOM elements more thoroughly
+function cleanupThirdPartyDomElements() {
+    console.log('Cleaning up third-party DOM elements...');
+    
+    // Remove Google Ads scripts
+    const scripts = document.querySelectorAll('script[src*="google"]');
+    console.log(`Removing ${scripts.length} Google-related scripts`);
+    scripts.forEach(script => script.remove());
+    
+    // Remove Google Ads iframe
+    const googleEsf = document.getElementById('google_esf');
+    if (googleEsf) {
+        console.log('Removing Google ESF iframe');
+        googleEsf.remove();
+    }
+    
+    // Remove AdSense elements
+    const adsenseElements = document.querySelectorAll('ins.adsbygoogle, ins.adsbygoogle-noablate');
+    console.log(`Removing ${adsenseElements.length} AdSense elements`);
+    adsenseElements.forEach(element => element.remove());
+    
+    // Remove any other ad-related iframes
+    const adIframes = document.querySelectorAll('iframe[src*="doubleclick"], iframe[src*="googleads"], iframe[id^="aswift_"]');
+    console.log(`Removing ${adIframes.length} ad-related iframes`);
+    adIframes.forEach(iframe => iframe.remove());
+    
+    // Remove Google ad containers
+    const adContainers = document.querySelectorAll('div[id^="aswift_"][id$="_host"]');
+    console.log(`Removing ${adContainers.length} ad containers`);
+    adContainers.forEach(container => container.remove());
+    
+    // Remove any hidden elements with Google ad attributes
+    const hiddenAdElements = document.querySelectorAll('[data-ad-client], [data-ad-slot], [data-ad-format], [data-adsbygoogle-status]');
+    console.log(`Removing ${hiddenAdElements.length} hidden ad elements`);
+    hiddenAdElements.forEach(element => element.remove());
+    
+    // Clean up Google Analytics objects
+    if (window.ga) {
+        console.log('Disabling Google Analytics');
+        window.ga = undefined;
+    }
+    if (window.google_tag_manager) {
+        console.log('Disabling Google Tag Manager');
+        window.google_tag_manager = undefined;
+    }
+    if (window.dataLayer) {
+        console.log('Clearing dataLayer');
+        window.dataLayer = undefined;
+    }
+    
+    console.log('Third-party DOM cleanup complete');
+}
+
+// Function to handle cleaning up third-party services completely
+function clearThirdPartyServicesCompletely() {
+    console.log('Performing complete third-party service cleanup...');
+    
+    // First call the server-side endpoint to clear cookies (for any cookies that might be accessible to the server)
+    fetch('/api/cookie/clear')
+        .then(response => response.json())
+        .then(data => {
+            console.log('Server-side cookie deletion result:', data);
+            
+            // Clean up DOM elements
+            cleanupThirdPartyDomElements();
+            
+            // Clean up all Google variables to prevent tracking
+            if (window.google) {
+                console.log('Removing window.google');
+                window.google = undefined;
+            }
+            
+            if (window.gaData) {
+                console.log('Removing window.gaData');
+                window.gaData = undefined;
+            }
+            
+            if (window.gaGlobal) {
+                console.log('Removing window.gaGlobal');
+                window.gaGlobal = undefined;
+            }
+            
+            if (window.gaplugins) {
+                console.log('Removing window.gaplugins');
+                window.gaplugins = undefined;
+            }
+            
+            // Clear tracking data from localStorage
+            clearTrackingFromStorage();
+            
+            // Set a flag indicating we want a clean context
+            localStorage.setItem('requireCleanContext', 'true');
+            
+            console.log('Complete third-party service cleanup finished. Reloading for clean context...');
+        })
+        .catch(error => {
+            console.error('Error calling server-side cookie deletion:', error);
+        });
+}
+
+// Helper function to clear tracking data from storage
+function clearTrackingFromStorage() {
+    try {
+        // Common tracking keys in localStorage
+        const trackingKeys = ['_ga', 'google', 'analytics', 'ads', 'tracking'];
+        
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            
+            // Check if the key matches any tracking pattern
+            if (key && trackingKeys.some(trackingKey => 
+                key.toLowerCase().includes(trackingKey.toLowerCase()))) {
+                console.log(`Removing localStorage item: ${key}`);
+                localStorage.removeItem(key);
+            }
+        }
+        
+        // Also check sessionStorage
+        for (let i = 0; i < sessionStorage.length; i++) {
+            const key = sessionStorage.key(i);
+            
+            // Check if the key matches any tracking pattern
+            if (key && key.toLowerCase().includes('google')) {
+                console.log(`Removing sessionStorage item: ${key}`);
+                sessionStorage.removeItem(key);
+            }
+        }
+    } catch (e) {
+        console.error('Error clearing storage items:', e);
+    }
+}
+
+// Update the clear cookie consent function to use our more thorough approach
+function clearCookieConsent() {
+    console.log('Clearing cookie consent...');
+    
+    // Delete the consent cookie itself
+    deleteCookie('ThirdPartyCookieConsent');
+    
+    // Perform complete cleanup of third-party services
+    clearThirdPartyServicesCompletely();
+    
+    console.log('Cookie consent cleared and third-party services disabled');
+    
+    return true;
+}

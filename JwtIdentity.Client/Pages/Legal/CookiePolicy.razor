@@ -7,7 +7,7 @@
     <MudText Typo="Typo.h3" Class="mb-4">Survey Shark Cookie Policy</MudText>
     
     <MudPaper Elevation="3" Class="pa-4 mb-4">
-        <MudText Typo="Typo.h5" Class="mb-3">Last Updated: April 21, 2025</MudText>
+        <MudText Typo="Typo.h5" Class="mb-3">Last Updated: April 22, 2025</MudText>
         
         <MudText Typo="Typo.h6" Class="mt-4">What Are Cookies?</MudText>
         <MudText Typo="Typo.body1" Class="mb-4">
@@ -17,10 +17,23 @@
 
         <MudText Typo="Typo.h6" Class="mt-4">How Does SurveyShark Use Cookies?</MudText>
         <MudText Typo="Typo.body1" Class="mb-4">
-            SurveyShark uses only essential cookies to securely authenticate users and maintain your login session. 
-            These cookies store a JSON Web Token (JWT) that allows our system to recognize you after you've logged in, 
-            enabling you to access your surveys and account settings without having to log in repeatedly.
+            SurveyShark uses both essential cookies for authentication and optional third-party cookies for analytics and features enhancement.
+            You have control over which types of cookies you want to allow.
         </MudText>
+
+        <MudText Typo="Typo.h6" Class="mt-4">Cookie Categories</MudText>
+        <MudText Typo="Typo.body1" Class="mb-3">
+            We categorize our cookies into the following groups:
+        </MudText>
+        
+        <MudList T="string" Dense="true" Class="ml-4 mb-4">
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Security">
+                <strong>Essential Cookies:</strong> These cookies are necessary for the website to function properly. They enable core functionality such as security, network management, and account access. You may disable these by changing your browser settings, but this may affect how the website functions.
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Analytics">
+                <strong>Third-Party Cookies:</strong> These cookies are set by third-party services that appear on our pages, such as Google Analytics, advertising tools, or social media platforms. These cookies help us understand how you interact with our website and allow us to improve our services.
+            </MudListItem>
+        </MudList>
 
         <MudText Typo="Typo.h6" Class="mt-4">Cookie Details</MudText>
         
@@ -30,7 +43,7 @@
                     <th>Cookie Name</th>
                     <th>Purpose</th>
                     <th>Duration</th>
-                    <th>Essential</th>
+                    <th>Category</th>
                 </tr>
             </thead>
             <tbody>
@@ -38,27 +51,45 @@
                     <td>authToken</td>
                     <td>Stores your authentication token to keep you securely logged in while navigating the site.</td>
                     <td>Expires when you log out or after a specified session duration</td>
-                    <td>Yes</td>
+                    <td>Essential</td>
+                </tr>
+                <tr>
+                    <td>ThirdPartyCookieConsent</td>
+                    <td>Stores your preference regarding third-party cookies.</td>
+                    <td>12 months</td>
+                    <td>Essential</td>
+                </tr>
+                <tr>
+                    <td>_ga, _gid, etc.</td>
+                    <td>Google Analytics cookies used to distinguish users and track website usage.</td>
+                    <td>Varies (typically 24 hours to 2 years)</td>
+                    <td>Third-Party</td>
                 </tr>
             </tbody>
         </MudSimpleTable>
 
-        <MudText Typo="Typo.h6" Class="mt-4">Can I Opt-out?</MudText>
+        <MudText Typo="Typo.h6" Class="mt-4">Your Cookie Choices</MudText>
         <MudText Typo="Typo.body1" Class="mb-4">
-            The authentication cookie we use is essential for providing a secure login experience. Without this cookie, 
-            you will not be able to log in or access your account or surveys. Therefore, opting out or rejecting this 
-            cookie means you will be unable to use SurveyShark's authenticated features.
+            When you visit our website, you'll be presented with a cookie banner offering the following options:
         </MudText>
         
+        <MudList T="string" Dense="true" Class="ml-4 mb-4">
+            <MudListItem T="string" Icon="@Icons.Material.Filled.CheckCircle">
+                <strong>Accept All Cookies:</strong> Both essential and third-party cookies will be enabled. This helps us improve our services through analytics and may enhance your experience on our site.
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Block">
+                <strong>Essential Cookies Only:</strong> Only cookies necessary for the website's core functionality will be enabled, while third-party services like Google Analytics will be disabled.
+            </MudListItem>
+        </MudList>
+        
         <MudText Typo="Typo.body1" Class="mb-4">
-            If you prefer not to accept this cookie, you may still browse publicly accessible areas of SurveyShark, 
-            but login and survey management functionality will not be available to you.
+            You can change your preferences at any time through our cookie settings accessible from the footer of our website.
         </MudText>
 
         <MudText Typo="Typo.h6" Class="mt-4">Managing Cookies</MudText>
         <MudText Typo="Typo.body1" Class="mb-4">
-            You can manage, block, or delete cookies through your browser settings. However, please be aware that 
-            disabling the authentication cookie (jwt-token) will prevent you from logging into your account.
+            In addition to using our cookie preference controls, you can manage, block, or delete cookies through your browser settings. However, please be aware that 
+            disabling essential cookies will prevent you from logging into your account and using many features of our service.
         </MudText>
         
         <MudText Typo="Typo.body1" Class="mb-3">

@@ -46,6 +46,8 @@
                     <span>|</span>
                     <MudLink Href="/cookie-policy" Underline="Underline.None" Typo="Typo.inherit">Cookie Policy</MudLink>
                     <span>|</span>
+                    <MudLink Href="javascript:void(0)" OnClick="OpenCookieSettings" Underline="Underline.None" Typo="Typo.inherit">Cookie Settings</MudLink>
+                    <span>|</span>
                     <MudLink Href="/terms-of-service" Underline="Underline.None" Typo="Typo.inherit">Terms of Service</MudLink>
                 </MudStack>
             </MudText>
@@ -57,14 +59,21 @@
             <div class="cookie-banner @(_showCookieBanner ? "visible" : "")">
                 <div class="cookie-content">
                     <MudText Typo="Typo.body1">
-                        This site uses cookies to securely authenticate your login session and enhance your browsing experience. By continuing to browse, you consent to our use of cookies. You can read our full cookie Policy<MudLink Href="/cookie-policy" Class="ml-3 mt-3" Underline="Underline.Always">here</MudLink>. 
+                        This site uses cookies to securely authenticate your login session and enhance your browsing experience. 
+                        You can choose which types of cookies you allow us to use. Read our full <MudLink Href="/cookie-policy" Underline="Underline.Always">Cookie Policy</MudLink> for more information.
                     </MudText>
                     <div class="cookie-actions">
                         <MudButton Variant="Variant.Filled" 
                                   Color="Color.Primary" 
-                                  OnClick="AcceptCookies"
-                                  Class="mt-2">
+                                  OnClick="AcceptAllCookies"
+                                  Class="mt-2 mx-1">
                             Accept All Cookies
+                        </MudButton>
+                        <MudButton Variant="Variant.Outlined" 
+                                  Color="Color.Error" 
+                                  OnClick="RejectThirdPartyCookies"
+                                  Class="mt-2 mx-1">
+                            Essential Cookies Only
                         </MudButton>                        
                     </div>
                 </div>
@@ -147,6 +156,12 @@
                 _showCookieBanner = true;
                 StateHasChanged();
             }
+
+            bool consentGiven = await JSRuntime.InvokeAsync<bool>("userHasThirdPartyConsent");
+            if (consentGiven)
+            {
+                await JSRuntime.InvokeVoidAsync("loadGoogleAds");
+            }
         }
         catch (Exception ex)
         {
@@ -193,12 +208,53 @@
         await SetTheme();
     }
     
-    private async Task AcceptCookies()
+    private async Task AcceptAllCookies()
     {
         // Save cookie acceptance to local storage
         await LocalStorage.SetItemAsync("cookiesAccepted", true);
         _cookiesAccepted = true;
         _showCookieBanner = false;
+        
+        // Call our JavaScript function to set the cookie with the API
+        await JSRuntime.InvokeVoidAsync("acceptAllCookies");
+        
+        // Load Google Ads once consent is given
+        await JSRuntime.InvokeVoidAsync("loadGoogleAds");
+        
+        StateHasChanged();
+    }
+    
+    private async Task RejectThirdPartyCookies()
+    {
+        // First perform a complete cleanup of all third-party services
+        await JSRuntime.InvokeVoidAsync("clearThirdPartyServicesCompletely");
+        
+        // Save cookie acceptance to local storage
+        await LocalStorage.SetItemAsync("cookiesAccepted", true);
+        _cookiesAccepted = true;
+        _showCookieBanner = false;
+        
+        // Call our JavaScript function to set cookie rejection
+        await JSRuntime.InvokeVoidAsync("rejectThirdPartyCookies");
+        
+        // Force page reload to ensure a clean state
+        await JSRuntime.InvokeVoidAsync("eval", "location.reload()");
+        
+        // Note: The state change below will likely not execute due to the page reload
+        StateHasChanged();
+    }
+    
+    private async Task OpenCookieSettings()
+    {
+        // Clear existing cookie consent from localStorage
+        await LocalStorage.RemoveItemAsync("cookiesAccepted");
+        _cookiesAccepted = false;
+        
+        // Call JavaScript to clear the third-party cookies and consent cookie
+        await JSRuntime.InvokeVoidAsync("clearCookieConsent");
+        
+        // Show the cookie banner again
+        _showCookieBanner = true;
         StateHasChanged();
     }
 }
