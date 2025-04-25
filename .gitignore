@@ -400,3 +400,4 @@ FodyWeavers.xsd
 *.sln.iml
 /JwtIdentity/appsettings.Development.json
 /JwtIdentity.Client/wwwroot/appsettings.Development.json
+/SeleniumTests

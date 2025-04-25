@@ -27,6 +27,11 @@
     --survey-submit-btn-bg: #1b6ec2;
     --survey-submit-btn-color: #ffffff;
     --survey-submit-hover-bg: #155ba0;
+    /* Home page section background colors - light mode */
+    --features-bg: #f8f9fa;
+    --sharing-bg: #eaf7ff;
+    --mobile-bg: #f0f8f1;
+    --signup-bg: #f5f3ff;
 }
 
 html, body {
@@ -96,4 +101,20 @@ a, .btn-link {
 
 #ProfilePic:hover {
     box-shadow: 2px 3px 15px 1px var(--forum-edit);
+}
+
+.features-section {
+    background-color: var(--features-bg);
+}
+
+.sharing-section {
+    background-color: var(--sharing-bg);
+}
+
+.mobile-section {
+    background-color: var(--mobile-bg);
+}
+
+.signup-section {
+    background-color: var(--signup-bg);
 }

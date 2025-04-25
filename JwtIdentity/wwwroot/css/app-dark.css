@@ -1,6 +1,4 @@
 ﻿:root {
-    
-    
     /* Survey-specific colors for dark mode */
     --survey-container-bg: #1e1e2d;
     --survey-container-shadow: rgba(0, 0, 0, 0.25);
@@ -13,6 +11,11 @@
     --survey-submit-btn-bg: #5472ea;
     --survey-submit-btn-color: #ffffff;
     --survey-submit-hover-bg: #4361d6;
+    /* Home page section background colors - dark mode */
+    --features-bg: #2d2d3d;
+    --sharing-bg: #1f3045;
+    --mobile-bg: #731644;
+    --signup-bg: #2d2142;
 }
 
 /*:root {
@@ -151,4 +154,19 @@ pre[class*=language-] {
 .token.entity {
     cursor: help
 }
-*/
+    */
+.features-section {
+    background-color: var(--features-bg);
+}
+
+.sharing-section {
+    background-color: var(--sharing-bg);
+}
+
+.mobile-section {
+    background-color: var(--mobile-bg);
+}
+
+.signup-section {
+    background-color: var(--signup-bg);
+}

@@ -80,11 +80,7 @@ TrustLogo("https://surveyshark.site/images/sectigo_trust_seal_sm_82x32.png", "PO
         {
             // Meta tags for the Home page
             var homeMetaTags = new Dictionary<string, string>
-            {
-                ["description"] = "Discover why creating online surveys with SurveyShark.site is essential for businesses, investors, educators, and more. Unlock actionable insights today!",
-                ["keywords"] = "online surveys, survey tools, business insights, market research, customer feedback, SurveyShark",
-                ["og:title"] = "Why Create Online Surveys? - SurveyShark.site",
-                ["og:description"] = "Learn how SurveyShark.site helps businesses, educators, and individuals create impactful surveys to gather valuable insights.",
+            {                
                 ["og:image"] = $"{HttpContextAccessor.HttpContext?.Request.Scheme}://{HttpContextAccessor.HttpContext?.Request.Host}/images/logo_600_1080v1.png",
                 ["og:url"] = $"{HttpContextAccessor.HttpContext?.Request.Scheme}://{HttpContextAccessor.HttpContext?.Request.Host}{HttpContextAccessor.HttpContext?.Request.PathBase}/"
             };
