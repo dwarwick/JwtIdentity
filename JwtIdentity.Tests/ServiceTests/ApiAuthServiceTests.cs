@@ -15,7 +15,7 @@ using JwtIdentity.Common.Helpers;
 namespace JwtIdentity.Tests.ServiceTests
 {
     [TestFixture]
-    public class ApiAuthServiceTests : TestBase
+    public class ApiAuthServiceTests : TestBase<ApiAuthService>
     {
         private ApiAuthService _service;
         private Mock<UserManager<ApplicationUser>> _mockUserManager;

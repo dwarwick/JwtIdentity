@@ -7,38 +7,52 @@
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
         private readonly IApiAuthService _apiAuthService;
+        private readonly ILogger<ApplicationUserController> _logger;
 
-        public ApplicationUserController(ApplicationDbContext context, IMapper mapper, IApiAuthService apiAuthService)
+        public ApplicationUserController(ApplicationDbContext context, IMapper mapper, IApiAuthService apiAuthService, ILogger<ApplicationUserController> logger)
         {
             _context = context;
             _mapper = mapper;
             _apiAuthService = apiAuthService;
-        }
-
-        // GET: api/ApplicationUsers
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<ApplicationUser>>> GetApplicationUsers()
-        {
-            return await _context.ApplicationUsers.ToListAsync();
+            _logger = logger;
         }
 
         // GET: api/ApplicationUsers/5
         [HttpGet("{id}")]
         public async Task<ActionResult<ApplicationUserViewModel>> GetApplicationUser(int id)
         {
-            var applicationUser = await _context.ApplicationUsers.FindAsync(id);
-
-            if (applicationUser == null)
+            _logger.LogInformation("Getting application user with ID {UserId}", id);
+            
+            try
             {
-                return NotFound();
+                var applicationUser = await _context.ApplicationUsers.FindAsync(id);
+
+                if (applicationUser == null)
+                {
+                    _logger.LogWarning("Application user with ID {UserId} not found", id);
+                    return NotFound();
+                }
+
+                _logger.LogDebug("Found user: {UserId}, {UserName}", applicationUser.Id, applicationUser.UserName);
+
+                // Map the ApplicationUser to ApplicationUserViewModel
+                ApplicationUserViewModel applicationUserViewModel = _mapper.Map<ApplicationUserViewModel>(applicationUser);
+                applicationUserViewModel.Roles = await _apiAuthService.GetUserRoles(User);
+                applicationUserViewModel.Permissions = _apiAuthService.GetUserPermissions(User);
+
+                _logger.LogInformation("Successfully retrieved user with ID {UserId}", id);
+                return Ok(applicationUserViewModel);
             }
-
-            // Map the ApplicationUser to ApplicationUserViewModel
-            ApplicationUserViewModel applicationUserViewModel = _mapper.Map<ApplicationUserViewModel>(applicationUser);
-            applicationUserViewModel.Roles = await _apiAuthService.GetUserRoles(User);
-            applicationUserViewModel.Permissions = _apiAuthService.GetUserPermissions(User);
-
-            return applicationUserViewModel;
+            catch (DbUpdateException dbEx)
+            {
+                _logger.LogError(dbEx, "Database error occurred while retrieving user {UserId}: {Message}", id, dbEx.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, "A database error occurred. Please try again later.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving user {UserId}: {Message}", id, ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
+            }
         }
 
         // PUT: api/ApplicationUsers/5
@@ -46,65 +60,66 @@
         [HttpPut("{id}")]
         public async Task<IActionResult> PutApplicationUser(int id, ApplicationUserViewModel applicationUserViewModel)
         {
-            if (applicationUserViewModel == null || id != applicationUserViewModel.Id)
-            {
-                return BadRequest();
-            }
-
-            var applicationUser = await _context.ApplicationUsers.FindAsync(id);
-            if (applicationUser == null)
-            {
-                return NotFound();
-            }
-
-            // Map updated fields from the view model to the existing entity
-            _mapper.Map(applicationUserViewModel, applicationUser);
-            applicationUser.UpdatedDate = DateTime.UtcNow;
-
+            _logger.LogInformation("Updating application user with ID {UserId}", id);
+            
             try
             {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!ApplicationUserExists(id))
+                if (applicationUserViewModel == null)
                 {
+                    _logger.LogWarning("Received null application user view model for ID {UserId}", id);
+                    return BadRequest("User data is required");
+                }
+                
+                if (id != applicationUserViewModel.Id)
+                {
+                    _logger.LogWarning("ID mismatch: URL ID {UrlId} does not match model ID {ModelId}", id, applicationUserViewModel.Id);
+                    return BadRequest("ID in URL must match ID in the request body");
+                }
+
+                var applicationUser = await _context.ApplicationUsers.FindAsync(id);
+                if (applicationUser == null)
+                {
+                    _logger.LogWarning("Application user with ID {UserId} not found", id);
                     return NotFound();
                 }
-                else
+
+                _logger.LogDebug("Found user to update: {UserId}, {UserName}", applicationUser.Id, applicationUser.UserName);
+
+                // Map updated fields from the view model to the existing entity
+                _mapper.Map(applicationUserViewModel, applicationUser);
+                applicationUser.UpdatedDate = DateTime.UtcNow;
+                _logger.LogDebug("Updated user properties and set UpdatedDate to {UpdatedDate}", applicationUser.UpdatedDate);
+
+                try
                 {
-                    throw;
+                    await _context.SaveChangesAsync();
+                    _logger.LogInformation("Successfully updated user with ID {UserId}", id);
+                    return NoContent();
+                }
+                catch (DbUpdateConcurrencyException ex)
+                {
+                    if (!ApplicationUserExists(id))
+                    {
+                        _logger.LogWarning("Application user with ID {UserId} no longer exists", id);
+                        return NotFound();
+                    }
+                    else
+                    {
+                        _logger.LogError(ex, "Concurrency error occurred while updating user {UserId}: {Message}", id, ex.Message);
+                        throw;
+                    }
                 }
             }
-
-            return NoContent();
-        }
-
-        // POST: api/ApplicationUsers
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
-        public async Task<ActionResult<ApplicationUser>> PostApplicationUser(ApplicationUser applicationUser)
-        {
-            _ = _context.ApplicationUsers.Add(applicationUser);
-            _ = await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetApplicationUser", new { id = applicationUser.Id }, applicationUser);
-        }
-
-        // DELETE: api/ApplicationUsers/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteApplicationUser(int id)
-        {
-            var applicationUser = await _context.ApplicationUsers.FindAsync(id);
-            if (applicationUser == null)
+            catch (DbUpdateException dbEx)
             {
-                return NotFound();
+                _logger.LogError(dbEx, "Database error occurred while updating user {UserId}: {Message}", id, dbEx.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, "A database error occurred. Please try again later.");
             }
-
-            _ = _context.ApplicationUsers.Remove(applicationUser);
-            _ = await _context.SaveChangesAsync();
-
-            return NoContent();
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating user {UserId}: {Message}", id, ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
+            }
         }
 
         private bool ApplicationUserExists(int id)

@@ -10,7 +10,7 @@ using JwtIdentity.Common.ViewModels;
 namespace JwtIdentity.Tests.ControllerTests
 {
     [TestFixture]
-    public class AppSettingsControllerTests : TestBase
+    public class AppSettingsControllerTests : TestBase<AppSettingsController>
     {
         private AppSettingsController _controller;
         private Mock<IOptions<AppSettings>> _mockOptions;
@@ -61,7 +61,7 @@ namespace JwtIdentity.Tests.ControllerTests
             _mockOptions.Setup(m => m.Value).Returns(_appSettings);
             
             // Set up controller with mocked options
-            _controller = new AppSettingsController(_mockOptions.Object);
+            _controller = new AppSettingsController(_mockOptions.Object, MockLogger.Object);
         }
 
         [TearDown]

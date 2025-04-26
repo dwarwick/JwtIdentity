@@ -7,7 +7,7 @@ using NUnit.Framework;
 namespace JwtIdentity.Tests.ServiceTests
 {
     [TestFixture]
-    public class SurveyServiceTests : TestBase
+    public class SurveyServiceTests : TestBase<SurveyService>
     {
         private SurveyService _service;
 

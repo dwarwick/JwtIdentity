@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Logging;
 
 namespace JwtIdentity.Controllers
 {
@@ -9,59 +10,65 @@ namespace JwtIdentity.Controllers
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
         private readonly IApiAuthService authService;
+        private readonly ILogger<SurveyController> _logger;
 
-        public SurveyController(ApplicationDbContext context, IMapper mapper, IApiAuthService authService)
+        public SurveyController(ApplicationDbContext context, IMapper mapper, IApiAuthService authService, ILogger<SurveyController> logger)
         {
             _context = context;
             _mapper = mapper;
             this.authService = authService;
-        }
-
-        // GET: api/Survey
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<SurveyViewModel>>> GetSurveys()
-        {
-            var surveys = await _context.Surveys.Include(s => s.Questions).ToListAsync();
-            return Ok(_mapper.Map<IEnumerable<SurveyViewModel>>(surveys));
+            _logger = logger;
         }
 
         // GET: api/Survey/5
         [HttpGet("{guid}")]
         public async Task<ActionResult<SurveyViewModel>> GetSurvey(string guid)
         {
-            var survey = await _context.Surveys.Include(s => s.Questions.OrderBy(x => x.QuestionNumber)).FirstOrDefaultAsync(s => s.Guid == guid);
-
-            if (survey == null)
+            try
             {
-                return NotFound();
+                _logger.LogInformation("Retrieving survey with GUID: {Guid}", guid);
+                
+                var survey = await _context.Surveys.Include(s => s.Questions.OrderBy(x => x.QuestionNumber)).FirstOrDefaultAsync(s => s.Guid == guid);
+
+                if (survey == null)
+                {
+                    _logger.LogWarning("Survey with GUID {Guid} not found", guid);
+                    return NotFound();
+                }
+
+                // Pull out the IDs of any multiple-choice questions in memory
+                var mcIds = survey.Questions
+                    .OfType<MultipleChoiceQuestion>()
+                    .Select(mc => mc.Id)
+                    .ToList();
+
+                // Now load each one's Options
+                await _context.Questions
+                    .OfType<MultipleChoiceQuestion>()
+                    .Where(mc => mcIds.Contains(mc.Id))
+                    .Include(mc => mc.Options.OrderBy(o => o.Order))
+                    .LoadAsync();
+
+                var allIds = survey.Questions
+                    .OfType<SelectAllThatApplyQuestion>()
+                    .Select(mc => mc.Id)
+                    .ToList();
+
+                // Now load each one's Options
+                await _context.Questions
+                    .OfType<SelectAllThatApplyQuestion>()
+                    .Where(mc => allIds.Contains(mc.Id))
+                    .Include(mc => mc.Options.OrderBy(o => o.Order))
+                    .LoadAsync();
+
+                _logger.LogInformation("Successfully retrieved survey with GUID {Guid}, title: {Title}", guid, survey.Title);
+                return Ok(_mapper.Map<SurveyViewModel>(survey));
             }
-
-            // Pull out the IDs of any multiple-choice questions in memory
-            var mcIds = survey.Questions
-                .OfType<MultipleChoiceQuestion>()
-                .Select(mc => mc.Id)
-                .ToList();
-
-            // Now load each one's Options
-            await _context.Questions
-                .OfType<MultipleChoiceQuestion>()
-                .Where(mc => mcIds.Contains(mc.Id))
-                .Include(mc => mc.Options.OrderBy(o => o.Order))
-                .LoadAsync();
-
-            var allIds = survey.Questions
-                .OfType<SelectAllThatApplyQuestion>()
-                .Select(mc => mc.Id)
-                .ToList();
-
-            // Now load each one�s Options
-            await _context.Questions
-                .OfType<SelectAllThatApplyQuestion>()
-                .Where(mc => allIds.Contains(mc.Id))
-                .Include(mc => mc.Options.OrderBy(o => o.Order))
-                .LoadAsync();
-
-            return Ok(_mapper.Map<SurveyViewModel>(survey));
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving survey with GUID {Guid}", guid);
+                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while retrieving the survey");
+            }
         }
 
         // GET: api/Survey/MySurveys
@@ -69,62 +76,94 @@ namespace JwtIdentity.Controllers
         [Authorize(Policy = $"{Permissions.CreateSurvey}")]
         public async Task<ActionResult<IEnumerable<SurveyViewModel>>> GetSurveysICreated()
         {
-            var createdById = authService.GetUserId(User);
-            if (createdById == 0)
-                return Unauthorized();
-            var surveys = await _context.Surveys
-                .Include(s => s.Questions.OrderBy(q => q.QuestionNumber))
-                .Where(s => s.CreatedById == createdById)
-                .ToListAsync();
-
-            // Map to view models
-            var surveyViewModels = _mapper.Map<IEnumerable<SurveyViewModel>>(surveys).ToList();
-
-            // For each survey, get the count of unique users who have completed the survey
-            for (int i = 0; i < surveys.Count; i++)
+            try
             {
-                // Query to count distinct users who have completed answers for this survey
-                var responseCount = await _context.Answers
-                    .Where(a => a.Question.SurveyId == surveys[i].Id && a.Complete)
-                    .Select(a => a.CreatedById)
-                    .Distinct()
-                    .CountAsync();
+                var createdById = authService.GetUserId(User);
+                if (createdById == 0)
+                {
+                    _logger.LogWarning("Unauthorized attempt to access created surveys");
+                    return Unauthorized();
+                }
 
-                // Assign the count to the corresponding view model
-                surveyViewModels[i].NumberOfResponses = responseCount;
+                _logger.LogInformation("Retrieving surveys created by user {UserId}", createdById);
+                
+                var surveys = await _context.Surveys
+                    .Include(s => s.Questions.OrderBy(q => q.QuestionNumber))
+                    .Where(s => s.CreatedById == createdById)
+                    .ToListAsync();
+
+                // Map to view models
+                var surveyViewModels = _mapper.Map<IEnumerable<SurveyViewModel>>(surveys).ToList();
+
+                // For each survey, get the count of unique users who have completed the survey
+                for (int i = 0; i < surveys.Count; i++)
+                {
+                    // Query to count distinct users who have completed answers for this survey
+                    var responseCount = await _context.Answers
+                        .Where(a => a.Question.SurveyId == surveys[i].Id && a.Complete)
+                        .Select(a => a.CreatedById)
+                        .Distinct()
+                        .CountAsync();
+
+                    // Assign the count to the corresponding view model
+                    surveyViewModels[i].NumberOfResponses = responseCount;
+                }
+
+                _logger.LogInformation("Retrieved {Count} surveys created by user {UserId}", surveys.Count, createdById);
+                return Ok(surveyViewModels);
             }
-
-            return Ok(surveyViewModels);
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving surveys created by user");
+                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while retrieving your surveys");
+            }
         }
 
         [HttpGet("surveysianswered")]
         [Authorize(Policy = $"{Permissions.CreateSurvey}")]
         public async Task<ActionResult<IEnumerable<SurveyViewModel>>> GetSurveysIAnswered()
         {
-            var createdById = authService.GetUserId(User);
-            var surveys = await _context.Surveys
-                .Include(s => s.Questions.OrderBy(q => q.QuestionNumber)).ThenInclude(q => q.Answers.Where(a => a.CreatedById == createdById))
-                .Where(s => s.Questions.Any(q => q.Answers.Any(a => a.CreatedById == createdById)))
-                .ToListAsync();
-
-            // Map to view models
-            var surveyViewModels = _mapper.Map<IEnumerable<SurveyViewModel>>(surveys).ToList();
-
-            // For each survey, get the count of unique users who have completed the survey
-            for (int i = 0; i < surveys.Count; i++)
+            try
             {
-                // Query to count distinct users who have completed answers for this survey
-                var responseCount = await _context.Answers
-                    .Where(a => a.Question.SurveyId == surveys[i].Id && a.Complete)
-                    .Select(a => a.CreatedById)
-                    .Distinct()
-                    .CountAsync();
+                var createdById = authService.GetUserId(User);
+                if (createdById == 0)
+                {
+                    _logger.LogWarning("Unauthorized attempt to access answered surveys");
+                    return Unauthorized();
+                }
 
-                // Assign the count to the corresponding view model
-                surveyViewModels[i].NumberOfResponses = responseCount;
+                _logger.LogInformation("Retrieving surveys answered by user {UserId}", createdById);
+                
+                var surveys = await _context.Surveys
+                    .Include(s => s.Questions.OrderBy(q => q.QuestionNumber)).ThenInclude(q => q.Answers.Where(a => a.CreatedById == createdById))
+                    .Where(s => s.Questions.Any(q => q.Answers.Any(a => a.CreatedById == createdById)))
+                    .ToListAsync();
+
+                // Map to view models
+                var surveyViewModels = _mapper.Map<IEnumerable<SurveyViewModel>>(surveys).ToList();
+
+                // For each survey, get the count of unique users who have completed the survey
+                for (int i = 0; i < surveys.Count; i++)
+                {
+                    // Query to count distinct users who have completed answers for this survey
+                    var responseCount = await _context.Answers
+                        .Where(a => a.Question.SurveyId == surveys[i].Id && a.Complete)
+                        .Select(a => a.CreatedById)
+                        .Distinct()
+                        .CountAsync();
+
+                    // Assign the count to the corresponding view model
+                    surveyViewModels[i].NumberOfResponses = responseCount;
+                }
+
+                _logger.LogInformation("Retrieved {Count} surveys answered by user {UserId}", surveys.Count, createdById);
+                return Ok(surveyViewModels);
             }
-
-            return Ok(surveyViewModels);
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving surveys answered by user");
+                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while retrieving the surveys you've answered");
+            }
         }
 
         // POST: api/Survey
@@ -132,220 +171,262 @@ namespace JwtIdentity.Controllers
         [Authorize(Policy = $"{Permissions.CreateSurvey}")]
         public async Task<ActionResult<SurveyViewModel>> PostSurvey(SurveyViewModel surveyViewModel)
         {
-            int createdById = authService.GetUserId(User);
-            if (createdById == 0)
-                return Unauthorized();
-            var survey = _mapper.Map<Survey>(surveyViewModel);
-
-            if (survey == null) return BadRequest();
-
-            if (survey.Id == 0)
-            { // new survey
-                survey.CreatedById = createdById;
-
-                _ = _context.Surveys.Add(survey);
-            }
-            else
-            { // existing survey
-
-                // check if survey title or description has changed. If so, update the survey
-                var existingSurvey = await _context.Surveys.FindAsync(survey.Id);
-
-                if (existingSurvey != null &&
-                    (existingSurvey.Title != survey.Title || existingSurvey.Description != survey.Description))
+            try
+            {
+                int createdById = authService.GetUserId(User);
+                if (createdById == 0)
                 {
-                    existingSurvey.Title = survey.Title;
-                    existingSurvey.Description = survey.Description;
-                    _ = _context.Surveys.Update(existingSurvey);
+                    _logger.LogWarning("Unauthorized attempt to create or update survey");
+                    return Unauthorized();
                 }
 
-                foreach (var passedInQuestion in survey.Questions)
+                _logger.LogInformation("Processing survey creation/update request from user {UserId}", createdById);
+                
+                var survey = _mapper.Map<Survey>(surveyViewModel);
+
+                if (survey == null)
                 {
-                    if (passedInQuestion.Id == 0)
-                    { // new question
-                        passedInQuestion.CreatedById = createdById;
-                        passedInQuestion.SurveyId = survey.Id;
+                    _logger.LogWarning("Invalid survey data submitted by user {UserId}", createdById);
+                    return BadRequest();
+                }
 
-                        _ = _context.Questions.Add(passedInQuestion);
+                if (survey.Id == 0)
+                { // new survey
+                    _logger.LogInformation("Creating new survey with title: {Title}", survey.Title);
+                    survey.CreatedById = createdById;
+                    survey.Guid = survey.Guid ?? Guid.NewGuid().ToString();
+                    _ = _context.Surveys.Add(survey);
+                }
+                else
+                { // existing survey
+                    _logger.LogInformation("Updating existing survey with ID: {SurveyId}", survey.Id);
+
+                    // check if survey title or description has changed. If so, update the survey
+                    var existingSurvey = await _context.Surveys.FindAsync(survey.Id);
+
+                    if (existingSurvey == null)
+                    {
+                        _logger.LogWarning("Survey with ID {SurveyId} not found for update", survey.Id);
+                        return NotFound();
                     }
-                    else
-                    { // existing question
 
-                        // check if question text has changed. If so, update the question
+                    // Verify the user owns this survey
+                    if (existingSurvey.CreatedById != createdById)
+                    {
+                        _logger.LogWarning("User {UserId} attempted to update survey {SurveyId} owned by user {OwnerId}", 
+                            createdById, survey.Id, existingSurvey.CreatedById);
+                        return Forbid();
+                    }
 
-                        switch (passedInQuestion.QuestionType)
-                        {
-                            case QuestionType.Text:
-                                var existingTextQuestion = await _context.Questions.OfType<TextQuestion>().FirstOrDefaultAsync(q => q.Id == passedInQuestion.Id);
+                    if (existingSurvey.Title != survey.Title || existingSurvey.Description != survey.Description)
+                    {
+                        existingSurvey.Title = survey.Title;
+                        existingSurvey.Description = survey.Description;
+                        _ = _context.Surveys.Update(existingSurvey);
+                    }
 
-                                if (existingTextQuestion != null && (existingTextQuestion.Text != passedInQuestion.Text
-                                        || passedInQuestion.QuestionNumber != existingTextQuestion.QuestionNumber))
-                                {
-                                    existingTextQuestion.Text = passedInQuestion.Text;
-                                    existingTextQuestion.QuestionNumber = passedInQuestion.QuestionNumber;
+                    foreach (var passedInQuestion in survey.Questions)
+                    {
+                        if (passedInQuestion.Id == 0)
+                        { // new question
+                            _logger.LogDebug("Adding new question to survey {SurveyId}", survey.Id);
+                            passedInQuestion.CreatedById = createdById;
+                            passedInQuestion.SurveyId = survey.Id;
 
-                                    _ = _context.Questions.Update(existingTextQuestion);
-                                }
+                            _ = _context.Questions.Add(passedInQuestion);
+                        }
+                        else
+                        { // existing question
+                            _logger.LogDebug("Updating existing question {QuestionId} in survey {SurveyId}", 
+                                passedInQuestion.Id, survey.Id);
 
-                                break;
-                            case QuestionType.TrueFalse:
-                                var existingTrueFalseQuestion = await _context.Questions.OfType<TrueFalseQuestion>().FirstOrDefaultAsync(q => q.Id == passedInQuestion.Id);
-                                existingTrueFalseQuestion.Text = passedInQuestion.Text;
-                                existingTrueFalseQuestion.QuestionNumber = passedInQuestion.QuestionNumber;
+                            // check if question text has changed. If so, update the question
+                            switch (passedInQuestion.QuestionType)
+                            {
+                                case QuestionType.Text:
+                                    var existingTextQuestion = await _context.Questions.OfType<TextQuestion>().FirstOrDefaultAsync(q => q.Id == passedInQuestion.Id);
 
-                                _ = _context.Questions.Update(existingTrueFalseQuestion);
-                                break;
-                            case QuestionType.Rating1To10:
-                                var existingRatingQuestion = await _context.Questions.OfType<Rating1To10Question>().FirstOrDefaultAsync(q => q.Id == passedInQuestion.Id);
-                                existingRatingQuestion.Text = passedInQuestion.Text;
-                                existingRatingQuestion.QuestionNumber = passedInQuestion.QuestionNumber;
-                                _ = _context.Questions.Update(existingRatingQuestion);
-                                break;
-                            case QuestionType.MultipleChoice:
-                                var existingMCQuestion = await _context.Questions.OfType<MultipleChoiceQuestion>().AsNoTracking().Include(x => x.Options).FirstOrDefaultAsync(q => q.Id == passedInQuestion.Id);
-
-                                if (existingMCQuestion != null && (existingMCQuestion.Text != passedInQuestion.Text
-                                        || passedInQuestion.QuestionNumber != existingMCQuestion.QuestionNumber))
-                                {
-                                    existingMCQuestion.Text = passedInQuestion.Text;
-                                    existingMCQuestion.QuestionNumber = passedInQuestion.QuestionNumber;
-
-                                    _ = _context.Questions.Update(existingMCQuestion);
-                                }
-
-                                var newMCQuestion = passedInQuestion as MultipleChoiceQuestion;
-
-                                if (existingMCQuestion != null && newMCQuestion != null)
-                                {
-                                    // check if any options have changed
-                                    foreach (var newOption in newMCQuestion.Options ?? new List<ChoiceOption>())
+                                    if (existingTextQuestion != null && (existingTextQuestion.Text != passedInQuestion.Text
+                                            || passedInQuestion.QuestionNumber != existingTextQuestion.QuestionNumber))
                                     {
-                                        if (newOption.Id == 0)
-                                        { // new option
+                                        existingTextQuestion.Text = passedInQuestion.Text;
+                                        existingTextQuestion.QuestionNumber = passedInQuestion.QuestionNumber;
 
-                                            newOption.MultipleChoiceQuestionId = passedInQuestion.Id;
-                                            _ = _context.ChoiceOptions.Add(newOption);
-                                        }
-                                        else
-                                        { // existing option                                            
-                                            var existingOption = existingMCQuestion.Options.FirstOrDefault(o => o.Id == newOption.Id);
+                                        _ = _context.Questions.Update(existingTextQuestion);
+                                    }
 
-                                            if (existingOption != null && (existingOption.OptionText != newOption.OptionText || existingOption.Order != newOption.Order))
-                                            {
-                                                existingOption.OptionText = newOption.OptionText;
-                                                existingOption.Order = newOption.Order;
-                                                _ = _context.ChoiceOptions.Update(existingOption);
+                                    break;
+                                case QuestionType.TrueFalse:
+                                    var existingTrueFalseQuestion = await _context.Questions.OfType<TrueFalseQuestion>().FirstOrDefaultAsync(q => q.Id == passedInQuestion.Id);
+                                    existingTrueFalseQuestion.Text = passedInQuestion.Text;
+                                    existingTrueFalseQuestion.QuestionNumber = passedInQuestion.QuestionNumber;
+
+                                    _ = _context.Questions.Update(existingTrueFalseQuestion);
+                                    break;
+                                case QuestionType.Rating1To10:
+                                    var existingRatingQuestion = await _context.Questions.OfType<Rating1To10Question>().FirstOrDefaultAsync(q => q.Id == passedInQuestion.Id);
+                                    existingRatingQuestion.Text = passedInQuestion.Text;
+                                    existingRatingQuestion.QuestionNumber = passedInQuestion.QuestionNumber;
+                                    _ = _context.Questions.Update(existingRatingQuestion);
+                                    break;
+                                case QuestionType.MultipleChoice:
+                                    var existingMCQuestion = await _context.Questions.OfType<MultipleChoiceQuestion>().AsNoTracking().Include(x => x.Options).FirstOrDefaultAsync(q => q.Id == passedInQuestion.Id);
+
+                                    if (existingMCQuestion != null && (existingMCQuestion.Text != passedInQuestion.Text
+                                            || passedInQuestion.QuestionNumber != existingMCQuestion.QuestionNumber))
+                                    {
+                                        existingMCQuestion.Text = passedInQuestion.Text;
+                                        existingMCQuestion.QuestionNumber = passedInQuestion.QuestionNumber;
+
+                                        _ = _context.Questions.Update(existingMCQuestion);
+                                    }
+
+                                    var newMCQuestion = passedInQuestion as MultipleChoiceQuestion;
+
+                                    if (existingMCQuestion != null && newMCQuestion != null)
+                                    {
+                                        // check if any options have changed
+                                        foreach (var newOption in newMCQuestion.Options ?? new List<ChoiceOption>())
+                                        {
+                                            if (newOption.Id == 0)
+                                            { // new option
+
+                                                newOption.MultipleChoiceQuestionId = passedInQuestion.Id;
+                                                _ = _context.ChoiceOptions.Add(newOption);
+                                            }
+                                            else
+                                            { // existing option                                            
+                                                var existingOption = existingMCQuestion.Options.FirstOrDefault(o => o.Id == newOption.Id);
+
+                                                if (existingOption != null && (existingOption.OptionText != newOption.OptionText || existingOption.Order != newOption.Order))
+                                                {
+                                                    existingOption.OptionText = newOption.OptionText;
+                                                    existingOption.Order = newOption.Order;
+                                                    _ = _context.ChoiceOptions.Update(existingOption);
+                                                }
                                             }
                                         }
                                     }
-                                }
-                                break;
+                                    break;
 
-                            case QuestionType.SelectAllThatApply:
-                                var existingSAQuestion = await _context.Questions.OfType<SelectAllThatApplyQuestion>().AsNoTracking().Include(x => x.Options).FirstOrDefaultAsync(q => q.Id == passedInQuestion.Id);
+                                case QuestionType.SelectAllThatApply:
+                                    var existingSAQuestion = await _context.Questions.OfType<SelectAllThatApplyQuestion>().AsNoTracking().Include(x => x.Options).FirstOrDefaultAsync(q => q.Id == passedInQuestion.Id);
 
-                                if (existingSAQuestion != null && (existingSAQuestion.Text != passedInQuestion.Text
-                                        || passedInQuestion.QuestionNumber != existingSAQuestion.QuestionNumber))
-                                {
-                                    existingSAQuestion.Text = passedInQuestion.Text;
-                                    existingSAQuestion.QuestionNumber = passedInQuestion.QuestionNumber;
-
-                                    _ = _context.Questions.Update(existingSAQuestion);
-                                }
-
-                                var newSAQuestion = passedInQuestion as SelectAllThatApplyQuestion;
-
-                                if (existingSAQuestion != null && newSAQuestion != null)
-                                {
-                                    // check if any options have changed
-                                    foreach (var newOption in newSAQuestion.Options ?? new List<ChoiceOption>())
+                                    if (existingSAQuestion != null && (existingSAQuestion.Text != passedInQuestion.Text
+                                            || passedInQuestion.QuestionNumber != existingSAQuestion.QuestionNumber))
                                     {
-                                        if (newOption.Id == 0)
-                                        { // new option
-                                            newOption.SelectAllThatApplyQuestionId = passedInQuestion.Id;
-                                            _ = _context.ChoiceOptions.Add(newOption);
-                                        }
-                                        else
-                                        { // existing option
-                                            var existingOption = existingSAQuestion.Options.FirstOrDefault(o => o.Id == newOption.Id);
+                                        existingSAQuestion.Text = passedInQuestion.Text;
+                                        existingSAQuestion.QuestionNumber = passedInQuestion.QuestionNumber;
 
-                                            if (existingOption != null && (existingOption.OptionText != newOption.OptionText || existingOption.Order != newOption.Order))
-                                            {
-                                                existingOption.OptionText = newOption.OptionText;
-                                                existingOption.Order = newOption.Order;
-                                                _ = _context.ChoiceOptions.Update(existingOption);
+                                        _ = _context.Questions.Update(existingSAQuestion);
+                                    }
+
+                                    var newSAQuestion = passedInQuestion as SelectAllThatApplyQuestion;
+
+                                    if (existingSAQuestion != null && newSAQuestion != null)
+                                    {
+                                        // check if any options have changed
+                                        foreach (var newOption in newSAQuestion.Options ?? new List<ChoiceOption>())
+                                        {
+                                            if (newOption.Id == 0)
+                                            { // new option
+                                                newOption.SelectAllThatApplyQuestionId = passedInQuestion.Id;
+                                                _ = _context.ChoiceOptions.Add(newOption);
+                                            }
+                                            else
+                                            { // existing option
+                                                var existingOption = existingSAQuestion.Options.FirstOrDefault(o => o.Id == newOption.Id);
+
+                                                if (existingOption != null && (existingOption.OptionText != newOption.OptionText || existingOption.Order != newOption.Order))
+                                                {
+                                                    existingOption.OptionText = newOption.OptionText;
+                                                    existingOption.Order = newOption.Order;
+                                                    _ = _context.ChoiceOptions.Update(existingOption);
+                                                }
                                             }
                                         }
                                     }
-                                }
-                                break;
+                                    break;
+                            }
                         }
                     }
                 }
-            }
 
-            _ = await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(PostSurvey), new { id = survey.Id }, _mapper.Map<SurveyViewModel>(survey));
+                await _context.SaveChangesAsync();
+                _logger.LogInformation("Successfully saved survey {SurveyId} with title: {Title}", survey.Id, survey.Title);
+                return CreatedAtAction(nameof(PostSurvey), new { id = survey.Id }, _mapper.Map<SurveyViewModel>(survey));
+            }
+            catch (DbUpdateException dbEx)
+            {
+                _logger.LogError(dbEx, "Database error occurred while saving survey: {Message}", dbEx.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, "A database error occurred while saving the survey");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while processing survey submission");
+                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while processing your survey submission");
+            }
         }
 
         // PUT: api/Survey
         [HttpPut]
         public async Task<IActionResult> PutSurvey(SurveyViewModel surveyViewModel)
         {
-            if (surveyViewModel == null || surveyViewModel.Id == 0)
-            {
-                return BadRequest("Bad Request");
-            }
-
-            if (!SurveyExists(surveyViewModel.Id))
-            {
-                return NotFound("Survey not found");
-            }
-
-            var survey = await _context.Surveys
-                .Include(s => s.Questions)
-                .FirstOrDefaultAsync(s => s.Id == surveyViewModel.Id);
-
-            if (survey == null)
-            {
-                return NotFound("Survey not found");
-            }
-
-            // Update basic properties only
-            survey.Title = surveyViewModel.Title;
-            survey.Description = surveyViewModel.Description;
-            survey.Published = surveyViewModel.Published;
-
-            // We don't update the Complete property here as we now rely on Answer.Complete
-
             try
             {
+                if (surveyViewModel == null || surveyViewModel.Id == 0)
+                {
+                    _logger.LogWarning("Bad request: Invalid survey data for PUT operation");
+                    return BadRequest("Bad Request");
+                }
+
+                if (!SurveyExists(surveyViewModel.Id))
+                {
+                    _logger.LogWarning("Survey not found for update: {SurveyId}", surveyViewModel.Id);
+                    return NotFound("Survey not found");
+                }
+
+                _logger.LogInformation("Updating survey with ID: {SurveyId}", surveyViewModel.Id);
+                
+                var survey = await _context.Surveys
+                    .Include(s => s.Questions)
+                    .FirstOrDefaultAsync(s => s.Id == surveyViewModel.Id);
+
+                if (survey == null)
+                {
+                    _logger.LogWarning("Survey not found after existence check: {SurveyId}", surveyViewModel.Id);
+                    return NotFound("Survey not found");
+                }
+
+                // Update basic properties only
+                survey.Title = surveyViewModel.Title;
+                survey.Description = surveyViewModel.Description;
+                survey.Published = surveyViewModel.Published;
+
+                // We don't update the Complete property here as we now rely on Answer.Complete
+
                 _ = await _context.SaveChangesAsync();
+                _logger.LogInformation("Successfully updated survey: {SurveyId}", survey.Id);
                 return Ok(_mapper.Map<SurveyViewModel>(survey));
             }
-            catch (DbUpdateConcurrencyException)
+            catch (DbUpdateConcurrencyException ex)
             {
+                _logger.LogError(ex, "Concurrency exception while updating survey {SurveyId}", surveyViewModel?.Id);
                 return BadRequest("Concurrency Exception");
             }
-        }
-
-
-        // DELETE: api/Survey/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteSurvey(int id)
-        {
-            var survey = await _context.Surveys.FindAsync(id);
-            if (survey == null)
+            catch (DbUpdateException dbEx)
             {
-                return NotFound();
+                _logger.LogError(dbEx, "Database error occurred while updating survey {SurveyId}: {Message}", 
+                    surveyViewModel?.Id, dbEx.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, "A database error occurred while updating the survey");
             }
-
-            _ = _context.Surveys.Remove(survey);
-            _ = await _context.SaveChangesAsync();
-
-            return NoContent();
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while updating survey {SurveyId}", surveyViewModel?.Id);
+                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while updating the survey");
+            }
         }
-
+        
         private bool SurveyExists(int id)
         {
             return _context.Surveys.Any(e => e.Id == id);

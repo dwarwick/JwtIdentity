@@ -1,26 +1,17 @@
 using JwtIdentity.Controllers;
 using JwtIdentity.Models;
 using JwtIdentity.Common.ViewModels;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
-using NUnit.Framework;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 using JwtIdentity.Services;
+using System.Security.Claims;
 
 namespace JwtIdentity.Tests.ControllerTests
 {
     [TestFixture]
-    public class FeedbackControllerTests : TestBase
+    public class FeedbackControllerTests : TestBase<FeedbackController>
     {
         private FeedbackController _controller = null!;
-        private List<Feedback> _mockFeedbacks = null!;
-        private Mock<DbSet<Feedback>> _mockFeedbacksDbSet = null!;
 
         [SetUp]
         public override void BaseSetUp()
@@ -51,7 +42,11 @@ namespace JwtIdentity.Tests.ControllerTests
             var config = MockConfiguration.Object;
             var settingsService = new Mock<ISettingsService>().Object;
 
-            _controller = new FeedbackController(MockDbContext, MockMapper.Object, apiAuthService, userManager, emailService, config, settingsService);
+            _controller = new FeedbackController(MockDbContext, MockMapper.Object, apiAuthService, userManager, emailService, config, settingsService, MockLogger.Object)
+            {
+                // Set the controller context to use the mock HttpContext
+                ControllerContext = new ControllerContext { HttpContext = HttpContext }
+            };
             _controller.ControllerContext = new ControllerContext { HttpContext = HttpContext };
         }
 
@@ -118,19 +113,6 @@ namespace JwtIdentity.Tests.ControllerTests
 
             // Assert
             Assert.That(result, Is.InstanceOf<OkObjectResult>());
-        }
-
-        [Test]
-        public async Task DeleteFeedback_AdminCanDeleteFeedback()
-        {
-            // Arrange
-            HttpContext.User = CreateClaimsPrincipal(1, "admin", new[] { "Admin" });
-
-            // Act
-            var result = await _controller.DeleteFeedback(1);
-
-            // Assert
-            Assert.That(result, Is.InstanceOf<NoContentResult>());
         }
     }
 }

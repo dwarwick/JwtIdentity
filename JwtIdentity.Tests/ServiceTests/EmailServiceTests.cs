@@ -9,7 +9,7 @@ using JwtIdentity.Services;
 namespace JwtIdentity.Tests.ServiceTests
 {
     [TestFixture]
-    public class EmailServiceTests : TestBase
+    public class EmailServiceTests : TestBase<EmailService>
     {
         private EmailService _service;
         private Mock<IConfiguration> _mockConfig;

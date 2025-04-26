@@ -90,7 +90,16 @@ namespace JwtIdentity.Client.Services
 
             if (!response.IsSuccessStatusCode)
             {
-                _ = snackbar.Add("There was a problem with the request", Severity.Error);
+                var error = await response.Content.ReadAsStringAsync();
+
+                if (string.IsNullOrEmpty(error))
+                {
+                    _ = snackbar.Add("There was a problem with the request", Severity.Error);                    
+                }
+                else
+                {
+                    _ = snackbar.Add(error, Severity.Error);                    
+                }
             }
 
             return response.IsSuccessStatusCode;

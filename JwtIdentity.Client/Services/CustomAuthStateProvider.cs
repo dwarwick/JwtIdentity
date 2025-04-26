@@ -51,7 +51,7 @@ namespace JwtIdentity.Client.Services
             // get the Id of the user from the claims
             var userId = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
 
-            CurrentUser = await _apiService.GetAsync<ApplicationUserViewModel>($"api/applicationuser/{userId}");
+            CurrentUser = await _apiService.GetAsync<ApplicationUserViewModel>($"{ApiEndpoints.ApplicationUser}/{userId}");
 
             var authState = Task.FromResult(new AuthenticationState(user));
 

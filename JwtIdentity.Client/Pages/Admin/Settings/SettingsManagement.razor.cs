@@ -22,7 +22,7 @@ namespace JwtIdentity.Client.Pages.Admin.Settings
         {
             try
             {
-                Categories = await ApiService.GetAsync<List<string>>("api/settings/categories");
+                Categories = await ApiService.GetAsync<List<string>>($"{ApiEndpoints.Settings}/categories");
                 if (Categories == null)
                 {
                     Categories = new List<string>();
@@ -39,8 +39,8 @@ namespace JwtIdentity.Client.Pages.Admin.Settings
         {
             IsLoading = true;
             try
-            {
-                string url = "api/settings";
+            {                
+                string url = ApiEndpoints.Settings;
                 if (!string.IsNullOrEmpty(SelectedCategory))
                 {
                     url += $"?category={Uri.EscapeDataString(SelectedCategory)}";
@@ -126,12 +126,12 @@ namespace JwtIdentity.Client.Pages.Admin.Settings
             {
                 if (IsNewSetting)
                 {
-                    _ = await ApiService.PostAsync<SettingViewModel>("api/settings", SettingForDialog);
+                    _ = await ApiService.PostAsync<SettingViewModel>(ApiEndpoints.Settings, SettingForDialog);
                     _ = Snackbar.Add($"Setting '{SettingForDialog.Key}' created successfully", Severity.Success);
                 }
                 else
                 {
-                    _ = await ApiService.UpdateAsync<SettingViewModel>($"api/settings/{SettingForDialog.Key}", SettingForDialog);
+                    _ = await ApiService.UpdateAsync<SettingViewModel>($"{ApiEndpoints.Settings}/{SettingForDialog.Key}", SettingForDialog);
                     _ = Snackbar.Add($"Setting '{SettingForDialog.Key}' updated successfully", Severity.Success);
                 }
 
@@ -162,7 +162,7 @@ namespace JwtIdentity.Client.Pages.Admin.Settings
             {
                 try
                 {
-                    _ = await ApiService.DeleteAsync($"api/settings/{setting.Key}");
+                    _ = await ApiService.DeleteAsync($"{ApiEndpoints.Settings}/{setting.Key}");
                     _ = Snackbar.Add($"Setting '{setting.Key}' deleted successfully", Severity.Success);
                     await LoadSettingsAsync();
                 }
@@ -188,7 +188,7 @@ namespace JwtIdentity.Client.Pages.Admin.Settings
                     IsEditable = true
                 };
 
-                _ = await ApiService.PostAsync<SettingViewModel>("api/settings", testSetting);
+                _ = await ApiService.PostAsync<SettingViewModel>(ApiEndpoints.Settings, testSetting);
                 _ = Snackbar.Add("Test setting created successfully", Severity.Success);
 
                 // Reload data

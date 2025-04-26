@@ -75,12 +75,12 @@
         {
             if (isNew)
             {
-                await ApiService.PostAsync<SettingViewModel>("api/settings", setting);
+                await ApiService.PostAsync<SettingViewModel>(ApiEndpoints.Settings, setting);
                 Snackbar.Add($"Setting '{setting.Key}' created successfully", Severity.Success);
             }
             else
             {
-                await ApiService.UpdateAsync<SettingViewModel>($"api/settings/{setting.Key}", setting);
+                await ApiService.UpdateAsync<SettingViewModel>($"{ApiEndpoints.Settings}/{setting.Key}", setting);
                 Snackbar.Add($"Setting '{setting.Key}' updated successfully", Severity.Success);
             }
             

@@ -5,6 +5,7 @@
 @inject IJSRuntime JSRuntime
 @inject ILocalStorageService LocalStorage
 @inject IUtility Utility
+@inject IApiService ApiService
 
 <MudThemeProvider IsDarkMode="@_isDarkMode" />
 
@@ -121,7 +122,7 @@
                 // get the Id of the user from the claims
                 var userId = authState.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
 
-                ApplicationUserViewModel? applicationUserViewModel = await Client.GetFromJsonAsync<ApplicationUserViewModel>($"api/applicationuser/{userId}");
+                ApplicationUserViewModel? applicationUserViewModel = await ApiService.GetAsync<ApplicationUserViewModel>($"{ApiEndpoints.ApplicationUser}/{userId}");
 
                 if (applicationUserViewModel != null)
                 {
@@ -198,7 +199,7 @@
         {
             ((CustomAuthStateProvider)AuthStateProvider!).CurrentUser!.Theme = _theme;
 
-            await Client.PutAsJsonAsync($"api/applicationuser/{((CustomAuthStateProvider)AuthStateProvider!).CurrentUser?.Id}", ((CustomAuthStateProvider)AuthStateProvider!).CurrentUser);
+            await ApiService.UpdateAsync($"{ApiEndpoints.ApplicationUser}/{((CustomAuthStateProvider)AuthStateProvider!).CurrentUser?.Id}", ((CustomAuthStateProvider)AuthStateProvider!).CurrentUser);
         }
     }
 

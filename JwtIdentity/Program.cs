@@ -9,16 +9,22 @@ using Serilog.Sinks.RollingFileAlternate;
 using System.Text;
 using JwtIdentity.Configurations; // Add this for EmailSinkExtensions
 using Serilog.Events;
+using JwtIdentity.Middleware; // Add this for UserNameEnricherMiddleware
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Configure Serilog
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
-    .WriteTo.Console()
-    .WriteTo.Debug()
+    .Enrich.FromLogContext()
+    .WriteTo.Console(outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj} {UserName}{NewLine}{Exception}")
+    .WriteTo.Debug(outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj} {UserName}{NewLine}{Exception}")
     // Replace the line with the error
-    .WriteTo.RollingFileAlternate("logs/log-{Date}.txt", fileSizeLimitBytes: null, retainedFileCountLimit: 30)
+    .WriteTo.RollingFileAlternate(
+        "logs/log-{Date}.txt", 
+        fileSizeLimitBytes: null, 
+        retainedFileCountLimit: 30, 
+        outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj} {UserName}{NewLine}{Properties:j}{NewLine}{Exception}")
     .CreateLogger();
 
 builder.Host.UseSerilog();
@@ -213,11 +219,13 @@ else
 
 app.UseHttpsRedirection();
 
-
 app.UseAntiforgery();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Add the UserNameEnricher middleware after authentication/authorization
+app.UseUserNameEnricher();
 
 app.UseStatusCodePages(context =>
 {

@@ -6,5 +6,6 @@
         public const string CreateSurvey = "CreateSurvey";
         public const string AnswerSurvey = "AnswerSurvey";
         public const string LeaveFeedback = "LeaveFeedback";
+        public const string ManageSettings = "ManageSettings";
     }
 }

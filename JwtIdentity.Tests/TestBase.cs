@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 
@@ -23,7 +24,7 @@ namespace JwtIdentity.Tests
     /// <summary>
     /// Base class for test fixtures providing common mocks and setup
     /// </summary>
-    public class TestBase
+    public class TestBase<T> where T : class
     {
         // Common mocks that will be used across test classes
         protected Mock<UserManager<ApplicationUser>> MockUserManager = null!;
@@ -34,6 +35,8 @@ namespace JwtIdentity.Tests
         protected Mock<IEmailService> MockEmailService = null!;
         protected Mock<IApiAuthService> MockApiAuthService = null!;
         protected DefaultHttpContext HttpContext = null!;
+
+        protected Mock<ILogger<T>> MockLogger = null!;
 
         [OneTimeSetUp]
         public void BaseOneTimeSetUp()
@@ -74,6 +77,8 @@ namespace JwtIdentity.Tests
             
             MockEmailService = new Mock<IEmailService>();
             MockApiAuthService = new Mock<IApiAuthService>();
+
+            MockLogger = new Mock<ILogger<T>>();
         }
 
         [TearDown]

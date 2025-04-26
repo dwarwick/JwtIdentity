@@ -10,7 +10,7 @@ using JwtIdentity.Common.Helpers;
 namespace JwtIdentity.Tests.ConfigurationTests
 {
     [TestFixture]
-    public class MapperConfigTests : TestBase
+    public class MapperConfigTests : TestBase<MapperConfig>
     {
         private IMapper _mapper;
 
