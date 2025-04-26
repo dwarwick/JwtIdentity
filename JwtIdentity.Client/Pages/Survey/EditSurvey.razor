@@ -1,17 +1,18 @@
-﻿@page "/survey/createquestions/{SurveyId}"
+﻿@page "/survey/edit/{SurveyId}"
 @namespace JwtIdentity.Client.Pages.Survey
-@inherits CreateQuestionsModel
+@inherits EditSurveyModel
 @attribute [Authorize(Policy = Permissions.CreateSurvey)]
 
-<PageTitle>Survey Shark - Create Questions</PageTitle>
+<PageTitle>Survey Shark - Edit Survey</PageTitle>
 
 <MudStack Row="true" Justify="Justify.SpaceBetween">
-    <MudText Typo="Typo.h4">Create Questions</MudText>
+    <MudText Typo="Typo.h4">Edit Survey</MudText>
     <MudButton Class="mt-1" ButtonType="ButtonType.Button" Variant="Variant.Filled" Color="Color.Primary" OnClick="PublishSurvey" Disabled="@(Survey.Published)">Publish Survey</MudButton>
 </MudStack>
-<MudText Typo="Typo.h5">Survey Title: @Survey.Title</MudText>
+<MudTextField Label="Survey Title" T="string" Value="Survey.Title" ValueChanged="@((e) => UpdateTitleDescription(e, "title"))" Class="my-2" Variant="Variant.Filled"  />
+<MudTextField Label="Survey Description" T="string" Value="Survey.Description" ValueChanged="@((e) => UpdateTitleDescription(e, "description"))" Class="mb-2" Variant="Variant.Filled" Lines="3" MaxLines="5" AutoGrow="true" Counter="500" MaxLength="500"  />
 
-<div Class="d-md-flex flex-row justify-space-evenly gap-2">
+<div class="d-md-flex flex-row justify-space-evenly gap-2">
 
     @if (!Survey.Published)
     {
