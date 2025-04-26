@@ -59,7 +59,7 @@ namespace JwtIdentity.Client.Pages.Survey.Results
 
         private async Task LoadData()
         {
-            SurveyData = await ApiService.GetAsync<List<SurveyDataViewModel>>($"api/answer/getanswersforsurveyforCharts/{SurveyId}");
+            SurveyData = await ApiService.GetAsync<List<SurveyDataViewModel>>($"{ApiEndpoints.Answer}/getanswersforsurveyforCharts/{SurveyId}");
 
             if (SurveyData != null && SurveyData.Count > 0)
             {

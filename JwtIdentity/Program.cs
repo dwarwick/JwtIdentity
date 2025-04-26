@@ -7,6 +7,8 @@ using Microsoft.OpenApi.Models; // Add this using statement
 using Serilog;
 using Serilog.Sinks.RollingFileAlternate;
 using System.Text;
+using JwtIdentity.Configurations; // Add this for EmailSinkExtensions
+using Serilog.Events;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,9 +17,8 @@ Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
     .WriteTo.Console()
     .WriteTo.Debug()
-
-// Replace the line with the error
-.WriteTo.RollingFileAlternate("logs/log-{Date}.txt", fileSizeLimitBytes: null, retainedFileCountLimit: 30)
+    // Replace the line with the error
+    .WriteTo.RollingFileAlternate("logs/log-{Date}.txt", fileSizeLimitBytes: null, retainedFileCountLimit: 30)
     .CreateLogger();
 
 builder.Host.UseSerilog();
@@ -176,6 +177,25 @@ builder.Services.AddAntiforgery(options =>
 //builder.Services.AddCyclicalReferenceHandling();
 
 var app = builder.Build();
+
+// Configure Serilog to use email sink for errors after services are built
+using (var scope = app.Services.CreateScope())
+{
+    var emailService = scope.ServiceProvider.GetRequiredService<IEmailService>();
+    var customerServiceEmail = builder.Configuration["EmailSettings:CustomerServiceEmail"] ?? "admin@example.com";
+    var applicationName = builder.Configuration["AppSettings:ApplicationName"] ?? "JwtIdentity";
+    
+    // Add email sink to the existing logger configuration
+    Log.Logger = new LoggerConfiguration()
+        .MinimumLevel.Debug()
+        .WriteTo.Logger(Log.Logger)
+        .WriteTo.EmailSink(
+            emailService, 
+            customerServiceEmail, 
+            applicationName, 
+            restrictedToMinimumLevel: LogEventLevel.Error)
+        .CreateLogger();
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
