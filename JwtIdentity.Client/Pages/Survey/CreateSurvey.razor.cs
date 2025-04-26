@@ -14,7 +14,7 @@
             if (response != null && response.Id > 0)
             {
                 _ = Snackbar.Add("Survey Created", MudBlazor.Severity.Success);
-                Navigation.NavigateTo($"/survey/createquestions/{response.Guid}");
+                Navigation.NavigateTo($"/survey/edit/{response.Guid}");
             }
             else
             {

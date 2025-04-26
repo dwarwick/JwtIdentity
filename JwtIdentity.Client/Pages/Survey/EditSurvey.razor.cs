@@ -3,7 +3,7 @@ using Syncfusion.Blazor.Data;
 
 namespace JwtIdentity.Client.Pages.Survey
 {
-    public class CreateQuestionsModel : BlazorBase
+    public class EditSurveyModel : BlazorBase
     {
         private bool ResetQuestions;
 
@@ -485,6 +485,35 @@ namespace JwtIdentity.Client.Pages.Survey
             ExistingQuestionPanelExpanded = false;
             ManualQuestionPanelExpanded = true;
 
+        }
+
+        protected async Task UpdateTitleDescription(string value, string type)
+        {
+            if(string.IsNullOrWhiteSpace(value) || value.Length < 5)
+            {
+                // Show error message if title or description is empty or too short
+                _ = Snackbar.Add("Title/Description must be at least 5 characters long", MudBlazor.Severity.Error);
+                return;
+            }
+
+            if (type == "title")
+            {
+                Survey.Title = value;
+            }
+            else if (type == "description")
+            {
+                Survey.Description = value;
+            }
+        
+        
+            if (await UpdateSurvey())
+            {
+                _ = Snackbar.Add("Update Successful", MudBlazor.Severity.Success);
+            }
+            else
+            {
+                _ = Snackbar.Add("Problem Updating Survey", MudBlazor.Severity.Error);
+            }
         }
     }
 }

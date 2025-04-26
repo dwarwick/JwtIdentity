@@ -81,7 +81,7 @@
                 return;
             }
 
-            NavigationManager.NavigateTo($"/survey/createquestions/{guid}");
+            NavigationManager.NavigateTo($"/survey/edit/{guid}");
         }
 
         protected void ViewCharts(string guid, bool published)
