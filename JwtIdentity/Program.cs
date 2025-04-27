@@ -3,28 +3,57 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.OData;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models; // Add this using statement
+using Microsoft.OpenApi.Models;
 using Serilog;
 using Serilog.Sinks.RollingFileAlternate;
+using Serilog.Sinks.MSSqlServer;
 using System.Text;
-using JwtIdentity.Configurations; // Add this for EmailSinkExtensions
+using System.Data;
+using JwtIdentity.Configurations;
 using Serilog.Events;
-using JwtIdentity.Middleware; // Add this for UserNameEnricherMiddleware
+using JwtIdentity.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Configure Serilog
+var columnOptions = new ColumnOptions
+{
+    AdditionalColumns = new System.Collections.ObjectModel.Collection<SqlColumn>
+    {
+        new SqlColumn
+        {
+            ColumnName = "UserName",
+            PropertyName = "UserName",
+            DataType = SqlDbType.NVarChar,
+            DataLength = 100
+        }
+    }
+};
+// Remove unneeded columns
+columnOptions.Store.Remove(StandardColumn.Properties);
+columnOptions.Store.Remove(StandardColumn.MessageTemplate);
+
+// Configure the main Serilog logger
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
     .Enrich.FromLogContext()
-    .WriteTo.Console(outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj} {UserName}{NewLine}{Exception}")
-    .WriteTo.Debug(outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj} {UserName}{NewLine}{Exception}")
-    // Replace the line with the error
+    .WriteTo.Console(outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}")
+    .WriteTo.Debug(outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}")
     .WriteTo.RollingFileAlternate(
         "logs/log-{Date}.txt", 
         fileSizeLimitBytes: null, 
         retainedFileCountLimit: 30, 
-        outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj} {UserName}{NewLine}{Properties:j}{NewLine}{Exception}")
+        outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj} User: {UserName}{NewLine}{Properties:j}{NewLine}{Exception}")
+    // Add MSSqlServer sink to log warnings and errors to the LogEntries table
+    .WriteTo.MSSqlServer(
+        connectionString: builder.Configuration.GetConnectionString("DefaultConnection"),
+        sinkOptions: new MSSqlServerSinkOptions
+        {
+            TableName = "LogEntries",
+            AutoCreateSqlTable = false, // Table already exists with migrations
+        },
+        columnOptions: columnOptions,
+        restrictedToMinimumLevel: LogEventLevel.Warning) // Only log Warning and above
     .CreateLogger();
 
 builder.Host.UseSerilog();
@@ -168,8 +197,12 @@ builder.Services.AddCors(options =>
 });
 
 // Add Data Protection services with a persistent key ring
+var keyRingPath = Path.Combine(AppContext.BaseDirectory, "KeyRing");
+// Ensure the directory exists
+Directory.CreateDirectory(keyRingPath);
+
 builder.Services.AddDataProtection()
-    .PersistKeysToFileSystem(new DirectoryInfo(Path.Combine(AppContext.BaseDirectory, "KeyRing")))
+    .PersistKeysToFileSystem(new DirectoryInfo(keyRingPath))
     .SetApplicationName("SurveyShark")
     .SetDefaultKeyLifetime(TimeSpan.FromDays(90));
 

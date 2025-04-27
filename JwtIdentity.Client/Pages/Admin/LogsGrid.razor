@@ -64,11 +64,16 @@
                                     }
                                 </Template>
                             </GridColumn>
-                            <GridColumn Field="Message" HeaderText="Message" Width="300" />
                             <GridColumn Field="LoggedAt" HeaderText="Timestamp" Width="170" Format="G" Type="ColumnType.DateTime" />
+                            <GridColumn Field="Controller" HeaderText="Controller" Width="150" />
+                            <GridColumn Field="Action" HeaderText="Action" Width="120" />
+                            <GridColumn Field="Status" HeaderText="Status" Width="100" />
+                            <GridColumn Field="Message" HeaderText="Message" Width="300" />
+                            <GridColumn Field="UserName" HeaderText="User" Width="150" />
+                            <GridColumn Field="IpAddress" HeaderText="IP Address" Width="150" />
+                            <GridColumn Field="RequestMethod" HeaderText="Method" Width="80" />
                             <GridColumn Field="RequestPath" HeaderText="URL Path" Width="200" />
-                            <GridColumn Field="RequestMethod" HeaderText="Method" Width="100" />
-                            <GridColumn Field="StatusCode" HeaderText="Status" Width="100" TextAlign="TextAlign.Center" />
+                            <GridColumn Field="StatusCode" HeaderText="HTTP Status" Width="110" TextAlign="TextAlign.Center" />
                         </GridColumns>
                     </SfGrid>
                 </MudPaper>

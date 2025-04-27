@@ -19,8 +19,8 @@ namespace JwtIdentity.Middleware
                 ? context.User.FindFirst(ClaimTypes.Name)?.Value ?? context.User.FindFirst(ClaimTypes.Email)?.Value ?? "anonymous"
                 : "anonymous";
 
-            // Add the username to the LogContext
-            using (LogContext.PushProperty("UserName", $" [User: {userName}]"))
+            // Add the username to the LogContext - store just the username without extra formatting
+            using (LogContext.PushProperty("UserName", userName))
             {
                 // Call the next delegate/middleware in the pipeline
                 await _next(context);

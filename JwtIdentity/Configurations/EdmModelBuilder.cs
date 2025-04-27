@@ -15,6 +15,9 @@ namespace JwtIdentity.Configurations
             // Register LogEntryViewModel for OData querying
             _ = builder.EntitySet<LogEntryViewModel>("OdataLogEntry");
 
+            // Remove the explicit property registration
+            // We'll let OData conventions handle the properties automatically
+
             return builder.GetEdmModel();
         }
     }

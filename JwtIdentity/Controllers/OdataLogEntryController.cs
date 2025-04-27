@@ -9,9 +9,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace JwtIdentity.Controllers
 {
+    // Keep the controller exactly like OdataQuestionController
     [Route("[controller]")]    
-    [Authorize] // Add this attribute to require authentication
-   
+    [Authorize]
     public class OdataLogEntryController : ODataController
     {
         private readonly ApplicationDbContext _context;
@@ -21,11 +21,12 @@ namespace JwtIdentity.Controllers
             _context = context;
         }
 
-        // GET: odata/logentries
+        // Keep method signature identical to working controller
         [EnableQuery]
         [HttpGet]
         public IQueryable<LogEntryViewModel> Get()
         {
+            // Keep the basic query structure
             return _context.LogEntries
                 .OrderByDescending(l => l.Id)
                 .Select(l => new LogEntryViewModel
@@ -40,64 +41,16 @@ namespace JwtIdentity.Controllers
                     StatusCode = l.StatusCode,
                     ExceptionType = l.ExceptionType,
                     ExceptionMessage = l.ExceptionMessage,
-                    StackTrace = l.StackTrace
+                    StackTrace = l.StackTrace,
+                    // Include new fields
+                    Controller = l.Controller,
+                    Action = l.Action,
+                    IpAddress = l.IpAddress,
+                    UserName = l.UserName,
+                    Status = l.Status
                 });
         }
 
-       /*  // GET: odata/logentry(5)
-        [EnableQuery]
-        [HttpGet("{id}")]
-        public async Task<ActionResult<LogEntryViewModel>> Get(int id)
-        {
-            var logEntry = await _context.LogEntries.FindAsync(id);
-
-            if (logEntry == null)
-            {
-                return NotFound();
-            }
-
-            var logViewModel = new LogEntryViewModel
-            {
-                Id = logEntry.Id,
-                Message = logEntry.Message,
-                Level = logEntry.Level,
-                LoggedAt = logEntry.LoggedAt,
-                RequestPath = logEntry.RequestPath,
-                RequestMethod = logEntry.RequestMethod,
-                Parameters = logEntry.Parameters,
-                StatusCode = logEntry.StatusCode,
-                ExceptionType = logEntry.ExceptionType,
-                ExceptionMessage = logEntry.ExceptionMessage,
-                StackTrace = logEntry.StackTrace
-            };
-
-            return logViewModel;
-        }
-
-        // DELETE: odata/logentry(5)
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
-        {
-            var logEntry = await _context.LogEntries.FindAsync(id);
-            if (logEntry == null)
-            {
-                return NotFound();
-            }
-
-            _context.LogEntries.Remove(logEntry);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
-        }
-
-        // DELETE: odata/logentry/clear
-        [HttpDelete("clear")]
-        public async Task<IActionResult> ClearAllLogs()
-        {
-            _context.LogEntries.RemoveRange(_context.LogEntries);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
-        } */
+        // Remove additional methods for now to simplify
     }
 }

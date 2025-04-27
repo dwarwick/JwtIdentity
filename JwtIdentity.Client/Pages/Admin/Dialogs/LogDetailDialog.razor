@@ -1,5 +1,3 @@
-
-
 <MudDialog>
     <DialogContent>
         <MudGrid>
@@ -12,16 +10,41 @@
                 <MudChip T="string" Size="MudBlazor.Size.Small" Color="@GetColorForLogLevel(Log.Level)">@Log.Level</MudChip>
             </MudItem>
             
+            <MudItem xs="12" md="6">
+                <MudText Typo="Typo.subtitle1">Timestamp</MudText>
+                <MudText Typo="Typo.body1">@Log.LoggedAt.ToString("G")</MudText>
+            </MudItem>
+            
+            <MudItem xs="12" md="6">
+                <MudText Typo="Typo.subtitle1">Status</MudText>
+                <MudText Typo="Typo.body1">@(string.IsNullOrEmpty(Log.Status) ? "-" : Log.Status)</MudText>
+            </MudItem>
+            
+            <MudItem xs="12" md="6">
+                <MudText Typo="Typo.subtitle1">Controller</MudText>
+                <MudText Typo="Typo.body1">@(string.IsNullOrEmpty(Log.Controller) ? "-" : Log.Controller)</MudText>
+            </MudItem>
+            
+            <MudItem xs="12" md="6">
+                <MudText Typo="Typo.subtitle1">Action</MudText>
+                <MudText Typo="Typo.body1">@(string.IsNullOrEmpty(Log.Action) ? "-" : Log.Action)</MudText>
+            </MudItem>
+            
+            <MudItem xs="12" md="6">
+                <MudText Typo="Typo.subtitle1">User</MudText>
+                <MudText Typo="Typo.body1">@(string.IsNullOrEmpty(Log.UserName) ? "-" : Log.UserName)</MudText>
+            </MudItem>
+            
+            <MudItem xs="12" md="6">
+                <MudText Typo="Typo.subtitle1">IP Address</MudText>
+                <MudText Typo="Typo.body1">@(string.IsNullOrEmpty(Log.IpAddress) ? "-" : Log.IpAddress)</MudText>
+            </MudItem>
+            
             <MudItem xs="12">
                 <MudText Typo="Typo.subtitle1">Message</MudText>
                 <MudPaper Elevation="0" Class="pa-2 mb-2" Style="background-color: var(--mud-palette-background);">
                     <MudText Typo="Typo.body1">@Log.Message</MudText>
                 </MudPaper>
-            </MudItem>
-            
-            <MudItem xs="12" md="6">
-                <MudText Typo="Typo.subtitle1">Timestamp</MudText>
-                <MudText Typo="Typo.body1">@Log.LoggedAt.ToString("G")</MudText>
             </MudItem>
             
             <MudItem xs="12" md="6">

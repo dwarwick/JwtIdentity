@@ -17,5 +17,12 @@ namespace JwtIdentity.Models
         public string ExceptionType { get; set; }
         public string ExceptionMessage { get; set; }
         public string StackTrace { get; set; }
+        
+        // Structured fields for easier querying
+        public string Controller { get; set; }
+        public string Action { get; set; }
+        public string IpAddress { get; set; }
+        public string UserName { get; set; }
+        public string Status { get; set; }
     }
 }

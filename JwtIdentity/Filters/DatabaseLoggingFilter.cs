@@ -29,6 +29,21 @@ namespace JwtIdentity.Filters
                 string actionDescriptor = context.ActionDescriptor.DisplayName ?? string.Empty;
                 string cleanDisplayName = FormatActionName(actionDescriptor);
                 
+                // Split controller and action
+                string controller = string.Empty;
+                string action = string.Empty;
+                
+                if (cleanDisplayName.Contains('.'))
+                {
+                    string[] parts = cleanDisplayName.Split('.');
+                    controller = parts[0];
+                    action = parts[1];
+                }
+                else
+                {
+                    controller = cleanDisplayName;
+                }
+                
                 // Get the current username
                 string userName = GetCurrentUsername();
                 
@@ -55,7 +70,13 @@ namespace JwtIdentity.Filters
                         LoggedAt = DateTime.UtcNow,
                         RequestPath = requestPath,
                         RequestMethod = requestMethod,
-                        Parameters = parameters
+                        Parameters = parameters,
+                        // Add the new structured fields
+                        Controller = controller,
+                        Action = action,
+                        IpAddress = ipAddress,
+                        UserName = userName,
+                        Status = "Started"
                     });
                     _context.SaveChanges();
                 }
@@ -80,6 +101,21 @@ namespace JwtIdentity.Filters
                 // Extract the clean controller and action name without the assembly info
                 string actionDescriptor = context.ActionDescriptor.DisplayName ?? string.Empty;
                 string cleanDisplayName = FormatActionName(actionDescriptor);
+                
+                // Split controller and action
+                string controller = string.Empty;
+                string action = string.Empty;
+                
+                if (cleanDisplayName.Contains('.'))
+                {
+                    string[] parts = cleanDisplayName.Split('.');
+                    controller = parts[0];
+                    action = parts[1];
+                }
+                else
+                {
+                    controller = cleanDisplayName;
+                }
                 
                 // Get the current username
                 string userName = GetCurrentUsername();
@@ -112,7 +148,12 @@ namespace JwtIdentity.Filters
                             Message = $"Controller: {cleanDisplayName} {statusMessage} [User: {userName}]",
                             Level = context.Canceled ? "Warning" : "Info",
                             LoggedAt = DateTime.UtcNow,
-                            StatusCode = statusCode
+                            StatusCode = statusCode,
+                            // Add the new structured fields
+                            Controller = controller,
+                            Action = action,
+                            UserName = userName,
+                            Status = statusMessage
                         });
                         _context.SaveChanges();
                     }
@@ -138,6 +179,21 @@ namespace JwtIdentity.Filters
                 // Extract the clean controller and action name without the assembly info
                 string actionDescriptor = context.ActionDescriptor.DisplayName ?? string.Empty;
                 string cleanDisplayName = FormatActionName(actionDescriptor);
+                
+                // Split controller and action
+                string controller = string.Empty;
+                string action = string.Empty;
+                
+                if (cleanDisplayName.Contains('.'))
+                {
+                    string[] parts = cleanDisplayName.Split('.');
+                    controller = parts[0];
+                    action = parts[1];
+                }
+                else
+                {
+                    controller = cleanDisplayName;
+                }
                 
                 // Get the current username
                 string userName = GetCurrentUsername();
@@ -169,7 +225,13 @@ namespace JwtIdentity.Filters
                         ExceptionMessage = exceptionMessage,
                         StackTrace = stackTrace,
                         RequestPath = requestPath,
-                        RequestMethod = requestMethod
+                        RequestMethod = requestMethod,
+                        // Add the new structured fields
+                        Controller = controller,
+                        Action = action,
+                        IpAddress = ipAddress,
+                        UserName = userName,
+                        Status = "Error"
                     });
                     _context.SaveChanges();
                 }

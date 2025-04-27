@@ -37,7 +37,13 @@ namespace JwtIdentity.Controllers
                     StatusCode = l.StatusCode,
                     ExceptionType = l.ExceptionType,
                     ExceptionMessage = l.ExceptionMessage,
-                    StackTrace = l.StackTrace
+                    StackTrace = l.StackTrace,
+                    // Add the new structured fields
+                    Controller = l.Controller,
+                    Action = l.Action,
+                    IpAddress = l.IpAddress,
+                    UserName = l.UserName,
+                    Status = l.Status
                 })
                 .ToListAsync();
 
@@ -67,7 +73,13 @@ namespace JwtIdentity.Controllers
                 StatusCode = logEntry.StatusCode,
                 ExceptionType = logEntry.ExceptionType,
                 ExceptionMessage = logEntry.ExceptionMessage,
-                StackTrace = logEntry.StackTrace
+                StackTrace = logEntry.StackTrace,
+                // Add the new structured fields
+                Controller = logEntry.Controller,
+                Action = logEntry.Action,
+                IpAddress = logEntry.IpAddress,
+                UserName = logEntry.UserName,
+                Status = logEntry.Status
             };
 
             return logViewModel;
