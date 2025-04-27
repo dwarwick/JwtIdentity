@@ -15,7 +15,7 @@ namespace JwtIdentity.Tests.ServiceTests
         public override void BaseSetUp()
         {
             base.BaseSetUp();
-            _service = new SurveyService(MockDbContext);
+            _service = new SurveyService(MockDbContext, MockLogger.Object);
         }
 
         [Test]
@@ -42,12 +42,6 @@ namespace JwtIdentity.Tests.ServiceTests
         {
             var result = _service.GetSurvey("notfound");
             Assert.That(result, Is.Null);
-        }
-
-        [Test]
-        public void DbContext_Property_IsSet()
-        {
-            Assert.That(_service.DbContext, Is.EqualTo(MockDbContext));
         }
     }
 }

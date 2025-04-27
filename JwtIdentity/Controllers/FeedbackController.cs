@@ -314,9 +314,16 @@ namespace JwtIdentity.Controllers
                 <p>Best regards,<br/>The System</p>
                 ";
                 
-                // Send email to admin
-                await _emailService.SendEmailAsync(adminEmail, subject, messageBody);
-                _logger.LogInformation("Admin notification email sent to {AdminEmail} for feedback {FeedbackId}", adminEmail, feedback.Id);
+                // Send email to admin and check the result
+                bool emailSent = await _emailService.SendEmailAsync(adminEmail, subject, messageBody);
+                if (emailSent)
+                {
+                    _logger.LogInformation("Admin notification email sent to {AdminEmail} for feedback {FeedbackId}", adminEmail, feedback.Id);
+                }
+                else
+                {
+                    _logger.LogWarning("Failed to send admin notification email to {AdminEmail} for feedback {FeedbackId}", adminEmail, feedback.Id);
+                }
             }
             catch (Exception ex)
             {
@@ -358,8 +365,15 @@ namespace JwtIdentity.Controllers
                 <p>Best regards,<br/>The Team</p>
                 ";
                 
-                await _emailService.SendEmailAsync(user.Email, subject, messageBody);
-                _logger.LogInformation("Response notification email sent to {UserEmail} for feedback {FeedbackId}", user.Email, feedback.Id);
+                bool emailSent = await _emailService.SendEmailAsync(user.Email, subject, messageBody);
+                if (emailSent)
+                {
+                    _logger.LogInformation("Response notification email sent to {UserEmail} for feedback {FeedbackId}", user.Email, feedback.Id);
+                }
+                else
+                {
+                    _logger.LogWarning("Failed to send response notification email to {UserEmail} for feedback {FeedbackId}", user.Email, feedback.Id);
+                }
             }
             catch (Exception ex)
             {

@@ -64,8 +64,19 @@ namespace JwtIdentity.Services
             
             bodyBuilder.AppendLine("</table>");
             
-            // Send email asynchronously to avoid blocking
-            _ = _emailService.SendEmailAsync(_customerServiceEmail, subject, bodyBuilder.ToString());
+            // Send email asynchronously to avoid blocking but capture the task
+            // to properly handle the return value
+            var emailTask = _emailService.SendEmailAsync(_customerServiceEmail, subject, bodyBuilder.ToString());
+            
+            // Configure a continuation that logs if the email failed to send
+            // We use .ContinueWith to avoid blocking the current thread
+            _ = emailTask.ContinueWith(task => {
+                if (!task.Result)
+                {
+                    // Log to console since we can't use the logger (would cause infinite recursion)
+                    Console.WriteLine($"ERROR: Failed to send error notification email at {DateTime.Now}. Error level: {logEvent.Level}");
+                }
+            });
         }
     }
 }

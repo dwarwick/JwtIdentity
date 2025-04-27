@@ -1,6 +1,3 @@
-using JwtIdentity.Data;
-using JwtIdentity.Models;
-using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 
 namespace JwtIdentity.Services
@@ -39,7 +36,16 @@ namespace JwtIdentity.Services
         /// <inheritdoc/>
         public async Task<Setting> GetSettingEntityAsync(string key)
         {
-            return await _dbContext.Settings.FirstOrDefaultAsync(s => s.Key == key);
+            try
+            {
+                _logger.LogDebug("Retrieving setting entity with key: {Key}", key);
+                return await _dbContext.Settings.FirstOrDefaultAsync(s => s.Key == key);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving setting entity with key: {Key}", key);
+                return null;
+            }
         }
 
         /// <inheritdoc/>
@@ -158,97 +164,142 @@ namespace JwtIdentity.Services
 
         private string DetermineDataType(Type type)
         {
-            if (type == typeof(int) || type == typeof(int?))
-                return "Int";
-            if (type == typeof(long) || type == typeof(long?))
-                return "Long";
-            if (type == typeof(decimal) || type == typeof(decimal?))
-                return "Decimal";
-            if (type == typeof(double) || type == typeof(double?))
-                return "Double";
-            if (type == typeof(bool) || type == typeof(bool?))
-                return "Boolean";
-            if (type == typeof(DateTime) || type == typeof(DateTime?))
-                return "DateTime";
-            if (type == typeof(string))
-                return "String";
-            if (type.IsEnum)
-                return "Enum";
-            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>))
-                return "List";
+            try
+            {
+                if (type == typeof(int) || type == typeof(int?))
+                    return "Int";
+                if (type == typeof(long) || type == typeof(long?))
+                    return "Long";
+                if (type == typeof(decimal) || type == typeof(decimal?))
+                    return "Decimal";
+                if (type == typeof(double) || type == typeof(double?))
+                    return "Double";
+                if (type == typeof(bool) || type == typeof(bool?))
+                    return "Boolean";
+                if (type == typeof(DateTime) || type == typeof(DateTime?))
+                    return "DateTime";
+                if (type == typeof(string))
+                    return "String";
+                if (type.IsEnum)
+                    return "Enum";
+                if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>))
+                    return "List";
 
-            return "Json";
+                return "Json";
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error determining data type for type: {TypeName}", type.FullName);
+                return "Json"; // Default to JSON as fallback
+            }
         }
 
         private string SerializeValue<T>(T value, Type type)
         {
-            if (value == null)
-                return null;
+            try
+            {
+                if (value == null)
+                    return null;
 
-            if (type == typeof(string))
-                return (string)(object)value;
-            
-            if (type == typeof(int) || type == typeof(int?) ||
-                type == typeof(long) || type == typeof(long?) ||
-                type == typeof(decimal) || type == typeof(decimal?) ||
-                type == typeof(double) || type == typeof(double?) ||
-                type == typeof(bool) || type == typeof(bool?))
-            {
-                return value.ToString();
-            }
-            
-            if (type == typeof(DateTime) || type == typeof(DateTime?))
-            {
-                return ((DateTime)(object)value).ToString("o");
-            }
-            
-            if (type.IsEnum)
-            {
-                return value.ToString();
-            }
+                if (type == typeof(string))
+                    return (string)(object)value;
+                
+                if (type == typeof(int) || type == typeof(int?) ||
+                    type == typeof(long) || type == typeof(long?) ||
+                    type == typeof(decimal) || type == typeof(decimal?) ||
+                    type == typeof(double) || type == typeof(double?) ||
+                    type == typeof(bool) || type == typeof(bool?))
+                {
+                    return value.ToString();
+                }
+                
+                if (type == typeof(DateTime) || type == typeof(DateTime?))
+                {
+                    return ((DateTime)(object)value).ToString("o");
+                }
+                
+                if (type.IsEnum)
+                {
+                    return value.ToString();
+                }
 
-            // For complex types, serialize to JSON
-            return JsonSerializer.Serialize(value);
+                // For complex types, serialize to JSON
+                return JsonSerializer.Serialize(value);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error serializing value of type {TypeName}", type.FullName);
+                throw new InvalidOperationException($"Failed to serialize value of type {type.FullName}", ex);
+            }
         }
 
         private object ConvertValue(string storedValue, string dataType, Type targetType)
         {
-            if (string.IsNullOrEmpty(storedValue))
-                return GetDefaultValue(targetType);
-
-            switch (dataType)
+            try
             {
-                case "Int":
-                    return int.Parse(storedValue);
-                case "Long":
-                    return long.Parse(storedValue);
-                case "Decimal":
-                    return decimal.Parse(storedValue);
-                case "Double":
-                    return double.Parse(storedValue);
-                case "Boolean":
-                    return bool.Parse(storedValue);
-                case "DateTime":
-                    return DateTime.Parse(storedValue);
-                case "String":
-                    return storedValue;
-                case "Enum":
-                    return Enum.Parse(targetType, storedValue);
-                case "Json":
-                case "List":
-                default:
-                    return JsonSerializer.Deserialize(storedValue, targetType);
+                if (string.IsNullOrEmpty(storedValue))
+                    return GetDefaultValue(targetType);
+
+                switch (dataType)
+                {
+                    case "Int":
+                        return int.Parse(storedValue);
+                    case "Long":
+                        return long.Parse(storedValue);
+                    case "Decimal":
+                        return decimal.Parse(storedValue);
+                    case "Double":
+                        return double.Parse(storedValue);
+                    case "Boolean":
+                        return bool.Parse(storedValue);
+                    case "DateTime":
+                        return DateTime.Parse(storedValue);
+                    case "String":
+                        return storedValue;
+                    case "Enum":
+                        return Enum.Parse(targetType, storedValue);
+                    case "Json":
+                    case "List":
+                    default:
+                        return JsonSerializer.Deserialize(storedValue, targetType);
+                }
+            }
+            catch (FormatException ex)
+            {
+                _logger.LogError(ex, "Format error converting value '{StoredValue}' with data type '{DataType}' to type '{TargetType}'", 
+                    storedValue, dataType, targetType.FullName);
+                return GetDefaultValue(targetType);
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogError(ex, "JSON deserialization error for value '{StoredValue}' to type '{TargetType}'", 
+                    storedValue, targetType.FullName);
+                return GetDefaultValue(targetType);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error converting value '{StoredValue}' with data type '{DataType}' to type '{TargetType}'", 
+                    storedValue, dataType, targetType.FullName);
+                return GetDefaultValue(targetType);
             }
         }
 
         private object GetDefaultValue(Type type)
         {
-            if (type.IsValueType)
+            try
             {
-                return Activator.CreateInstance(type);
+                if (type.IsValueType)
+                {
+                    return Activator.CreateInstance(type);
+                }
+                
+                return null;
             }
-            
-            return null;
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating default value for type: {TypeName}", type.FullName);
+                return null; // Return null as a fallback
+            }
         }
         
         #endregion

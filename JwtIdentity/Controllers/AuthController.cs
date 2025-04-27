@@ -207,7 +207,18 @@ namespace JwtIdentity.Controllers
                 string link = await _apiAuthService.GenerateEmailVerificationLink(newUser);
                 
                 _logger.LogDebug("Sending email verification message to: {Email}", model.Email);
-                _emailService.SendEmailVerificationMessage(newUser.Email, link);
+                bool emailSent = _emailService.SendEmailVerificationMessage(newUser.Email, link);
+                
+                if (emailSent)
+                {
+                    _logger.LogInformation("Email verification message sent successfully to: {Email}", model.Email);
+                }
+                else
+                {
+                    _logger.LogWarning("Failed to send email verification message to: {Email}", model.Email);
+                    // We continue with registration process even if email fails
+                    // The user can request a new verification email later
+                }
 
                 // log the registration
                 _ = _dbContext.LogEntries.Add(new LogEntry
@@ -529,7 +540,18 @@ namespace JwtIdentity.Controllers
                 var resetUrl = $"{baseUrl}/reset-password?email={WebUtility.UrlEncode(user.Email)}&token={encodedToken}";
 
                 _logger.LogDebug("Sending password reset email to: {Email}", user.Email);
-                _emailService.SendPasswordResetEmail(user.Email, resetUrl);
+                bool emailSent = _emailService.SendPasswordResetEmail(user.Email, resetUrl);
+
+                if (emailSent)
+                {
+                    _logger.LogInformation("Password reset email sent successfully to: {Email}", user.Email);
+                }
+                else
+                {
+                    _logger.LogWarning("Failed to send password reset email to: {Email}", user.Email);
+                    // We still return success to the user to prevent email enumeration attacks
+                    // but log the failure for administrative awareness
+                }
 
                 // Log the event
                 _logger.LogDebug("Adding log entry for password reset request");
