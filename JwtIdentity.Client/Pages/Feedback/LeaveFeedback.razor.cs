@@ -11,7 +11,6 @@ namespace JwtIdentity.Client.Pages.Feedback
         protected FeedbackViewModel feedback { get; set; } = new() { Type = FeedbackType.GeneralFeedback };
         protected bool success { get; set; }
         protected MudForm form { get; set; }
-        private const string ApiEndpoint = "api/feedback";
 
         protected override async Task OnInitializedAsync()
         {
@@ -39,7 +38,7 @@ namespace JwtIdentity.Client.Pages.Feedback
             {
                 try
                 {
-                    await ApiService.PostAsync<FeedbackViewModel>(ApiEndpoint, feedback);
+                    await ApiService.PostAsync<FeedbackViewModel>(ApiEndpoints.Feedback, feedback);
                     Snackbar.Add("Thank you for your feedback!", Severity.Success);
                     NavigationManager.NavigateTo("/");
                 }

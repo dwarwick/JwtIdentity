@@ -12,7 +12,7 @@ using NUnit.Framework;
 namespace JwtIdentity.Tests.ServiceTests
 {
     [TestFixture]
-    public class SettingsServiceTests : TestBase
+    public class SettingsServiceTests : TestBase<SettingsService>
     {
         private SettingsService _service;
         private Mock<ILogger<SettingsService>> _mockLogger;

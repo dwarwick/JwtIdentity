@@ -21,82 +21,118 @@ namespace JwtIdentity.Controllers
 
         // GET api/settings
         [HttpGet]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Policy = Permissions.ManageSettings)]
         public async Task<ActionResult<List<SettingViewModel>>> GetSettings(string category = null)
         {
-            var settings = await _settingsService.GetAllSettingsAsync(category);
-            return Ok(settings.Select(s => new SettingViewModel
+            try
             {
-                Id = s.Id,
-                Key = s.Key,
-                Value = s.Value,
-                DataType = s.DataType,
-                Description = s.Description,
-                Category = s.Category,
-                IsEditable = s.IsEditable,
-                CreatedDate = s.CreatedDate,
-                UpdatedDate = s.UpdatedDate
-            }).ToList());
+                _logger.LogInformation("Retrieving settings with category filter: {Category}", category ?? "All");
+                var settings = await _settingsService.GetAllSettingsAsync(category);
+                _logger.LogInformation("Retrieved {Count} settings", settings.Count);
+                return Ok(settings.Select(s => new SettingViewModel
+                {
+                    Id = s.Id,
+                    Key = s.Key,
+                    Value = s.Value,
+                    DataType = s.DataType,
+                    Description = s.Description,
+                    Category = s.Category,
+                    IsEditable = s.IsEditable,
+                    CreatedDate = s.CreatedDate,
+                    UpdatedDate = s.UpdatedDate
+                }).ToList());
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving settings with category: {Category}", category ?? "All");
+                return StatusCode(500, "An error occurred while retrieving settings");
+            }
         }
 
         // GET api/settings/categories
         [HttpGet("categories")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Policy = Permissions.ManageSettings)]
         public async Task<ActionResult<List<string>>> GetCategories()
         {
-            var categories = await _settingsService.GetCategoriesAsync();
-            return Ok(categories);
+            try
+            {
+                _logger.LogInformation("Retrieving all setting categories");
+                var categories = await _settingsService.GetCategoriesAsync();
+                _logger.LogInformation("Retrieved {Count} categories", categories.Count);
+                return Ok(categories);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving setting categories");
+                return StatusCode(500, "An error occurred while retrieving setting categories");
+            }
         }
 
         // GET api/settings/{key}
         [HttpGet("{key}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Policy = Permissions.ManageSettings)]
         public async Task<ActionResult<SettingViewModel>> GetSetting(string key)
         {
-            var setting = await _settingsService.GetSettingEntityAsync(key);
-            if (setting == null)
+            try
             {
-                return NotFound();
-            }
+                _logger.LogInformation("Retrieving setting with key: {Key}", key);
+                var setting = await _settingsService.GetSettingEntityAsync(key);
+                if (setting == null)
+                {
+                    _logger.LogWarning("Setting with key {Key} not found", key);
+                    return NotFound();
+                }
 
-            return Ok(new SettingViewModel
+                _logger.LogDebug("Retrieved setting with key: {Key}, category: {Category}", key, setting.Category);
+                return Ok(new SettingViewModel
+                {
+                    Id = setting.Id,
+                    Key = setting.Key,
+                    Value = setting.Value,
+                    DataType = setting.DataType,
+                    Description = setting.Description,
+                    Category = setting.Category,
+                    IsEditable = setting.IsEditable,
+                    CreatedDate = setting.CreatedDate,
+                    UpdatedDate = setting.UpdatedDate
+                });
+            }
+            catch (Exception ex)
             {
-                Id = setting.Id,
-                Key = setting.Key,
-                Value = setting.Value,
-                DataType = setting.DataType,
-                Description = setting.Description,
-                Category = setting.Category,
-                IsEditable = setting.IsEditable,
-                CreatedDate = setting.CreatedDate,
-                UpdatedDate = setting.UpdatedDate
-            });
+                _logger.LogError(ex, "Error retrieving setting with key: {Key}", key);
+                return StatusCode(500, "An error occurred while retrieving the setting");
+            }
         }
 
         // PUT api/settings/{key}
         [HttpPut("{key}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Policy = Permissions.ManageSettings)]
         public async Task<IActionResult> UpdateSetting(string key, [FromBody] SettingViewModel model)
         {
-            if (key != model.Key)
-            {
-                return BadRequest("Setting key mismatch");
-            }
-
-            var existingSetting = await _settingsService.GetSettingEntityAsync(key);
-            if (existingSetting == null)
-            {
-                return NotFound();
-            }
-
-            if (!existingSetting.IsEditable)
-            {
-                return BadRequest("This setting cannot be edited");
-            }
-
-            // Based on DataType, convert and save
             try
             {
+                _logger.LogInformation("Attempting to update setting with key: {Key}", key);
+                
+                if (key != model.Key)
+                {
+                    _logger.LogWarning("Setting key mismatch: URL key {UrlKey} doesn't match body key {BodyKey}", key, model.Key);
+                    return BadRequest("Setting key mismatch");
+                }
+
+                var existingSetting = await _settingsService.GetSettingEntityAsync(key);
+                if (existingSetting == null)
+                {
+                    _logger.LogWarning("Setting with key {Key} not found for update", key);
+                    return NotFound();
+                }
+
+                if (!existingSetting.IsEditable)
+                {
+                    _logger.LogWarning("Attempted to update non-editable setting with key: {Key}", key);
+                    return BadRequest("This setting cannot be edited");
+                }
+
+                // Based on DataType, convert and save
                 bool success = false;
                 
                 switch (existingSetting.DataType)
@@ -140,61 +176,84 @@ namespace JwtIdentity.Controllers
 
                 if (success)
                 {
+                    _logger.LogInformation("Successfully updated setting with key: {Key}", key);
                     return NoContent();
                 }
                 else
                 {
+                    _logger.LogWarning("Failed to update setting with key: {Key}", key);
                     return StatusCode(500, "Failed to update setting");
                 }
+            }
+            catch (FormatException ex)
+            {
+                _logger.LogError(ex, "Format error updating setting {Key}: Invalid value format for type {DataType}", key, model.DataType);
+                return BadRequest($"Invalid format for {model.DataType} value: {ex.Message}");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error updating setting {Key}", key);
-                return BadRequest($"Error updating setting: {ex.Message}");
+                return StatusCode(500, "An error occurred while updating the setting");
             }
         }
 
         // DELETE api/settings/{key}
         [HttpDelete("{key}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Policy = Permissions.ManageSettings)]
         public async Task<IActionResult> DeleteSetting(string key)
         {
-            var setting = await _settingsService.GetSettingEntityAsync(key);
-            if (setting == null)
+            try
             {
-                return NotFound();
-            }
+                _logger.LogInformation("Attempting to delete setting with key: {Key}", key);
+                var setting = await _settingsService.GetSettingEntityAsync(key);
+                if (setting == null)
+                {
+                    _logger.LogWarning("Setting with key {Key} not found for deletion", key);
+                    return NotFound();
+                }
 
-            if (!setting.IsEditable)
-            {
-                return BadRequest("This setting cannot be deleted");
-            }
+                if (!setting.IsEditable)
+                {
+                    _logger.LogWarning("Attempted to delete non-editable setting with key: {Key}", key);
+                    return BadRequest("This setting cannot be deleted");
+                }
 
-            var success = await _settingsService.DeleteSettingAsync(key);
-            if (success)
-            {
-                return NoContent();
+                var success = await _settingsService.DeleteSettingAsync(key);
+                if (success)
+                {
+                    _logger.LogInformation("Successfully deleted setting with key: {Key}", key);
+                    return NoContent();
+                }
+                else
+                {
+                    _logger.LogWarning("Failed to delete setting with key: {Key}", key);
+                    return StatusCode(500, "Failed to delete setting");
+                }
             }
-            else
+            catch (Exception ex)
             {
-                return StatusCode(500, "Failed to delete setting");
+                _logger.LogError(ex, "Error deleting setting with key: {Key}", key);
+                return StatusCode(500, "An error occurred while deleting the setting");
             }
         }
 
         // POST api/settings
         [HttpPost]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Policy = Permissions.ManageSettings)]
         public async Task<ActionResult<SettingViewModel>> CreateSetting([FromBody] SettingViewModel model)
         {
-            // Check if the setting already exists
-            var existingSetting = await _settingsService.GetSettingEntityAsync(model.Key);
-            if (existingSetting != null)
-            {
-                return Conflict("A setting with this key already exists");
-            }
-
             try
             {
+                _logger.LogInformation("Attempting to create new setting with key: {Key}", model.Key);
+                
+                // Check if the setting already exists
+                var existingSetting = await _settingsService.GetSettingEntityAsync(model.Key);
+                if (existingSetting != null)
+                {
+                    _logger.LogWarning("Attempted to create setting with existing key: {Key}", model.Key);
+                    return Conflict("A setting with this key already exists");
+                }
+
                 // Create a new setting based on the data type
                 bool success = false;
                 
@@ -239,6 +298,7 @@ namespace JwtIdentity.Controllers
 
                 if (success)
                 {
+                    _logger.LogInformation("Successfully created setting with key: {Key}", model.Key);
                     var createdSetting = await _settingsService.GetSettingEntityAsync(model.Key);
                     return CreatedAtAction(
                         nameof(GetSetting), 
@@ -258,36 +318,52 @@ namespace JwtIdentity.Controllers
                 }
                 else
                 {
+                    _logger.LogWarning("Failed to create setting with key: {Key}", model.Key);
                     return StatusCode(500, "Failed to create setting");
                 }
             }
+            catch (FormatException ex)
+            {
+                _logger.LogError(ex, "Format error creating setting {Key}: Invalid value format for type {DataType}", model.Key, model.DataType);
+                return BadRequest($"Invalid format for {model.DataType} value: {ex.Message}");
+            }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error creating setting {Key}", model.Key);
-                return BadRequest($"Error creating setting: {ex.Message}");
+                _logger.LogError(ex, "Error creating setting {Key}: {Message}", model.Key, ex.Message);
+                return StatusCode(500, "An error occurred while creating the setting");
             }
         }
 
         // GET api/settings/seed
         [HttpGet("seed")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Policy = Permissions.ManageSettings)]
         public async Task<IActionResult> SeedTestSetting()
         {
-            // Create a test setting if none exist
-            var settings = await _settingsService.GetAllSettingsAsync();
-            if (!settings.Any())
+            try
             {
-                await _settingsService.SetSettingAsync(
-                    "Test.Setting", 
-                    "This is a test setting value", 
-                    "A test setting to verify the settings system is working", 
-                    "Test");
+                _logger.LogInformation("Attempting to seed test settings");
+                // Create a test setting if none exist
+                var settings = await _settingsService.GetAllSettingsAsync();
+                if (!settings.Any())
+                {
+                    await _settingsService.SetSettingAsync(
+                        "Test.Setting", 
+                        "This is a test setting value", 
+                        "A test setting to verify the settings system is working", 
+                        "Test");
+                    
+                    _logger.LogInformation("Created test setting successfully");
+                    return Ok("Test setting created");
+                }
                 
-                _logger.LogInformation("Created test setting");
-                return Ok("Test setting created");
+                _logger.LogInformation("Seeding skipped - {Count} settings already exist", settings.Count);
+                return Ok($"Settings already exist: {settings.Count} settings found");
             }
-            
-            return Ok($"Settings already exist: {settings.Count} settings found");
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error seeding test setting");
+                return StatusCode(500, "An error occurred while seeding test setting");
+            }
         }
     }
 }

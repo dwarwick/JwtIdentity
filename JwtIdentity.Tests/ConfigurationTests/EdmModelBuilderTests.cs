@@ -8,7 +8,7 @@ using JwtIdentity.Common.ViewModels;
 namespace JwtIdentity.Tests.ConfigurationTests
 {
     [TestFixture]
-    public class EdmModelBuilderTests : TestBase
+    public class EdmModelBuilderTests
     {
         [Test]
         public void GetEdmModel_ShouldReturnModelWithOdataQuestionEntitySet()

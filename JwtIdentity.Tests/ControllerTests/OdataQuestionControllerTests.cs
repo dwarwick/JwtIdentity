@@ -14,7 +14,7 @@ using JwtIdentity.Common.Helpers;
 namespace JwtIdentity.Tests.ControllerTests
 {
     [TestFixture]
-    public class OdataQuestionControllerTests : TestBase
+    public class OdataQuestionControllerTests : TestBase<OdataQuestionController>
     {
         private OdataQuestionController _controller = null!;
 

@@ -1,21 +1,15 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using JwtIdentity.Controllers;
 using JwtIdentity.Common.ViewModels;
 using JwtIdentity.Models;
 using JwtIdentity.Services;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
-using NUnit.Framework;
 
 namespace JwtIdentity.Tests.ControllerTests
 {
     [TestFixture]
-    public class SettingsControllerTests : TestBase
+    public class SettingsControllerTests : TestBase<SettingsController>
     {
         private SettingsController _controller = null!;
         private Mock<ISettingsService> _mockSettingsService = null!;

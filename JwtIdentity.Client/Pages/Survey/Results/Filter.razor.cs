@@ -28,7 +28,7 @@ namespace JwtIdentity.Client.Pages.Survey.Results
 
         private async Task LoadData()
         {
-            Survey = await ApiService.GetAsync<SurveyViewModel>($"api/answer/getsurveyresults/{SurveyId}");
+            Survey = await ApiService.GetAsync<SurveyViewModel>($"{ApiEndpoints.Answer}/getsurveyresults/{SurveyId}");
 
             StateHasChanged();
 

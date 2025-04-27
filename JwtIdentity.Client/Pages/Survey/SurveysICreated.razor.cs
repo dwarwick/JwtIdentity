@@ -23,7 +23,7 @@
 
         protected override async Task OnInitializedAsync()
         {
-            UserSurveys = (await ApiService.GetAllAsync<SurveyViewModel>("api/Survey/surveysicreated")).ToList();
+            UserSurveys = (await ApiService.GetAsync<List<SurveyViewModel>>($"{ApiEndpoints.Survey}/surveysicreated")).ToList();
         }
 
         protected override async Task OnAfterRenderAsync(bool firstRender)

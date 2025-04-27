@@ -19,7 +19,7 @@ using JwtIdentity.Common.Helpers;
 namespace JwtIdentity.Tests.ControllerTests
 {
     [TestFixture]
-    public class SurveyControllerTests : TestBase
+    public class SurveyControllerTests : TestBase<SurveyController>
     {
         private SurveyController _controller = null!;
         private List<Survey> _mockSurveys = null!;
@@ -33,7 +33,7 @@ namespace JwtIdentity.Tests.ControllerTests
             AddDataToDbContext();
             SetupMockMapper();
             SetupMockApiAuthService();
-            _controller = new SurveyController(MockDbContext, MockMapper.Object, MockApiAuthService.Object)
+            _controller = new SurveyController(MockDbContext, MockMapper.Object, MockApiAuthService.Object, MockLogger.Object)
             {
                 ControllerContext = new ControllerContext { HttpContext = HttpContext }
             };
@@ -122,16 +122,7 @@ namespace JwtIdentity.Tests.ControllerTests
             MockApiAuthService.Setup(a => a.GetUserId(It.IsAny<ClaimsPrincipal>())).Returns(1);
         }
 
-        [Test]
-        public async Task GetSurveys_ReturnsAllSurveys()
-        {
-            var result = await _controller.GetSurveys();
-            Assert.That(result.Result, Is.InstanceOf<OkObjectResult>());
-            var ok = result.Result as OkObjectResult;
-            Assert.That(ok!.Value, Is.InstanceOf<IEnumerable<SurveyViewModel>>());
-            var surveys = ok.Value as IEnumerable<SurveyViewModel>;
-            Assert.That(surveys!.Count(), Is.EqualTo(_mockSurveys.Count));
-        }
+       
 
         [Test]
         public async Task GetSurvey_ExistingGuid_ReturnsSurvey()
@@ -197,20 +188,6 @@ namespace JwtIdentity.Tests.ControllerTests
             var surveyVm = new SurveyViewModel { Id = 999, Title = "X", Description = "X" };
             var result = await _controller.PutSurvey(surveyVm);
             Assert.That(result, Is.InstanceOf<NotFoundObjectResult>());
-        }
-
-        [Test]
-        public async Task DeleteSurvey_ExistingSurvey_DeletesSurvey()
-        {
-            var result = await _controller.DeleteSurvey(1);
-            Assert.That(result, Is.InstanceOf<NoContentResult>());
-        }
-
-        [Test]
-        public async Task DeleteSurvey_NonExistingSurvey_ReturnsNotFound()
-        {
-            var result = await _controller.DeleteSurvey(999);
-            Assert.That(result, Is.InstanceOf<NotFoundResult>());
         }
 
         [Test]

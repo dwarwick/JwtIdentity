@@ -24,7 +24,7 @@ using NUnit.Framework;
 namespace JwtIdentity.Tests.ControllerTests
 {
     [TestFixture]
-    public class AuthControllerTests : TestBase
+    public class AuthControllerTests : TestBase<AuthController>
     {
         private AuthController _controller;
         private Mock<IEmailService> _mockEmailService;
@@ -46,7 +46,8 @@ namespace JwtIdentity.Tests.ControllerTests
                 MockMapper.Object,
                 MockDbContext,
                 _mockEmailService.Object,
-                MockApiAuthService.Object
+                MockApiAuthService.Object,
+                MockLogger.Object
             );
             
             // Set controller context
@@ -729,7 +730,8 @@ namespace JwtIdentity.Tests.ControllerTests
                 MockMapper.Object,
                 testDbContext,
                 MockEmailService.Object,
-                MockApiAuthService.Object
+                MockApiAuthService.Object,
+                MockLogger.Object
             );
             
             // Set up the mapper to map ApplicationRole to ApplicationRoleViewModel

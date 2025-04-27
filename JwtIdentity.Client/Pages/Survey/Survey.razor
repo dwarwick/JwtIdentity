@@ -168,7 +168,7 @@
                                Color="Color.Primary"
                                Size="MudBlazor.Size.Large"
                                OnClick="@(() => SubmitSurvey())"
-                               Disabled="@(ViewAnswers || (IsAnonymousUser && !AgreedToTerms))"
+                               Disabled="@(Preview || (IsAnonymousUser && !AgreedToTerms))"
                                title="@(Preview ? "Survey cannot be submitted in Preview mode" : "Submit")"
                                Class="survey-submit-btn">
                         Submit Survey

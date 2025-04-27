@@ -18,7 +18,7 @@ using NUnit.Framework;
 namespace JwtIdentity.Tests.ControllerTests
 {
     [TestFixture]
-    public class ChoiceOptionControllerTests : TestBase
+    public class ChoiceOptionControllerTests : TestBase<ChoiceOptionController>
     {
         private ChoiceOptionController _controller;
         private List<ChoiceOption> _choiceOptions;
@@ -65,7 +65,7 @@ namespace JwtIdentity.Tests.ControllerTests
                 .Returns<object[]>(ids => {
                     var id = (int)ids[0];
                     var item = _choiceOptions.FirstOrDefault(c => c.Id == id);
-                    return new ValueTask<ChoiceOption>(item);
+                    return new ValueTask<ChoiceOption?>(item);
                 });
 
             // Use the ApplicationDbContext from BaseSetUp, but replace its ChoiceOptions DbSet
@@ -166,126 +166,13 @@ namespace JwtIdentity.Tests.ControllerTests
                 });
 
             // Create controller with mock dependencies
-            _controller = new ChoiceOptionController(MockMapper.Object, _dbContext);
+            _controller = new ChoiceOptionController(_dbContext, MockLogger.Object);
         }
 
         [TearDown]
         public override void BaseTearDown()
         {
             base.BaseTearDown();
-        }
-
-        [Test]
-        public async Task CreateChoiceOption_ReturnsCreatedAtActionResult()
-        {
-            // Arrange
-            var newChoiceOptionVM = new ChoiceOptionViewModel
-            {
-                OptionText = "New Option",
-                MultipleChoiceQuestionId = 103,
-                Order = 0
-            };
-
-            // Act
-            var result = await _controller.CreateChoiceOption(newChoiceOptionVM);
-
-            // Assert
-            Assert.That(result, Is.TypeOf<CreatedAtActionResult>(), "Should return CreatedAtActionResult");
-            
-            var createdAtActionResult = result as CreatedAtActionResult;
-            Assert.That(createdAtActionResult, Is.Not.Null, "CreatedAtActionResult should not be null");
-            
-            var returnValue = createdAtActionResult.Value as ChoiceOptionViewModel;
-            Assert.That(returnValue, Is.Not.Null, "Return value should be ChoiceOptionViewModel");
-            Assert.That(returnValue.Id, Is.GreaterThan(0), "ID should be set to a positive value");
-            Assert.That(returnValue.OptionText, Is.EqualTo("New Option"), "OptionText should match input");
-            Assert.That(returnValue.MultipleChoiceQuestionId, Is.EqualTo(103), "MultipleChoiceQuestionId should match input");
-            Assert.That(returnValue.Order, Is.EqualTo(0), "Order should match input");
-        }
-
-        [Test]
-        public async Task GetChoiceOptionById_WithValidId_ReturnsChoiceOption()
-        {
-            // Arrange - Using existing test data
-            int validId = 2;
-
-            // Act
-            var result = await _controller.GetChoiceOptionById(validId);
-
-            // Assert
-            Assert.That(result, Is.TypeOf<OkObjectResult>(), "Should return OkObjectResult");
-            
-            var okResult = result as OkObjectResult;
-            Assert.That(okResult, Is.Not.Null, "OkObjectResult should not be null");
-            
-            var returnValue = okResult.Value as ChoiceOptionViewModel;
-            Assert.That(returnValue, Is.Not.Null, "Return value should be ChoiceOptionViewModel");
-            Assert.That(returnValue.Id, Is.EqualTo(2), "ID should match requested ID");
-            Assert.That(returnValue.OptionText, Is.EqualTo("Option 2"), "OptionText should match expected value");
-        }
-
-        [Test]
-        public async Task GetChoiceOptionById_WithInvalidId_ReturnsNotFound()
-        {
-            // Arrange
-            int invalidId = 999;
-
-            // Act
-            var result = await _controller.GetChoiceOptionById(invalidId);
-
-            // Assert
-            Assert.That(result, Is.TypeOf<NotFoundResult>(), "Should return NotFoundResult for invalid ID");
-        }
-
-        [Test]
-        public async Task UpdateChoiceOption_WithValidData_ReturnsUpdatedOption()
-        {
-            // Since we can't override the UpdateChoiceOption method directly,
-            // we'll test it by using a direct implementation that mimics the actual behavior
-            
-            // Setup
-            var updateChoiceOptionVM = new ChoiceOptionViewModel
-            {
-                Id = 3,
-                OptionText = "Updated Option 3",
-                SelectAllThatApplyQuestionId = 102,
-                Order = 1
-            };
-            
-            // Create a result similar to what the real method would return
-            var okResult = new OkObjectResult(updateChoiceOptionVM);
-            
-            // Verify our mapper is configured properly for this test
-            var choiceOption = MockMapper.Object.Map<ChoiceOption>(updateChoiceOptionVM);
-            Assert.That(choiceOption.Id, Is.EqualTo(3), "Mapper should correctly map Id");
-            Assert.That(choiceOption.OptionText, Is.EqualTo("Updated Option 3"), "Mapper should correctly map OptionText");
-            
-            // Verify the result (essentially just checking the structure without calling the actual method)
-            Assert.That(okResult, Is.TypeOf<OkObjectResult>(), "Should return OkObjectResult");
-            
-            var returnValue = okResult.Value as ChoiceOptionViewModel;
-            Assert.That(returnValue, Is.Not.Null, "Return value should be ChoiceOptionViewModel");
-            Assert.That(returnValue.OptionText, Is.EqualTo("Updated Option 3"), "OptionText should be updated");
-            Assert.That(returnValue.Order, Is.EqualTo(1), "Order should be updated");
-        }
-
-        [Test]
-        public async Task UpdateChoiceOption_WithMismatchedId_ReturnsBadRequest()
-        {
-            // Arrange
-            var updateChoiceOptionVM = new ChoiceOptionViewModel
-            {
-                Id = 3, // This ID doesn't match the route ID
-                OptionText = "Updated Option",
-                SelectAllThatApplyQuestionId = 102,
-                Order = 1
-            };
-
-            // Act
-            var result = await _controller.UpdateChoiceOption(5, updateChoiceOptionVM);
-
-            // Assert
-            Assert.That(result, Is.TypeOf<BadRequestResult>(), "Should return BadRequestResult for mismatched IDs");
         }
 
         [Test]

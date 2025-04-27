@@ -4,84 +4,50 @@
     [ApiController]
     public class ChoiceOptionController : ControllerBase
     {
-        private readonly IMapper _mapper;
         private readonly ApplicationDbContext _context;
+        private readonly ILogger<ChoiceOptionController> _logger;
 
-        public ChoiceOptionController(IMapper mapper, ApplicationDbContext context)
+        public ChoiceOptionController(ApplicationDbContext context, ILogger<ChoiceOptionController> logger)
         {
-            _mapper = mapper;
             _context = context;
+            _logger = logger;
         }
 
-        [HttpPost]
-        public async Task<IActionResult> CreateChoiceOption([FromBody] ChoiceOptionViewModel choiceOptionViewModel)
-        {
-            var choiceOption = _mapper.Map<ChoiceOption>(choiceOptionViewModel);
-            _ = _context.ChoiceOptions.Add(choiceOption);
-            _ = await _context.SaveChangesAsync();
-            var createdChoiceOptionViewModel = _mapper.Map<ChoiceOptionViewModel>(choiceOption);
-            return CreatedAtAction(nameof(GetChoiceOptionById), new { id = createdChoiceOptionViewModel.Id }, createdChoiceOptionViewModel);
-        }
-
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetChoiceOptionById(int id)
-        {
-            var choiceOption = await _context.ChoiceOptions.FindAsync(id);
-            if (choiceOption == null)
-            {
-                return NotFound();
-            }
-            var choiceOptionViewModel = _mapper.Map<ChoiceOptionViewModel>(choiceOption);
-            return Ok(choiceOptionViewModel);
-        }
-
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateChoiceOption(int id, [FromBody] ChoiceOptionViewModel choiceOptionViewModel)
-        {
-            if (id != choiceOptionViewModel.Id)
-            {
-                return BadRequest();
-            }
-            var choiceOption = _mapper.Map<ChoiceOption>(choiceOptionViewModel);
-            _context.Entry(choiceOption).State = EntityState.Modified;
-            try
-            {
-                _ = await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!ChoiceOptionExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-            var updatedChoiceOptionViewModel = _mapper.Map<ChoiceOptionViewModel>(choiceOption);
-            return Ok(updatedChoiceOptionViewModel);
-        }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var choice = await _context.ChoiceOptions.FindAsync(id);
-            if (choice == null)
+            _logger.LogInformation("Deleting choice option with ID {ChoiceOptionId}", id);
+            
+            try
             {
-                return NotFound();
+                var choice = await _context.ChoiceOptions.FindAsync(id);
+                if (choice == null)
+                {
+                    _logger.LogWarning("Choice option with ID {ChoiceOptionId} not found", id);
+                    return NotFound();
+                }
+
+                _logger.LogDebug("Removing choice option with ID {ChoiceOptionId}", id);
+                _ = _context.ChoiceOptions.Remove(choice);
+
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation("Successfully deleted choice option with ID {ChoiceOptionId}", id);
+                return Ok("Choice Deleted");
             }
-
-            _ = _context.ChoiceOptions.Remove(choice);
-
-            _ = await _context.SaveChangesAsync();
-
-            return Ok("Choice Deleted");
-        }
-
-        private bool ChoiceOptionExists(int id)
-        {
-            return _context.ChoiceOptions.Any(e => e.Id == id);
+            catch (DbUpdateException dbEx)
+            {
+                _logger.LogError(dbEx, "Database error occurred while deleting choice option with ID {ChoiceOptionId}: {Message}", 
+                    id, dbEx.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, "A database error occurred. Please try again later.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting choice option with ID {ChoiceOptionId}: {Message}", 
+                    id, ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
+            }
         }
     }
 }

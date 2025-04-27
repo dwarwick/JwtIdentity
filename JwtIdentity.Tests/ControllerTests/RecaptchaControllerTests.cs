@@ -15,7 +15,7 @@ using Moq.Protected;
 namespace JwtIdentity.Tests.ControllerTests
 {
     [TestFixture]
-    public class RecaptchaControllerTests : TestBase
+    public class RecaptchaControllerTests : TestBase<RecaptchaController>
     {
         private RecaptchaController _controller;
         private Mock<HttpMessageHandler> _mockHttpHandler;
@@ -57,7 +57,7 @@ namespace JwtIdentity.Tests.ControllerTests
         {
             // Arrange
             var request = new RecaptchaRequest { Token = null };
-            _controller = new RecaptchaController(MockConfiguration.Object); // No HttpClient needed
+            _controller = new RecaptchaController(MockConfiguration.Object, MockLogger.Object); // No HttpClient needed
             _controller.ControllerContext = new ControllerContext { HttpContext = HttpContext };
             // Act
             var result = await _controller.Validate(request);
@@ -79,7 +79,7 @@ namespace JwtIdentity.Tests.ControllerTests
             var json = JsonSerializer.Serialize(recaptchaResponse);
             SetupHttpClientResponse(json);
             using var client = new HttpClient(_mockHttpHandler.Object);
-            _controller = new RecaptchaController(MockConfiguration.Object, client);
+            _controller = new RecaptchaController(MockConfiguration.Object, MockLogger.Object, client);
             _controller.ControllerContext = new ControllerContext { HttpContext = HttpContext };
             // Act
             var result = await _controller.Validate(request);
@@ -100,7 +100,7 @@ namespace JwtIdentity.Tests.ControllerTests
             var json = JsonSerializer.Serialize(recaptchaResponse);
             SetupHttpClientResponse(json);
             using var client = new HttpClient(_mockHttpHandler.Object);
-            _controller = new RecaptchaController(MockConfiguration.Object, client);
+            _controller = new RecaptchaController(MockConfiguration.Object, MockLogger.Object, client);
             _controller.ControllerContext = new ControllerContext { HttpContext = HttpContext };
             // Act
             var result = await _controller.Validate(request);
@@ -119,7 +119,7 @@ namespace JwtIdentity.Tests.ControllerTests
             var request = new RecaptchaRequest { Token = "any-token" };
             SetupHttpClientResponse("", HttpStatusCode.InternalServerError);
             using var client = new HttpClient(_mockHttpHandler.Object);
-            _controller = new RecaptchaController(MockConfiguration.Object, client);
+            _controller = new RecaptchaController(MockConfiguration.Object, MockLogger.Object, client);
             _controller.ControllerContext = new ControllerContext { HttpContext = HttpContext };
             // Act
             var result = await _controller.Validate(request);

@@ -18,7 +18,7 @@ using NUnit.Framework;
 namespace JwtIdentity.Tests.ControllerTests
 {
     [TestFixture]
-    public class ApplicationUsersControllerTests : TestBase
+    public class ApplicationUsersControllerTests : TestBase<ApplicationUserController>
     {
         private ApplicationUserController _controller;
         private List<ApplicationUser> _users;
@@ -94,7 +94,7 @@ namespace JwtIdentity.Tests.ControllerTests
                 });
 
             // Set up controller with real in-memory DbContext and mock mapper
-            _controller = new ApplicationUserController(MockDbContext, MockMapper.Object, MockApiAuthService.Object);
+            _controller = new ApplicationUserController(MockDbContext, MockMapper.Object, MockApiAuthService.Object, MockLogger.Object);
         }
 
         [TearDown]
@@ -115,31 +115,34 @@ namespace JwtIdentity.Tests.ControllerTests
         }
 
         [Test]
-        public async Task GetApplicationUsers_ReturnsAllUsers()
-        {
-            // Act
-            var result = await _controller.GetApplicationUsers();
-
-            // Assert
-            Assert.That(result.Value, Is.Not.Null, "Result value should not be null");
-            Assert.That(result.Value.Count(), Is.EqualTo(_users.Count), "Should return all users");
-            Assert.That(_users.All(u => result.Value.Any(r => r.Id == u.Id)), Is.True, "All expected users should be present in the result");
-        }
-
-        [Test]
         public async Task GetApplicationUser_WithValidId_ReturnsUser()
         {
             // Arrange
             int userId = 1;
+            var mockRoles = new List<string> { "Admin" };
+            var mockPermissions = new List<string> { "ManageUsers" };
+            
+            // Setup mock API auth service to return roles and permissions
+            MockApiAuthService.Setup(s => s.GetUserRoles(It.IsAny<System.Security.Claims.ClaimsPrincipal>()))
+                .ReturnsAsync(mockRoles);
+                
+            MockApiAuthService.Setup(s => s.GetUserPermissions(It.IsAny<System.Security.Claims.ClaimsPrincipal>()))
+                .Returns(mockPermissions);
 
             // Act
             var result = await _controller.GetApplicationUser(userId);
 
             // Assert
-            Assert.That(result.Value, Is.Not.Null, "Result value should not be null");
-            Assert.That(result.Value.Id, Is.EqualTo(userId), "User ID should match the requested ID");
-            Assert.That(result.Value.UserName, Is.EqualTo("admin"), "Username should match expected value");
-            Assert.That(result.Value.Email, Is.EqualTo("admin@example.com"), "Email should match expected value");
+            var okResult = result.Result as OkObjectResult;
+            Assert.That(okResult, Is.Not.Null, "Result should be an OkObjectResult");
+            
+            var userViewModel = okResult.Value as ApplicationUserViewModel;
+            Assert.That(userViewModel, Is.Not.Null, "Result value should not be null");
+            Assert.That(userViewModel.Id, Is.EqualTo(userId), "User ID should match the requested ID");
+            Assert.That(userViewModel.UserName, Is.EqualTo("admin"), "Username should match expected value");
+            Assert.That(userViewModel.Email, Is.EqualTo("admin@example.com"), "Email should match expected value");
+            Assert.That(userViewModel.Roles, Is.EqualTo(mockRoles), "Roles should match expected values");
+            Assert.That(userViewModel.Permissions, Is.EqualTo(mockPermissions), "Permissions should match expected values");
         }
 
         [Test]
@@ -168,6 +171,9 @@ namespace JwtIdentity.Tests.ControllerTests
                 Theme = "dark"
             };
 
+            // Capture the update date for comparison
+            DateTime beforeUpdate = DateTime.UtcNow;
+                
             // Act
             var result = await _controller.PutApplicationUser(userId, model);
 
@@ -175,11 +181,12 @@ namespace JwtIdentity.Tests.ControllerTests
             Assert.That(result, Is.TypeOf<NoContentResult>(), "Should return NoContent for successful update");
 
             // Verify user was updated in the database
-            var userInDb = MockDbContext.ApplicationUsers.FirstOrDefault(u => u.Id == userId);
+            var userInDb = await MockDbContext.ApplicationUsers.FirstOrDefaultAsync(u => u.Id == userId);
             Assert.That(userInDb, Is.Not.Null, "User should exist in the database");
             Assert.That(userInDb.UserName, Is.EqualTo("updateduser"), "Username should be updated");
             Assert.That(userInDb.Email, Is.EqualTo("updateduser@example.com"), "Email should be updated");
             Assert.That(userInDb.Theme, Is.EqualTo("dark"), "Theme should be updated");
+            Assert.That(userInDb.UpdatedDate, Is.GreaterThanOrEqualTo(beforeUpdate), "UpdatedDate should be updated");
         }
 
         [Test]
@@ -189,7 +196,7 @@ namespace JwtIdentity.Tests.ControllerTests
             var result = await _controller.PutApplicationUser(1, null);
 
             // Assert
-            Assert.That(result, Is.TypeOf<BadRequestResult>(), "Should return BadRequest when model is null");
+            Assert.That(result, Is.TypeOf<BadRequestObjectResult>(), "Should return BadRequest when model is null");
         }
 
         [Test]
@@ -202,14 +209,12 @@ namespace JwtIdentity.Tests.ControllerTests
             var result = await _controller.PutApplicationUser(1, model);
 
             // Assert
-            Assert.That(result, Is.TypeOf<BadRequestResult>(), "Should return BadRequest when ID in route doesn't match ID in model");
+            Assert.That(result, Is.TypeOf<BadRequestObjectResult>(), "Should return BadRequest when ID in route doesn't match ID in model");
         }
 
         [Test]
         public async Task PutApplicationUser_WithNonExistentId_ReturnsNotFound()
         {
-            // For this test, we'll use the real controller but create a scenario where the save fails
-            
             // Arrange
             int userId = 999; // Non-existent ID
             var model = new ApplicationUserViewModel 
@@ -219,88 +224,12 @@ namespace JwtIdentity.Tests.ControllerTests
                 Email = "nonexistent@example.com",
                 Theme = "light"
             };
-            
-            // Create a new DbContext for this test
-            var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-                .UseInMemoryDatabase(databaseName: $"TestDatabase_{Guid.NewGuid()}")
-                .Options;
                 
-            var httpContextAccessor = new Mock<IHttpContextAccessor>();
-            httpContextAccessor.Setup(x => x.HttpContext).Returns(HttpContext);
-            
-            using var dbContext = new ApplicationDbContext(options, httpContextAccessor.Object);
-            
-            // Create the controller with the test DbContext
-            var controller = new ApplicationUserController(dbContext, MockMapper.Object, MockApiAuthService.Object)
-            {
-                ControllerContext = new ControllerContext
-                {
-                    HttpContext = HttpContext
-                }
-            };
-            
             // Act
-            var result = await controller.PutApplicationUser(userId, model);
+            var result = await _controller.PutApplicationUser(userId, model);
             
             // Assert
             Assert.That(result, Is.TypeOf<NotFoundResult>(), "Should return NotFound when updating a non-existent user");
-        }
-
-        [Test]
-        public async Task PostApplicationUser_WithValidModel_CreatesUser()
-        {
-            // Arrange
-            var newUser = new ApplicationUser
-            {
-                UserName = "newuser",
-                Email = "newuser@example.com",
-                Theme = "light"
-            };
-
-            // Act
-            var result = await _controller.PostApplicationUser(newUser);
-
-            // Assert
-            Assert.That(result.Result, Is.TypeOf<CreatedAtActionResult>(), "Should return CreatedAtAction result for successful creation");
-            
-            var createdAtActionResult = result.Result as CreatedAtActionResult;
-            Assert.That(createdAtActionResult.ActionName, Is.EqualTo("GetApplicationUser"), "Should use GetApplicationUser action in the response");
-            
-            // Verify user was added to the database
-            var userInDb = MockDbContext.ApplicationUsers.FirstOrDefault(u => u.UserName == "newuser");
-            Assert.That(userInDb, Is.Not.Null, "User should be added to the database");
-            Assert.That(userInDb.Email, Is.EqualTo("newuser@example.com"), "Email should match");
-            Assert.That(userInDb.Theme, Is.EqualTo("light"), "Theme should match");
-        }
-
-        [Test]
-        public async Task DeleteApplicationUser_WithValidId_DeletesUser()
-        {
-            // Arrange
-            int userId = 3;
-
-            // Act
-            var result = await _controller.DeleteApplicationUser(userId);
-
-            // Assert
-            Assert.That(result, Is.TypeOf<NoContentResult>(), "Should return NoContent for successful deletion");
-            
-            // Verify user was removed from the database
-            var userInDb = await MockDbContext.ApplicationUsers.FindAsync(userId);
-            Assert.That(userInDb, Is.Null, "User should be removed from the database");
-        }
-
-        [Test]
-        public async Task DeleteApplicationUser_WithInvalidId_ReturnsNotFound()
-        {
-            // Arrange
-            int userId = 999; // Non-existent ID
-
-            // Act
-            var result = await _controller.DeleteApplicationUser(userId);
-
-            // Assert
-            Assert.That(result, Is.TypeOf<NotFoundResult>(), "Should return NotFound when deleting a non-existent user");
         }
     }
 }

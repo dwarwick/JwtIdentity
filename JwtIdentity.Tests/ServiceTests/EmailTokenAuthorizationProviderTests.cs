@@ -12,12 +12,11 @@ using NUnit.Framework;
 namespace JwtIdentity.Tests.ServiceTests
 {
     [TestFixture]
-    public class EmailTokenAuthorizationProviderTests : TestBase
+    public class EmailTokenAuthorizationProviderTests : TestBase<EmailTokenAuthorizationProvider<ApplicationUser>>
     {
         private Mock<IDataProtectionProvider> _mockDataProtectionProvider;
         private Mock<IDataProtector> _mockDataProtector;
         private Mock<IOptions<DataProtectionTokenProviderOptions>> _mockOptions;
-        private Mock<ILogger<EmailTokenAuthorizationProvider<ApplicationUser>>> _mockLogger;
         private DataProtectionTokenProviderOptions _options;
 
         [SetUp]
@@ -27,7 +26,7 @@ namespace JwtIdentity.Tests.ServiceTests
             _mockDataProtectionProvider = new Mock<IDataProtectionProvider>();
             _mockDataProtector = new Mock<IDataProtector>();
             _mockOptions = new Mock<IOptions<DataProtectionTokenProviderOptions>>();
-            _mockLogger = new Mock<ILogger<EmailTokenAuthorizationProvider<ApplicationUser>>>();
+            MockLogger = new Mock<ILogger<EmailTokenAuthorizationProvider<ApplicationUser>>>();
             _options = new DataProtectionTokenProviderOptions { TokenLifespan = TimeSpan.FromHours(1) };
             _mockOptions.Setup(o => o.Value).Returns(_options);
             _mockDataProtectionProvider.Setup(p => p.CreateProtector(It.IsAny<string>())).Returns(_mockDataProtector.Object);
@@ -41,7 +40,7 @@ namespace JwtIdentity.Tests.ServiceTests
                 var provider = new EmailTokenAuthorizationProvider<ApplicationUser>(
                     _mockDataProtectionProvider.Object,
                     _mockOptions.Object,
-                    _mockLogger.Object);
+                    MockLogger.Object);
             });
         }
 
@@ -52,7 +51,7 @@ namespace JwtIdentity.Tests.ServiceTests
             var provider = new EmailTokenAuthorizationProvider<ApplicationUser>(
                 _mockDataProtectionProvider.Object,
                 _mockOptions.Object,
-                _mockLogger.Object);
+                MockLogger.Object);
             var user = new ApplicationUser { Id = 1, UserName = "testuser", Email = "test@example.com" };
             var userManager = MockUserManager.Object;
 
