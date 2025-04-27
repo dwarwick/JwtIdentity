@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.OData.Query;
 using Microsoft.AspNetCore.OData.Routing.Controllers;
 
 namespace JwtIdentity.Controllers
 {
-    [Route("odata")]
+    [Route("[controller]")]
+    [Authorize] // Add this attribute to require authentication
     public class OdataQuestionController : ODataController
     {
         private readonly ApplicationDbContext _context;

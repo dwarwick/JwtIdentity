@@ -1,0 +1,75 @@
+@page "/admin/logs"
+@using JwtIdentity.Client.Pages.Admin.Dialogs
+@using JwtIdentity.Common.ViewModels
+@using Syncfusion.Blazor.Grids
+@using SortDirection = Syncfusion.Blazor.Grids.SortDirection
+@attribute [Authorize(Roles = "Admin")]
+@inherits LogsGridModel
+
+<PageTitle>Survey Shark - System Logs</PageTitle>
+    <MudText Typo="Typo.h4" Class="mb-4">System Logs</MudText>
+
+
+            @if (_loading)
+            {
+                <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+                <MudText Class="ml-2">Loading logs...</MudText>
+            }
+            else
+            {
+                <MudPaper Class="pa-4">                    
+                    <SfGrid TValue="LogEntryViewModel"
+                           AllowPaging="true" 
+                           AllowSorting="true" 
+                           AllowFiltering="true" 
+                           AllowResizing="true" 
+                           FrozenColumns="@FrozenColumns" 
+                           AllowTextWrap="true" 
+                           TextWrapSettings="@GridSettings.TextWrapSettings" 
+                           GridLines="@GridSettings.GridLines">
+                           <SfDataManager Url="odata/odatalogentry" CrossDomain="true" Adaptor="Adaptors.ODataV4Adaptor" />
+                        <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel"></GridFilterSettings>
+                        <GridSortSettings>
+                            <GridSortColumns>
+                                <GridSortColumn Field="Id" Direction="SortDirection.Descending"></GridSortColumn>
+                            </GridSortColumns>
+                        </GridSortSettings>
+                        <GridColumns>
+                            <GridColumn HeaderText="Actions" Width="120" AutoFit="true" AllowResizing="false" AllowReordering="false">
+                                <Template Context="logContext">
+                                    @{
+                                        var log = logContext as LogEntryViewModel;
+                                        if (log != null)
+                                        {
+                                            <MudIconButton Icon="@Icons.Material.Filled.Visibility" 
+                                                         Size="@MudBlazor.Size.Small"
+                                                         Color="Color.Primary"
+                                                         OnClick="@(() => OpenLogDetailDialog(log))">
+                                            </MudIconButton>
+                                        }
+                                    }
+                                </Template>
+                            </GridColumn>
+                            <GridColumn Field="Id" HeaderText="ID" Width="80" TextAlign="TextAlign.Center" Type="ColumnType.Number" />
+                            <GridColumn Field="Level" HeaderText="Level" Width="100">
+                                <Template Context="logContext">
+                                    @{
+                                        var log = logContext as LogEntryViewModel;
+                                        if (log != null)
+                                        {
+                                            <MudChip T="string" Size="MudBlazor.Size.Small" Color="@GetColorForLogLevel(log.Level)">
+                                                @log.Level
+                                            </MudChip>
+                                        }
+                                    }
+                                </Template>
+                            </GridColumn>
+                            <GridColumn Field="Message" HeaderText="Message" Width="300" />
+                            <GridColumn Field="LoggedAt" HeaderText="Timestamp" Width="170" Format="G" Type="ColumnType.DateTime" />
+                            <GridColumn Field="RequestPath" HeaderText="URL Path" Width="200" />
+                            <GridColumn Field="RequestMethod" HeaderText="Method" Width="100" />
+                            <GridColumn Field="StatusCode" HeaderText="Status" Width="100" TextAlign="TextAlign.Center" />
+                        </GridColumns>
+                    </SfGrid>
+                </MudPaper>
+            }
