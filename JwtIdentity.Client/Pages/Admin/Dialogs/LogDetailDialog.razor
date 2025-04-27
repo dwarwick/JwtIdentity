@@ -1,0 +1,114 @@
+
+
+<MudDialog>
+    <DialogContent>
+        <MudGrid>
+            <MudItem xs="12" md="6">
+                <MudText Typo="Typo.subtitle1">ID</MudText>
+                <MudText Typo="Typo.body1">@Log.Id</MudText>
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudText Typo="Typo.subtitle1">Level</MudText>
+                <MudChip T="string" Size="MudBlazor.Size.Small" Color="@GetColorForLogLevel(Log.Level)">@Log.Level</MudChip>
+            </MudItem>
+            
+            <MudItem xs="12">
+                <MudText Typo="Typo.subtitle1">Message</MudText>
+                <MudPaper Elevation="0" Class="pa-2 mb-2" Style="background-color: var(--mud-palette-background);">
+                    <MudText Typo="Typo.body1">@Log.Message</MudText>
+                </MudPaper>
+            </MudItem>
+            
+            <MudItem xs="12" md="6">
+                <MudText Typo="Typo.subtitle1">Timestamp</MudText>
+                <MudText Typo="Typo.body1">@Log.LoggedAt.ToString("G")</MudText>
+            </MudItem>
+            
+            <MudItem xs="12" md="6">
+                <MudText Typo="Typo.subtitle1">Request Method</MudText>
+                <MudText Typo="Typo.body1">@(string.IsNullOrEmpty(Log.RequestMethod) ? "-" : Log.RequestMethod)</MudText>
+            </MudItem>
+            
+            <MudItem xs="12">
+                <MudText Typo="Typo.subtitle1">URL Path</MudText>
+                <MudText Typo="Typo.body1">@(string.IsNullOrEmpty(Log.RequestPath) ? "-" : Log.RequestPath)</MudText>
+            </MudItem>
+            
+            @if (!string.IsNullOrEmpty(Log.Parameters))
+            {
+                <MudItem xs="12">
+                    <MudText Typo="Typo.subtitle1">Parameters</MudText>
+                    <MudPaper Elevation="0" Class="pa-2 mb-2" Style="background-color: var(--mud-palette-background);">
+                        <MudText Typo="Typo.body1" Style="white-space: pre-wrap;">@Log.Parameters</MudText>
+                    </MudPaper>
+                </MudItem>
+            }
+            
+            @if (Log.StatusCode.HasValue)
+            {
+                <MudItem xs="12" md="6">
+                    <MudText Typo="Typo.subtitle1">Status Code</MudText>
+                    <MudText Typo="Typo.body1">@Log.StatusCode</MudText>
+                </MudItem>
+            }
+            
+            @if (!string.IsNullOrEmpty(Log.ExceptionType))
+            {
+                <MudItem xs="12">
+                    <MudText Typo="Typo.subtitle1">Exception Type</MudText>
+                    <MudText Typo="Typo.body1">@Log.ExceptionType</MudText>
+                </MudItem>
+            }
+            
+            @if (!string.IsNullOrEmpty(Log.ExceptionMessage))
+            {
+                <MudItem xs="12">
+                    <MudText Typo="Typo.subtitle1">Exception Message</MudText>
+                    <MudPaper Elevation="0" Class="pa-2 mb-2" Style="background-color: var(--mud-palette-background);">
+                        <MudText Typo="Typo.body1" Style="white-space: pre-wrap;">@Log.ExceptionMessage</MudText>
+                    </MudPaper>
+                </MudItem>
+            }
+            
+            @if (!string.IsNullOrEmpty(Log.StackTrace))
+            {
+                <MudItem xs="12">
+                    <MudExpansionPanels>
+                        <MudExpansionPanel Text="Stack Trace">
+                            <MudPaper Elevation="0" Class="pa-2" Style="background-color: var(--mud-palette-background); max-height: 300px; overflow: auto;">
+                                <MudText Typo="Typo.body2" Style="white-space: pre-wrap; font-family: 'Consolas', monospace;">@Log.StackTrace</MudText>
+                            </MudPaper>
+                        </MudExpansionPanel>
+                    </MudExpansionPanels>
+                </MudItem>
+            }
+        </MudGrid>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Close">Close</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; }
+    
+    [Parameter]
+    public LogEntryViewModel Log { get; set; } = new();
+    
+    private void Close() => MudDialog.Close();
+    
+    private Color GetColorForLogLevel(string level)
+    {
+        return level?.ToLower() switch
+        {
+            "error" => Color.Error,
+            "warning" => Color.Warning,
+            "information" => Color.Info,
+            "debug" => Color.Default,
+            "trace" => Color.Dark,
+            "critical" => Color.Error,
+            _ => Color.Default
+        };
+    }
+}
