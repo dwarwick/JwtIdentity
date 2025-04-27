@@ -12,6 +12,9 @@ using System.Data;
 using JwtIdentity.Configurations;
 using Serilog.Events;
 using JwtIdentity.Middleware;
+using Hangfire;
+using Hangfire.SqlServer;
+using JwtIdentity.Filters;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -106,6 +109,7 @@ builder.Services.Configure<DataProtectionTokenProviderOptions>(options =>
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IApiAuthService, ApiAuthService>();
 builder.Services.AddScoped<ISurveyService, SurveyService>();
+builder.Services.AddScoped<JwtIdentity.Services.BackgroundJobs.BackgroundJobService>();
 
 builder.Services.AddAutoMapper(typeof(MapperConfig));
 builder.Services.AddAuthentication(options =>
@@ -196,6 +200,23 @@ builder.Services.AddCors(options =>
         });
 });
 
+// Add Hangfire services with SQL Server storage
+builder.Services.AddHangfire(config => config
+    .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
+    .UseSimpleAssemblyNameTypeSerializer()
+    .UseRecommendedSerializerSettings()
+    .UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection"), new SqlServerStorageOptions
+    {
+        CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
+        SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
+        QueuePollInterval = TimeSpan.FromSeconds(15),
+        UseRecommendedIsolationLevel = true,
+        DisableGlobalLocks = true
+    }));
+
+// Add the Hangfire background job processing server as a service
+builder.Services.AddHangfireServer();
+
 // Add Data Protection services with a persistent key ring
 var keyRingPath = Path.Combine(AppContext.BaseDirectory, "KeyRing");
 // Ensure the directory exists
@@ -285,6 +306,14 @@ app.UseCors("AllowAll");
 // Map controllers
 app.MapControllers();
 
+// Configure Hangfire Dashboard with custom authorization
+app.UseHangfireDashboard("/hangfire", new DashboardOptions
+{
+    Authorization = new[] { new HangfireAuthorizationFilter() },
+    DashboardTitle = "Survey Shark Job Dashboard",
+    DisplayStorageConnectionString = false
+});
+
 app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveWebAssemblyRenderMode()
@@ -300,6 +329,13 @@ using (var scope = app.Services.CreateScope())
         // Run database migrations
         var dbContext = serviceProvider.GetRequiredService<ApplicationDbContext>();
         dbContext.Database.Migrate();
+
+        // Initialize recurring Hangfire jobs
+        var backgroundJobService = serviceProvider.GetRequiredService<JwtIdentity.Services.BackgroundJobs.BackgroundJobService>();
+        backgroundJobService.InitializeRecurringJobs();
+            
+        var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
+        logger.LogInformation("Application startup completed successfully");
     }
     catch (Exception ex)
     {

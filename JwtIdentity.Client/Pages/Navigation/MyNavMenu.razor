@@ -21,6 +21,11 @@
                     <MudMenuItem Href="/admin/settings">Settings Management</MudMenuItem>
                     <MudMenuItem Href="/admin/logs">System Logs</MudMenuItem>
                     <MudMenuItem Href="/ManageRolePermissions">Manage Permissions</MudMenuItem>
+                    <AuthorizeView Policy="@Permissions.UseHangfire" Context="hangfireAuth">
+                        <Authorized>
+                            <MudMenuItem Href="/hangfire">Background Jobs</MudMenuItem>
+                        </Authorized>
+                    </AuthorizeView>
                 </MudMenu>
             </Authorized>
         </AuthorizeView>
@@ -79,6 +84,11 @@
                     <MudNavLink Href="/admin/settings">Settings Management</MudNavLink>
                     <MudNavLink Href="/admin/logs">System Logs</MudNavLink>
                     <MudNavLink Href="/ManageRolePermissions">Manage Permissions</MudNavLink>
+                    <AuthorizeView Policy="@Permissions.UseHangfire" Context="hangfireDrawerAuth">
+                        <Authorized>
+                            <MudNavLink Href="/hangfire">Background Jobs</MudNavLink>
+                        </Authorized>
+                    </AuthorizeView>
                 </MudNavGroup>
             </Authorized>
         </AuthorizeView>

@@ -7,5 +7,6 @@
         public const string AnswerSurvey = "AnswerSurvey";
         public const string LeaveFeedback = "LeaveFeedback";
         public const string ManageSettings = "ManageSettings";
+        public const string UseHangfire = "UseHangfire";
     }
 }
