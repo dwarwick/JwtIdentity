@@ -7,11 +7,30 @@
 namespace JwtIdentity.Migrations
 {
     /// <inheritdoc />
-    public partial class AddLogEntryFields : Migration
+    public partial class FixMigrations : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.AddColumn<bool>(
+                name: "IsRequired",
+                table: "Questions",
+                type: "bit",
+                nullable: false,
+                defaultValue: false);
+
+            migrationBuilder.AddColumn<string>(
+                name: "Action",
+                table: "LogEntries",
+                type: "nvarchar(max)",
+                nullable: true);
+
+            migrationBuilder.AddColumn<string>(
+                name: "Controller",
+                table: "LogEntries",
+                type: "nvarchar(max)",
+                nullable: true);
+
             migrationBuilder.AddColumn<string>(
                 name: "ExceptionMessage",
                 table: "LogEntries",
@@ -20,6 +39,12 @@ namespace JwtIdentity.Migrations
 
             migrationBuilder.AddColumn<string>(
                 name: "ExceptionType",
+                table: "LogEntries",
+                type: "nvarchar(max)",
+                nullable: true);
+
+            migrationBuilder.AddColumn<string>(
+                name: "IpAddress",
                 table: "LogEntries",
                 type: "nvarchar(max)",
                 nullable: true);
@@ -48,10 +73,22 @@ namespace JwtIdentity.Migrations
                 type: "nvarchar(max)",
                 nullable: true);
 
+            migrationBuilder.AddColumn<string>(
+                name: "Status",
+                table: "LogEntries",
+                type: "nvarchar(max)",
+                nullable: true);
+
             migrationBuilder.AddColumn<int>(
                 name: "StatusCode",
                 table: "LogEntries",
                 type: "int",
+                nullable: true);
+
+            migrationBuilder.AddColumn<string>(
+                name: "UserName",
+                table: "LogEntries",
+                type: "nvarchar(max)",
                 nullable: true);
 
             migrationBuilder.InsertData(
@@ -60,7 +97,8 @@ namespace JwtIdentity.Migrations
                 values: new object[,]
                 {
                     { 4, "permission", "LeaveFeedback", 1 },
-                    { 5, "permission", "ManageSettings", 1 }
+                    { 5, "permission", "ManageSettings", 1 },
+                    { 6, "permission", "UseHangfire", 1 }
                 });
         }
 
@@ -77,12 +115,33 @@ namespace JwtIdentity.Migrations
                 keyColumn: "Id",
                 keyValue: 5);
 
+            migrationBuilder.DeleteData(
+                table: "AspNetRoleClaims",
+                keyColumn: "Id",
+                keyValue: 6);
+
+            migrationBuilder.DropColumn(
+                name: "IsRequired",
+                table: "Questions");
+
+            migrationBuilder.DropColumn(
+                name: "Action",
+                table: "LogEntries");
+
+            migrationBuilder.DropColumn(
+                name: "Controller",
+                table: "LogEntries");
+
             migrationBuilder.DropColumn(
                 name: "ExceptionMessage",
                 table: "LogEntries");
 
             migrationBuilder.DropColumn(
                 name: "ExceptionType",
+                table: "LogEntries");
+
+            migrationBuilder.DropColumn(
+                name: "IpAddress",
                 table: "LogEntries");
 
             migrationBuilder.DropColumn(
@@ -102,7 +161,15 @@ namespace JwtIdentity.Migrations
                 table: "LogEntries");
 
             migrationBuilder.DropColumn(
+                name: "Status",
+                table: "LogEntries");
+
+            migrationBuilder.DropColumn(
                 name: "StatusCode",
+                table: "LogEntries");
+
+            migrationBuilder.DropColumn(
+                name: "UserName",
                 table: "LogEntries");
         }
     }

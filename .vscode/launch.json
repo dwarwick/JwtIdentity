@@ -1,28 +1,6 @@
 {
   "version": "0.2.0",
-  "configurations": [
-    {
-      "name": "Launch and Debug Blazor WebAssembly Application",
-      "type": "blazorwasm",
-      "request": "launch",
-      "hosted": true,
-      "program": "${workspaceFolder}/JwtIdentity/bin/Debug/net9.0/JwtIdentity.dll",
-      "cwd": "${workspaceFolder}/JwtIdentity",
-      "url": "https://localhost:5001",
-      "browser": "chrome",
-      "env": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      },
-      "preLaunchTask": "build-and-verify"
-    },
-    {
-      "name": "C#: JwtIdentity [https]",
-      "type": "dotnet",
-      "request": "launch",
-      "projectPath": "${workspaceFolder}\\JwtIdentity\\JwtIdentity.csproj",
-      "launchConfigurationId": "TargetFramework=;https",
-      "preLaunchTask": "run-and-wait-for-server"
-    },
+  "configurations": [    
     {
       "name": "watch-https",
       "type": "coreclr",
@@ -45,6 +23,42 @@
         "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES": "Microsoft.AspNetCore.Watch.BrowserRefresh",
         "DOTNET_WATCH_SUPPRESS_BROWSER_REFRESH": "false"
       }
+    },
+    {
+      "name": "Launch & Debug Server",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build",
+      // run the compiled DLL under the debugger so PDBs load immediately
+      "program": "${workspaceFolder}/JwtIdentity/bin/Debug/net9.0/JwtIdentity.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/JwtIdentity",
+      "stopAtEntry": false,
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      // wait for the server to start, then open the default browser
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+      }
+    },
+    {
+      "name": "Attach to Blazor WASM",
+      "type": "blazorwasm",
+      "request": "attach",
+      // this won’t launch a browser; it will attach to the page once it’s open
+      "url": "https://localhost:5001",
+      "timeout": 60000
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Debug All (Server + Client)",
+      "configurations": [
+        "Launch & Debug Server",
+        "Attach to Blazor WASM"
+      ]
     }
   ]
 }
