@@ -251,6 +251,7 @@ namespace JwtIdentity.Controllers
                                     {
                                         existingTextQuestion.Text = passedInQuestion.Text;
                                         existingTextQuestion.QuestionNumber = passedInQuestion.QuestionNumber;
+                                        existingTextQuestion.IsRequired = passedInQuestion.IsRequired;
 
                                         _ = _context.Questions.Update(existingTextQuestion);
                                     }
@@ -260,6 +261,7 @@ namespace JwtIdentity.Controllers
                                     var existingTrueFalseQuestion = await _context.Questions.OfType<TrueFalseQuestion>().FirstOrDefaultAsync(q => q.Id == passedInQuestion.Id);
                                     existingTrueFalseQuestion.Text = passedInQuestion.Text;
                                     existingTrueFalseQuestion.QuestionNumber = passedInQuestion.QuestionNumber;
+                                    existingTrueFalseQuestion.IsRequired = passedInQuestion.IsRequired;
 
                                     _ = _context.Questions.Update(existingTrueFalseQuestion);
                                     break;
@@ -267,16 +269,19 @@ namespace JwtIdentity.Controllers
                                     var existingRatingQuestion = await _context.Questions.OfType<Rating1To10Question>().FirstOrDefaultAsync(q => q.Id == passedInQuestion.Id);
                                     existingRatingQuestion.Text = passedInQuestion.Text;
                                     existingRatingQuestion.QuestionNumber = passedInQuestion.QuestionNumber;
+                                    existingRatingQuestion.IsRequired = passedInQuestion.IsRequired;
+
                                     _ = _context.Questions.Update(existingRatingQuestion);
                                     break;
                                 case QuestionType.MultipleChoice:
                                     var existingMCQuestion = await _context.Questions.OfType<MultipleChoiceQuestion>().AsNoTracking().Include(x => x.Options).FirstOrDefaultAsync(q => q.Id == passedInQuestion.Id);
 
                                     if (existingMCQuestion != null && (existingMCQuestion.Text != passedInQuestion.Text
-                                            || passedInQuestion.QuestionNumber != existingMCQuestion.QuestionNumber))
+                                            || passedInQuestion.QuestionNumber != existingMCQuestion.QuestionNumber || existingMCQuestion.IsRequired != passedInQuestion.IsRequired))
                                     {
                                         existingMCQuestion.Text = passedInQuestion.Text;
                                         existingMCQuestion.QuestionNumber = passedInQuestion.QuestionNumber;
+                                        existingMCQuestion.IsRequired = passedInQuestion.IsRequired;
 
                                         _ = _context.Questions.Update(existingMCQuestion);
                                     }
@@ -313,10 +318,11 @@ namespace JwtIdentity.Controllers
                                     var existingSAQuestion = await _context.Questions.OfType<SelectAllThatApplyQuestion>().AsNoTracking().Include(x => x.Options).FirstOrDefaultAsync(q => q.Id == passedInQuestion.Id);
 
                                     if (existingSAQuestion != null && (existingSAQuestion.Text != passedInQuestion.Text
-                                            || passedInQuestion.QuestionNumber != existingSAQuestion.QuestionNumber))
+                                            || passedInQuestion.QuestionNumber != existingSAQuestion.QuestionNumber || existingSAQuestion.IsRequired != passedInQuestion.IsRequired))
                                     {
                                         existingSAQuestion.Text = passedInQuestion.Text;
                                         existingSAQuestion.QuestionNumber = passedInQuestion.QuestionNumber;
+                                        existingSAQuestion.IsRequired = passedInQuestion.IsRequired;
 
                                         _ = _context.Questions.Update(existingSAQuestion);
                                     }

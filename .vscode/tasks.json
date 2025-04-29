@@ -202,6 +202,33 @@
                 "panel": "dedicated",
                 "clear": true
             }
-        }
+        },
+        {
+            "label": "build-server",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+              "build",
+              "${workspaceFolder}/JwtIdentity/JwtIdentity.csproj"
+            ],
+            "problemMatcher": "$msCompile"
+          },
+          {
+            "label": "build-client",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+              "build",
+              "${workspaceFolder}/JwtIdentity.Client/JwtIdentity.Client.csproj"
+            ],
+            "problemMatcher": "$msCompile"
+          },
+          {
+            // building both projects in sequence
+            "label": "build",
+            "dependsOn": ["build-server", "build-client"],
+            "dependsOrder": "sequence"
+          }
+        
     ]
 }

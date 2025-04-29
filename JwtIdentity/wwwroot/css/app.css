@@ -455,3 +455,9 @@ svg.mud-icon-root.mud-svg-icon.mud-icon-size-medium.drag-icon.ai-style-change-9 
         box-shadow: 0 4px 8px rgba(0,0,0,0.4);
     }
 }
+
+.RequiredStar{
+    color: var(--mud-palette-error) !important;
+    font-size: 0.8rem !important;
+    margin-left: -0.8rem !important;
+}

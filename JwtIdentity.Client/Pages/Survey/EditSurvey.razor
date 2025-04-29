@@ -31,15 +31,18 @@
                                        Disabled="@(SelectedQuestion != null)">
                                 @foreach (var questionType in QuestionTypes)
                                 {
-                                    <MudSelectItem Value="@(StringHelper.PascalCaseToWords( questionType))" />
+                                    <MudSelectItem Value="@(StringHelper.PascalCaseToWords(questionType))" />
                                 }
                             </MudSelect>
 
                             <MudText Typo="Typo.h6" Class="mt-5">Create a @StringHelper.PascalCaseToWords(SelectedQuestionType) Question</MudText>
                             <MudTextField id="Text" Label="Question Text" @bind-Value="QuestionText" Variant="Variant.Filled" Lines="1" MaxLines="5" AutoGrow="true" Immediate="true" Counter="500" MaxLength="500" />
                         </MudStack>
-
-                        <MudButton ButtonType="ButtonType.Button" Variant="Variant.Filled" Color="Color.Primary" OnClick="AddQuestionToSurvey" Disabled="@AddQuestionToSurveyDisabled">Save Question</MudButton>
+                        
+                        <MudStack Row="true">
+                            <MudButton ButtonType="ButtonType.Button" Variant="Variant.Filled" Color="Color.Primary" OnClick="AddQuestionToSurvey" Disabled="@AddQuestionToSurveyDisabled">Save Question</MudButton>
+                            <MudCheckBox T="bool" @bind-Value="IsRequired" Label="Is Required?" Color="Color.Primary" Disabled="@AddQuestionToSurveyDisabled" />
+                        </MudStack>
                     </MudPaper>
 
                     @if (SelectedQuestionType.Replace(" ", "") == Enum.GetName(QuestionType.MultipleChoice) || 
@@ -97,6 +100,12 @@
                             <MudIconButton Icon="@Icons.Material.Filled.Delete" ButtonType="ButtonType.Button" OnClick="@(() =>DeleteQuestion(question))" />
                             <MudIcon Class="drag-icon ai-style-change-9" Icon="@Icons.Material.Filled.DragIndicator" />
                             <MudListItem Class="ai-style-change-3 ai-style-change-6" Text="@($"{question.QuestionNumber}. {question.Text}")" Value="@question" />
+                            
+                            @if (question.IsRequired) 
+                            {
+                                <MudText Color="Color.Error" Typo="Typo.caption" Class="RequiredStar" >*</MudText>
+                            }
+
                         </MudStack>
                         <div style="height: 2px; background-color: blueviolet; width: 100%;"></div>
                     </DragAndDrop>

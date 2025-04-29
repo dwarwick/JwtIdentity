@@ -75,6 +75,7 @@ namespace JwtIdentity.Controllers
             {
                 _logger.LogInformation("Attempting to delete question with ID {QuestionId}", id);
                 
+                // Load the question first to check if it exists
                 var question = await _context.Questions.FindAsync(id);
                 if (question == null)
                 {
@@ -85,36 +86,49 @@ namespace JwtIdentity.Controllers
                 int surveyId = question.SurveyId;
                 _logger.LogDebug("Question belongs to survey {SurveyId}", surveyId);
 
+                // Clear tracking of the initially loaded entity to avoid conflicts
+                _context.Entry(question).State = EntityState.Detached;
+
                 // delete all choiceoptions for multiple choice questions
                 if (question.QuestionType == QuestionType.MultipleChoice)
                 {
                     _logger.LogDebug("Deleting options for multiple choice question {QuestionId}", id);
-                    var existingMCQuestion = await _context.Questions.OfType<MultipleChoiceQuestion>()
-                        .AsNoTracking()
+                    
+                    // Load the question with its options in a single query
+                    var mcQuestion = await _context.Questions.OfType<MultipleChoiceQuestion>()
                         .Include(x => x.Options)
                         .FirstOrDefaultAsync(q => q.Id == id);
                         
-                    _context.ChoiceOptions.RemoveRange(existingMCQuestion.Options);
-                    _logger.LogDebug("Removed {OptionCount} options for multiple choice question", 
-                        existingMCQuestion.Options?.Count ?? 0);
+                    if (mcQuestion?.Options != null)
+                    {
+                        _context.ChoiceOptions.RemoveRange(mcQuestion.Options);
+                        _logger.LogDebug("Removed {OptionCount} options for multiple choice question", 
+                            mcQuestion.Options.Count);
+                    }
                 }
                 else if (question.QuestionType == QuestionType.SelectAllThatApply)
                 {
                     _logger.LogDebug("Deleting options for select-all question {QuestionId}", id);
-                    var existingSelectAllQuestion = await _context.Questions.OfType<SelectAllThatApplyQuestion>()
-                        .AsNoTracking()
+                    
+                    // Load the question with its options in a single query
+                    var selectAllQuestion = await _context.Questions.OfType<SelectAllThatApplyQuestion>()
                         .Include(x => x.Options)
                         .FirstOrDefaultAsync(q => q.Id == id);
                         
-                    _context.ChoiceOptions.RemoveRange(existingSelectAllQuestion.Options);
-                    _logger.LogDebug("Removed {OptionCount} options for select-all question", 
-                        existingSelectAllQuestion.Options?.Count ?? 0);
+                    if (selectAllQuestion?.Options != null)
+                    {
+                        _context.ChoiceOptions.RemoveRange(selectAllQuestion.Options);
+                        _logger.LogDebug("Removed {OptionCount} options for select-all question", 
+                            selectAllQuestion.Options.Count);
+                    }
                 }
 
+                // Reload the question to delete it
+                question = await _context.Questions.FindAsync(id);
                 _logger.LogDebug("Removing question {QuestionId}", id);
-                _ = _context.Questions.Remove(question);
+                _context.Questions.Remove(question);
 
-                _ = await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync();
                 _logger.LogDebug("Question {QuestionId} deleted successfully", id);
 
                 // Re-number the remaining questions in the survey
@@ -124,10 +138,13 @@ namespace JwtIdentity.Controllers
                     .OrderBy(q => q.QuestionNumber)
                     .ToListAsync();
 
-                questions.ForEach(q => q.QuestionNumber = questions.IndexOf(q) + 1);
+                for (int i = 0; i < questions.Count; i++)
+                {
+                    questions[i].QuestionNumber = i + 1;
+                }
                 _logger.LogDebug("Updated question numbers for {QuestionCount} questions", questions.Count);
 
-                _ = await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync();
                 _logger.LogInformation("Question {QuestionId} successfully deleted and remaining questions re-numbered", id);
 
                 return Ok("Question Deleted");

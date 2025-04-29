@@ -9,6 +9,7 @@ namespace JwtIdentity.Common.ViewModels
         public int SurveyId { get; set; }
         public string Text { get; set; }
         public int QuestionNumber { get; set; }
+        public bool IsRequired { get; set; } = true; // Indicates if the question is mandatory
         [JsonPropertyName("questionType")]
         public QuestionType QuestionType { get; set; }
         public List<AnswerViewModel> Answers { get; set; }
