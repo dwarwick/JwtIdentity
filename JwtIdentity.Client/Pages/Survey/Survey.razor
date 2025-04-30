@@ -31,27 +31,27 @@
             if (IsAnonymousUser)
             {
                 <div class="question-container">
-                <MudText>
-                    <span class="question-number">0.</span>
-                    <span class="question-text">
-                        Since you are not logged in, you must agree to our <MudLink Href="/privacy-policy" Underline="Underline.None" Typo="Typo.inherit" Target="Target._blank">Privacy Policy<MudIcon Icon="@Icons.Material.Filled.OpenInNew" /></MudLink>
-                        <span> and </span>
-                        <MudLink Href="/terms-of-service" Underline="Underline.None" Typo="Typo.inherit" Target="Target._blank">Terms of Service<MudIcon Icon="@Icons.Material.Filled.OpenInNew" /></MudLink>
-                        before you can take this survey.
-                    </span>
-                </MudText>
-                <div class="options-container">
-                <MudPaper Elevation="0" Class="pa-2">
-                    <MudRadioGroup T="bool" @bind-Value="AgreedToTerms" Disabled="AgreedToTerms">
-                        <MudStack Spacing="2">
-                            
-                            <MudRadio Color="Color.Primary" Label="I Agree" Value="true" />
-                            <MudRadio Color="Color.Primary" Label="I Disagree" Value="false" />
-                            
-                        </MudStack>
-                    </MudRadioGroup>
-                </MudPaper>
-                </div>
+                    <MudText>
+                        <span class="question-number">0.</span>
+                        <span class="question-text">
+                            Since you are not logged in, you must agree to our <MudLink Href="/privacy-policy" Underline="Underline.None" Typo="Typo.inherit" Target="Target._blank">Privacy Policy<MudIcon Icon="@Icons.Material.Filled.OpenInNew" /></MudLink>
+                            <span> and </span>
+                            <MudLink Href="/terms-of-service" Underline="Underline.None" Typo="Typo.inherit" Target="Target._blank">Terms of Service<MudIcon Icon="@Icons.Material.Filled.OpenInNew" /></MudLink>
+                            before you can take this survey.
+                        </span>
+                    </MudText>
+                    <div class="options-container">
+                        <MudPaper Elevation="0" Class="pa-2">
+                            <MudRadioGroup T="bool" @bind-Value="AgreedToTerms" Disabled="AgreedToTerms">
+                                <MudStack Spacing="2">
+
+                                    <MudRadio Color="Color.Primary" Label="I Agree" Value="true" />
+                                    <MudRadio Color="Color.Primary" Label="I Disagree" Value="false" />
+
+                                </MudStack>
+                            </MudRadioGroup>
+                        </MudPaper>
+                    </div>
                 </div>
             }
 
@@ -60,6 +60,10 @@
                 int questionNumber = Survey.Questions.OrderBy(x => x.QuestionNumber).ToList().FindIndex(x => x.Id == question.Id) + 1;
                 <div class="question-container">
                     <MudText>
+                        @if (question.IsRequired == true)
+                        {
+                            <MudText Color="Color.Error" Typo="Typo.caption" Class="RequiredStar">*</MudText>
+                        }
                         <span class="question-number">@questionNumber.</span>
                         <span class="question-text">@question.Text</span>
                     </MudText>
