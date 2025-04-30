@@ -7,7 +7,7 @@
 namespace JwtIdentity.Migrations
 {
     /// <inheritdoc />
-    public partial class FixMigrations : Migration
+    public partial class AddLogEntryFields : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace JwtIdentity.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250428220611_FixMigrations")]
-    partial class FixMigrations
+    [Migration("20250427202441_AddUserNameToLogEntries")]
+    partial class AddUserNameToLogEntries
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
