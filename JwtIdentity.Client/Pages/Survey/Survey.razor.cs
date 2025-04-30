@@ -1,5 +1,4 @@
-﻿using System.Dynamic;
-using System.Net.Http.Json;
+﻿using System.Net.Http.Json;
 using System.Security.Claims;
 
 namespace JwtIdentity.Client.Pages.Survey
@@ -346,7 +345,7 @@ namespace JwtIdentity.Client.Pages.Survey
             }
             else
             {
-                _ = Snackbar.Add("Please answer all questions before submitting", Severity.Warning);
+                _ = Snackbar.Add("Please answer all Required questions before submitting. Required questions are marked with a red asterisk.", Severity.Warning);
             }
         }
 
@@ -355,6 +354,11 @@ namespace JwtIdentity.Client.Pages.Survey
             // check if all questions have been answered
             foreach (var question in Survey.Questions)
             {
+                if (question.IsRequired == false)
+                {
+                    continue; // Skip non-required questions
+                }
+
                 switch (question.QuestionType)
                 {
                     case QuestionType.Text:
