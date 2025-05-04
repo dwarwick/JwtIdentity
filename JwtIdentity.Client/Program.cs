@@ -1,5 +1,6 @@
 using Blazored.LocalStorage;
 using JwtIdentity.Client.Helpers;
+using JwtIdentity.Services;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
@@ -26,6 +27,7 @@ builder.Services.AddAuthorizationCore();
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>(); // if using a custom provider
 builder.Services.AddScoped<CustomAuthStateProvider>();
 builder.Services.AddScoped<IUtility, Utility>();
+builder.Services.AddScoped<IWordPressBlogService, WordPressBlogService>();
 builder.Services.AddCascadingAuthenticationState();
 
 builder.Services.AddAuthorizationCore(options =>
