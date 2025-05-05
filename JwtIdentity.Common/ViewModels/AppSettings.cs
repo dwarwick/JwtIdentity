@@ -50,6 +50,6 @@
     {
         public string SiteDomain { get; set; }
         public string GetUrl { get; set; }
-
+        public string SinglePostUrl { get; set; }
     }
 }

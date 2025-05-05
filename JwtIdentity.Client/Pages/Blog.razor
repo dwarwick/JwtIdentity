@@ -1,53 +1,51 @@
-﻿@page "/blogs"
+﻿@page "/blog/{slug}"
 @* @rendermode InteractiveServer    *@
 @inject IWordPressBlogService WordPressService
-<h1>Hello World</h1>
-<PageTitle>Blog Posts - Survey Shark</PageTitle>
+@using System.Web;
 
-<h1>Blog Posts</h1>
+<PageTitle>Blog Post - Survey Shark</PageTitle>
 
-@if (posts == null)
+@if (post == null)
 {
-    <p><em>Loading posts...</em></p>
+    <p><em>Loading post...</em></p>
 }
-else if (posts.Posts.Count == 0)
+else if (post.Title == null)
 {
-    <p>No blog posts found.</p>
+    <p>No blog post found.</p>
 }
 else
 {
     <div class="blog-posts-container">
-        @foreach (var post in posts.Posts)
-        {
-            <article class="blog-post">
-                <h2>@post.Title</h2>
-                <p class="post-date">Posted on @post.Date.ToString("MMMM dd, yyyy")</p>
-                <div class="post-excerpt">
-                    @((MarkupString)post.Excerpt)
-                </div>
-                <p><a href="@post.Url" target="_blank" rel="noopener">Read more…</a></p>
-            </article>
-        }
+        <article class="blog-post">
+            <h2>@HttpUtility.HtmlDecode(post.Title)</h2>
+            <p class="post-date">Posted on @post.Date.ToString("MMMM dd, yyyy")</p>
+            <div class="post-excerpt">
+                @((MarkupString)HttpUtility.HtmlDecode(post.Content))
+            </div>            
+        </article>
     </div>
 }
 
 @code {
-    private WordPressPostResponse posts;
+    private WordPressPost post;
+
+    [Parameter]
+    public string slug { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
             Console.WriteLine("Initializing Blog component...");
-            posts = await WordPressService.GetAllPostsAsync();
+            post = await WordPressService.GetPostByPostSlugAsync(slug);
 
-            // Log the number of posts fetched
-            Console.WriteLine($"Number of posts fetched: {posts.Posts?.Count ?? 0}");
+            // Log the post details fetched
+            Console.WriteLine($"Post fetched: {post?.Title ?? "Not found"}");
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error loading blog posts: {ex.Message}");
-            posts = new WordPressPostResponse();
+            post = new WordPressPost();
         }
     }
 }

@@ -15,7 +15,7 @@ namespace JwtIdentity.Common.ViewModels
 
     public class WordPressPost
     {
-        [JsonPropertyName("ID")]
+        [JsonPropertyName("post_ID")]
         public int Id { get; set; }
 
         [JsonPropertyName("title")]
@@ -32,6 +32,9 @@ namespace JwtIdentity.Common.ViewModels
 
         [JsonPropertyName("URL")]
         public string Url { get; set; }
+
+        [JsonPropertyName("slug")]
+        public string Slug { get; set; }
 
         // You can include other fields if needed, e.g. Author, Categories, etc.
     }

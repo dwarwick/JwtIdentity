@@ -1,0 +1,53 @@
+﻿@page "/blogs"
+@* @rendermode InteractiveServer    *@
+@inject IWordPressBlogService WordPressService
+
+<PageTitle>Blog Posts - Survey Shark</PageTitle>
+
+<h1>Blog Posts</h1>
+
+@if (posts == null)
+{
+    <p><em>Loading posts...</em></p>
+}
+else if (posts.Posts.Count == 0)
+{
+    <p>No blog posts found.</p>
+}
+else
+{
+    <div class="blog-posts-container">
+        @foreach (var post in posts.Posts)
+        {
+            <article class="blog-post">
+                <h2>@post.Title</h2>
+                <p class="post-date">Posted on @post.Date.ToString("MMMM dd, yyyy")</p>
+                <div class="post-excerpt">
+                    @((MarkupString)post.Excerpt)
+                </div>
+                <p><a href="@post.Url" target="_blank" rel="noopener">Read more…</a></p>
+            </article>
+        }
+    </div>
+}
+
+@code {
+    private WordPressPostResponse posts;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Console.WriteLine("Initializing Blog component...");
+            posts = await WordPressService.GetAllPostsAsync();
+
+            // Log the number of posts fetched
+            Console.WriteLine($"Number of posts fetched: {posts.Posts?.Count ?? 0}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading blog posts: {ex.Message}");
+            posts = new WordPressPostResponse();
+        }
+    }
+}
