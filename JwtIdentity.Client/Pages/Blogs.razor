@@ -1,5 +1,4 @@
 ﻿@page "/blogs"
-@* @rendermode InteractiveServer    *@
 @inject IWordPressBlogService WordPressService
 
 <PageTitle>Blog Posts - Survey Shark</PageTitle>
@@ -35,16 +34,11 @@ else
     protected override async Task OnInitializedAsync()
     {
         try
-        {
-            Console.WriteLine("Initializing Blog component...");
-            posts = await WordPressService.GetAllPostsAsync();
-
-            // Log the number of posts fetched
-            Console.WriteLine($"Number of posts fetched: {posts.Posts?.Count ?? 0}");
+        {            
+            posts = await WordPressService.GetAllPostsAsync();            
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error loading blog posts: {ex.Message}");
             posts = new WordPressPostResponse();
         }
     }
