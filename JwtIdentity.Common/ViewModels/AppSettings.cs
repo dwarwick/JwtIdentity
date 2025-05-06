@@ -9,6 +9,8 @@
         public bool DetailedErrors { get; set; }
         public string ApiBaseAddress { get; set; }
         public EmailSettings EmailSettings { get; set; }
+
+        public WordPress WordPress { get; set; }
     }
 
     public class LoggingOptions
@@ -43,6 +45,11 @@
         public string Server { get; set; }
         public string Domain { get; set; }
     }
-    // ...existing code...
 
+    public class WordPress
+    {
+        public string SiteDomain { get; set; }
+        public string GetUrl { get; set; }
+        public string SinglePostUrl { get; set; }
+    }
 }

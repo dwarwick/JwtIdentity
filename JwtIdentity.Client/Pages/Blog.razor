@@ -1,0 +1,46 @@
+﻿@page "/blog/{slug}"
+@inject IWordPressBlogService WordPressService
+@using System.Web;
+
+<PageTitle>Blog Post - Survey Shark</PageTitle>
+
+@if (post == null)
+{
+    <p><em>Loading post...</em></p>
+}
+else if (post.Title == null)
+{
+    <p>No blog post found.</p>
+}
+else
+{
+    <div class="blog-posts-container">
+        <article class="blog-post">
+            <h2>@HttpUtility.HtmlDecode(post.Title)</h2>
+            <p class="post-date">Posted on @post.Date.ToString("MMMM dd, yyyy")</p>
+            <div class="post-excerpt">
+                @((MarkupString)HttpUtility.HtmlDecode(post.Content))
+            </div>            
+        </article>
+    </div>
+}
+
+@code {
+    private WordPressPost post;
+
+    [Parameter]
+    public string slug { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {            
+            post = await WordPressService.GetPostByPostSlugAsync(slug);
+            
+        }
+        catch (Exception)
+        {            
+            post = new WordPressPost();
+        }
+    }
+}

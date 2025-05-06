@@ -13,6 +13,7 @@
     </MudHidden>
     <MudHidden Breakpoint="Breakpoint.SmAndDown">
         <MudButton Variant="Variant.Text" Color="Color.Inherit" Class="mx-2" Href="/">Home</MudButton>
+        <MudButton Variant="Variant.Text" Color="Color.Inherit" Class="mx-2" Href="/blogs">Blogs</MudButton>
         <MudButton Variant="Variant.Text" Color="Color.Inherit" Class="mx-2" Href="/documentation">Documentation</MudButton>
         <AuthorizeView Roles="Admin">
             <Authorized>
@@ -76,6 +77,7 @@
             </NotAuthorized>
         </AuthorizeView>
         <MudNavLink Href="/" Match="NavLinkMatch.All">Home</MudNavLink>
+        <MudNavLink Href="/blogs" Match="NavLinkMatch.All">Blogs</MudNavLink>
         <MudNavLink Href="/documentation">Documentation</MudNavLink>
         <AuthorizeView Roles="Admin">
             <Authorized>

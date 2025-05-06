@@ -1,0 +1,45 @@
+﻿@page "/blogs"
+@inject IWordPressBlogService WordPressService
+
+<PageTitle>Blog Posts - Survey Shark</PageTitle>
+
+@if (posts == null)
+{
+    <p><em>Loading posts...</em></p>
+}
+else if (posts.Posts.Count == 0)
+{
+    <p>No blog posts found.</p>
+}
+else
+{
+    <div class="blog-posts-container">
+        @foreach (var post in posts.Posts)
+        {
+            <article class="blog-post">
+                <h2>@post.Title</h2>
+                <p class="post-date">Posted on @post.Date.ToString("MMMM dd, yyyy")</p>
+                <div class="post-excerpt">
+                    @((MarkupString)post.Excerpt)
+                </div>
+                <p><a href="@post.Url" target="_blank" rel="noopener">Read more…</a></p>
+            </article>
+        }
+    </div>
+}
+
+@code {
+    private WordPressPostResponse posts;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {            
+            posts = await WordPressService.GetAllPostsAsync();            
+        }
+        catch (Exception ex)
+        {
+            posts = new WordPressPostResponse();
+        }
+    }
+}

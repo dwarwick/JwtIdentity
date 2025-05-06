@@ -1,3 +1,6 @@
+using Hangfire;
+using Hangfire.SqlServer;
+using JwtIdentity.Middleware;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.DataProtection;
@@ -5,16 +8,11 @@ using Microsoft.AspNetCore.OData;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
-using Serilog.Sinks.RollingFileAlternate;
-using Serilog.Sinks.MSSqlServer;
-using System.Text;
-using System.Data;
-using JwtIdentity.Configurations;
 using Serilog.Events;
-using JwtIdentity.Middleware;
-using Hangfire;
-using Hangfire.SqlServer;
-using JwtIdentity.Filters;
+using Serilog.Sinks.MSSqlServer;
+using Serilog.Sinks.RollingFileAlternate;
+using System.Data;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -43,9 +41,9 @@ Log.Logger = new LoggerConfiguration()
     .WriteTo.Console(outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}")
     .WriteTo.Debug(outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}")
     .WriteTo.RollingFileAlternate(
-        "logs/log-{Date}.txt", 
-        fileSizeLimitBytes: null, 
-        retainedFileCountLimit: 30, 
+        "logs/log-{Date}.txt",
+        fileSizeLimitBytes: null,
+        retainedFileCountLimit: 30,
         outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj} User: {UserName}{NewLine}{Properties:j}{NewLine}{Exception}")
     // Add MSSqlServer sink to log warnings and errors to the LogEntries table
     .WriteTo.MSSqlServer(
@@ -186,7 +184,7 @@ builder.Services.AddControllers(options =>
 {
     _ = options.Select().Filter().OrderBy().Count().Expand().SetMaxTop(null);
     _ = options.AddRouteComponents("odata", EdmModelBuilder.GetEdmModel());
-    });
+});
 
 // add an AllowAll Cors policy
 builder.Services.AddCors(options =>
@@ -244,15 +242,15 @@ using (var scope = app.Services.CreateScope())
     var emailService = scope.ServiceProvider.GetRequiredService<IEmailService>();
     var customerServiceEmail = builder.Configuration["EmailSettings:CustomerServiceEmail"] ?? "admin@example.com";
     var applicationName = builder.Configuration["AppSettings:ApplicationName"] ?? "JwtIdentity";
-    
+
     // Add email sink to the existing logger configuration
     Log.Logger = new LoggerConfiguration()
         .MinimumLevel.Debug()
         .WriteTo.Logger(Log.Logger)
         .WriteTo.EmailSink(
-            emailService, 
-            customerServiceEmail, 
-            applicationName, 
+            emailService,
+            customerServiceEmail,
+            applicationName,
             restrictedToMinimumLevel: LogEventLevel.Error)
         .CreateLogger();
 }
@@ -317,7 +315,7 @@ app.UseHangfireDashboard("/hangfire", new DashboardOptions
 app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveWebAssemblyRenderMode()
-    .AddAdditionalAssemblies(typeof(JwtIdentity.Client._Imports).Assembly);
+    .AddAdditionalAssemblies(typeof(JwtIdentity.Client.Layout.MainLayout).Assembly);
 
 // Apply database migrations at startup
 using (var scope = app.Services.CreateScope())
@@ -333,7 +331,7 @@ using (var scope = app.Services.CreateScope())
         // Initialize recurring Hangfire jobs
         var backgroundJobService = serviceProvider.GetRequiredService<JwtIdentity.Services.BackgroundJobs.BackgroundJobService>();
         backgroundJobService.InitializeRecurringJobs();
-            
+
         var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
         logger.LogInformation("Application startup completed successfully");
     }
