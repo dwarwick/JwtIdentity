@@ -91,8 +91,11 @@ if (builder.Environment.IsDevelopment())
 
 // Add DbContext and Identity services
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
-    .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning)));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"), sql => sql.EnableRetryOnFailure(
+    maxRetryCount:   3,
+    maxRetryDelay:   TimeSpan.FromSeconds(10),
+    errorNumbersToAdd: null
+)).ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning)));
 
 builder.Services.AddIdentity<ApplicationUser, ApplicationRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
@@ -199,21 +202,28 @@ builder.Services.AddCors(options =>
 });
 
 // Add Hangfire services with SQL Server storage
-builder.Services.AddHangfire(config => config
-    .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
-    .UseSimpleAssemblyNameTypeSerializer()
-    .UseRecommendedSerializerSettings()
-    .UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection"), new SqlServerStorageOptions
-    {
-        CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
-        SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
-        QueuePollInterval = TimeSpan.FromSeconds(15),
-        UseRecommendedIsolationLevel = true,
-        DisableGlobalLocks = true
-    }));
-
-// Add the Hangfire background job processing server as a service
-builder.Services.AddHangfireServer();
+try
+{
+    builder.Services.AddHangfire(config => config
+        .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
+        .UseSimpleAssemblyNameTypeSerializer()
+        .UseRecommendedSerializerSettings()
+        .UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection"), new SqlServerStorageOptions
+        {
+            CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
+            SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
+            QueuePollInterval = TimeSpan.FromSeconds(15),
+            UseRecommendedIsolationLevel = true,
+            DisableGlobalLocks = true
+        }));
+    // Add the Hangfire background job processing server as a service
+    builder.Services.AddHangfireServer();
+}
+catch (Exception ex)
+{
+    // If SQL Server is unreachable, log a error and continue without Hangfire
+    Log.Logger.Error(ex, "Hangfire database unavailable; skipping background job setup");
+}
 
 // Add Data Protection services with a persistent key ring
 var keyRingPath = Path.Combine(AppContext.BaseDirectory, "KeyRing");
