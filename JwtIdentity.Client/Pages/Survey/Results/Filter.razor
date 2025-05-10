@@ -9,7 +9,7 @@
             <SfToolbar>
                 <ToolbarEvents Clicked="ToolbarClickHandler"></ToolbarEvents>
                 <ToolbarItems>
-                    <ToolbarItem Type="@ItemType.Button" PrefixIcon="e-export-excel icon" Id="exportExcel" Text="Export to Excel"></ToolbarItem>                    
+                    <ToolbarItem Type="@ItemType.Button" PrefixIcon="e-export-excel icon" Id="exportExcel" Text="Export to Excel"></ToolbarItem>
                 </ToolbarItems>
             </SfToolbar>
         </ToolbarTemplate>
@@ -18,6 +18,67 @@
     <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel"></GridFilterSettings>
 
     <GridColumns>
-            
+        @if (columnsInitialized && Survey?.Questions?.Count > 0)
+        {
+            @foreach (var q in Survey.Questions)
+            {
+                ColumnType columnType = ColumnType.String;
+
+                switch (q.QuestionType)
+                {
+                    case QuestionType.Text:
+                    case QuestionType.MultipleChoice:
+                    case QuestionType.SelectAllThatApply:
+                        columnType = ColumnType.String;
+                        break;
+
+                    case QuestionType.TrueFalse:
+                        columnType = ColumnType.Boolean;
+                        break;
+
+                    case QuestionType.Rating1To10:
+                        columnType = ColumnType.Integer;
+                        break;
+                }
+                <GridColumn Type="@columnType" Field="@_propertyMap[q.Id]" HeaderText="@q.Text" />
+            }
+        }
     </GridColumns>
+
+    <GridAggregates>
+        <GridAggregate>
+            <GridAggregateColumns>
+
+                @if (columnsInitialized && Survey?.Questions?.Count > 0)
+                {
+                    foreach (var q in Survey.Questions)
+                    {
+                        <GridAggregateColumn Field=@(_propertyMap[q.Id].ToString()) Type="Syncfusion.Blazor.Grids.AggregateType.Count">
+                            <FooterTemplate>
+                                @{
+                                    var aggregate = (context as AggregateTemplateContext);
+                                    <div>
+                                        @if (true)
+                                        {
+                                            <p>Count: @aggregate.Count</p>
+                                        }
+
+                                        @if (q.QuestionType == QuestionType.MultipleChoice || q.QuestionType == QuestionType.SelectAllThatApply)
+                                        {
+                                            @foreach (var option in ((MultipleChoiceQuestionViewModel)q).Options.OrderBy(o => o.Order))
+                                            {
+                                                var count = OptionCounts.ContainsKey(q.Id) && OptionCounts[q.Id].ContainsKey(option.Id) ? OptionCounts[q.Id][option.Id] : 0;
+                                                <p>@option.OptionText: @count</p>
+                                            }
+                                        }
+
+                                    </div>
+                                }
+                            </FooterTemplate>
+                        </GridAggregateColumn>
+                    }
+                }
+            </GridAggregateColumns>
+        </GridAggregate>
+    </GridAggregates>
 </SfGrid>

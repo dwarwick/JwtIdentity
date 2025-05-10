@@ -17,9 +17,13 @@ namespace JwtIdentity.Client.Pages.Survey.Results
 
         protected Type _surveyType { get; set; }
 
-
-        private Dictionary<int, string> _propertyMap;
+        protected Dictionary<int, string> _propertyMap;
         protected List<object> SurveyRows { get; set; }
+
+        // Add private flag for column initialization
+        protected bool columnsInitialized = false;
+
+        protected Dictionary<int, Dictionary<int, int>> OptionCounts { get; set; } = new();
 
         protected override async Task OnInitializedAsync()
         {
@@ -44,16 +48,22 @@ namespace JwtIdentity.Client.Pages.Survey.Results
                 Answers.AddRange(question.Answers);
             }
 
-            AddColumnsDynamically();
+            //  AddColumnsDynamically();
 
             // 3) Get the raw answers from DB
-
 
             // 4) Build row objects of the dynamic type
             SurveyRows = BuildSurveyRows(
                 _surveyType,
                 _propertyMap,
                 Answers).ToList();
+
+            // Compute counts for each option per question
+            ComputeOptionCounts();
+
+            columnsInitialized = true;
+
+            await Grid.Refresh();
         }
 
         // Suppose we have a method to build "row objects" for each response
@@ -154,40 +164,42 @@ namespace JwtIdentity.Client.Pages.Survey.Results
             }
         }
 
-        private void AddColumnsDynamically()
+        private void ComputeOptionCounts()
         {
-            foreach (var q in Survey.Questions)
+            OptionCounts.Clear();
+            // Initialize counts for multiple choice questions
+            foreach (var mcq in Survey.Questions.OfType<MultipleChoiceQuestionViewModel>())
             {
-                // For question ID 29, property name is "Q_29"
-                string propertyName = _propertyMap[q.Id];
-
-#pragma warning disable BL0005 // Component parameter should not be set outside of its component.
-                var gridColumn = new GridColumn
+                OptionCounts[mcq.Id] = mcq.Options.ToDictionary(o => o.Id, o => 0);
+            }
+            // Initialize counts for select-all-that-apply questions
+            foreach (var saq in Survey.Questions.OfType<SelectAllThatApplyQuestionViewModel>())
+            {
+                OptionCounts[saq.Id] = saq.Options.ToDictionary(o => o.Id, o => 0);
+            }
+            // Tally each answer
+            foreach (var ans in Answers)
+            {
+                if ((ans.AnswerType == AnswerType.MultipleChoice || ans.AnswerType == AnswerType.SingleChoice)
+                    && ans.SelectedOptionValue.HasValue
+                    && OptionCounts.TryGetValue(ans.QuestionId, out var dict))
                 {
-                    Field = propertyName,
-                    HeaderText = q.Text
-                };
-
-
-                // Decide the column type based on the question type
-                switch (q.QuestionType)
-                {
-                    case QuestionType.Text:
-                    case QuestionType.MultipleChoice:
-                    case QuestionType.SelectAllThatApply:
-                        gridColumn.Type = ColumnType.String;
-                        break;
-
-                    case QuestionType.TrueFalse:
-                        gridColumn.Type = ColumnType.Boolean;
-                        break;
-
-                    case QuestionType.Rating1To10:
-                        gridColumn.Type = ColumnType.Integer;
-                        break;
+                    int optionId = ans.SelectedOptionValue.Value;
+                    if (dict.ContainsKey(optionId))
+                        dict[optionId]++;
                 }
-#pragma warning restore BL0005 // Component parameter should not be set outside of its component.
-                Grid.Columns.Add(gridColumn);
+                else if (ans.AnswerType == AnswerType.SelectAllThatApply && ans is SelectAllThatApplyAnswerViewModel sel)
+                {
+                    if (!string.IsNullOrEmpty(sel.SelectedOptionIds) && OptionCounts.TryGetValue(ans.QuestionId, out var dict2))
+                    {
+                        var ids = sel.SelectedOptionIds.Split(',').Select(int.Parse);
+                        foreach (var id in ids)
+                        {
+                            if (dict2.ContainsKey(id))
+                                dict2[id]++;
+                        }
+                    }
+                }
             }
         }
 
@@ -198,5 +210,10 @@ namespace JwtIdentity.Client.Pages.Survey.Results
                 await this.Grid.ExportToExcelAsync();
             }
         }
+
+        private RenderFragment AddContent(string context) => builder =>
+        {
+            builder.AddContent(1, context);
+        };
     }
 }
