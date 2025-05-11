@@ -13,23 +13,41 @@ namespace JwtIdentity.Client.Pages.Survey.Results
 
         protected SurveyViewModel Survey { get; set; }
 
-        protected List<AnswerViewModel> Answers { get; set; } = new();
-
-        protected List<SurveyResponseViewModel> SurveyResponses = new List<SurveyResponseViewModel>();
-
-        protected Type _surveyType { get; set; }
-
         protected Dictionary<int, string> _propertyMap;
         protected List<ExpandoObject> SurveyRows { get; set; } = new();
 
-        // Add private flag for column initialization
-        protected bool columnsInitialized = false;
+        protected bool columnsInitialized { get; set; } = false;
 
         protected Dictionary<int, Dictionary<int, int>> OptionCounts { get; set; } = new();
 
         protected override async Task OnInitializedAsync()
         {
             await LoadData();
+
+        }
+
+        protected async Task ToolbarClickHandler(Syncfusion.Blazor.Navigations.ClickEventArgs args)
+        {
+            if (args.Item.Text == "Export to Excel") //Id is combination of Grid's ID and itemname
+            {
+                await this.Grid.ExportToExcelAsync();
+            }
+        }
+
+        // 1) Hook DataBound
+        protected Task OnGridDataBound()
+            => RefreshCountsAsync();
+
+        // 2) Hook OnActionComplete
+        protected Task OnActionCompleteHandler(ActionEventArgs<ExpandoObject> args)
+        {
+            if (args.RequestType == Action.Filtering
+             || args.RequestType == Action.Sorting
+             || args.RequestType == Action.Paging)
+            {
+                return RefreshCountsAsync();
+            }
+            return Task.CompletedTask;
         }
 
         private async Task LoadData()
@@ -211,15 +229,6 @@ namespace JwtIdentity.Client.Pages.Survey.Results
             }
         }
 
-
-        protected async Task ToolbarClickHandler(Syncfusion.Blazor.Navigations.ClickEventArgs args)
-        {
-            if (args.Item.Text == "Export to Excel") //Id is combination of Grid's ID and itemname
-            {
-                await this.Grid.ExportToExcelAsync();
-            }
-        }
-
         // call this whenever the grid renders or finishes an action
         private async Task RefreshCountsAsync()
         {
@@ -229,22 +238,6 @@ namespace JwtIdentity.Client.Pages.Survey.Results
 
             ComputeOptionCountsFromRows(view);
             StateHasChanged();
-        }
-
-        // 1) Hook DataBound
-        protected Task OnGridDataBound()
-            => RefreshCountsAsync();
-
-        // 2) Hook OnActionComplete
-        protected Task OnActionCompleteHandler(ActionEventArgs<ExpandoObject> args)
-        {
-            if (args.RequestType == Action.Filtering
-             || args.RequestType == Action.Sorting
-             || args.RequestType == Action.Paging)
-            {
-                return RefreshCountsAsync();
-            }
-            return Task.CompletedTask;
         }
     }
 }
