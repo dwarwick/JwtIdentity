@@ -9,6 +9,19 @@ namespace JwtIdentity.Client.Pages.Survey.Results
 
         protected SfGrid<object> Grid { get; set; }
 
+        // Handle grid actions (filtering, sorting, paging) to recalc counts for displayed rows
+        protected async Task OnActionCompleteHandler(ActionEventArgs<object> args)
+        {
+            if (args.RequestType == Syncfusion.Blazor.Grids.Action.Filtering
+             || args.RequestType == Syncfusion.Blazor.Grids.Action.Sorting
+             || args.RequestType == Syncfusion.Blazor.Grids.Action.Paging)
+            {
+                var viewRecords = await Grid.GetCurrentViewRecordsAsync();
+                ComputeOptionCountsFromRows(viewRecords);
+                StateHasChanged();
+            }
+        }
+
         protected SurveyViewModel Survey { get; set; }
 
         protected List<AnswerViewModel> Answers { get; set; } = new();
@@ -58,8 +71,8 @@ namespace JwtIdentity.Client.Pages.Survey.Results
                 _propertyMap,
                 Answers).ToList();
 
-            // Compute counts for each option per question
-            ComputeOptionCounts();
+            // Compute counts for each option based on displayed rows
+            ComputeOptionCountsFromRows(SurveyRows);
 
             columnsInitialized = true;
 
@@ -197,6 +210,48 @@ namespace JwtIdentity.Client.Pages.Survey.Results
                         {
                             if (dict2.ContainsKey(id))
                                 dict2[id]++;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Compute counts for each option based on a set of dynamic row objects
+        private void ComputeOptionCountsFromRows(IEnumerable<object> rows)
+        {
+            OptionCounts.Clear();
+            // Initialize counts for multiple choice and select-all questions
+            foreach (var mcq in Survey.Questions.OfType<MultipleChoiceQuestionViewModel>())
+                OptionCounts[mcq.Id] = mcq.Options.ToDictionary(o => o.Id, o => 0);
+            foreach (var saq in Survey.Questions.OfType<SelectAllThatApplyQuestionViewModel>())
+                OptionCounts[saq.Id] = saq.Options.ToDictionary(o => o.Id, o => 0);
+            
+            // Tally based on displayed rows
+            foreach (var row in rows)
+            {
+                foreach (var mcq in Survey.Questions.OfType<MultipleChoiceQuestionViewModel>())
+                {
+                    var propName = _propertyMap[mcq.Id];
+                    var val = _surveyType.GetProperty(propName)?.GetValue(row) as string;
+                    if (!string.IsNullOrEmpty(val))
+                    {
+                        var option = mcq.Options.FirstOrDefault(o => o.OptionText == val);
+                        if (option != null)
+                            OptionCounts[mcq.Id][option.Id]++;
+                    }
+                }
+                foreach (var saq in Survey.Questions.OfType<SelectAllThatApplyQuestionViewModel>())
+                {
+                    var propName = _propertyMap[saq.Id];
+                    var val = _surveyType.GetProperty(propName)?.GetValue(row) as string;
+                    if (!string.IsNullOrEmpty(val))
+                    {
+                        var texts = val.Split(new[] { ", " }, StringSplitOptions.RemoveEmptyEntries);
+                        foreach (var text in texts)
+                        {
+                            var option = saq.Options.FirstOrDefault(o => o.OptionText == text);
+                            if (option != null)
+                                OptionCounts[saq.Id][option.Id]++;
                         }
                     }
                 }
