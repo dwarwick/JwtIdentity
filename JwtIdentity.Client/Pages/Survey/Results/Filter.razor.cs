@@ -1,4 +1,6 @@
 ﻿using Syncfusion.Blazor.Grids;
+using System.Dynamic;
+using Action = Syncfusion.Blazor.Grids.Action;
 
 namespace JwtIdentity.Client.Pages.Survey.Results
 {
@@ -7,20 +9,7 @@ namespace JwtIdentity.Client.Pages.Survey.Results
         [Parameter]
         public string SurveyId { get; set; }
 
-        protected SfGrid<object> Grid { get; set; }
-
-        // Handle grid actions (filtering, sorting, paging) to recalc counts for displayed rows
-        protected async Task OnActionCompleteHandler(ActionEventArgs<object> args)
-        {
-            if (args.RequestType == Syncfusion.Blazor.Grids.Action.Filtering
-             || args.RequestType == Syncfusion.Blazor.Grids.Action.Sorting
-             || args.RequestType == Syncfusion.Blazor.Grids.Action.Paging)
-            {
-                var viewRecords = await Grid.GetCurrentViewRecordsAsync();
-                ComputeOptionCountsFromRows(viewRecords);
-                StateHasChanged();
-            }
-        }
+        protected SfGrid<ExpandoObject> Grid { get; set; }
 
         protected SurveyViewModel Survey { get; set; }
 
@@ -31,7 +20,7 @@ namespace JwtIdentity.Client.Pages.Survey.Results
         protected Type _surveyType { get; set; }
 
         protected Dictionary<int, string> _propertyMap;
-        protected List<object> SurveyRows { get; set; }
+        protected List<ExpandoObject> SurveyRows { get; set; } = new();
 
         // Add private flag for column initialization
         protected bool columnsInitialized = false;
@@ -45,206 +34,183 @@ namespace JwtIdentity.Client.Pages.Survey.Results
 
         private async Task LoadData()
         {
+            // 1) fetch survey + answers
             Survey = await ApiService.GetAsync<SurveyViewModel>($"{ApiEndpoints.Answer}/getsurveyresults/{SurveyId}");
 
-            StateHasChanged();
+            // 2) build the field‑name map
+            _propertyMap = Survey.Questions.ToDictionary(
+                q => q.Id,
+                q => $"Q_{q.Id}"
+            );
 
-            // 1) Suppose we fetch the dynamic list of questions from somewhere
-            var questions = Survey.Questions;
+            // 3) flatten all answers
+            var allAnswers = Survey.Questions
+                                   .SelectMany(q => q.Answers)
+                                   .ToList();
 
-            // 2) Generate the dynamic type
-            (_surveyType, _propertyMap) = DynamicSurveyTypeBuilder.BuildSurveyType(questions);
+            // 4) build ExpandoObject rows
+            SurveyRows = BuildSurveyRowsAsExpando(Survey.Questions, allAnswers).ToList();
 
-            // 3) Get the raw answers from DB
-            foreach (var question in Survey.Questions)
-            {
-                Answers.AddRange(question.Answers);
-            }
-
-            //  AddColumnsDynamically();
-
-            // 3) Get the raw answers from DB
-
-            // 4) Build row objects of the dynamic type
-            SurveyRows = BuildSurveyRows(
-                _surveyType,
-                _propertyMap,
-                Answers).ToList();
-
-            // Compute counts for each option based on displayed rows
             ComputeOptionCountsFromRows(SurveyRows);
 
             columnsInitialized = true;
 
+            StateHasChanged();
+
+            // 5) refresh grid so it picks up columns & data
             await Grid.Refresh();
         }
 
-        // Suppose we have a method to build "row objects" for each response
-        private IEnumerable<object> BuildSurveyRows(Type dynamicSurveyType, Dictionary<int, string> propertyMap, List<AnswerViewModel> answersForAllResponses)
+        private IEnumerable<ExpandoObject> BuildSurveyRowsAsExpando(
+                List<QuestionViewModel> questions,
+                List<AnswerViewModel> allAnswers)
         {
-            // Group answers by some "ResponseId" or "IpAddress" etc.
-            var grouped = answersForAllResponses
-                .GroupBy(a => a.CreatedById); // or .GroupBy(a => a.IpAddress)
+            // group answers by response
+            var groups = allAnswers.GroupBy(a => a.CreatedById);
 
-            var rowObjects = new List<object>();
-
-            foreach (var responseGroup in grouped)
+            foreach (var grp in groups)
             {
-                // Create an instance of the dynamic type
-                object rowInstance = Activator.CreateInstance(dynamicSurveyType)!;
+                dynamic expando = new ExpandoObject();
+                var dict = (IDictionary<string, object?>)expando;
 
-                // For each answer in this response, find the corresponding property
-                foreach (var ans in responseGroup)
+                // initialize *all* properties to null (so grid sees them up front)
+                foreach (var q in questions)
+                    dict[_propertyMap[q.Id]] = null;
+
+                // populate actual answers
+                foreach (var ans in grp)
                 {
-                    if (propertyMap.TryGetValue(ans.QuestionId, out string propName))
-                    {
-                        // This means "Q_29" or "Q_42", etc.
-
-                        // We'll figure out how to convert 'ans' to the correct property value
-                        object propValue = ConvertAnswerValue(ans);
-
-                        // Finally set the property on rowInstance
-                        dynamicSurveyType.GetProperty(propName)?.SetValue(rowInstance, propValue);
-                    }
+                    var propName = _propertyMap[ans.QuestionId];
+                    dict[propName] = ConvertAnswerValue(ans);
                 }
 
-                rowObjects.Add(rowInstance);
+                yield return expando;
             }
-
-            return rowObjects;
         }
 
-        private object ConvertAnswerValue(AnswerViewModel ans)
+        private object? ConvertAnswerValue(AnswerViewModel ans)
         {
-            // You might switch on ans.AnswerType or check the derived class
-            // to return the correct .NET type (string, bool?, int?, etc.)
-            switch (ans.AnswerType)
+            return ans.AnswerType switch
             {
-                case AnswerType.Text:
-                    // Assume 'TextValue' is your property on TextAnswerViewModel
-                    return (ans as TextAnswerViewModel)?.Text;
+                AnswerType.Text => (ans as TextAnswerViewModel)?.Text,
+                AnswerType.TrueFalse => (ans as TrueFalseAnswerViewModel)?.Value,
+                AnswerType.Rating1To10 => (ans as Rating1To10AnswerViewModel)?.SelectedOptionId,
+                AnswerType.MultipleChoice or AnswerType.SingleChoice
+                    => GetOptionText(ans as MultipleChoiceAnswerViewModel),
+                AnswerType.SelectAllThatApply
+                    => GetSelectAllText(ans as SelectAllThatApplyAnswerViewModel),
+                _ => null
+            };
+        }
 
-                case AnswerType.TrueFalse:
-                    return (ans as TrueFalseAnswerViewModel)?.Value;
+        private string? GetOptionText(MultipleChoiceAnswerViewModel? m)
+        {
+            if (m == null) return null;
 
-                case AnswerType.Rating1To10:
-                    return (ans as Rating1To10AnswerViewModel)?.SelectedOptionId;
+            // find the question in Survey.Questions, not on the answer object
+            var question = Survey.Questions
+                                 .OfType<MultipleChoiceQuestionViewModel>()
+                                 .FirstOrDefault(q => q.Id == m.QuestionId);
+            if (question == null) return null;
 
-                case AnswerType.MultipleChoice:
-                case AnswerType.SingleChoice:
+            var option = question.Options
+                                 .FirstOrDefault(o => o.Id == m.SelectedOptionId);
+            return option?.OptionText;
+        }
 
-                    var question = Survey.Questions
-                .OfType<MultipleChoiceQuestionViewModel>()
-                .FirstOrDefault(q => q.Id == ans.QuestionId);
+        private string? GetSelectAllText(SelectAllThatApplyAnswerViewModel? s)
+        {
+            if (s == null || string.IsNullOrEmpty(s.SelectedOptionIds))
+                return null;
 
-                    if (question != null)
-                    {
-                        var option = question.Options
-                            .FirstOrDefault(o => o.Id == ans.SelectedOptionValue);
+            // find the question
+            var question = Survey.Questions
+                                 .OfType<SelectAllThatApplyQuestionViewModel>()
+                                 .FirstOrDefault(q => q.Id == s.QuestionId);
+            if (question == null) return null;
 
-                        return option?.OptionText;
-                    }
-                    return null;
+            var selectedIds = s.SelectedOptionIds
+                               .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                               .Select(int.Parse)
+                               .ToHashSet();
 
-                case AnswerType.SelectAllThatApply:
-                    var selectAllQuestion = Survey.Questions
-                        .OfType<SelectAllThatApplyQuestionViewModel>()
-                        .FirstOrDefault(q => q.Id == ans.QuestionId);
+            // map back to the question’s options
+            var texts = question.Options
+                                .Where(o => selectedIds.Contains(o.Id))
+                                .Select(o => o.OptionText);
 
-                    if (selectAllQuestion != null && ans is SelectAllThatApplyAnswerViewModel selectAllAns)
-                    {
-                        if (string.IsNullOrEmpty(selectAllAns.SelectedOptionIds))
-                            return null;
-
-                        // Get the IDs of the selected options
-                        var selectedIds = selectAllAns.SelectedOptionIds
-                            .Split(',')
-                            .Select(int.Parse)
-                            .ToHashSet();
-
-                        // Get the text of the selected options
-                        var selectedOptions = selectAllQuestion.Options
-                            .Where(o => selectedIds.Contains(o.Id))
-                            .Select(o => o.OptionText);
-
-                        // Join them with commas for display
-                        return string.Join(", ", selectedOptions);
-                    }
-                    return null;
-
-                default:
-                    return null;
-            }
+            return string.Join(", ", texts);
         }
 
         // Compute counts for each option based on a set of dynamic row objects
-        private void ComputeOptionCountsFromRows(IEnumerable<object> rows)
+        private void ComputeOptionCountsFromRows(IEnumerable<ExpandoObject> rows)
         {
+            // 1) clear & re‑init the bins
             OptionCounts.Clear();
-            // Initialize counts for multiple choice and select-all questions
             foreach (var mcq in Survey.Questions.OfType<MultipleChoiceQuestionViewModel>())
                 OptionCounts[mcq.Id] = mcq.Options.ToDictionary(o => o.Id, o => 0);
             foreach (var saq in Survey.Questions.OfType<SelectAllThatApplyQuestionViewModel>())
                 OptionCounts[saq.Id] = saq.Options.ToDictionary(o => o.Id, o => 0);
-            // Initialize counts for true/false questions (true=1, false=0)
             foreach (var tf in Survey.Questions.OfType<TrueFalseQuestionViewModel>())
                 OptionCounts[tf.Id] = new Dictionary<int, int> { { 1, 0 }, { 0, 0 } };
-            // Initialize counts for rating questions (1-10)
             foreach (var rt in Survey.Questions.OfType<Rating1To10QuestionViewModel>())
-                OptionCounts[rt.Id] = Enumerable.Range(1, 10).ToDictionary(v => v, v => 0);
+                OptionCounts[rt.Id] = Enumerable.Range(1, 10).ToDictionary(i => i, _ => 0);
 
-            // Tally based on displayed rows
+            // 2) tally
             foreach (var row in rows)
             {
-                // multiple choice
+                var dict = (IDictionary<string, object?>)row;
+
+                // multiple‑choice
                 foreach (var mcq in Survey.Questions.OfType<MultipleChoiceQuestionViewModel>())
                 {
-                    var propName = _propertyMap[mcq.Id];
-                    var val = _surveyType.GetProperty(propName)?.GetValue(row) as string;
-                    if (!string.IsNullOrEmpty(val))
+                    var key = _propertyMap[mcq.Id];
+                    if (dict.TryGetValue(key, out var obj) && obj is string str && !string.IsNullOrWhiteSpace(str))
                     {
-                        var option = mcq.Options.FirstOrDefault(o => o.OptionText == val);
-                        if (option != null)
-                            OptionCounts[mcq.Id][option.Id]++;
+                        var opt = mcq.Options.FirstOrDefault(o => o.OptionText == str);
+                        if (opt != null)
+                            OptionCounts[mcq.Id][opt.Id]++;
                     }
                 }
-                // select-all-that-apply
+
+                // ── SELECT‑ALL‑THAT‑APPLY ──
                 foreach (var saq in Survey.Questions.OfType<SelectAllThatApplyQuestionViewModel>())
                 {
-                    var propName = _propertyMap[saq.Id];
-                    var val = _surveyType.GetProperty(propName)?.GetValue(row) as string;
-                    if (!string.IsNullOrEmpty(val))
+                    var key = _propertyMap[saq.Id];
+                    if (dict.TryGetValue(key, out var raw)
+                        && raw is string csv
+                        && !string.IsNullOrWhiteSpace(csv))
                     {
-                        var texts = val.Split(new[] { ", " }, StringSplitOptions.RemoveEmptyEntries);
-                        foreach (var text in texts)
+                        // split on comma, trim each piece
+                        foreach (var part in csv.Split(',', StringSplitOptions.RemoveEmptyEntries))
                         {
-                            var option = saq.Options.FirstOrDefault(o => o.OptionText == text);
-                            if (option != null)
-                                OptionCounts[saq.Id][option.Id]++;
+                            var text = part.Trim();
+                            // find matching option by text
+                            var opt = saq.Options.FirstOrDefault(o => o.OptionText == text);
+                            if (opt != null)
+                                OptionCounts[saq.Id][opt.Id]++;
                         }
                     }
                 }
+
                 // true/false
                 foreach (var tf in Survey.Questions.OfType<TrueFalseQuestionViewModel>())
                 {
-                    var propName = _propertyMap[tf.Id];
-                    var val = _surveyType.GetProperty(propName)?.GetValue(row) as bool?;
-                    if (val.HasValue)
-                    {
-                        int key = val.Value ? 1 : 0;
-                        OptionCounts[tf.Id][key]++;
-                    }
+                    var key = _propertyMap[tf.Id];
+                    if (dict.TryGetValue(key, out var obj) && obj is bool b)
+                        OptionCounts[tf.Id][b ? 1 : 0]++;
                 }
-                // rating 1-10
+
+                // rating 1–10
                 foreach (var rt in Survey.Questions.OfType<Rating1To10QuestionViewModel>())
                 {
-                    var propName = _propertyMap[rt.Id];
-                    var val = _surveyType.GetProperty(propName)?.GetValue(row) as int?;
-                    if (val.HasValue && OptionCounts[rt.Id].ContainsKey(val.Value))
-                        OptionCounts[rt.Id][val.Value]++;
+                    var key = _propertyMap[rt.Id];
+                    if (dict.TryGetValue(key, out var obj) && obj is int v && OptionCounts[rt.Id].ContainsKey(v))
+                        OptionCounts[rt.Id][v]++;
                 }
             }
         }
+
 
         protected async Task ToolbarClickHandler(Syncfusion.Blazor.Navigations.ClickEventArgs args)
         {
@@ -252,6 +218,33 @@ namespace JwtIdentity.Client.Pages.Survey.Results
             {
                 await this.Grid.ExportToExcelAsync();
             }
+        }
+
+        // call this whenever the grid renders or finishes an action
+        private async Task RefreshCountsAsync()
+        {
+            // Grab whatever rows are showing (empty if none)
+            var view = await Grid.GetCurrentViewRecordsAsync()
+                       ?? Enumerable.Empty<ExpandoObject>();
+
+            ComputeOptionCountsFromRows(view);
+            StateHasChanged();
+        }
+
+        // 1) Hook DataBound
+        protected Task OnGridDataBound()
+            => RefreshCountsAsync();
+
+        // 2) Hook OnActionComplete
+        protected Task OnActionCompleteHandler(ActionEventArgs<ExpandoObject> args)
+        {
+            if (args.RequestType == Action.Filtering
+             || args.RequestType == Action.Sorting
+             || args.RequestType == Action.Paging)
+            {
+                return RefreshCountsAsync();
+            }
+            return Task.CompletedTask;
         }
     }
 }
