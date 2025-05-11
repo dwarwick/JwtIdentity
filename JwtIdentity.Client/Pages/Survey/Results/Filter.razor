@@ -63,12 +63,35 @@
                                             <p>Count: @aggregate.Count</p>
                                         }
 
-                                        @if (q.QuestionType == QuestionType.MultipleChoice || q.QuestionType == QuestionType.SelectAllThatApply)
+                                        @if (q is MultipleChoiceQuestionViewModel mcq)
                                         {
-                                            @foreach (var option in ((MultipleChoiceQuestionViewModel)q).Options.OrderBy(o => o.Order))
+                                            @foreach (var option in mcq.Options.OrderBy(o => o.Order))
                                             {
                                                 var count = OptionCounts.ContainsKey(q.Id) && OptionCounts[q.Id].ContainsKey(option.Id) ? OptionCounts[q.Id][option.Id] : 0;
                                                 <p>@option.OptionText: @count</p>
+                                            }
+                                        }
+                                        else if (q is SelectAllThatApplyQuestionViewModel saq)
+                                        {
+                                            @foreach (var option in saq.Options.OrderBy(o => o.Order))
+                                            {
+                                                var count = OptionCounts.ContainsKey(q.Id) && OptionCounts[q.Id].ContainsKey(option.Id) ? OptionCounts[q.Id][option.Id] : 0;
+                                                <p>@option.OptionText: @count</p>
+                                            }
+                                        }
+                                        else if (q is TrueFalseQuestionViewModel tf)
+                                        {
+                                            var tcount = OptionCounts[q.Id].TryGetValue(1, out var tc) ? tc : 0;
+                                            var fcount = OptionCounts[q.Id].TryGetValue(0, out var fc) ? fc : 0;
+                                            <p>True: @tcount</p>
+                                            <p>False: @fcount</p>
+                                        }
+                                        else if (q is Rating1To10QuestionViewModel rt)
+                                        {
+                                            @foreach (var rating in Enumerable.Range(1, 10))
+                                            {
+                                                var rcount = OptionCounts[q.Id].TryGetValue(rating, out var rc) ? rc : 0;
+                                                <p>@rating: @rcount</p>
                                             }
                                         }
 

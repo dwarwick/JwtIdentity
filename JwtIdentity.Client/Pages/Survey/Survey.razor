@@ -87,7 +87,7 @@
                                 </MudPaper>
                             }
                             else if (question.QuestionType == QuestionType.Rating1To10)
-                            {
+                            { 
                                 Rating1To10AnswerViewModel answer = question.Answers.FirstOrDefault() as Rating1To10AnswerViewModel;
 
                                 <MudPaper Elevation="0" Class="pa-2">
@@ -97,7 +97,7 @@
                                             {
                                                 int ratingValue = i;
                                                 <MudPaper Class="rating-option" Elevation="0">
-                                                    <MudRadio Color="Color.Primary" Label="@i.ToString()" Value="@ratingValue" LabelPlacement="Placement.Top" />
+                                                    <MudRadio @key="i" Color="Color.Primary" Label="@i.ToString()" Value="@ratingValue" LabelPlacement="Placement.Top" />
                                                 </MudPaper>
                                             }
                                         </div>

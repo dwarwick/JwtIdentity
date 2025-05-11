@@ -225,10 +225,17 @@ namespace JwtIdentity.Client.Pages.Survey.Results
                 OptionCounts[mcq.Id] = mcq.Options.ToDictionary(o => o.Id, o => 0);
             foreach (var saq in Survey.Questions.OfType<SelectAllThatApplyQuestionViewModel>())
                 OptionCounts[saq.Id] = saq.Options.ToDictionary(o => o.Id, o => 0);
+            // Initialize counts for true/false questions (true=1, false=0)
+            foreach (var tf in Survey.Questions.OfType<TrueFalseQuestionViewModel>())
+                OptionCounts[tf.Id] = new Dictionary<int, int> { { 1, 0 }, { 0, 0 } };
+            // Initialize counts for rating questions (1-10)
+            foreach (var rt in Survey.Questions.OfType<Rating1To10QuestionViewModel>())
+                OptionCounts[rt.Id] = Enumerable.Range(1, 10).ToDictionary(v => v, v => 0);
             
             // Tally based on displayed rows
             foreach (var row in rows)
             {
+                // multiple choice
                 foreach (var mcq in Survey.Questions.OfType<MultipleChoiceQuestionViewModel>())
                 {
                     var propName = _propertyMap[mcq.Id];
@@ -240,6 +247,7 @@ namespace JwtIdentity.Client.Pages.Survey.Results
                             OptionCounts[mcq.Id][option.Id]++;
                     }
                 }
+                // select-all-that-apply
                 foreach (var saq in Survey.Questions.OfType<SelectAllThatApplyQuestionViewModel>())
                 {
                     var propName = _propertyMap[saq.Id];
@@ -254,6 +262,25 @@ namespace JwtIdentity.Client.Pages.Survey.Results
                                 OptionCounts[saq.Id][option.Id]++;
                         }
                     }
+                }
+                // true/false
+                foreach (var tf in Survey.Questions.OfType<TrueFalseQuestionViewModel>())
+                {
+                    var propName = _propertyMap[tf.Id];
+                    var val = _surveyType.GetProperty(propName)?.GetValue(row) as bool?;
+                    if (val.HasValue)
+                    {
+                        int key = val.Value ? 1 : 0;
+                        OptionCounts[tf.Id][key]++;
+                    }
+                }
+                // rating 1-10
+                foreach (var rt in Survey.Questions.OfType<Rating1To10QuestionViewModel>())
+                {
+                    var propName = _propertyMap[rt.Id];
+                    var val = _surveyType.GetProperty(propName)?.GetValue(row) as int?;
+                    if (val.HasValue && OptionCounts[rt.Id].ContainsKey(val.Value))
+                        OptionCounts[rt.Id][val.Value]++;
                 }
             }
         }
