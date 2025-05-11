@@ -177,45 +177,6 @@ namespace JwtIdentity.Client.Pages.Survey.Results
             }
         }
 
-        private void ComputeOptionCounts()
-        {
-            OptionCounts.Clear();
-            // Initialize counts for multiple choice questions
-            foreach (var mcq in Survey.Questions.OfType<MultipleChoiceQuestionViewModel>())
-            {
-                OptionCounts[mcq.Id] = mcq.Options.ToDictionary(o => o.Id, o => 0);
-            }
-            // Initialize counts for select-all-that-apply questions
-            foreach (var saq in Survey.Questions.OfType<SelectAllThatApplyQuestionViewModel>())
-            {
-                OptionCounts[saq.Id] = saq.Options.ToDictionary(o => o.Id, o => 0);
-            }
-            // Tally each answer
-            foreach (var ans in Answers)
-            {
-                if ((ans.AnswerType == AnswerType.MultipleChoice || ans.AnswerType == AnswerType.SingleChoice)
-                    && ans.SelectedOptionValue.HasValue
-                    && OptionCounts.TryGetValue(ans.QuestionId, out var dict))
-                {
-                    int optionId = ans.SelectedOptionValue.Value;
-                    if (dict.ContainsKey(optionId))
-                        dict[optionId]++;
-                }
-                else if (ans.AnswerType == AnswerType.SelectAllThatApply && ans is SelectAllThatApplyAnswerViewModel sel)
-                {
-                    if (!string.IsNullOrEmpty(sel.SelectedOptionIds) && OptionCounts.TryGetValue(ans.QuestionId, out var dict2))
-                    {
-                        var ids = sel.SelectedOptionIds.Split(',').Select(int.Parse);
-                        foreach (var id in ids)
-                        {
-                            if (dict2.ContainsKey(id))
-                                dict2[id]++;
-                        }
-                    }
-                }
-            }
-        }
-
         // Compute counts for each option based on a set of dynamic row objects
         private void ComputeOptionCountsFromRows(IEnumerable<object> rows)
         {
@@ -231,7 +192,7 @@ namespace JwtIdentity.Client.Pages.Survey.Results
             // Initialize counts for rating questions (1-10)
             foreach (var rt in Survey.Questions.OfType<Rating1To10QuestionViewModel>())
                 OptionCounts[rt.Id] = Enumerable.Range(1, 10).ToDictionary(v => v, v => 0);
-            
+
             // Tally based on displayed rows
             foreach (var row in rows)
             {
@@ -292,10 +253,5 @@ namespace JwtIdentity.Client.Pages.Survey.Results
                 await this.Grid.ExportToExcelAsync();
             }
         }
-
-        private RenderFragment AddContent(string context) => builder =>
-        {
-            builder.AddContent(1, context);
-        };
     }
 }
