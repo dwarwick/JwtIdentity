@@ -3,21 +3,134 @@
 
 <h3>Filter</h3>
 
-<SfGrid ID="Grid" @ref="Grid" TValue="object" DataSource="@SurveyRows" Height="315" AllowPaging="true" AllowSorting="true" AllowFiltering="true" AllowResizing="true" AllowTextWrap="true" TextWrapSettings="@GridSettings.TextWrapSettings" GridLines="@GridSettings.GridLines" AllowExcelExport="true">
-    <GridTemplates>
-        <ToolbarTemplate>
-            <SfToolbar>
-                <ToolbarEvents Clicked="ToolbarClickHandler"></ToolbarEvents>
-                <ToolbarItems>
-                    <ToolbarItem Type="@ItemType.Button" PrefixIcon="e-export-excel icon" Id="exportExcel" Text="Export to Excel"></ToolbarItem>                    
-                </ToolbarItems>
-            </SfToolbar>
-        </ToolbarTemplate>
-    </GridTemplates>
-    <GridEvents OnToolbarClick="ToolbarClickHandler" TValue="object"></GridEvents>
-    <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel"></GridFilterSettings>
+@if (columnsInitialized)
+{
+    <SfGrid ID="Grid"
+            @ref="Grid"
+            TValue="ExpandoObject"
+            DataSource="@SurveyRows"
+            Height="315"
+            AllowPaging="true"
+            AllowSorting="true"
+            AllowFiltering="true"
+            AllowResizing="true"
+            AllowTextWrap="true"
+            TextWrapSettings="@GridSettings.TextWrapSettings"
+            GridLines="@GridSettings.GridLines"
+            AllowExcelExport="true">
 
-    <GridColumns>
-            
-    </GridColumns>
-</SfGrid>
+        <GridTemplates>
+            <ToolbarTemplate>
+                <SfToolbar>
+                    <ToolbarEvents Clicked="ToolbarClickHandler"></ToolbarEvents>
+                    <ToolbarItems>
+                        <ToolbarItem Type="@ItemType.Button" PrefixIcon="e-export-excel icon" Id="exportExcel" Text="Export to Excel"></ToolbarItem>
+                    </ToolbarItems>
+                </SfToolbar>
+            </ToolbarTemplate>
+        </GridTemplates>
+
+        <GridEvents TValue="ExpandoObject"
+                    OnToolbarClick="ToolbarClickHandler"
+                    OnActionComplete="OnActionCompleteHandler"
+                    DataBound="OnGridDataBound" />
+        <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel"></GridFilterSettings>
+
+        <GridColumns>
+
+            @foreach (var q in Survey.Questions)
+            {
+                <GridColumn Field="@_propertyMap[q.Id]"
+                            HeaderText="@q.Text"
+                            Type="@(q.QuestionType == QuestionType.Rating1To10
+                                    ? ColumnType.Integer
+                                    : q.QuestionType == QuestionType.TrueFalse
+                                    ? ColumnType.Boolean
+                                    : ColumnType.String)"
+                            TextAlign="TextAlign.Left" />
+            }
+
+        </GridColumns>
+
+        <GridAggregates>
+            <GridAggregate>
+                <GridAggregateColumns>
+                    
+                        @if (Survey?.Questions?.Count > 0)
+                        {
+                            foreach (var q in Survey.Questions)
+                            {
+                                <GridAggregateColumn Field=@(_propertyMap[q.Id].ToString()) Type="Syncfusion.Blazor.Grids.AggregateType.Count">
+                                    <FooterTemplate>
+                                        
+                                        @{
+                                            var aggregate = (context as AggregateTemplateContext);
+                                            double rowCount = double.TryParse(aggregate.Count, out rowCount) ? rowCount : 0;
+
+                                            <p>Row Count: @aggregate.Count</p>
+
+                                            @* inside your FooterTemplate *@
+                                            @if (q is MultipleChoiceQuestionViewModel mcq)
+                                            {
+                                                foreach (var opt in mcq.Options.OrderBy(o => o.Order))
+                                                {
+                                                    var count = OptionCounts.TryGetValue(q.Id, out var d1)
+                                                    && d1.TryGetValue(opt.Id, out var c1)
+                                                    ? c1 : 0;
+
+                                                    string percentage = (count / rowCount).ToString("P2");
+
+                                                    <p>@opt.OptionText: @count (@percentage)</p>
+                                                }
+                                            }
+                                            else if (q is SelectAllThatApplyQuestionViewModel saq)
+                                            {
+                                                if (OptionCounts.TryGetValue(q.Id, out var dict))
+                                                {
+                                                    foreach (var opt in saq.Options.OrderBy(o => o.Order))
+                                                    {
+                                                        var count = dict.TryGetValue(opt.Id, out var c) ? c : 0;
+                                                        string percentage = (count / rowCount).ToString("P2");
+                                                        <p>@opt.OptionText: @count (@percentage)</p>
+                                                    }
+                                                }
+                                            }
+                                            else if (q is TrueFalseQuestionViewModel)
+                                            {
+                                                if (OptionCounts.TryGetValue(q.Id, out var tfDict))
+                                                {
+                                                    var tcount = tfDict.TryGetValue(1, out var tc) ? tc : 0;
+                                                    var fcount = tfDict.TryGetValue(0, out var fc) ? fc : 0;
+                                                    string tpercentage = (tcount / rowCount).ToString("P2");
+                                                    string fpercentage = (fcount / rowCount).ToString("P2");
+                                                    <p>True: @tcount (@tpercentage)</p>
+                                                    <p>False: @fcount (@fpercentage)</p>
+                                                }
+                                            }
+                                            else if (q is Rating1To10QuestionViewModel)
+                                            {
+                                                if (OptionCounts.TryGetValue(q.Id, out var rtDict))
+                                                {
+                                                    foreach (var rating in Enumerable.Range(1, 10))
+                                                    {
+                                                        var rcount = rtDict.TryGetValue(rating, out var rc) ? rc : 0;
+                                                        string percentage = (rcount / rowCount).ToString("P2");
+                                                        <p>@rating: @rcount (@percentage)</p>
+                                                    }
+                                                }
+                                            }
+
+
+                                        }
+
+                                    </FooterTemplate>
+                                </GridAggregateColumn>
+                            }
+                        }
+                    
+                </GridAggregateColumns>
+            </GridAggregate>
+        </GridAggregates>
+    </SfGrid>
+}
+

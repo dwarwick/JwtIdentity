@@ -87,19 +87,24 @@
                                 </MudPaper>
                             }
                             else if (question.QuestionType == QuestionType.Rating1To10)
-                            {
+                            { 
                                 Rating1To10AnswerViewModel answer = question.Answers.FirstOrDefault() as Rating1To10AnswerViewModel;
 
                                 <MudPaper Elevation="0" Class="pa-2">
                                     <MudRadioGroup @key="question" T="int" Value="answer.SelectedOptionId" ValueChanged="@((v) => HandleAnswerQuestion(answer, v))" Disabled="@(ViewAnswers || (IsAnonymousUser && !AgreedToTerms))">
                                         <div class="rating-options">
-                                            @for (int i = 1; i <= 10; i++)
-                                            {
-                                                int ratingValue = i;
-                                                <MudPaper Class="rating-option" Elevation="0">
-                                                    <MudRadio Color="Color.Primary" Label="@i.ToString()" Value="@ratingValue" LabelPlacement="Placement.Top" />
-                                                </MudPaper>
-                                            }
+                                            <MudPaper Class="rating-option" Elevation="0">
+                                                <MudRadio Color="Color.Primary" Label="1" Value="1" LabelPlacement="Placement.Left" />
+                                                <MudRadio Color="Color.Primary" Label="2" Value="2" LabelPlacement="Placement.Left" />
+                                                <MudRadio Color="Color.Primary" Label="3" Value="3" LabelPlacement="Placement.Left" />
+                                                <MudRadio Color="Color.Primary" Label="4" Value="4" LabelPlacement="Placement.Left" />
+                                                <MudRadio Color="Color.Primary" Label="5" Value="5" LabelPlacement="Placement.Left" />
+                                                <MudRadio Color="Color.Primary" Label="6" Value="6" LabelPlacement="Placement.Left" />
+                                                <MudRadio Color="Color.Primary" Label="7" Value="7" LabelPlacement="Placement.Left" />
+                                                <MudRadio Color="Color.Primary" Label="8" Value="8" LabelPlacement="Placement.Left" />
+                                                <MudRadio Color="Color.Primary" Label="9" Value="9" LabelPlacement="Placement.Left" />
+                                                <MudRadio Color="Color.Primary" Label="10" Value="10" LabelPlacement="Placement.Left" />
+                                            </MudPaper>
                                         </div>
                                     </MudRadioGroup>
                                 </MudPaper>
