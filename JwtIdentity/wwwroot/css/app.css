@@ -470,3 +470,8 @@ svg.mud-icon-root.mud-svg-icon.mud-icon-size-medium.drag-icon.ai-style-change-9 
 td.e-summarycell.e-templatecell.e-leftalign {
     vertical-align: top;
 }
+.youtube-video {
+    width: 80%;
+    height: 53vh;
+    position: relative;
+}

@@ -1,4 +1,5 @@
 ﻿@page "/"
+@inherits JwtIdentity.Client.Pages.HomeModel
 
 @* Add a comment to indicate that meta tags for this page are dynamically generated in App.razor *@
 @* Meta tags for SEO are handled in App.razor based on the current path *@
@@ -20,6 +21,11 @@
             <MudText Typo="Typo.body1" Class="mb-5 px-2" Style="font-size: 1.1rem;">
                 <b>Sign up free today</b> and be among the first to use Survey Shark during our launch. Create a free account in seconds and start making the best online surveys to engage your audience!
             </MudText>
+            
+            <MudStack Row="true" Justify="Justify.Center">
+                <iframe class="youtube-video" src=@($"https://www.youtube.com/embed/{AppSettings?.Youtube?.HomePageCode ?? ""}") allowfullscreen />
+            </MudStack>
+            
             <MudPaper Elevation="3" Class="pa-4 mb-5 features-section">
                 <MudText Typo="Typo.h4" Class="mb-3" Align="Align.Center">
                     <MudIcon Icon="@Icons.Material.Filled.StarRate" Class="mr-1" Color="Color.Warning" /> Why Choose Survey Shark? <MudIcon Icon="@Icons.Material.Filled.StarRate" Class="ml-1" Color="Color.Warning" />

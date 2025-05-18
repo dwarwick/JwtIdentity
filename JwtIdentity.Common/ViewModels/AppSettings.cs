@@ -4,13 +4,13 @@
     public class AppSettings
     {
         public LoggingOptions Logging { get; set; }
-        public ConnectionStringsOptions ConnectionStrings { get; set; }
-        public JwtOptions Jwt { get; set; }
+        //  public ConnectionStringsOptions ConnectionStrings { get; set; }
+        //  public JwtOptions Jwt { get; set; }
         public bool DetailedErrors { get; set; }
         public string ApiBaseAddress { get; set; }
         public EmailSettings EmailSettings { get; set; }
-
         public WordPress WordPress { get; set; }
+        public Youtube Youtube { get; set; }
     }
 
     public class LoggingOptions
@@ -51,5 +51,11 @@
         public string SiteDomain { get; set; }
         public string GetUrl { get; set; }
         public string SinglePostUrl { get; set; }
+    }
+
+    public class Youtube
+    {
+        public string HomePageCode { get; set; }
+        public string ApiKey { get; set; }
     }
 }
