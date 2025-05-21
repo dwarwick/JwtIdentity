@@ -179,6 +179,12 @@ svg.mud-icon-root.mud-svg-icon.mud-icon-size-medium.drag-icon.ai-style-change-9 
     h2 {
         font-size: 2.9rem !important; /* Smaller size for mobile */
     }
+
+    .youtube-video {
+        width: 100%;
+        height: 55vh;
+        position: relative;
+    }
 }
 
 @media (max-width: 1250px) {
@@ -189,6 +195,10 @@ svg.mud-icon-root.mud-svg-icon.mud-icon-size-medium.drag-icon.ai-style-change-9 
 
     h2 {
         font-size: 2.8rem !important; /* Smaller size for mobile */
+    }
+
+    .youtube-video {        
+        height: 50vh;        
     }
 }
 
@@ -204,6 +214,10 @@ svg.mud-icon-root.mud-svg-icon.mud-icon-size-medium.drag-icon.ai-style-change-9 
     h2 {
         font-size: 2.7rem !important; /* Smaller size for mobile */
     }
+
+    .youtube-video {       
+        height: 48vh;       
+    }
 }
 
 @media (max-width: 680px) {    
@@ -213,6 +227,10 @@ svg.mud-icon-root.mud-svg-icon.mud-icon-size-medium.drag-icon.ai-style-change-9 
 
     h2 {
         font-size: 2.6rem !important; /* Smaller size for mobile */
+    }
+
+    .youtube-video {
+        height: 46vh;
     }
 }
 
@@ -228,6 +246,10 @@ svg.mud-icon-root.mud-svg-icon.mud-icon-size-medium.drag-icon.ai-style-change-9 
     h2 {
         font-size: 2.4rem !important; /* Smaller size for mobile */
     }
+
+    .youtube-video {
+        height: 44vh;
+    }
 }
 
 @media (max-width: 560px) {    
@@ -237,6 +259,10 @@ svg.mud-icon-root.mud-svg-icon.mud-icon-size-medium.drag-icon.ai-style-change-9 
 
     h2 {
         font-size: 2rem !important; /* Smaller size for mobile */
+    }
+
+    .youtube-video {
+        height: 41vh;
     }
 }
 
@@ -248,6 +274,10 @@ svg.mud-icon-root.mud-svg-icon.mud-icon-size-medium.drag-icon.ai-style-change-9 
     h2 {
         font-size: 1.9rem !important; /* Smaller size for mobile */
     }
+
+    .youtube-video {
+        height: 38vh;
+    }
 }
 
 @media (max-width: 485px) {
@@ -257,6 +287,10 @@ svg.mud-icon-root.mud-svg-icon.mud-icon-size-medium.drag-icon.ai-style-change-9 
 
     h2 {
         font-size: 1.8rem !important; /* Smaller size for mobile */
+    }
+
+    .youtube-video {
+        height: 36vh;
     }
 }
 
@@ -272,6 +306,10 @@ svg.mud-icon-root.mud-svg-icon.mud-icon-size-medium.drag-icon.ai-style-change-9 
     h2 {
         font-size: 1.8rem !important; /* Smaller size for mobile */
     }
+
+    .youtube-video {
+        height: 34vh;
+    }
 }
 
 @media (max-width: 300px) {
@@ -285,6 +323,10 @@ svg.mud-icon-root.mud-svg-icon.mud-icon-size-medium.drag-icon.ai-style-change-9 
 
     h2 {
         font-size: 1.5rem !important; /* Smaller size for mobile */
+    }
+
+    .youtube-video {
+        height: 30vh;
     }
 }
 
@@ -469,9 +511,4 @@ svg.mud-icon-root.mud-svg-icon.mud-icon-size-medium.drag-icon.ai-style-change-9 
 
 td.e-summarycell.e-templatecell.e-leftalign {
     vertical-align: top;
-}
-.youtube-video {
-    width: 80%;
-    height: 53vh;
-    position: relative;
 }
