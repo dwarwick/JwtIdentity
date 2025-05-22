@@ -43,11 +43,35 @@ namespace JwtIdentity.Client.Pages.Survey
 
         protected string NewChoiceOptionText { get; set; }
 
+        private string _selectedPresetChoice = string.Empty;
+        protected string SelectedPresetChoice
+        {
+            get => _selectedPresetChoice;
+            set
+            {
+                if (_selectedPresetChoice != value)
+                {
+                    _selectedPresetChoice = value;
+                    var preset = PresetChoices.FirstOrDefault(x => x.Key == value);
+                    if (preset.Key != null && preset.Options != null)
+                    {
+                        MultipleChoiceQuestion.Options.Clear();
+                        int i = 0;
+                        foreach (var option in preset.Options)
+                        {
+                            MultipleChoiceQuestion.Options.Add(new ChoiceOptionViewModel { OptionText = option, Order = i++ });
+                        }
+                    }
+                }
+            }
+        }
+        protected List<(string Key, List<string> Options)> PresetChoices => ChoiceOptionHelper.PresetChoices;
+
         protected bool AddQuestionToSurveyDisabled =>
             Survey.Published ||
             string.IsNullOrWhiteSpace(QuestionText) ||
-            ((SelectedQuestionType.Replace(" ", "") == Enum.GetName(QuestionType.MultipleChoice) || 
-              SelectedQuestionType.Replace(" ", "") == Enum.GetName(QuestionType.SelectAllThatApply)) && 
+            ((SelectedQuestionType.Replace(" ", "") == Enum.GetName(QuestionType.MultipleChoice) ||
+              SelectedQuestionType.Replace(" ", "") == Enum.GetName(QuestionType.SelectAllThatApply)) &&
               MultipleChoiceQuestion.Options.Count == 0);
 
         protected MudExpansionPanel ExistingQuestionPanel { get; set; }
@@ -229,14 +253,11 @@ namespace JwtIdentity.Client.Pages.Survey
                         {
                             SelectedQuestion.Text = QuestionText;
                             SelectedQuestion.IsRequired = IsRequired;
-
                             _ = Survey.Questions.Remove(questionToUpdate);
                             Survey.Questions.Add(SelectedQuestion);
                         }
                     }
-
                     break;
-                    
                 case "SelectAllThatApply":
                     if ((SelectedQuestion?.Id ?? 0) == 0)
                     {
@@ -336,7 +357,7 @@ namespace JwtIdentity.Client.Pages.Survey
 
             if (SelectedExistingQuestion == null)
             {
-                SelectedQuestion = Survey.Questions.FirstOrDefault(x => x.Id == input.Id);                
+                SelectedQuestion = Survey.Questions.FirstOrDefault(x => x.Id == input.Id);
             }
 
             if (SelectedQuestion != null)
@@ -497,7 +518,7 @@ namespace JwtIdentity.Client.Pages.Survey
 
         protected async Task UpdateTitleDescription(string value, string type)
         {
-            if(string.IsNullOrWhiteSpace(value) || value.Length < 5)
+            if (string.IsNullOrWhiteSpace(value) || value.Length < 5)
             {
                 // Show error message if title or description is empty or too short
                 _ = Snackbar.Add("Title/Description must be at least 5 characters long", MudBlazor.Severity.Error);
@@ -512,8 +533,8 @@ namespace JwtIdentity.Client.Pages.Survey
             {
                 Survey.Description = value;
             }
-        
-        
+
+
             if (await UpdateSurvey())
             {
                 _ = Snackbar.Add("Update Successful", MudBlazor.Severity.Success);
