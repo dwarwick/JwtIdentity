@@ -6,6 +6,6 @@
         TrueFalse = 2,
         MultipleChoice = 3,
         Rating1To10 = 4,
-        SelectAllThatApply = 5,
+        SelectAllThatApply = 5
     }
 }
