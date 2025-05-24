@@ -67,4 +67,7 @@ builder.Services.AddHttpClient("AuthorizedClient", client =>
 
 builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("AuthorizedClient"));
 
+// Register a named HttpClient called "NoAuthClient" for unauthenticated requests
+builder.Services.AddHttpClient("NoAuthClient");
+
 await builder.Build().RunAsync();
