@@ -5,17 +5,16 @@ namespace JwtIdentity.Services
 {
     public class WordPressBlogService : IWordPressBlogService
     {
-        private readonly HttpClient _httpClient;
+        private readonly IHttpClientFactory _httpClientFactory;
         private string _siteDomain;
         private string _getUrl;
         private readonly IApiService _apiService;
         private readonly NavigationManager _navigationManager;
         private AppSettings AppSettings;
 
-        public WordPressBlogService(HttpClient httpClient, IConfiguration config, IApiService apiService, NavigationManager navigationManager)
+        public WordPressBlogService(IHttpClientFactory httpClientFactory, IConfiguration config, IApiService apiService, NavigationManager navigationManager)
         {
-            // Initialize the HttpClient and other dependencies here
-            _httpClient = httpClient;
+            _httpClientFactory = httpClientFactory;
             _apiService = apiService;
             _navigationManager = navigationManager;
         }
@@ -32,13 +31,13 @@ namespace JwtIdentity.Services
 
                 _getUrl = _getUrl.Replace("{Wordpress:SiteDomain}", _siteDomain);
 
-                // Add logging to verify API response
-                Console.WriteLine("Fetching blog posts from WordPress API...");
-                var response = await _httpClient.GetAsync(_getUrl);
+                // Use the NoAuthClient for WordPress API requests
+                var httpClient = _httpClientFactory.CreateClient("NoAuthClient");
+
+                var response = await httpClient.GetAsync(_getUrl);
                 _ = response.EnsureSuccessStatusCode();
 
                 var json = await response.Content.ReadAsStringAsync();
-                Console.WriteLine($"API Response: {json}"); // Log the raw response for debugging
 
                 var wpResponse = JsonSerializer.Deserialize<WordPressPostResponse>(json);
 
@@ -47,8 +46,7 @@ namespace JwtIdentity.Services
                     post.Url = $"{_navigationManager.BaseUri}blog/{post.Slug}";
                     post.Title = HttpUtility.HtmlDecode(post.Title);
                     post.Excerpt = HttpUtility.HtmlDecode(post.Excerpt);
-                }   
-
+                }
 
                 return wpResponse ?? new WordPressPostResponse();
             }
@@ -63,20 +61,20 @@ namespace JwtIdentity.Services
         {
             try
             {
-                AppSettings = await _apiService.GetAsync<AppSettings>("/api/appsettings");                
+                AppSettings = await _apiService.GetAsync<AppSettings>("/api/appsettings");
                 _siteDomain = AppSettings.WordPress.SiteDomain ?? throw new Exception("WordPress site domain not configured");
-                
+
                 _getUrl = AppSettings.WordPress.SinglePostUrl ?? throw new Exception("WordPress Get Url not configured");
                 _getUrl = _getUrl.Replace("{Wordpress:SiteDomain}", _siteDomain);
                 _getUrl = _getUrl.Replace("{postSlug}", postSlug);
 
-                // Add logging to verify API response
-                Console.WriteLine("Fetching blog posts from WordPress API...");
-                var response = await _httpClient.GetAsync(_getUrl);
+                // Use the NoAuthClient for WordPress API requests
+                var httpClient = _httpClientFactory.CreateClient("NoAuthClient");
+
+                var response = await httpClient.GetAsync(_getUrl);
                 _ = response.EnsureSuccessStatusCode();
 
                 var json = await response.Content.ReadAsStringAsync();
-                Console.WriteLine($"API Response: {json}"); // Log the raw response for debugging
 
                 var post = JsonSerializer.Deserialize<WordPressPost>(json);
                 return post ?? new WordPressPost();
