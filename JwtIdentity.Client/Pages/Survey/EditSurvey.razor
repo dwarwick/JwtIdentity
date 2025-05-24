@@ -9,15 +9,51 @@
     <MudText Typo="Typo.h4">Edit Survey</MudText>
     <MudButton Class="mt-1" ButtonType="ButtonType.Button" Variant="Variant.Filled" Color="Color.Primary" OnClick="PublishSurvey" Disabled="@(Survey.Published)">Publish Survey</MudButton>
 </MudStack>
-<MudTextField Label="Survey Title" T="string" Value="Survey.Title" ValueChanged="@((e) => UpdateTitleDescription(e, "title"))" Class="my-2" Variant="Variant.Filled"  />
-<MudTextField Label="Survey Description" T="string" Value="Survey.Description" ValueChanged="@((e) => UpdateTitleDescription(e, "description"))" Class="mb-2" Variant="Variant.Filled" Lines="3" MaxLines="5" AutoGrow="true" Counter="500" MaxLength="500"  />
+<MudTextField Label="Survey Title" T="string" Value="Survey.Title" ValueChanged="@((e) => UpdateTitleDescription(e, "title"))" Class="my-2" Variant="Variant.Filled" />
+<MudTextField Label="Survey Description" T="string" Value="Survey.Description" ValueChanged="@((e) => UpdateTitleDescription(e, "description"))" Class="mb-2" Variant="Variant.Filled" Lines="3" MaxLines="5" AutoGrow="true" Counter="500" MaxLength="500" />
 
-<div class="d-md-flex flex-row justify-space-evenly gap-2">
+<div class="d-md-flex flex-column justify-space-evenly gap-2">
+<MudExpansionPanels MultiExpansion="true">
+    @if (Survey?.Questions != null && Survey.Questions.Count > 0)
+    {
+        
+            <MudExpansionPanel>
+                <TitleContent>
+                    <div class="mud-expand-panel-text">Survey Questions (Select a Question to Edit it)</div>
+                    <MudText Typo="Typo.caption" Align="Align.Center" Class="text-emphasis">Drag and Drop Questions to Reorder them, or click the Delete Icon to Remove a Question</MudText>                    
+                </TitleContent>
+                <ChildContent>                    
+                    
+                <MudPaper Class="p-2 flex-1">
+                    <MudList T="QuestionViewModel" Dense="true" SelectedValue="SelectedQuestion" SelectionMode="MudBlazor.SelectionMode.ToggleSelection" SelectedValueChanged="QuestionSelected">
+                        @foreach (var question in Survey.Questions)
+                        {
+                            <DragAndDrop TItem="QuestionViewModel" Items="Survey.Questions" Item="question" ItemsChanged="DroppedQuestion">
+                                <MudStack Class=".d-flex.flex-row.gap-3.ai-style-change-1" Row="true" AlignItems="AlignItems.Center">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete" ButtonType="ButtonType.Button" OnClick="@(() => DeleteQuestion(question))" />
+                                    <MudIcon Class="drag-icon ai-style-change-9" Icon="@Icons.Material.Filled.DragIndicator" />
+                                    <MudListItem Class="ai-style-change-3 ai-style-change-6" Text="@($"{question.QuestionNumber}. {question.Text}")" Value="@question" />
+
+                                    @if (question.IsRequired)
+                                    {
+                                        <MudText Color="Color.Error" Typo="Typo.caption" Class="RequiredStar">*</MudText>
+                                    }
+
+                                </MudStack>
+                                <div style="height: 2px; background-color: blueviolet; width: 100%;"></div>
+                            </DragAndDrop>
+                        }
+                    </MudList>
+                </MudPaper>
+                </ChildContent>
+            </MudExpansionPanel>
+        
+    }
 
     @if (!Survey.Published)
     {
-        <MudStack Class="flex-1">
-            <MudExpansionPanels MultiExpansion="true">
+        @* <MudStack Class="flex-1" Spacing="2"> *@
+            
                 <MudExpansionPanel @ref="ManualQuestionPanel" @bind-Expanded="@ManualQuestionPanelExpanded" Text="Create Question Manually">
                     <MudPaper Class="p-2">
                         <MudStack Spacing="1">
@@ -38,20 +74,20 @@
                             <MudText Typo="Typo.h6" Class="mt-5">Create a @StringHelper.PascalCaseToWords(SelectedQuestionType) Question</MudText>
                             <MudTextField id="Text" Label="Question Text" @bind-Value="QuestionText" Variant="Variant.Filled" Lines="1" MaxLines="5" AutoGrow="true" Immediate="true" Counter="500" MaxLength="500" />
                         </MudStack>
-                        
+
                         <MudStack Row="true">
                             <MudButton ButtonType="ButtonType.Button" Variant="Variant.Filled" Color="Color.Primary" OnClick="AddQuestionToSurvey" Disabled="@AddQuestionToSurveyDisabled">Save Question</MudButton>
                             <MudCheckBox T="bool" @bind-Value="IsRequired" Label="Is Required?" Color="Color.Primary" Disabled="@AddQuestionToSurveyDisabled" />
                         </MudStack>
                     </MudPaper>
 
-                    @if (SelectedQuestionType.Replace(" ", "") == Enum.GetName(QuestionType.MultipleChoice) || 
-                        SelectedQuestionType.Replace(" ", "") == Enum.GetName(QuestionType.SelectAllThatApply))
+                    @if (SelectedQuestionType.Replace(" ", "") == Enum.GetName(QuestionType.MultipleChoice) ||
+                                    SelectedQuestionType.Replace(" ", "") == Enum.GetName(QuestionType.SelectAllThatApply))
                     {
                         <MudPaper>
                             <MudText Typo="Typo.h6" Class="mb-1">Add the Question Choices</MudText>
 
-                            <MudSelect Label="Preset Choices" T="string" @bind-Value="SelectedPresetChoice" Variant="Variant.Filled" Dense="true" Class="mb-2">
+                            <MudSelect Label="Preset Choices (Will overwrite existing choices)" T="string" @bind-Value="SelectedPresetChoice" Variant="Variant.Filled" Dense="true" Class="mb-2">
                                 <MudSelectItem T="string" Value=null>-- Select Preset --</MudSelectItem>
                                 @foreach (var preset in PresetChoices)
                                 {
@@ -63,13 +99,13 @@
 
                             <MudButton ButtonType="ButtonType.Button" Variant="Variant.Filled" Color="Color.Primary" OnClick="@AddChoiceOption" Disabled="@(string.IsNullOrWhiteSpace(NewChoiceOptionText))">Add Choice</MudButton>
 
-                            <div style="height:150px;overflow:auto;" class="mt-2">
+                            <div style="height:300px;overflow:auto;" class="mt-2">
                                 <MudList T="string" ReadOnly="true" Dense="true">
                                     @foreach (var choice in MultipleChoiceQuestion.Options)
                                     {
                                         <DragAndDrop TItem="ChoiceOptionViewModel" Items="MultipleChoiceQuestion.Options" Item="choice" ItemsChanged="DroppedChoiceOption">
                                             <MudStack Class=".d-flex.flex-row.gap-3.ai-style-change-1" Row="true" AlignItems="AlignItems.Center">
-                                                <MudIconButton Icon="@Icons.Material.Filled.Delete" ButtonType="ButtonType.Button" OnClick="@(() =>DeleteChoiceOption(choice))" />
+                                                <MudIconButton Icon="@Icons.Material.Filled.Delete" ButtonType="ButtonType.Button" OnClick="@(() => DeleteChoiceOption(choice))" />
                                                 <MudIcon Class="drag-icon ai-style-change-9" Icon="@Icons.Material.Filled.DragIndicator" />
                                                 <MudListItem Class="ai-style-change-3 ai-style-change-6" Text="@choice.OptionText" />
                                             </MudStack>
@@ -85,42 +121,19 @@
                 <MudExpansionPanel @ref="ExistingQuestionPanel" Text="Start with Existing Question" @bind-Expanded="@ExistingQuestionPanelExpanded">
                     <SfAutoComplete TValue="BaseQuestionDto" TItem="BaseQuestionDto" PopupHeight="130px" EnableVirtualization="true" Placeholder="Start Typing to Search Existing Questions" Query="@RemoteDataQuery" Value="SelectedExistingQuestion" ValueChanged="HandleSelectedExistingQuestion" ShowPopupButton="true">
                         <SfDataManager Url="odata/odataquestion" CrossDomain="true" Adaptor="Adaptors.ODataV4Adaptor" />
-                        <AutoCompleteFieldSettings Text="Text" Value="Text"/>
+                        <AutoCompleteFieldSettings Text="Text" Value="Text" />
                     </SfAutoComplete>
 
                 </MudExpansionPanel>
-            </MudExpansionPanels>
-        </MudStack>
+            
+        @* </MudStack> *@
     }
     else
     {
         <MudAlert Severity="Severity.Normal" Variant="Variant.Outlined">This survey has been published</MudAlert>
     }
 
+</MudExpansionPanels>
 
-    @if (Survey?.Questions != null && Survey.Questions.Count > 0)
-    {
-        <MudPaper Class="p-2 flex-1">
-            <MudList T="QuestionViewModel" Dense="true" SelectedValue="SelectedQuestion" SelectionMode="MudBlazor.SelectionMode.ToggleSelection" SelectedValueChanged="QuestionSelected">
-                @foreach (var question in Survey.Questions)
-                {
-                    <DragAndDrop TItem="QuestionViewModel" Items="Survey.Questions" Item="question" ItemsChanged="DroppedQuestion">
-                        <MudStack Class=".d-flex.flex-row.gap-3.ai-style-change-1" Row="true" AlignItems="AlignItems.Center">
-                            <MudIconButton Icon="@Icons.Material.Filled.Delete" ButtonType="ButtonType.Button" OnClick="@(() =>DeleteQuestion(question))" />
-                            <MudIcon Class="drag-icon ai-style-change-9" Icon="@Icons.Material.Filled.DragIndicator" />
-                            <MudListItem Class="ai-style-change-3 ai-style-change-6" Text="@($"{question.QuestionNumber}. {question.Text}")" Value="@question" />
-                            
-                            @if (question.IsRequired) 
-                            {
-                                <MudText Color="Color.Error" Typo="Typo.caption" Class="RequiredStar" >*</MudText>
-                            }
-
-                        </MudStack>
-                        <div style="height: 2px; background-color: blueviolet; width: 100%;"></div>
-                    </DragAndDrop>
-                }
-            </MudList>
-        </MudPaper>
-    }
 
 </div>
