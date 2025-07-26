@@ -80,9 +80,9 @@ function acceptAllCookies(successCallback) {
                 successCallback();
             }
             // Load third-party services like Google Ads
-            if (typeof loadGoogleAds === 'function') {
-                loadGoogleAds();
-            }
+            //if (typeof loadGoogleAds === 'function') {
+            //    loadGoogleAds();
+            //}
         });
 }
 

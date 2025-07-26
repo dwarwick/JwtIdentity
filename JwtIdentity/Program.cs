@@ -92,8 +92,8 @@ if (builder.Environment.IsDevelopment())
 // Add DbContext and Identity services
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"), sql => sql.EnableRetryOnFailure(
-    maxRetryCount:   3,
-    maxRetryDelay:   TimeSpan.FromSeconds(10),
+    maxRetryCount: 3,
+    maxRetryDelay: TimeSpan.FromSeconds(10),
     errorNumbersToAdd: null
 )).ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning)));
 
@@ -111,8 +111,8 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IApiAuthService, ApiAuthService>();
 builder.Services.AddScoped<ISurveyService, SurveyService>();
 builder.Services.AddScoped<JwtIdentity.Services.BackgroundJobs.BackgroundJobService>();
-
-builder.Services.AddAutoMapper(typeof(MapperConfig));
+// Replace the existing line with the following line
+builder.Services.AddAutoMapper(cfg => cfg.AddProfile<MapperConfig>());
 builder.Services.AddAuthentication(options =>
 {
     // Let cookies handle the challenge (so it can do 302 to /not-authorized):

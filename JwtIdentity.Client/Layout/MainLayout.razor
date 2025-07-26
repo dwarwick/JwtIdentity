@@ -161,7 +161,7 @@
             bool consentGiven = await JSRuntime.InvokeAsync<bool>("userHasThirdPartyConsent");
             if (consentGiven)
             {
-                await JSRuntime.InvokeVoidAsync("loadGoogleAds");
+            //    await JSRuntime.InvokeVoidAsync("loadGoogleAds");
             }
         }
         catch (Exception ex)
@@ -220,7 +220,7 @@
         await JSRuntime.InvokeVoidAsync("acceptAllCookies");
         
         // Load Google Ads once consent is given
-        await JSRuntime.InvokeVoidAsync("loadGoogleAds");
+      //  await JSRuntime.InvokeVoidAsync("loadGoogleAds");
         
         StateHasChanged();
     }
