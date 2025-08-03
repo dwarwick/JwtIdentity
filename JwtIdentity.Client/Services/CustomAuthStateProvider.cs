@@ -35,6 +35,7 @@ namespace JwtIdentity.Client.Services
             if (!OperatingSystem.IsBrowser())
             {
                 return new AuthenticationState(anonymous);
+
             }
 
             var savedToken = await _localStorage.GetItemAsync<string>("authToken");
