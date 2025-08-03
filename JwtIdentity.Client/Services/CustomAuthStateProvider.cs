@@ -28,6 +28,11 @@ namespace JwtIdentity.Client.Services
         public override async Task<AuthenticationState> GetAuthenticationStateAsync()
         {
             var user = new ClaimsPrincipal(new ClaimsIdentity());
+            if (!OperatingSystem.IsBrowser())
+            {
+                return new AuthenticationState(user);
+            }
+
             var savedToken = await _localStorage.GetItemAsync<string>("authToken");
             if (savedToken == null)
             {
@@ -95,6 +100,11 @@ namespace JwtIdentity.Client.Services
 
         private async Task<List<Claim>> GetClaims()
         {
+            if (!OperatingSystem.IsBrowser())
+            {
+                return new List<Claim>();
+            }
+
             var savedToken = await _localStorage.GetItemAsync<string>("authToken");
             var tokenContent = this.jwtSecurityTokenHandler.ReadJwtToken(savedToken);
             var claims = tokenContent.Claims.ToList();
