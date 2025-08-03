@@ -2,6 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
 using System.Security.Claims;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Http;
 
 namespace JwtIdentity.Client.Services
 {
@@ -11,6 +12,7 @@ namespace JwtIdentity.Client.Services
         private readonly IServiceProvider _serviceProvider;
         private readonly JwtSecurityTokenHandler jwtSecurityTokenHandler;
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IHttpContextAccessor? _httpContextAccessor;
         public HttpClient _httpClient { get; set; }
 
         public ApplicationUserViewModel CurrentUser { get; set; }
@@ -20,12 +22,18 @@ namespace JwtIdentity.Client.Services
         private IApiService ApiService => _serviceProvider.GetRequiredService<IApiService>();
 
         public CustomAuthStateProvider(Blazored.LocalStorage.ILocalStorageService localStorage, IHttpClientFactory httpClientFactory, IServiceProvider serviceProvider)
+            : this(localStorage, httpClientFactory, serviceProvider, null)
+        {
+        }
+
+        public CustomAuthStateProvider(Blazored.LocalStorage.ILocalStorageService localStorage, IHttpClientFactory httpClientFactory, IServiceProvider serviceProvider, IHttpContextAccessor? httpContextAccessor)
         {
             _localStorage = localStorage;
             jwtSecurityTokenHandler = new JwtSecurityTokenHandler();
 
             _httpClientFactory = httpClientFactory;
             _serviceProvider = serviceProvider;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public override async Task<AuthenticationState> GetAuthenticationStateAsync()
@@ -34,8 +42,22 @@ namespace JwtIdentity.Client.Services
 
             if (!OperatingSystem.IsBrowser())
             {
-                return new AuthenticationState(anonymous);
+                var token = _httpContextAccessor?.HttpContext?.Request.Cookies["authToken"];
+                if (string.IsNullOrEmpty(token))
+                {
+                    return new AuthenticationState(anonymous);
+                }
 
+                var tokenContent = jwtSecurityTokenHandler.ReadJwtToken(token);
+                if (tokenContent.ValidTo < DateTime.UtcNow)
+                {
+                    return new AuthenticationState(anonymous);
+                }
+
+                var claims = tokenContent.Claims.ToList();
+                claims.Add(new Claim(ClaimTypes.Name, tokenContent.Subject));
+                var user = new ClaimsPrincipal(new ClaimsIdentity(claims, "jwt"));
+                return new AuthenticationState(user);
             }
 
             var savedToken = await _localStorage.GetItemAsync<string>("authToken");
