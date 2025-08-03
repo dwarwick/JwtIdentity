@@ -48,16 +48,16 @@ namespace JwtIdentity.Client.Services
                     return new AuthenticationState(anonymous);
                 }
 
-                var tokenContent = jwtSecurityTokenHandler.ReadJwtToken(token);
-                if (tokenContent.ValidTo < DateTime.UtcNow)
+                var serverToken = jwtSecurityTokenHandler.ReadJwtToken(token);
+                if (serverToken.ValidTo < DateTime.UtcNow)
                 {
                     return new AuthenticationState(anonymous);
                 }
 
-                var claims = tokenContent.Claims.ToList();
-                claims.Add(new Claim(ClaimTypes.Name, tokenContent.Subject));
-                var user = new ClaimsPrincipal(new ClaimsIdentity(claims, "jwt"));
-                return new AuthenticationState(user);
+                var serverClaims = serverToken.Claims.ToList();
+                serverClaims.Add(new Claim(ClaimTypes.Name, serverToken.Subject));
+                var serverUser = new ClaimsPrincipal(new ClaimsIdentity(serverClaims, "jwt"));
+                return new AuthenticationState(serverUser);
             }
 
             var savedToken = await _localStorage.GetItemAsync<string>("authToken");
