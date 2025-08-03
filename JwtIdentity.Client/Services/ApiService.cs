@@ -1,7 +1,9 @@
 using System.Net.Http.Json;
+using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Http;
 
 namespace JwtIdentity.Client.Services
 {
@@ -12,11 +14,12 @@ namespace JwtIdentity.Client.Services
         private HttpClient? _httpClient;
         private readonly NavigationManager navigationManager;
         private readonly IServiceProvider serviceProvider;
+        private readonly IHttpContextAccessor? _httpContextAccessor;
 
         private ISnackbar Snackbar => serviceProvider.GetRequiredService<ISnackbar>();
         private HttpClient Client => _httpClient ??= _httpClientFactory.CreateClient("AuthorizedClient");
 
-        public ApiService(IHttpClientFactory httpClientFactory, NavigationManager navigationManager, IServiceProvider serviceProvider)
+        public ApiService(IHttpClientFactory httpClientFactory, NavigationManager navigationManager, IServiceProvider serviceProvider, IHttpContextAccessor? httpContextAccessor = null)
         {
             _options = new JsonSerializerOptions
             {
@@ -31,10 +34,12 @@ namespace JwtIdentity.Client.Services
             _httpClientFactory = httpClientFactory;
             this.navigationManager = navigationManager;
             this.serviceProvider = serviceProvider;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<T> GetAsync<T>(string endpoint)
         {
+            SetAuthHeaderFromCookie();
             var response = await Client.GetAsync($"{endpoint}");
             if (!response.IsSuccessStatusCode)
             {
@@ -51,11 +56,19 @@ namespace JwtIdentity.Client.Services
                     return default;
                 }
             }
+
+            if (response.Content.Headers.ContentType?.MediaType == "text/html")
+            {
+                _ = Snackbar.Add("Unexpected response. Please log in.", Severity.Error);
+                return default;
+            }
+
             return await response.Content.ReadFromJsonAsync<T>(_options);
         }
 
         public async Task<IEnumerable<T>> GetAllAsync<T>(string endpoint)
         {
+            SetAuthHeaderFromCookie();
             var response = await Client.GetAsync($"{endpoint}");
             _ = EnsureSuccess(response);
             return await response.Content.ReadFromJsonAsync<IEnumerable<T>>(_options);
@@ -63,6 +76,7 @@ namespace JwtIdentity.Client.Services
 
         public async Task<T> UpdateAsync<T>(string endpoint, T viewModel)
         {
+            SetAuthHeaderFromCookie();
             var response = await Client.PutAsJsonAsync($"{endpoint}", viewModel);
 
             if (response.StatusCode != System.Net.HttpStatusCode.NoContent)
@@ -91,6 +105,7 @@ namespace JwtIdentity.Client.Services
 
         public async Task<bool> DeleteAsync(string endpoint)
         {
+            SetAuthHeaderFromCookie();
             var response = await Client.DeleteAsync($"{endpoint}");
 
             if (!response.IsSuccessStatusCode)
@@ -112,6 +127,7 @@ namespace JwtIdentity.Client.Services
 
         public async Task<T> PostAsync<T>(string endpoint, T viewModel)
         {
+            SetAuthHeaderFromCookie();
             var response = await Client.PostAsJsonAsync($"{endpoint}", viewModel, _options);
 
             if (!response.IsSuccessStatusCode)
@@ -135,6 +151,7 @@ namespace JwtIdentity.Client.Services
 
         public async Task<R> PostAsync<T, R>(string endpoint, T viewModel)
         {
+            SetAuthHeaderFromCookie();
             var response = await Client.PostAsJsonAsync($"{endpoint}", viewModel, _options);
 
             if (!response.IsSuccessStatusCode)
@@ -144,6 +161,25 @@ namespace JwtIdentity.Client.Services
             }
 
             return await response.Content.ReadFromJsonAsync<R>(_options);
+        }
+
+        private void SetAuthHeaderFromCookie()
+        {
+            if (OperatingSystem.IsBrowser())
+            {
+                return;
+            }
+
+            if (Client.DefaultRequestHeaders.Authorization != null)
+            {
+                return;
+            }
+
+            var token = _httpContextAccessor?.HttpContext?.Request.Cookies["authToken"];
+            if (!string.IsNullOrEmpty(token))
+            {
+                Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            }
         }
 
         private HttpResponseMessage EnsureSuccess(HttpResponseMessage response)

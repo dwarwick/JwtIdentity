@@ -54,9 +54,19 @@ namespace JwtIdentity.Client.Services
                     return new AuthenticationState(anonymous);
                 }
 
+                _httpClient ??= _httpClientFactory.CreateClient("AuthorizedClient");
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
                 var serverClaims = serverToken.Claims.ToList();
                 serverClaims.Add(new Claim(ClaimTypes.Name, serverToken.Subject));
                 var serverUser = new ClaimsPrincipal(new ClaimsIdentity(serverClaims, "jwt"));
+
+                var serverUserId = serverClaims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+                if (!string.IsNullOrEmpty(serverUserId))
+                {
+                    CurrentUser = await ApiService.GetAsync<ApplicationUserViewModel>($"{ApiEndpoints.ApplicationUser}/{serverUserId}");
+                }
+
                 return new AuthenticationState(serverUser);
             }
 
