@@ -1,5 +1,6 @@
 ﻿using System.Net.Http.Json;
 using System.Security.Claims;
+using Microsoft.Extensions.Logging;
 
 namespace JwtIdentity.Client.Pages.Survey
 {
@@ -56,11 +57,15 @@ namespace JwtIdentity.Client.Pages.Survey
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
-            if (firstRender)
+            if (firstRender && OperatingSystem.IsBrowser())
             {
                 await JSRuntime.InvokeVoidAsync("registerCaptchaCallback", objRef);
                 // Call JavaScript to manually render the widget in the container with your site key.
                 await JSRuntime.InvokeVoidAsync("renderReCaptcha", "captcha-container", Configuration["ReCaptcha:SiteKey"]);
+            }
+            else if (firstRender)
+            {
+                Logger?.LogWarning("OperatingSystem.IsBrowser() returned false; captcha not rendered.");
             }
         }
 
