@@ -31,11 +31,11 @@
     <link rel="stylesheet" href="@Assets["css/app.css"]" />
     <ImportMap />
     <link rel="icon" type="image/png" href="images/icon.png" />
-    <HeadOutlet @rendermode=" new InteractiveWebAssemblyRenderMode(prerender:false)" />
+    <HeadOutlet @rendermode=" new InteractiveWebAssemblyRenderMode(prerender:true)" />
 </head>
 
 <body>
-    <Routes @rendermode=" new InteractiveWebAssemblyRenderMode(prerender:false)" />
+    <Routes @rendermode=" new InteractiveWebAssemblyRenderMode(prerender:true)" />
     <div id="fb-root"></div>
     <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v22.0&appId=1209050230789265"></script>
     <script src="js/site.js"></script>    
