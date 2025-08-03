@@ -1,6 +1,11 @@
 {
   "name": "JwtIdentity",
   "image": "mcr.microsoft.com/dotnet/sdk:9.0-preview",
+  "features": {
+    "ghcr.io/devcontainers/features/dotnet:2": {
+      "version": "9.0"
+    }
+  },
   "postCreateCommand": "dotnet restore",
   "customizations": {
     "vscode": {
