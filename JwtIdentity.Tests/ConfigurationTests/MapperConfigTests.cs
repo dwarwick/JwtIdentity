@@ -20,6 +20,7 @@ namespace JwtIdentity.Tests.ConfigurationTests
         {
             var loggerFactory = LoggerFactory.Create(builder => { });
             var config = new MapperConfiguration(cfg => cfg.AddProfile<MapperConfig>(), loggerFactory);
+
             _mapper = config.CreateMapper();
         }
 
