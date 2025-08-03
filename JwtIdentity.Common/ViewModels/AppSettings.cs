@@ -1,4 +1,6 @@
-﻿namespace JwtIdentity.Common.ViewModels
+﻿using System.Text.Json.Serialization;
+
+namespace JwtIdentity.Common.ViewModels
 {
     // ...existing code...
     public class AppSettings
@@ -32,6 +34,7 @@
 
     public class JwtOptions
     {
+        [JsonIgnore]
         public string Key { get; set; }
         public string Issuer { get; set; }
         public string Audience { get; set; }
@@ -41,6 +44,8 @@
     public class EmailSettings
     {
         public string CustomerServiceEmail { get; set; }
+
+        [JsonIgnore]
         public string Password { get; set; }
         public string Server { get; set; }
         public string Domain { get; set; }
@@ -56,6 +61,8 @@
     public class Youtube
     {
         public string HomePageCode { get; set; }
+
+        [JsonIgnore]
         public string ApiKey { get; set; }
     }
 }
