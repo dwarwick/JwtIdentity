@@ -1,13 +1,12 @@
 ﻿using System.Net.Http.Json;
 using System.Security.Claims;
-using Microsoft.Extensions.Logging;
 
 namespace JwtIdentity.Client.Pages.Survey
 {
     public class SurveyModel : BlazorBase, IAsyncDisposable
     {
         [Parameter]
-        public string SurveyId { get; set; }
+        public Guid SurveyId { get; set; }
 
         protected SurveyViewModel Survey { get; set; }
 
