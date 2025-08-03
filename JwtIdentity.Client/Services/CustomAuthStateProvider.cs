@@ -1,7 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
 using System.Security.Claims;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Http;
 
 namespace JwtIdentity.Client.Services
@@ -9,7 +8,7 @@ namespace JwtIdentity.Client.Services
     public class CustomAuthStateProvider : AuthenticationStateProvider
     {
         private readonly Blazored.LocalStorage.ILocalStorageService _localStorage;
-        private readonly IServiceProvider _serviceProvider;
+        private readonly IApiService _apiService;
         private readonly JwtSecurityTokenHandler jwtSecurityTokenHandler;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IHttpContextAccessor? _httpContextAccessor;
@@ -19,20 +18,18 @@ namespace JwtIdentity.Client.Services
 
         public event Action OnLoggedOut;
 
-        private IApiService ApiService => _serviceProvider.GetRequiredService<IApiService>();
-
-        public CustomAuthStateProvider(Blazored.LocalStorage.ILocalStorageService localStorage, IHttpClientFactory httpClientFactory, IServiceProvider serviceProvider)
-            : this(localStorage, httpClientFactory, serviceProvider, null)
+        public CustomAuthStateProvider(Blazored.LocalStorage.ILocalStorageService localStorage, IHttpClientFactory httpClientFactory, IApiService apiService)
+            : this(localStorage, httpClientFactory, apiService, null)
         {
         }
 
-        public CustomAuthStateProvider(Blazored.LocalStorage.ILocalStorageService localStorage, IHttpClientFactory httpClientFactory, IServiceProvider serviceProvider, IHttpContextAccessor? httpContextAccessor)
+        public CustomAuthStateProvider(Blazored.LocalStorage.ILocalStorageService localStorage, IHttpClientFactory httpClientFactory, IApiService apiService, IHttpContextAccessor? httpContextAccessor)
         {
             _localStorage = localStorage;
             jwtSecurityTokenHandler = new JwtSecurityTokenHandler();
 
             _httpClientFactory = httpClientFactory;
-            _serviceProvider = serviceProvider;
+            _apiService = apiService;
             _httpContextAccessor = httpContextAccessor;
         }
 
@@ -64,7 +61,7 @@ namespace JwtIdentity.Client.Services
                 var serverUserId = serverClaims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
                 if (!string.IsNullOrEmpty(serverUserId))
                 {
-                    CurrentUser = await ApiService.GetAsync<ApplicationUserViewModel>($"{ApiEndpoints.ApplicationUser}/{serverUserId}");
+                    CurrentUser = await _apiService.GetAsync<ApplicationUserViewModel>($"{ApiEndpoints.ApplicationUser}/{serverUserId}");
                 }
 
                 return new AuthenticationState(serverUser);
@@ -93,7 +90,7 @@ namespace JwtIdentity.Client.Services
 
             var userId = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
 
-            CurrentUser = await ApiService.GetAsync<ApplicationUserViewModel>($"{ApiEndpoints.ApplicationUser}/{userId}");
+            CurrentUser = await _apiService.GetAsync<ApplicationUserViewModel>($"{ApiEndpoints.ApplicationUser}/{userId}");
 
             var authState = Task.FromResult(new AuthenticationState(user));
 
@@ -126,7 +123,7 @@ namespace JwtIdentity.Client.Services
 
             CurrentUser = null;
 
-            _ = await ApiService.PostAsync<object>($"{ApiEndpoints.Auth}/logout", null);
+            _ = await _apiService.PostAsync<object>($"{ApiEndpoints.Auth}/logout", null);
 
             this.NotifyAuthenticationStateChanged(authState);
 
