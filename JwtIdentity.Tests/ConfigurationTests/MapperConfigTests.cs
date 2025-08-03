@@ -6,6 +6,7 @@ using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using JwtIdentity.Common.Helpers;
+using Microsoft.Extensions.Logging;
 
 namespace JwtIdentity.Tests.ConfigurationTests
 {
@@ -17,7 +18,9 @@ namespace JwtIdentity.Tests.ConfigurationTests
         [SetUp]
         public void SetUp()
         {
-            var config = new MapperConfiguration(cfg => cfg.AddProfile<MapperConfig>(), null);
+            var loggerFactory = LoggerFactory.Create(builder => { });
+            var config = new MapperConfiguration(cfg => cfg.AddProfile<MapperConfig>(), loggerFactory);
+
             _mapper = config.CreateMapper();
         }
 
