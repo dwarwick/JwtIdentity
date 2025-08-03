@@ -1,5 +1,6 @@
 ﻿using Blazored.LocalStorage;
 using JwtIdentity.Client.Helpers;
+using Microsoft.Extensions.Logging;
 
 namespace JwtIdentity.Client.Pages
 {
@@ -44,6 +45,9 @@ namespace JwtIdentity.Client.Pages
 
         [Inject]
         internal IUtility Utility { get; set; }
+
+        [Inject]
+        internal ILogger<BlazorBase> Logger { get; set; }
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
     }
 }

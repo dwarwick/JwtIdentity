@@ -27,11 +27,13 @@ namespace JwtIdentity.Client.Services
 
         public override async Task<AuthenticationState> GetAuthenticationStateAsync()
         {
+
             var anonymous = new ClaimsPrincipal(new ClaimsIdentity());
 
             if (!OperatingSystem.IsBrowser())
             {
                 return new AuthenticationState(anonymous);
+
             }
 
             var savedToken = await _localStorage.GetItemAsync<string>("authToken");
