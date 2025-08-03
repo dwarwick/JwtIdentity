@@ -33,7 +33,7 @@ namespace JwtIdentity.Client.Pages.Survey
 
         protected bool AgreedToTerms { get; set; }
 
-        protected override async Task OnInitializedAsync()
+        protected override Task OnInitializedAsync()
         {
             var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
             var queryParams = QueryHelpers.ParseQuery(uri.Query);
@@ -47,24 +47,28 @@ namespace JwtIdentity.Client.Pages.Survey
                 ViewAnswers = bool.Parse(viewAnswers);
             }
 
-            await HandleLoggingInUser();
-
-            // get the survey based on the SurveyId
-            await LoadData();
-
-            Loading = false;
+            return Task.CompletedTask;
         }
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
-            if (firstRender && OperatingSystem.IsBrowser())
+            if (firstRender)
             {
-                await JSRuntime.InvokeVoidAsync("registerCaptchaCallback", objRef);
-                await JSRuntime.InvokeVoidAsync("renderReCaptcha", "captcha-container", Configuration["ReCaptcha:SiteKey"]);
-            }
-            else if (firstRender)
-            {
-                Logger?.LogWarning("OperatingSystem.IsBrowser() returned false; captcha not rendered.");
+                if (OperatingSystem.IsBrowser())
+                {
+                    await HandleLoggingInUser();
+                    await LoadData();
+
+                    await JSRuntime.InvokeVoidAsync("registerCaptchaCallback", objRef);
+                    await JSRuntime.InvokeVoidAsync("renderReCaptcha", "captcha-container", Configuration["ReCaptcha:SiteKey"]);
+
+                    Loading = false;
+                    StateHasChanged();
+                }
+                else
+                {
+                    Logger?.LogWarning("OperatingSystem.IsBrowser() returned false; captcha not rendered.");
+                }
             }
         }
 
