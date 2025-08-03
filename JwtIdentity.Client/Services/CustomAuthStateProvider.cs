@@ -1,13 +1,14 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
 using System.Security.Claims;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace JwtIdentity.Client.Services
 {
     public class CustomAuthStateProvider : AuthenticationStateProvider
     {
         private readonly Blazored.LocalStorage.ILocalStorageService _localStorage;
-        private readonly IApiService _apiService;
+        private readonly IServiceProvider _serviceProvider;
         private readonly JwtSecurityTokenHandler jwtSecurityTokenHandler;
         public HttpClient _httpClient { get; set; }
 
@@ -16,18 +17,19 @@ namespace JwtIdentity.Client.Services
 
         public event Action OnLoggedOut;
 
-        public CustomAuthStateProvider(Blazored.LocalStorage.ILocalStorageService localStorage, HttpClient httpClient, IApiService apiService)
+        private IApiService ApiService => _serviceProvider.GetRequiredService<IApiService>();
+
+        public CustomAuthStateProvider(Blazored.LocalStorage.ILocalStorageService localStorage, HttpClient httpClient, IServiceProvider serviceProvider)
         {
             _localStorage = localStorage;
             jwtSecurityTokenHandler = new JwtSecurityTokenHandler();
 
             _httpClient = httpClient;
-            _apiService = apiService;
+            _serviceProvider = serviceProvider;
         }
 
         public override async Task<AuthenticationState> GetAuthenticationStateAsync()
         {
-
             var anonymous = new ClaimsPrincipal(new ClaimsIdentity());
 
             if (!OperatingSystem.IsBrowser())
@@ -58,7 +60,7 @@ namespace JwtIdentity.Client.Services
 
             var userId = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
 
-            CurrentUser = await _apiService.GetAsync<ApplicationUserViewModel>($"{ApiEndpoints.ApplicationUser}/{userId}");
+            CurrentUser = await ApiService.GetAsync<ApplicationUserViewModel>($"{ApiEndpoints.ApplicationUser}/{userId}");
 
             var authState = Task.FromResult(new AuthenticationState(user));
 
@@ -93,7 +95,7 @@ namespace JwtIdentity.Client.Services
 
             CurrentUser = null;
 
-            _ = await _apiService.PostAsync<object>($"{ApiEndpoints.Auth}/logout", null);
+            _ = await ApiService.PostAsync<object>($"{ApiEndpoints.Auth}/logout", null);
 
             this.NotifyAuthenticationStateChanged(authState);
 
