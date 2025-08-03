@@ -14,6 +14,7 @@ namespace JwtIdentity.Client.Services
         private readonly JwtSecurityTokenHandler jwtSecurityTokenHandler;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IHttpContextAccessor? _httpContextAccessor;
+
         public HttpClient _httpClient { get; set; }
 
         public ApplicationUserViewModel CurrentUser { get; set; }
