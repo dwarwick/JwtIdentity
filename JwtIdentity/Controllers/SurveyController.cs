@@ -21,7 +21,7 @@ namespace JwtIdentity.Controllers
         }
 
         // GET: api/Survey/5
-        [HttpGet("{guid}")]
+        [HttpGet("{guid:guid}")]
         public async Task<ActionResult<SurveyViewModel>> GetSurvey(string guid)
         {
             try
