@@ -1,48 +1,53 @@
-﻿using System.Net.Http.Json;
+using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace JwtIdentity.Client.Services
 {
     public class ApiService : IApiService
     {
         private readonly JsonSerializerOptions _options;
-        private readonly HttpClient _httpClient;
+        private readonly IHttpClientFactory _httpClientFactory;
+        private HttpClient? _httpClient;
         private readonly NavigationManager navigationManager;
-        private readonly ISnackbar snackbar;
+        private readonly IServiceProvider serviceProvider;
 
-        public ApiService(IHttpClientFactory httpClientFactory, NavigationManager navigationManager, ISnackbar snackbar)
+        private ISnackbar Snackbar => serviceProvider.GetRequiredService<ISnackbar>();
+        private HttpClient Client => _httpClient ??= _httpClientFactory.CreateClient("AuthorizedClient");
+
+        public ApiService(IHttpClientFactory httpClientFactory, NavigationManager navigationManager, IServiceProvider serviceProvider)
         {
             _options = new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true,
-                ReferenceHandler = ReferenceHandler.IgnoreCycles, // Add this line                                                                  ,
-                Converters = { 
-                    new AnswerViewModelConverter(), 
+                ReferenceHandler = ReferenceHandler.IgnoreCycles,
+                Converters =
+                {
+                    new AnswerViewModelConverter(),
                     new QuestionViewModelConverter()
                 }
             };
-            _httpClient = httpClientFactory.CreateClient("AuthorizedClient");
+            _httpClientFactory = httpClientFactory;
             this.navigationManager = navigationManager;
-            this.snackbar = snackbar;
+            this.serviceProvider = serviceProvider;
         }
 
         public async Task<T> GetAsync<T>(string endpoint)
         {
-            var response = await _httpClient.GetAsync($"{endpoint}");
+            var response = await Client.GetAsync($"{endpoint}");
             if (!response.IsSuccessStatusCode)
             {
-                // get th error message
                 var error = await response.Content.ReadAsStringAsync();
 
                 if (string.IsNullOrEmpty(error))
                 {
-                    _ = snackbar.Add("There was a problem with the request", Severity.Error);
+                    _ = Snackbar.Add("There was a problem with the request", Severity.Error);
                     return default;
                 }
                 else
                 {
-                    _ = snackbar.Add(error, Severity.Error);
+                    _ = Snackbar.Add(error, Severity.Error);
                     return default;
                 }
             }
@@ -51,14 +56,14 @@ namespace JwtIdentity.Client.Services
 
         public async Task<IEnumerable<T>> GetAllAsync<T>(string endpoint)
         {
-            var response = await _httpClient.GetAsync($"{endpoint}");
+            var response = await Client.GetAsync($"{endpoint}");
             _ = EnsureSuccess(response);
             return await response.Content.ReadFromJsonAsync<IEnumerable<T>>(_options);
         }
 
         public async Task<T> UpdateAsync<T>(string endpoint, T viewModel)
         {
-            var response = await _httpClient.PutAsJsonAsync($"{endpoint}", viewModel);
+            var response = await Client.PutAsJsonAsync($"{endpoint}", viewModel);
 
             if (response.StatusCode != System.Net.HttpStatusCode.NoContent)
             {
@@ -72,11 +77,11 @@ namespace JwtIdentity.Client.Services
 
                     if (string.IsNullOrEmpty(error))
                     {
-                        _ = snackbar.Add("There was a problem with the request", Severity.Error);
+                        _ = Snackbar.Add("There was a problem with the request", Severity.Error);
                     }
                     else
                     {
-                        _ = snackbar.Add(error, Severity.Error);
+                        _ = Snackbar.Add(error, Severity.Error);
                     }
                 }
             }
@@ -86,7 +91,7 @@ namespace JwtIdentity.Client.Services
 
         public async Task<bool> DeleteAsync(string endpoint)
         {
-            var response = await _httpClient.DeleteAsync($"{endpoint}");
+            var response = await Client.DeleteAsync($"{endpoint}");
 
             if (!response.IsSuccessStatusCode)
             {
@@ -94,11 +99,11 @@ namespace JwtIdentity.Client.Services
 
                 if (string.IsNullOrEmpty(error))
                 {
-                    _ = snackbar.Add("There was a problem with the request", Severity.Error);                    
+                    _ = Snackbar.Add("There was a problem with the request", Severity.Error);
                 }
                 else
                 {
-                    _ = snackbar.Add(error, Severity.Error);                    
+                    _ = Snackbar.Add(error, Severity.Error);
                 }
             }
 
@@ -107,21 +112,20 @@ namespace JwtIdentity.Client.Services
 
         public async Task<T> PostAsync<T>(string endpoint, T viewModel)
         {
-            var response = await _httpClient.PostAsJsonAsync($"{endpoint}", viewModel, _options);
+            var response = await Client.PostAsJsonAsync($"{endpoint}", viewModel, _options);
 
             if (!response.IsSuccessStatusCode)
             {
-                // get th error message
                 var error = await response.Content.ReadAsStringAsync();
 
                 if (string.IsNullOrEmpty(error))
                 {
-                    _ = snackbar.Add("There was a problem with the request", Severity.Error);
+                    _ = Snackbar.Add("There was a problem with the request", Severity.Error);
                     return default;
                 }
                 else
                 {
-                    _ = snackbar.Add(error, Severity.Error);
+                    _ = Snackbar.Add(error, Severity.Error);
                     return default;
                 }
             }
@@ -131,11 +135,11 @@ namespace JwtIdentity.Client.Services
 
         public async Task<R> PostAsync<T, R>(string endpoint, T viewModel)
         {
-            var response = await _httpClient.PostAsJsonAsync($"{endpoint}", viewModel, _options);
+            var response = await Client.PostAsJsonAsync($"{endpoint}", viewModel, _options);
 
             if (!response.IsSuccessStatusCode)
             {
-                _ = snackbar.Add("There was a problem with the request", Severity.Error);
+                _ = Snackbar.Add("There was a problem with the request", Severity.Error);
                 return default;
             }
 
@@ -151,9 +155,8 @@ namespace JwtIdentity.Client.Services
             catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
             {
                 navigationManager.NavigateTo("/");
-                _ = snackbar.Add("The URL was invalid.", Severity.Error);
+                _ = Snackbar.Add("The URL was invalid.", Severity.Error);
 
-                // Return a replacement 200 (OK) so your app doesn't break further up:
                 return new HttpResponseMessage(System.Net.HttpStatusCode.OK);
             }
 
@@ -161,3 +164,4 @@ namespace JwtIdentity.Client.Services
         }
     }
 }
+

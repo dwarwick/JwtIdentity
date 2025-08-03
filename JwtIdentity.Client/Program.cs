@@ -11,13 +11,7 @@ builder.Configuration
 
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 
-builder.Services.AddScoped<IApiService, ApiService>(sp =>
-{
-    var httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
-    var navigationManager = sp.GetRequiredService<NavigationManager>();
-    var snackbar = sp.GetRequiredService<ISnackbar>();
-    return new ApiService(httpClientFactory, navigationManager, snackbar);
-});
+builder.Services.AddScoped<IApiService, ApiService>();
 
 Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense("Ngo9BigBOggjHTQxAR8/V1NNaF5cXmBCf1FpRmJGdld5fUVHYVZUTXxaS00DNHVRdkdmWXtecnZUQ2NdUkZzWENWYUA=");
 
@@ -65,7 +59,6 @@ builder.Services.AddHttpClient("AuthorizedClient", client =>
 })
 .AddHttpMessageHandler<CustomAuthorizationMessageHandler>();
 
-builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("AuthorizedClient"));
 
 // Register a named HttpClient called "NoAuthClient" for unauthenticated requests
 builder.Services.AddHttpClient("NoAuthClient");

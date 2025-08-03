@@ -1,4 +1,4 @@
-﻿using System.IdentityModel.Tokens.Jwt;
+using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
 using System.Security.Claims;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,8 +10,8 @@ namespace JwtIdentity.Client.Services
         private readonly Blazored.LocalStorage.ILocalStorageService _localStorage;
         private readonly IServiceProvider _serviceProvider;
         private readonly JwtSecurityTokenHandler jwtSecurityTokenHandler;
+        private readonly IHttpClientFactory _httpClientFactory;
         public HttpClient _httpClient { get; set; }
-
 
         public ApplicationUserViewModel CurrentUser { get; set; }
 
@@ -19,12 +19,12 @@ namespace JwtIdentity.Client.Services
 
         private IApiService ApiService => _serviceProvider.GetRequiredService<IApiService>();
 
-        public CustomAuthStateProvider(Blazored.LocalStorage.ILocalStorageService localStorage, HttpClient httpClient, IServiceProvider serviceProvider)
+        public CustomAuthStateProvider(Blazored.LocalStorage.ILocalStorageService localStorage, IHttpClientFactory httpClientFactory, IServiceProvider serviceProvider)
         {
             _localStorage = localStorage;
             jwtSecurityTokenHandler = new JwtSecurityTokenHandler();
 
-            _httpClient = httpClient;
+            _httpClientFactory = httpClientFactory;
             _serviceProvider = serviceProvider;
         }
 
@@ -52,6 +52,7 @@ namespace JwtIdentity.Client.Services
                 return new AuthenticationState(anonymous);
             }
 
+            _httpClient ??= _httpClientFactory.CreateClient("AuthorizedClient");
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", savedToken);
 
             var claims = await GetClaims();
@@ -79,13 +80,11 @@ namespace JwtIdentity.Client.Services
             await GetAuthenticationStateAsync();
         }
 
-        // ... other code ...
-
         public async Task LoggedOut()
         {
             await this._localStorage.RemoveItemAsync("authToken");
 
-            if (_httpClient.DefaultRequestHeaders?.Authorization != null)
+            if (_httpClient != null && _httpClient.DefaultRequestHeaders?.Authorization != null)
             {
                 _httpClient.DefaultRequestHeaders.Authorization = null;
             }
@@ -127,3 +126,4 @@ namespace JwtIdentity.Client.Services
         }
     }
 }
+
