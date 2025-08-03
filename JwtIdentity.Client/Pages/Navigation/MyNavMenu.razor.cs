@@ -3,6 +3,8 @@
     public class MyNavMenuModel : BlazorBase, IDisposable
     {
         private bool _disposed = false;
+        // Cache handler to ensure subscriptions don't resolve services after disposal
+        private CustomAuthorizationMessageHandler? _authorizationHandler;
 
         [Parameter]
         public bool DarkTheme { get; set; }
@@ -14,7 +16,8 @@
         protected override void OnInitialized()
         {
             ((CustomAuthStateProvider)AuthStateProvider!).OnLoggedOut += UpdateLoggedIn;
-            CustomAuthorizationMessageHandler.OnUnauthorized += UpdateLoggedIn;
+            _authorizationHandler = CustomAuthorizationMessageHandler;
+            _authorizationHandler.OnUnauthorized += UpdateLoggedIn;
             _drawerOpen = false;
         }
 
@@ -41,7 +44,10 @@
                 if (disposing)
                 {
                     ((CustomAuthStateProvider)AuthStateProvider!).OnLoggedOut -= UpdateLoggedIn;
-                    CustomAuthorizationMessageHandler.OnUnauthorized -= UpdateLoggedIn;
+                    if (_authorizationHandler != null)
+                    {
+                        _authorizationHandler.OnUnauthorized -= UpdateLoggedIn;
+                    }
                 }
                 _disposed = true;
             }
