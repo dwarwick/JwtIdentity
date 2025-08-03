@@ -27,6 +27,7 @@ namespace JwtIdentity.BunitTests
         protected Mock<ISnackbar> SnackbarMock { get; private set; }
         protected Mock<IDialogService> DialogServiceMock { get; private set; }
         protected Mock<IApiService> ApiServiceMock { get; private set; }
+        protected Mock<IHttpClientFactory> HttpClientFactoryMock { get; private set; }
         
         public BUnitTestBase()
         {
@@ -47,6 +48,8 @@ namespace JwtIdentity.BunitTests
             SnackbarMock = new Mock<ISnackbar>();
             DialogServiceMock = new Mock<IDialogService>();
             ApiServiceMock = new Mock<IApiService>();
+            HttpClientFactoryMock = new Mock<IHttpClientFactory>();
+            HttpClientFactoryMock.Setup(f => f.CreateClient(It.IsAny<string>())).Returns(new HttpClient());
             var authStateProviderMock = new Mock<AuthenticationStateProvider>();
             
             // Register services to the test context
@@ -56,6 +59,7 @@ namespace JwtIdentity.BunitTests
             Context.Services.AddSingleton<IDialogService>(DialogServiceMock.Object);
             Context.Services.AddSingleton<IApiService>(ApiServiceMock.Object);
             Context.Services.AddSingleton<AuthenticationStateProvider>(authStateProviderMock.Object);
+            Context.Services.AddSingleton<IHttpClientFactory>(HttpClientFactoryMock.Object);
 
             // Register a fake for CustomAuthorizationMessageHandler
             Context.Services.AddSingleton<JwtIdentity.Client.Services.CustomAuthorizationMessageHandler>(new FakeCustomAuthorizationMessageHandler());
@@ -76,7 +80,7 @@ namespace JwtIdentity.BunitTests
         // Fake implementation for DI
         private class FakeCustomAuthorizationMessageHandler : JwtIdentity.Client.Services.CustomAuthorizationMessageHandler
         {
-            public FakeCustomAuthorizationMessageHandler() : base(null, null) { }
+            public FakeCustomAuthorizationMessageHandler() : base(new MockNavigationManager(), new ServiceCollection().BuildServiceProvider()) { }
         }
     }
 

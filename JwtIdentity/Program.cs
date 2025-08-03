@@ -154,14 +154,7 @@ builder.Services.AddHttpClient("NoAuthClient", (sp, client) =>
     var request = accessor.HttpContext?.Request;
     client.BaseAddress = new Uri($"{request?.Scheme}://{request?.Host}");
 });
-builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("AuthorizedClient"));
-builder.Services.AddScoped<IApiService, ApiService>(sp =>
-{
-    var httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
-    var navigationManager = sp.GetRequiredService<NavigationManager>();
-    var snackbar = sp.GetRequiredService<ISnackbar>();
-    return new ApiService(httpClientFactory, navigationManager, snackbar);
-});
+builder.Services.AddScoped<IApiService, ApiService>();
 // Replace the existing line with the following line
 builder.Services.AddAutoMapper(cfg => cfg.AddProfile<MapperConfig>());
 builder.Services.AddAuthentication(options =>
