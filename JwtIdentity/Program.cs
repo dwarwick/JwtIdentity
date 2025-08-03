@@ -121,7 +121,11 @@ builder.Services.AddScoped<IApiAuthService, ApiAuthService>();
 builder.Services.AddScoped<ISurveyService, SurveyService>();
 builder.Services.AddScoped<JwtIdentity.Services.BackgroundJobs.BackgroundJobService>();
 // Services required for prerendering shared client components
-SyncfusionLicenseProvider.RegisterLicense("Ngo9BigBOggjHTQxAR8/V1NNaF5cXmBCf1FpRmJGdld5fUVHYVZUTXxaS00DNHVRdkdmWXtecnZUQ2NdUkZzWENWYUA=");
+var syncfusionLicense = builder.Configuration["Syncfusion:LicenseKey"];
+if (!string.IsNullOrWhiteSpace(syncfusionLicense))
+{
+    SyncfusionLicenseProvider.RegisterLicense(syncfusionLicense);
+}
 builder.Services.AddSyncfusionBlazor();
 builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddCascadingAuthenticationState();

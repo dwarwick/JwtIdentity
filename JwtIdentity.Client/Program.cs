@@ -2,6 +2,7 @@ using Blazored.LocalStorage;
 using JwtIdentity.Client.Helpers;
 using JwtIdentity.Services;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Syncfusion.Licensing;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
@@ -11,9 +12,13 @@ builder.Configuration
 
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 
-builder.Services.AddScoped<IApiService, ApiService>();
+  builder.Services.AddScoped<IApiService, ApiService>();
 
-Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense("Ngo9BigBOggjHTQxAR8/V1NNaF5cXmBCf1FpRmJGdld5fUVHYVZUTXxaS00DNHVRdkdmWXtecnZUQ2NdUkZzWENWYUA=");
+  var syncfusionLicense = builder.Configuration["Syncfusion:LicenseKey"];
+  if (!string.IsNullOrWhiteSpace(syncfusionLicense))
+  {
+      SyncfusionLicenseProvider.RegisterLicense(syncfusionLicense);
+  }
 
 builder.Services.AddSyncfusionBlazor();
 builder.Services.AddBlazoredLocalStorage();
