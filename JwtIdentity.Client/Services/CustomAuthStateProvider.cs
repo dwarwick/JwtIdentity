@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace JwtIdentity.Client.Services
@@ -11,6 +12,7 @@ namespace JwtIdentity.Client.Services
         private readonly IServiceProvider _serviceProvider;
         private readonly JwtSecurityTokenHandler jwtSecurityTokenHandler;
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IHttpContextAccessor? _httpContextAccessor;
         public HttpClient _httpClient { get; set; }
 
         public ApplicationUserViewModel CurrentUser { get; set; }
@@ -19,13 +21,18 @@ namespace JwtIdentity.Client.Services
 
         private IApiService ApiService => _serviceProvider.GetRequiredService<IApiService>();
 
-        public CustomAuthStateProvider(Blazored.LocalStorage.ILocalStorageService localStorage, IHttpClientFactory httpClientFactory, IServiceProvider serviceProvider)
+        public CustomAuthStateProvider(
+            Blazored.LocalStorage.ILocalStorageService localStorage,
+            IHttpClientFactory httpClientFactory,
+            IServiceProvider serviceProvider,
+            IHttpContextAccessor? httpContextAccessor = null)
         {
             _localStorage = localStorage;
             jwtSecurityTokenHandler = new JwtSecurityTokenHandler();
 
             _httpClientFactory = httpClientFactory;
             _serviceProvider = serviceProvider;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public override async Task<AuthenticationState> GetAuthenticationStateAsync()
@@ -34,8 +41,8 @@ namespace JwtIdentity.Client.Services
 
             if (!OperatingSystem.IsBrowser())
             {
-                return new AuthenticationState(anonymous);
-
+                var serverUser = _httpContextAccessor?.HttpContext?.User;
+                return new AuthenticationState(serverUser ?? anonymous);
             }
 
             var savedToken = await _localStorage.GetItemAsync<string>("authToken");
