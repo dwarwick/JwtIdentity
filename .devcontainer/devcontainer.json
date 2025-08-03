@@ -1,0 +1,13 @@
+{
+  "name": "JwtIdentity",
+  "image": "mcr.microsoft.com/dotnet/sdk:9.0-preview",
+  "postCreateCommand": "dotnet restore",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-dotnettools.csharp",
+        "editorconfig.editorconfig"
+      ]
+    }
+  }
+}
