@@ -17,7 +17,7 @@ namespace JwtIdentity.Tests.ConfigurationTests
         [SetUp]
         public void SetUp()
         {
-            var config = new MapperConfiguration(cfg => cfg.AddProfile<MapperConfig>());
+            var config = new MapperConfiguration(cfg => cfg.AddProfile<MapperConfig>(), null);
             _mapper = config.CreateMapper();
         }
 
