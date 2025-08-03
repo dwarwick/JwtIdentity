@@ -1,13 +1,14 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
 using System.Security.Claims;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace JwtIdentity.Client.Services
 {
     public class CustomAuthStateProvider : AuthenticationStateProvider
     {
         private readonly Blazored.LocalStorage.ILocalStorageService _localStorage;
-        private readonly IApiService _apiService;
+        private readonly IServiceProvider _serviceProvider;
         private readonly JwtSecurityTokenHandler jwtSecurityTokenHandler;
         public HttpClient _httpClient { get; set; }
 
@@ -16,46 +17,53 @@ namespace JwtIdentity.Client.Services
 
         public event Action OnLoggedOut;
 
-        public CustomAuthStateProvider(Blazored.LocalStorage.ILocalStorageService localStorage, HttpClient httpClient, IApiService apiService)
+        private IApiService ApiService => _serviceProvider.GetRequiredService<IApiService>();
+
+        public CustomAuthStateProvider(Blazored.LocalStorage.ILocalStorageService localStorage, HttpClient httpClient, IServiceProvider serviceProvider)
         {
             _localStorage = localStorage;
             jwtSecurityTokenHandler = new JwtSecurityTokenHandler();
 
             _httpClient = httpClient;
-            _apiService = apiService;
+            _serviceProvider = serviceProvider;
         }
 
         public override async Task<AuthenticationState> GetAuthenticationStateAsync()
         {
-            var user = new ClaimsPrincipal(new ClaimsIdentity());
+            var anonymous = new ClaimsPrincipal(new ClaimsIdentity());
+
+            if (!OperatingSystem.IsBrowser())
+            {
+                return new AuthenticationState(anonymous);
+            }
+
             var savedToken = await _localStorage.GetItemAsync<string>("authToken");
             if (savedToken == null)
             {
-                return new AuthenticationState(user);
+                return new AuthenticationState(anonymous);
             }
 
-            var tokenContent = this.jwtSecurityTokenHandler.ReadJwtToken(savedToken);
+            var tokenContent = jwtSecurityTokenHandler.ReadJwtToken(savedToken);
 
             if (tokenContent.ValidTo < DateTime.UtcNow)
             {
-                await this._localStorage.RemoveItemAsync("authToken");
-                return new AuthenticationState(user);
+                await _localStorage.RemoveItemAsync("authToken");
+                return new AuthenticationState(anonymous);
             }
 
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", savedToken);
 
-            var claims = await this.GetClaims();
+            var claims = await GetClaims();
 
-            user = new ClaimsPrincipal(new ClaimsIdentity(claims, "jwt"));
+            var user = new ClaimsPrincipal(new ClaimsIdentity(claims, "jwt"));
 
-            // get the Id of the user from the claims
             var userId = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
 
-            CurrentUser = await _apiService.GetAsync<ApplicationUserViewModel>($"{ApiEndpoints.ApplicationUser}/{userId}");
+            CurrentUser = await ApiService.GetAsync<ApplicationUserViewModel>($"{ApiEndpoints.ApplicationUser}/{userId}");
 
             var authState = Task.FromResult(new AuthenticationState(user));
 
-            this.NotifyAuthenticationStateChanged(authState);
+            NotifyAuthenticationStateChanged(authState);
 
             return await authState;
         }
@@ -86,7 +94,7 @@ namespace JwtIdentity.Client.Services
 
             CurrentUser = null;
 
-            _ = await _apiService.PostAsync<object>($"{ApiEndpoints.Auth}/logout", null);
+            _ = await ApiService.PostAsync<object>($"{ApiEndpoints.Auth}/logout", null);
 
             this.NotifyAuthenticationStateChanged(authState);
 
@@ -95,8 +103,13 @@ namespace JwtIdentity.Client.Services
 
         private async Task<List<Claim>> GetClaims()
         {
+            if (!OperatingSystem.IsBrowser())
+            {
+                return new List<Claim>();
+            }
+
             var savedToken = await _localStorage.GetItemAsync<string>("authToken");
-            var tokenContent = this.jwtSecurityTokenHandler.ReadJwtToken(savedToken);
+            var tokenContent = jwtSecurityTokenHandler.ReadJwtToken(savedToken);
             var claims = tokenContent.Claims.ToList();
             claims.Add(new Claim(ClaimTypes.Name, tokenContent.Subject));
             return claims;

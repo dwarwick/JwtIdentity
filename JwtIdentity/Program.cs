@@ -1,16 +1,25 @@
+using Blazored.LocalStorage;
 using Hangfire;
 using Hangfire.SqlServer;
+using JwtIdentity.Client.Helpers;
+using JwtIdentity.Client.Services;
 using JwtIdentity.Middleware;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.OData;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using MudBlazor;
+using MudBlazor.Services;
 using Serilog;
 using Serilog.Events;
 using Serilog.Sinks.MSSqlServer;
 using Serilog.Sinks.RollingFileAlternate;
+using Syncfusion.Blazor;
+using Syncfusion.Licensing;
 using System.Data;
 using System.Text;
 
@@ -111,6 +120,48 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IApiAuthService, ApiAuthService>();
 builder.Services.AddScoped<ISurveyService, SurveyService>();
 builder.Services.AddScoped<JwtIdentity.Services.BackgroundJobs.BackgroundJobService>();
+// Services required for prerendering shared client components
+SyncfusionLicenseProvider.RegisterLicense("Ngo9BigBOggjHTQxAR8/V1NNaF5cXmBCf1FpRmJGdld5fUVHYVZUTXxaS00DNHVRdkdmWXtecnZUQ2NdUkZzWENWYUA=");
+builder.Services.AddSyncfusionBlazor();
+builder.Services.AddBlazoredLocalStorage();
+builder.Services.AddCascadingAuthenticationState();
+builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
+builder.Services.AddScoped<CustomAuthStateProvider>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IUtility, JwtIdentity.Client.Helpers.Utility>();
+builder.Services.AddScoped<IWordPressBlogService, WordPressBlogService>();
+builder.Services.AddTransient<CustomAuthorizationMessageHandler>();
+builder.Services.AddMudServices(config =>
+{
+    config.SnackbarConfiguration.PositionClass = Defaults.Classes.Position.TopCenter;
+    config.SnackbarConfiguration.PreventDuplicates = false;
+    config.SnackbarConfiguration.NewestOnTop = false;
+    config.SnackbarConfiguration.ShowCloseIcon = true;
+    config.SnackbarConfiguration.VisibleStateDuration = 10000;
+    config.SnackbarConfiguration.HideTransitionDuration = 500;
+    config.SnackbarConfiguration.ShowTransitionDuration = 500;
+    config.SnackbarConfiguration.SnackbarVariant = Variant.Filled;
+});
+builder.Services.AddHttpClient("AuthorizedClient", (sp, client) =>
+{
+    var accessor = sp.GetRequiredService<IHttpContextAccessor>();
+    var request = accessor.HttpContext?.Request;
+    client.BaseAddress = new Uri($"{request?.Scheme}://{request?.Host}");
+}).AddHttpMessageHandler<CustomAuthorizationMessageHandler>();
+builder.Services.AddHttpClient("NoAuthClient", (sp, client) =>
+{
+    var accessor = sp.GetRequiredService<IHttpContextAccessor>();
+    var request = accessor.HttpContext?.Request;
+    client.BaseAddress = new Uri($"{request?.Scheme}://{request?.Host}");
+});
+builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("AuthorizedClient"));
+builder.Services.AddScoped<IApiService, ApiService>(sp =>
+{
+    var httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
+    var navigationManager = sp.GetRequiredService<NavigationManager>();
+    var snackbar = sp.GetRequiredService<ISnackbar>();
+    return new ApiService(httpClientFactory, navigationManager, snackbar);
+});
 // Replace the existing line with the following line
 builder.Services.AddAutoMapper(cfg => cfg.AddProfile<MapperConfig>());
 builder.Services.AddAuthentication(options =>
