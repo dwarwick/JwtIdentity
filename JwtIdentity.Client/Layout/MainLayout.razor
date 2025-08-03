@@ -110,6 +110,11 @@
 
     protected override async Task OnInitializedAsync()
     {
+        if (!OperatingSystem.IsBrowser())
+        {
+            return;
+        }
+
         try
         {
             // reference app.js in the wwwroot folder
@@ -146,7 +151,7 @@
                 }
             }
             await SetTheme();
-            
+
             // Check if cookies have been accepted
             var cookiesAccepted = await LocalStorage.GetItemAsync<bool>("cookiesAccepted");
             _cookiesAccepted = cookiesAccepted;

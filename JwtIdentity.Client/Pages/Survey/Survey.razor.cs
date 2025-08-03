@@ -60,7 +60,6 @@ namespace JwtIdentity.Client.Pages.Survey
             if (firstRender && OperatingSystem.IsBrowser())
             {
                 await JSRuntime.InvokeVoidAsync("registerCaptchaCallback", objRef);
-                // Call JavaScript to manually render the widget in the container with your site key.
                 await JSRuntime.InvokeVoidAsync("renderReCaptcha", "captcha-container", Configuration["ReCaptcha:SiteKey"]);
             }
             else if (firstRender)
