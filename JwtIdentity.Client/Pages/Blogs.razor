@@ -1,6 +1,9 @@
 ﻿@page "/blogs"
 @inject IWordPressBlogService WordPressService
 
+@using static Microsoft.AspNetCore.Components.Web.RenderMode
+@rendermode InteractiveWebAssembly
+
 <PageTitle>Blog Posts - Survey Shark</PageTitle>
 
 @if (posts == null)
