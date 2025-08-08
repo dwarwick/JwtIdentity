@@ -4,6 +4,7 @@ using Hangfire.SqlServer;
 using JwtIdentity.Client.Helpers;
 using JwtIdentity.Client.Services;
 using JwtIdentity.Middleware;
+using JwtIdentity.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Components;
@@ -120,6 +121,7 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IApiAuthService, ApiAuthService>();
 builder.Services.AddScoped<ISurveyService, SurveyService>();
 builder.Services.AddScoped<JwtIdentity.Services.BackgroundJobs.BackgroundJobService>();
+builder.Services.AddHttpClient<IOpenAi, OpenAiService>();
 // Services required for prerendering shared client components
 var syncfusionLicense = builder.Configuration["Syncfusion:LicenseKey"];
 if (!string.IsNullOrWhiteSpace(syncfusionLicense))
