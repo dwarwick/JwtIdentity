@@ -31,5 +31,5 @@
             HelperText="Although not required, providing instructions helps the AI, in case you want specific types of questions."/>
         <MudCheckBox id="UseAi" Label="Use AI to Generate Questions" @bind-Value="Survey.UseAi" Color="Color.Primary" />
     </MudStack>    
-    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Disabled="@(Survey.Id > 0)">Create</MudButton>    
+    <SpinnerButton IsBusy="@IsBusy" ButtonType="ButtonType.Submit" Color="Color.Primary" Text="Create" Disabled="@(Survey.Id > 0)" />
 </EditForm>
