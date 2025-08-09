@@ -1,20 +1,12 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using AutoMapper;
-using JwtIdentity.Controllers;
+using JwtIdentity.Common.Helpers;
 using JwtIdentity.Common.ViewModels;
+using JwtIdentity.Controllers;
 using JwtIdentity.Models;
-using JwtIdentity.Data;
 using JwtIdentity.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Moq;
-using NUnit.Framework;
 using System.Security.Claims;
-using JwtIdentity.Common.Helpers;
 
 namespace JwtIdentity.Tests.ControllerTests
 {
@@ -35,7 +27,7 @@ namespace JwtIdentity.Tests.ControllerTests
             SetupMockMapper();
             SetupMockApiAuthService();
             MockOpenAiService = new Mock<IOpenAi>();
-            MockOpenAiService.Setup(x => x.GenerateSurveyAsync(It.IsAny<string>())).ReturnsAsync(new SurveyViewModel { Questions = new List<QuestionViewModel>() });
+            MockOpenAiService.Setup(x => x.GenerateSurveyAsync(It.IsAny<string>(), "")).ReturnsAsync(new SurveyViewModel { Questions = new List<QuestionViewModel>() });
             _controller = new SurveyController(MockDbContext, MockMapper.Object, MockApiAuthService.Object, MockLogger.Object, MockOpenAiService.Object)
             {
                 ControllerContext = new ControllerContext { HttpContext = HttpContext }
@@ -125,7 +117,7 @@ namespace JwtIdentity.Tests.ControllerTests
             MockApiAuthService.Setup(a => a.GetUserId(It.IsAny<ClaimsPrincipal>())).Returns(1);
         }
 
-       
+
 
         [Test]
         public async Task GetSurvey_ExistingGuid_ReturnsSurvey()

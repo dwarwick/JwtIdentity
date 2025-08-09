@@ -88,6 +88,34 @@
             
             <MudCard Class="mb-4">
                 <MudCardHeader>
+                    <MudText Typo="Typo.h5">Using AI to Generate Survey Questions <MudChip T="string" Size="@MudBlazor.Size.Small" Color="Color.Secondary">Optional</MudChip></MudText>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudList T="string">
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.SmartToy">
+                            You can optionally use AI to automatically generate survey questions based on your survey description and any specific instructions you provide.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Lightbulb">
+                            To use this feature, check the <MudChip T="string" Size="@MudBlazor.Size.Small" Color="Color.Primary">Use AI to Generate Questions</MudChip> box when creating a new survey.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.EditNote">
+                            Optionally, enter clear instructions for the AI in the <MudChip T="string" Size="@MudBlazor.Size.Small" Color="Color.Primary">Instructions to AI</MudChip> field. For example, you can specify the types of questions you want, topics to cover, or any special requirements.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.AutoAwesome">
+                            The AI will generate a set of questions for your survey. You can review, edit, or delete these questions, and add more if needed.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Info">
+                            This feature is optional. If you prefer, you can create all questions manually without using AI.
+                        </MudListItem>
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.Security">
+                            Your survey description and instructions are sent securely to the AI service. No personal data is shared.
+                        </MudListItem>
+                    </MudList>
+                </MudCardContent>
+            </MudCard>
+            
+            <MudCard Class="mb-4">
+                <MudCardHeader>
                     <MudText Typo="Typo.h5">Creating a New Survey</MudText>
                 </MudCardHeader>
                 <MudCardContent>
@@ -104,7 +132,10 @@
                         <MudListItem T="string" Icon="@Icons.Material.Filled.Description">
                             Provide a detailed description of your survey to inform participants about its purpose.
                         </MudListItem>
-                        <MudListItem T="string" Icon="@Icons.Material.Filled.Save">
+                        <MudListItem T="string" Icon="@Icons.Material.Filled.SmartToy">
+                            If you want to use AI to generate questions, check the <MudChip Size="@MudBlazor.Size.Small" Color="Color.Primary">Use AI to Generate Questions</MudChip> box and optionally provide instructions.
+                        </MudListItem>
+                            <MudListItem T="string" Icon="@Icons.Material.Filled.Save">
                             Click <MudChip Size="@MudBlazor.Size.Small" Color="Color.Primary">Create</MudChip> to save your survey.
                         </MudListItem>
                         <MudListItem T="string" Icon="@Icons.Material.Filled.ArrowForward">
