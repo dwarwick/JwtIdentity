@@ -12,7 +12,24 @@
     <ValidationSummary />
     <MudStack Spacing="1">        
         <MudTextField id="Title" Label="Title" @bind-Value="Survey.Title" Variant="Variant.Filled" Lines="1" MaxLines="5" AutoGrow="true" Immediate="true" Counter="50" MaxLength="50" />            
-        <MudTextField id="Description" Label="Description" @bind-Value="Survey.Description" Variant="Variant.Filled" Lines="5" MaxLines="10" AutoGrow="true" Immediate="true" Counter="250" MaxLength="250" />       
+        <MudTextField id="Description" Label="Description" @bind-Value="Survey.Description" Variant="Variant.Filled" Lines="5" MaxLines="10" AutoGrow="true" Immediate="true" Counter="250" MaxLength="250" />
+        
+        <MudAlert Severity="Severity.Info" Class="mt-2" >
+            <MudText Typo="Typo.body2">You can use AI to generate questions for your survey. If you choose to do so, please provide clear instructions in the field below. As always, you will be able to edit or delete those questions, and add more questions.</MudText>
+        </MudAlert>
+
+        <MudTextField id="AiInstructions" 
+            Label="Instructions to AI" 
+            @bind-Value="Survey.AiInstructions" 
+            Variant="Variant.Filled" 
+            Lines="5" MaxLines="10" 
+            AutoGrow="true" 
+            Immediate="true" 
+            Counter="500" 
+            MaxLength="500"                      
+            Placeholder="Example: I am creating a survey that is designed to find out how people feel about my most recent service call. I am an air conditioning repair technician. Create a mix of Rating 1 to 10 question types. Create 1 Free Text response type question at the end that will allow users to provide any additional details about their experience."
+            HelperText="Although not required, providing instructions helps the AI, in case you want specific types of questions."/>
+        <MudCheckBox id="UseAi" Label="Use AI to Generate Questions" @bind-Value="Survey.UseAi" Color="Color.Primary" />
     </MudStack>    
     <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Disabled="@(Survey.Id > 0)">Create</MudButton>    
 </EditForm>

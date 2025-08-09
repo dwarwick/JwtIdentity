@@ -3,9 +3,6 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
-using JwtIdentity.Common.ViewModels;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 
 namespace JwtIdentity.Services
 {
@@ -22,7 +19,7 @@ namespace JwtIdentity.Services
             _logger = logger;
         }
 
-        public async Task<SurveyViewModel> GenerateSurveyAsync(string description)
+        public async Task<SurveyViewModel> GenerateSurveyAsync(string description, string aiInstructions = "")
         {
             var apiKey = _configuration["OpenAI:ApiKey"];
             if (string.IsNullOrWhiteSpace(apiKey))
@@ -47,7 +44,7 @@ Respond with valid JSON only.";
                 messages = new object[]
                 {
                     new { role = "system", content = "You are a helpful assistant for creating surveys." },
-                    new { role = "user", content = $"{prompt}\n\nSurvey description: {description}" }
+                    new { role = "user", content = $"{prompt}\n\nSurvey description: {description} Additional Instructions: {aiInstructions}"}
                 }
             };
 

@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.Extensions.Logging;
 
 namespace JwtIdentity.Controllers
 {
@@ -11,13 +10,15 @@ namespace JwtIdentity.Controllers
         private readonly IMapper _mapper;
         private readonly IApiAuthService authService;
         private readonly ILogger<SurveyController> _logger;
+        private readonly IOpenAi _openAiService;
 
-        public SurveyController(ApplicationDbContext context, IMapper mapper, IApiAuthService authService, ILogger<SurveyController> logger)
+        public SurveyController(ApplicationDbContext context, IMapper mapper, IApiAuthService authService, ILogger<SurveyController> logger, IOpenAi openAiService)
         {
             _context = context;
             _mapper = mapper;
             this.authService = authService;
             _logger = logger;
+            _openAiService = openAiService;
         }
 
         // GET: api/Survey/5
@@ -27,7 +28,7 @@ namespace JwtIdentity.Controllers
             try
             {
                 _logger.LogInformation("Retrieving survey with GUID: {Guid}", guid);
-                
+
                 var survey = await _context.Surveys.Include(s => s.Questions.OrderBy(x => x.QuestionNumber)).FirstOrDefaultAsync(s => s.Guid == guid);
 
                 if (survey == null)
@@ -86,7 +87,7 @@ namespace JwtIdentity.Controllers
                 }
 
                 _logger.LogInformation("Retrieving surveys created by user {UserId}", createdById);
-                
+
                 var surveys = await _context.Surveys
                     .Include(s => s.Questions.OrderBy(q => q.QuestionNumber))
                     .Where(s => s.CreatedById == createdById)
@@ -133,7 +134,7 @@ namespace JwtIdentity.Controllers
                 }
 
                 _logger.LogInformation("Retrieving surveys answered by user {UserId}", createdById);
-                
+
                 var surveys = await _context.Surveys
                     .Include(s => s.Questions.OrderBy(q => q.QuestionNumber)).ThenInclude(q => q.Answers.Where(a => a.CreatedById == createdById))
                     .Where(s => s.Questions.Any(q => q.Answers.Any(a => a.CreatedById == createdById)))
@@ -181,7 +182,19 @@ namespace JwtIdentity.Controllers
                 }
 
                 _logger.LogInformation("Processing survey creation/update request from user {UserId}", createdById);
-                
+
+                // If no questions, generate them using OpenAI
+                if (surveyViewModel.UseAi
+                    && (surveyViewModel.Questions == null || !surveyViewModel.Questions.Any())
+                    && !string.IsNullOrWhiteSpace(surveyViewModel.Description))
+                {
+                    var generatedSurvey = await _openAiService.GenerateSurveyAsync(surveyViewModel.Description, surveyViewModel.AiInstructions);
+                    if (generatedSurvey != null && generatedSurvey.Questions != null && generatedSurvey.Questions.Any())
+                    {
+                        surveyViewModel.Questions = generatedSurvey.Questions;
+                    }
+                }
+
                 var survey = _mapper.Map<Survey>(surveyViewModel);
 
                 if (survey == null)
@@ -213,7 +226,7 @@ namespace JwtIdentity.Controllers
                     // Verify the user owns this survey
                     if (existingSurvey.CreatedById != createdById)
                     {
-                        _logger.LogWarning("User {UserId} attempted to update survey {SurveyId} owned by user {OwnerId}", 
+                        _logger.LogWarning("User {UserId} attempted to update survey {SurveyId} owned by user {OwnerId}",
                             createdById, survey.Id, existingSurvey.CreatedById);
                         return Forbid();
                     }
@@ -237,7 +250,7 @@ namespace JwtIdentity.Controllers
                         }
                         else
                         { // existing question
-                            _logger.LogDebug("Updating existing question {QuestionId} in survey {SurveyId}", 
+                            _logger.LogDebug("Updating existing question {QuestionId} in survey {SurveyId}",
                                 passedInQuestion.Id, survey.Id);
 
                             // check if question text has changed. If so, update the question
@@ -393,7 +406,7 @@ namespace JwtIdentity.Controllers
                 }
 
                 _logger.LogInformation("Updating survey with ID: {SurveyId}", surveyViewModel.Id);
-                
+
                 var survey = await _context.Surveys
                     .Include(s => s.Questions)
                     .FirstOrDefaultAsync(s => s.Id == surveyViewModel.Id);
@@ -422,7 +435,7 @@ namespace JwtIdentity.Controllers
             }
             catch (DbUpdateException dbEx)
             {
-                _logger.LogError(dbEx, "Database error occurred while updating survey {SurveyId}: {Message}", 
+                _logger.LogError(dbEx, "Database error occurred while updating survey {SurveyId}: {Message}",
                     surveyViewModel?.Id, dbEx.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError, "A database error occurred while updating the survey");
             }
@@ -432,7 +445,7 @@ namespace JwtIdentity.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while updating the survey");
             }
         }
-        
+
         private bool SurveyExists(int id)
         {
             return _context.Surveys.Any(e => e.Id == id);
