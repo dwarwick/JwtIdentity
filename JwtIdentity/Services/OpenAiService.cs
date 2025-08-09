@@ -30,13 +30,12 @@ namespace JwtIdentity.Services
 
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
 
-            var prompt = @$"You are a helpful survey assistant. Based on the following survey description, generate a JSON object representing a Survey in this C# format:
-class Survey {{ string Title; string Description; List<Question> Questions; }}
-abstract class Question {{ string Text; int QuestionNumber; bool IsRequired; QuestionType QuestionType; }}
-enum QuestionType {{ Text = 1, TrueFalse = 2, MultipleChoice = 3, Rating1To10 = 4, SelectAllThatApply = 5 }}
-For MultipleChoice or SelectAllThatApply questions include an Options array with objects having properties optionText and order.
-Use the property name 'questionType' (all lowercase) when setting QuestionType.
-Respond with valid JSON only.";
+            var prompt = _configuration["OpenAi:Prompt"];
+            if (string.IsNullOrWhiteSpace(prompt))
+            {
+                _logger.LogWarning("OpenAI prompt is not configured.");
+                return null;
+            }
 
             var body = new
             {
