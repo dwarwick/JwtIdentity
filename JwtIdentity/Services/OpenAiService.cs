@@ -1,6 +1,7 @@
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using JwtIdentity.Common.ViewModels;
 using Microsoft.Extensions.Configuration;
@@ -37,6 +38,7 @@ class Survey {{ string Title; string Description; List<Question> Questions; }}
 abstract class Question {{ string Text; int QuestionNumber; bool IsRequired; QuestionType QuestionType; }}
 enum QuestionType {{ Text = 1, TrueFalse = 2, MultipleChoice = 3, Rating1To10 = 4, SelectAllThatApply = 5 }}
 For MultipleChoice or SelectAllThatApply questions include an Options array with objects having properties optionText and order.
+Use the property name 'questionType' (all lowercase) when setting QuestionType.
 Respond with valid JSON only.";
 
             var body = new
@@ -71,6 +73,29 @@ Respond with valid JSON only.";
             }
 
             var json = match.Value;
+
+            // Normalize question type property name to match converter expectations
+            try
+            {
+                var node = JsonNode.Parse(json);
+                if (node?["Questions"] is JsonArray questions)
+                {
+                    foreach (var qNode in questions)
+                    {
+                        if (qNode is JsonObject q && q["QuestionType"] is JsonNode type && q["questionType"] is null)
+                        {
+                            q["questionType"] = type;
+                            q.Remove("QuestionType");
+                        }
+                    }
+                }
+                json = node?.ToJsonString() ?? json;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to normalize OpenAI JSON: {Json}", json);
+            }
+
             var options = new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true,
