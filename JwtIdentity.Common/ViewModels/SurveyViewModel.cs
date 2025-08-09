@@ -18,6 +18,10 @@
 
         public int NumberOfResponses { get; set; }
 
+        public string AiInstructions { get; set; }
+
+        public bool UseAi { get; set; } = true;
+
         public List<QuestionViewModel> Questions { get; set; }
     }
 }

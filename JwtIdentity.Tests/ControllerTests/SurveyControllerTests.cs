@@ -24,6 +24,7 @@ namespace JwtIdentity.Tests.ControllerTests
         private SurveyController _controller = null!;
         private List<Survey> _mockSurveys = null!;
         private List<Question> _mockQuestions = null!;
+        private Mock<IOpenAi> MockOpenAiService = null!;
 
         [SetUp]
         public override void BaseSetUp()
@@ -33,7 +34,9 @@ namespace JwtIdentity.Tests.ControllerTests
             AddDataToDbContext();
             SetupMockMapper();
             SetupMockApiAuthService();
-            _controller = new SurveyController(MockDbContext, MockMapper.Object, MockApiAuthService.Object, MockLogger.Object)
+            MockOpenAiService = new Mock<IOpenAi>();
+            MockOpenAiService.Setup(x => x.GenerateSurveyAsync(It.IsAny<string>())).ReturnsAsync(new SurveyViewModel { Questions = new List<QuestionViewModel>() });
+            _controller = new SurveyController(MockDbContext, MockMapper.Object, MockApiAuthService.Object, MockLogger.Object, MockOpenAiService.Object)
             {
                 ControllerContext = new ControllerContext { HttpContext = HttpContext }
             };
