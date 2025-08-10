@@ -5,13 +5,13 @@
     <MudImage Src="images/logo_200_60.png" />
     <MudSpacer />
 
-    <MudHidden Breakpoint="Breakpoint.SmAndDown">
+    <div class="d-none d-md-flex">
         <MudSwitch Value="@DarkTheme" Label="Dark Theme" ValueChanged="DarkThemeChanged" />
-    </MudHidden>
-    <MudHidden Breakpoint="Breakpoint.SmAndDown" Invert="true">
-        <MudSwitch Value="@DarkTheme" Label="Dark Theme" ValueChanged="DarkThemeChanged" Size="MudBlazor.Size.Small"  />
-    </MudHidden>
-    <MudHidden Breakpoint="Breakpoint.SmAndDown">
+    </div>
+    <div class="d-md-none">
+        <MudSwitch Value="@DarkTheme" Label="Dark Theme" ValueChanged="DarkThemeChanged" Size="MudBlazor.Size.Small" />
+    </div>
+    <div class="d-none d-md-flex align-items-center">
         <MudButton Variant="Variant.Text" Color="Color.Inherit" Class="mx-2" Href="/">Home</MudButton>
         <MudButton Variant="Variant.Text" Color="Color.Inherit" Class="mx-2" Href="/blogs">Blogs</MudButton>
         <MudButton Variant="Variant.Text" Color="Color.Inherit" Class="mx-2" Href="/documentation">Documentation</MudButton>
@@ -61,7 +61,7 @@
                 </NotAuthorized>
             </AuthorizeView>
         </div>
-    </MudHidden>    
+    </div>
 </MudAppBar>
 
 <MudDrawer @bind-Open="_drawerOpen" Anchor="MudBlazor.Anchor.Left" Variant="DrawerVariant.Temporary" Elevation="1">
