@@ -1,0 +1,41 @@
+@using JwtIdentity.Common.ViewModels
+@using JwtIdentity.Common.Helpers
+@inherits EditUserDialogModel
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">@(User.Id == 0 ? "Add User" : $"Edit User: {User.UserName}")</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudForm @ref="_form">
+            <MudTextField @bind-Value="User.UserName" Label="Username" Required="true" />
+            <MudTextField @bind-Value="User.Email" Label="Email" />
+            <MudTextField @bind-Value="User.PhoneNumber" Label="Phone Number" />
+            <MudCheckBox T="bool" @bind-Checked="User.EmailConfirmed" Label="Email Confirmed" />
+            <MudCheckBox T="bool" @bind-Checked="User.PhoneNumberConfirmed" Label="Phone Confirmed" />
+            <MudCheckBox T="bool" @bind-Checked="User.TwoFactorEnabled" Label="Two Factor Enabled" />
+            <MudDatePicker @bind-Date="lockoutDate" Label="Lockout End" />
+            <MudCheckBox T="bool" @bind-Checked="User.LockoutEnabled" Label="Lockout Enabled" />
+            <MudNumericField T="int" @bind-Value="User.AccessFailedCount" Label="Access Failed Count" />
+            <MudTextField @bind-Value="User.Theme" Label="Theme" />
+            <MudText Typo="Typo.subtitle2" Class="mt-2">Roles</MudText>
+            <MudChipSet T="string">
+                @foreach (var role in User.Roles)
+                {
+                    <MudChip Color="Color.Primary" Size="MudBlazor.Size.Small" OnClose="@((MudChip<string> _) => RemoveRole(role))" Closeable="true">@role</MudChip>
+                }
+            </MudChipSet>
+            <MudSelect T="string" @bind-Value="SelectedRole" Label="Add Role">
+                @foreach (var role in AvailableRoles)
+                {
+                    <MudSelectItem Value="@role">@role</MudSelectItem>
+                }
+            </MudSelect>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AddRole" Disabled="@string.IsNullOrEmpty(SelectedRole)" Class="mt-1">Add Role</MudButton>
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="Cancel">Cancel</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="!CanSave" OnClick="Save">Save</MudButton>
+    </DialogActions>
+</MudDialog>

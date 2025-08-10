@@ -28,6 +28,7 @@ namespace JwtIdentity.Tests
     {
         // Common mocks that will be used across test classes
         protected Mock<UserManager<ApplicationUser>> MockUserManager = null!;
+        protected Mock<RoleManager<ApplicationRole>> MockRoleManager = null!;
         protected Mock<SignInManager<ApplicationUser>> MockSignInManager = null!;
         protected Mock<IConfiguration> MockConfiguration = null!;
         protected Mock<IMapper> MockMapper = null!;
@@ -52,6 +53,10 @@ namespace JwtIdentity.Tests
             MockUserManager = new Mock<UserManager<ApplicationUser>>(
                 userStoreMock.Object, null, null, null, null, null, null, null, null);
             
+            // Setup RoleManager mock
+            var roleStoreMock = new Mock<IRoleStore<ApplicationRole>>();
+            MockRoleManager = new Mock<RoleManager<ApplicationRole>>(roleStoreMock.Object, null, null, null, null);
+
             // Setup SignInManager mock
             var contextAccessorMock = new Mock<IHttpContextAccessor>();
             var userPrincipalFactoryMock = new Mock<IUserClaimsPrincipalFactory<ApplicationUser>>();
