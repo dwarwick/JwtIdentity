@@ -44,7 +44,7 @@
         public async Task<ActionResult<ApplicationUserViewModel>> GetApplicationUser(int id)
         {
             _logger.LogInformation("Getting application user with ID {UserId}", id);
-            
+
             try
             {
                 var applicationUser = await _context.ApplicationUsers.FindAsync(id);
@@ -205,7 +205,7 @@
             user.CreatedDate = DateTime.UtcNow;
             user.UpdatedDate = DateTime.UtcNow;
 
-            var result = await _userManager.CreateAsync(user, "mypassword");
+            var result = await _userManager.CreateAsync(user, "Mypassword123!");
             if (!result.Succeeded)
             {
                 return BadRequest(result.Errors);

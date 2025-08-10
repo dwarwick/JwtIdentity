@@ -1,8 +1,3 @@
-using JwtIdentity.Common.ViewModels;
-using JwtIdentity.Common.Helpers;
-using Microsoft.AspNetCore.Components;
-using MudBlazor;
-
 namespace JwtIdentity.Client.Pages.Admin.Dialogs
 {
     public class EditUserDialogModel : BlazorBase
@@ -49,7 +44,7 @@ namespace JwtIdentity.Client.Pages.Admin.Dialogs
 
             if (User.Id == 0)
             {
-                User.Password = "mypassword";
+                User.Password = "Mypassword123!";
             }
 
             User.LockoutEnd = lockoutDate.HasValue ? new DateTimeOffset(lockoutDate.Value) : null;

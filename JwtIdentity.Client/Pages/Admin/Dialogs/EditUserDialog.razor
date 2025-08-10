@@ -5,9 +5,16 @@
 <MudDialog>
     <TitleContent>
         <MudText Typo="Typo.h6">@(User.Id == 0 ? "Add User" : $"Edit User: {User.UserName}")</MudText>
+        @if (User.Id == 0)
+        {
+            <MudAlert Severity="Severity.Info" Class="mb-2">
+                <MudText>The default password for users created here is <span style="font-style:italic">Mypassword123!</span></MudText>
+            </MudAlert>
+        }
+        
     </TitleContent>
     <DialogContent>
-        <MudForm @ref="_form">
+        <MudForm @ref="_form">            
             <MudTextField @bind-Value="User.UserName" Label="Username" Required="true" />
             <MudTextField @bind-Value="User.Email" Label="Email" />
             <MudTextField @bind-Value="User.PhoneNumber" Label="Phone Number" />
@@ -17,7 +24,10 @@
             <MudDatePicker @bind-Date="lockoutDate" Label="Lockout End" />
             <MudCheckBox T="bool" @bind-Checked="User.LockoutEnabled" Label="Lockout Enabled" />
             <MudNumericField T="int" @bind-Value="User.AccessFailedCount" Label="Access Failed Count" />
-            <MudTextField @bind-Value="User.Theme" Label="Theme" />
+            <MudSelect T="string" @bind-Value="User.Theme" Label="Theme">               
+                <MudSelectItem T="string" Value="@("light")">light</MudSelectItem>
+                <MudSelectItem T="string" Value="@("dark")">dark</MudSelectItem>
+            </MudSelect>
             <MudText Typo="Typo.subtitle2" Class="mt-2">Roles</MudText>
             <MudChipSet T="string">
                 @foreach (var role in User.Roles)
