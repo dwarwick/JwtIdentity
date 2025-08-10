@@ -1,5 +1,5 @@
 @inherits JwtIdentity.Client.Pages.Common.SpinnerButtonModel
-<MudButton OnClick="@OnClick" Disabled="@(IsBusy || Disabled)" ButtonType="@ButtonType" Color="@Color">
+<MudButton OnClick="@OnClick" Disabled="@(IsBusy || Disabled)" ButtonType="@ButtonType" Color="@Color" Variant="Variant.Filled">
     @if (IsBusy)
     {
         <MudProgressCircular Indeterminate="true" Size="MudBlazor.Size.Small" Class="me-2" />
