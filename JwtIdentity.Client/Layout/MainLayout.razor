@@ -107,9 +107,9 @@
 
     IJSObjectReference? module;
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!OperatingSystem.IsBrowser())
+        if (!firstRender || !OperatingSystem.IsBrowser())
         {
             return;
         }
