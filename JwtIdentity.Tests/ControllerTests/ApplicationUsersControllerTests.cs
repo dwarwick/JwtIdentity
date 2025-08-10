@@ -14,6 +14,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Moq;
 using NUnit.Framework;
+using Microsoft.AspNetCore.Identity;
 
 namespace JwtIdentity.Tests.ControllerTests
 {
@@ -93,8 +94,16 @@ namespace JwtIdentity.Tests.ControllerTests
                     dest.Theme = src.Theme;
                 });
 
-            // Set up controller with real in-memory DbContext and mock mapper
-            _controller = new ApplicationUserController(MockDbContext, MockMapper.Object, MockApiAuthService.Object, MockLogger.Object);
+            // Setup UserManager role methods
+            MockUserManager.Setup(m => m.GetRolesAsync(It.IsAny<ApplicationUser>()))
+                .ReturnsAsync(new List<string> { "User" });
+            MockUserManager.Setup(m => m.AddToRolesAsync(It.IsAny<ApplicationUser>(), It.IsAny<IEnumerable<string>>()))
+                .ReturnsAsync(IdentityResult.Success);
+            MockUserManager.Setup(m => m.RemoveFromRolesAsync(It.IsAny<ApplicationUser>(), It.IsAny<IEnumerable<string>>()))
+                .ReturnsAsync(IdentityResult.Success);
+
+            // Set up controller with real in-memory DbContext and mock dependencies
+            _controller = new ApplicationUserController(MockDbContext, MockMapper.Object, MockApiAuthService.Object, MockLogger.Object, MockUserManager.Object, MockRoleManager.Object);
         }
 
         [TearDown]
@@ -121,11 +130,10 @@ namespace JwtIdentity.Tests.ControllerTests
             int userId = 1;
             var mockRoles = new List<string> { "Admin" };
             var mockPermissions = new List<string> { "ManageUsers" };
-            
-            // Setup mock API auth service to return roles and permissions
-            MockApiAuthService.Setup(s => s.GetUserRoles(It.IsAny<System.Security.Claims.ClaimsPrincipal>()))
+
+            MockUserManager.Setup(m => m.GetRolesAsync(It.IsAny<ApplicationUser>()))
                 .ReturnsAsync(mockRoles);
-                
+
             MockApiAuthService.Setup(s => s.GetUserPermissions(It.IsAny<System.Security.Claims.ClaimsPrincipal>()))
                 .Returns(mockPermissions);
 
@@ -168,7 +176,8 @@ namespace JwtIdentity.Tests.ControllerTests
                 Id = userId,
                 UserName = "updateduser",
                 Email = "updateduser@example.com",
-                Theme = "dark"
+                Theme = "dark",
+                Roles = new List<string> { "User" }
             };
 
             // Capture the update date for comparison
@@ -217,12 +226,13 @@ namespace JwtIdentity.Tests.ControllerTests
         {
             // Arrange
             int userId = 999; // Non-existent ID
-            var model = new ApplicationUserViewModel 
-            { 
+            var model = new ApplicationUserViewModel
+            {
                 Id = userId,
                 UserName = "nonexistent",
                 Email = "nonexistent@example.com",
-                Theme = "light"
+                Theme = "light",
+                Roles = new List<string> { "User" }
             };
                 
             // Act

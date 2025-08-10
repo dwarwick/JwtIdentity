@@ -1,0 +1,61 @@
+@page "/admin/users"
+@attribute [Authorize(Roles = "Admin")]
+@inherits ManageUsersModel
+
+<PageTitle>Survey Shark - Manage Users</PageTitle>
+
+<MudContainer Class="mt-4 px-8" MaxWidth="MaxWidth.ExtraLarge">
+    <MudText Typo="Typo.h4" Class="mb-4">Manage Users</MudText>
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(async () => await AddUser())" Class="mb-2">Add User</MudButton>
+    @if (_loading)
+    {
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+        <MudText Class="ml-2">Loading users...</MudText>
+    }
+    else
+    {
+        <MudPaper Class="pa-4">
+            <SfGrid DataSource="@Users" AllowPaging="true" AllowSorting="true" AllowFiltering="true" AllowResizing="true" FrozenColumns="@FrozenColumns" AllowTextWrap="true" TextWrapSettings="@GridSettings.TextWrapSettings" GridLines="@GridSettings.GridLines">
+                <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel"></GridFilterSettings>
+                <GridColumns>
+                    <GridColumn HeaderText="Actions" Width="120" AllowSorting="false" AllowFiltering="false" AllowResizing="false" AllowReordering="false">
+                        <Template Context="userContext">
+                            @{ var user = userContext as ApplicationUserViewModel; }
+                            @if (user != null)
+                            {
+                                <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="MudBlazor.Size.Small" Color="Color.Primary" OnClick="@(async () => await OpenUserDialog(user))" />
+                            }
+                        </Template>
+                    </GridColumn>
+                    <GridColumn Field="Id" HeaderText="ID" Width="80" TextAlign="TextAlign.Center" />
+                    <GridColumn Field="UserName" HeaderText="Username" Width="150" />
+                    <GridColumn Field="NormalizedUserName" HeaderText="Normalized Username" Width="200" />
+                    <GridColumn Field="Email" HeaderText="Email" Width="200" />
+                    <GridColumn Field="NormalizedEmail" HeaderText="Normalized Email" Width="200" />
+                    <GridColumn Field="EmailConfirmed" HeaderText="Email Confirmed" Width="130" Type="ColumnType.Boolean" />
+                    <GridColumn Field="PhoneNumber" HeaderText="Phone" Width="150" />
+                    <GridColumn Field="PhoneNumberConfirmed" HeaderText="Phone Confirmed" Width="150" Type="ColumnType.Boolean" />
+                    <GridColumn Field="TwoFactorEnabled" HeaderText="2FA" Width="80" Type="ColumnType.Boolean" />
+                    <GridColumn Field="LockoutEnd" HeaderText="Lockout End" Width="170" Type="ColumnType.DateTime" Format="G" />
+                    <GridColumn Field="LockoutEnabled" HeaderText="Lockout Enabled" Width="150" Type="ColumnType.Boolean" />
+                    <GridColumn Field="AccessFailedCount" HeaderText="Access Failed" Width="120" />
+                    <GridColumn Field="Theme" HeaderText="Theme" Width="120" />
+                    <GridColumn Field="CreatedDate" HeaderText="Created" Width="170" Type="ColumnType.DateTime" Format="G" />
+                    <GridColumn Field="UpdatedDate" HeaderText="Updated" Width="170" Type="ColumnType.DateTime" Format="G" />
+                    <GridColumn Field="RolesDisplay" HeaderText="Roles" Width="200" AllowSorting="false">
+                        <Template Context="userContext">
+                            @{ var user = userContext as ApplicationUserViewModel; }
+                            @if (user != null)
+                            {
+                                foreach (var role in user.Roles)
+                                {
+                                    <MudChip T="string" Size="MudBlazor.Size.Small">@role</MudChip>
+                                }
+                            }
+                        </Template>
+                    </GridColumn>
+                </GridColumns>
+            </SfGrid>
+        </MudPaper>
+    }
+</MudContainer>

@@ -10,11 +10,11 @@
             _ = CreateMap<BaseViewModel, BaseModel>()
                 .ForMember(x => x.CreatedBy, options => options.Ignore());
 
-            _ = CreateMap<ApplicationUser, ApplicationUserViewModel>().ReverseMap();
-            _ = CreateMap<ApplicationUserViewModel, ApplicationUser>()
-                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.UserName))
-                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
-                .ForMember(dest => dest.Theme, opt => opt.MapFrom(src => src.Theme));
+            _ = CreateMap<ApplicationUser, ApplicationUserViewModel>()
+                .ReverseMap()
+                .ForMember(dest => dest.PasswordHash, opt => opt.Ignore())
+                .ForMember(dest => dest.SecurityStamp, opt => opt.Ignore())
+                .ForMember(dest => dest.ConcurrencyStamp, opt => opt.Ignore());
 
             // Updated mapping for ApplicationRole and RoleClaim
             _ = CreateMap<ApplicationRole, ApplicationRoleViewModel>()
