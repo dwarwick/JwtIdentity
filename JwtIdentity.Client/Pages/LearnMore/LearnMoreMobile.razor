@@ -1,0 +1,26 @@
+@page "/learn-more/mobile"
+@inherits JwtIdentity.Client.Pages.LearnMore.LearnMoreMobileModel
+@using static Microsoft.AspNetCore.Components.Web.RenderMode
+@rendermode InteractiveWebAssembly
+
+<PageTitle>Mobile-Ready & Responsive - Survey Shark</PageTitle>
+<MudContainer Class="mt-6 mb-8">
+    <MudPaper Elevation="2" Class="pa-6 text-center">
+        <MudText Typo="Typo.h3" Class="mb-2">Mobile-Ready & Responsive</MudText>
+        <MudText Typo="Typo.body1" Class="mb-4">
+            Every survey you create with Survey Shark is optimized for all devices. Enjoy a seamless experience on phones, tablets, and desktops—no extra work required.
+        </MudText>
+        <MudList T="string" Dense="true" Class="mb-4">
+            <MudListItem Icon="@Icons.Material.Filled.PhoneIphone" IconColor="Color.Success">
+                Surveys look great on any device
+            </MudListItem>
+            <MudListItem Icon="@Icons.Material.Filled.TouchApp" IconColor="Color.Primary">
+                Touch-friendly and easy to complete
+            </MudListItem>
+            <MudListItem Icon="@Icons.Material.Filled.Devices" IconColor="Color.Info">
+                Responsive design for maximum reach
+            </MudListItem>
+        </MudList>
+        <MudButton Href="/" Variant="Variant.Filled" Color="Color.Primary">Back to Home</MudButton>
+    </MudPaper>
+</MudContainer>

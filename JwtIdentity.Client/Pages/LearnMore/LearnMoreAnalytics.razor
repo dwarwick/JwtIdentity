@@ -1,0 +1,26 @@
+@page "/learn-more/analytics"
+@inherits JwtIdentity.Client.Pages.LearnMore.LearnMoreAnalyticsModel
+@using static Microsoft.AspNetCore.Components.Web.RenderMode
+@rendermode InteractiveWebAssembly
+
+<PageTitle>Real-Time Analytics - Survey Shark</PageTitle>
+<MudContainer Class="mt-6 mb-8">
+    <MudPaper Elevation="2" Class="pa-6 text-center">
+        <MudText Typo="Typo.h3" Class="mb-2">Real-Time Analytics</MudText>
+        <MudText Typo="Typo.body1" Class="mb-4">
+            Instantly visualize your survey results as they come in. Survey Shark provides real-time charts and insights, helping you make data-driven decisions faster than ever.
+        </MudText>
+        <MudList T="string" Dense="true" Class="mb-4">
+            <MudListItem Icon="@Icons.Material.Filled.Insights" IconColor="Color.Info">
+                Live response tracking and instant updates
+            </MudListItem>
+            <MudListItem Icon="@Icons.Material.Filled.BarChart" IconColor="Color.Primary">
+                Clear, interactive charts and graphs
+            </MudListItem>
+            <MudListItem Icon="@Icons.Material.Filled.DataUsage" IconColor="Color.Secondary">
+                Export data for further analysis
+            </MudListItem>
+        </MudList>
+        <MudButton Href="/" Variant="Variant.Filled" Color="Color.Primary">Back to Home</MudButton>
+    </MudPaper>
+</MudContainer>

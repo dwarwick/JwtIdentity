@@ -2,10 +2,6 @@
 {
     public class HomeModel : BlazorBase
     {
-        protected AppSettings AppSettings { get; set; } = new();
-        protected override async Task OnInitializedAsync()
-        {
-            AppSettings = await ApiService.GetAsync<AppSettings>("/api/appsettings");
-        }
+        // Home page is now static; AppSettings and OnInitializedAsync removed for simplicity
     }
 }

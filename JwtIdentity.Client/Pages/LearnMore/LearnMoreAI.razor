@@ -1,0 +1,26 @@
+@page "/learn-more/ai"
+@inherits JwtIdentity.Client.Pages.LearnMore.LearnMoreAIModel
+@using static Microsoft.AspNetCore.Components.Web.RenderMode
+@rendermode InteractiveWebAssembly
+
+<PageTitle>AI-Powered Question Generation - Survey Shark</PageTitle>
+<MudContainer Class="mt-6 mb-8">
+    <MudPaper Elevation="2" Class="pa-6 text-center">
+        <MudText Typo="Typo.h3" Class="mb-2">AI-Powered Question Generation</MudText>
+        <MudText Typo="Typo.body1" Class="mb-4">
+            Instantly generate high-quality survey questions with the power of AI. Just describe your survey topic, and our advanced AI suggests a complete set of relevant questions—saving you time and sparking new ideas. Edit, remove, or add to these questions as you wish for a fully customized survey experience.
+        </MudText>
+        <MudList T="string" Dense="true" Class="mb-4">
+            <MudListItem Icon="@Icons.Material.Filled.Bolt" IconColor="Color.Primary">
+                Save time with instant question suggestions
+            </MudListItem>
+            <MudListItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Secondary">
+                Fully editable and customizable questions
+            </MudListItem>
+            <MudListItem Icon="@Icons.Material.Filled.Lightbulb" IconColor="Color.Info">
+                Get inspired with creative, relevant prompts
+            </MudListItem>
+        </MudList>
+        <MudButton Href="/" Variant="Variant.Filled" Color="Color.Primary">Back to Home</MudButton>
+    </MudPaper>
+</MudContainer>
