@@ -4,7 +4,7 @@ using Action = Syncfusion.Blazor.Grids.Action;
 
 namespace JwtIdentity.Client.Pages.Survey.Results
 {
-    public class FilterModel : BlazorBase
+    public class FilterModel : BlazorBase, IAsyncDisposable
     {
         [Parameter]
         public string SurveyId { get; set; }
@@ -16,6 +16,9 @@ namespace JwtIdentity.Client.Pages.Survey.Results
         protected Dictionary<int, string> _propertyMap;
         protected List<ExpandoObject> SurveyRows { get; set; } = new();
 
+        [Inject]
+        private SurveyHubClient SurveyHubClient { get; set; } = default!;
+
         protected bool columnsInitialized { get; set; } = false;
 
         protected Dictionary<int, Dictionary<int, int>> OptionCounts { get; set; } = new();
@@ -24,6 +27,23 @@ namespace JwtIdentity.Client.Pages.Survey.Results
         {
             await LoadData();
 
+            SurveyHubClient.SurveyUpdated += HandleSurveyUpdated;
+            await SurveyHubClient.JoinSurveyGroup(SurveyId);
+        }
+
+        private async void HandleSurveyUpdated(string id)
+        {
+            if (id == SurveyId)
+            {
+                await LoadData();
+                StateHasChanged();
+            }
+        }
+
+        public ValueTask DisposeAsync()
+        {
+            SurveyHubClient.SurveyUpdated -= HandleSurveyUpdated;
+            return ValueTask.CompletedTask;
         }
 
         protected async Task ToolbarClickHandler(Syncfusion.Blazor.Navigations.ClickEventArgs args)

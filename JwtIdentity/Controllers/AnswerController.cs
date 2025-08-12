@@ -10,13 +10,15 @@ namespace JwtIdentity.Controllers
         private readonly IMapper _mapper;
         private readonly IApiAuthService apiAuthService;
         private readonly ILogger<AnswerController> _logger;
+        private readonly ISurveyCompletionNotifier _surveyNotifier;
 
-        public AnswerController(ApplicationDbContext context, IMapper mapper, IApiAuthService apiAuthService, ILogger<AnswerController> logger)
+        public AnswerController(ApplicationDbContext context, IMapper mapper, IApiAuthService apiAuthService, ILogger<AnswerController> logger, ISurveyCompletionNotifier surveyNotifier)
         {
             _context = context;
             _mapper = mapper;
             this.apiAuthService = apiAuthService;
             _logger = logger;
+            _surveyNotifier = surveyNotifier;
         }
 
         [HttpGet("getanswersforsurveyforloggedinuser/{guid}")]
@@ -488,7 +490,29 @@ namespace JwtIdentity.Controllers
                 }
 
                 await _context.SaveChangesAsync();
-                
+
+                if (answer.Complete)
+                {
+                    var surveyInfo = await (from q in _context.Questions
+                                             join s in _context.Surveys on q.SurveyId equals s.Id
+                                             where q.Id == answer.QuestionId
+                                             select new { SurveyId = s.Id, s.Guid })
+                                            .FirstOrDefaultAsync();
+
+                    if (surveyInfo != null)
+                    {
+                        var completed = await _context.Answers
+                            .Where(a => a.Question.SurveyId == surveyInfo.SurveyId && a.CreatedById == answer.CreatedById)
+                            .GroupBy(a => a.Question.SurveyId)
+                            .AnyAsync(g => g.All(a => a.Complete));
+
+                        if (completed)
+                        {
+                            await _surveyNotifier.NotifySurveyCompleted(surveyInfo.Guid);
+                        }
+                    }
+                }
+
                 _logger.LogInformation("Successfully saved answer ID {AnswerId} for question ID {QuestionId}", answer.Id, answer.QuestionId);
                 return CreatedAtAction(nameof(PostAnswer), new { id = answer.Id }, _mapper.Map<AnswerViewModel>(answer));
             }

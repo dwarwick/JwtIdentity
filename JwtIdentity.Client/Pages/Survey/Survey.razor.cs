@@ -346,7 +346,6 @@ namespace JwtIdentity.Client.Pages.Survey
                     }
                 }
 
-                // No need to mark Survey.Complete as true anymore
                 _ = Snackbar.Add("Survey submitted successfully", Severity.Success);
                 Navigation.NavigateTo("/");
             }
