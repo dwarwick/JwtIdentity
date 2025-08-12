@@ -5,22 +5,211 @@
 
 <PageTitle>AI-Powered Question Generation - Survey Shark</PageTitle>
 <MudContainer Class="mt-6 mb-8">
-    <MudPaper Elevation="2" Class="pa-6 text-center">
+    <MudPaper Elevation="2" Class="pa-6 text-center mb-8">
         <MudText Typo="Typo.h3" Class="mb-2">AI-Powered Question Generation</MudText>
         <MudText Typo="Typo.body1" Class="mb-4">
-            Instantly generate high-quality survey questions with the power of AI. Just describe your survey topic, and our advanced AI suggests a complete set of relevant questions—saving you time and sparking new ideas. Edit, remove, or add to these questions as you wish for a fully customized survey experience.
+            <b>What should you write in the AI Instructions box?</b><br />
+            <span style="font-size:1.1rem;">Instead of typing the actual survey questions, simply describe the kind of questions you want the AI to generate. For example, explain your survey's purpose, your target audience, and any specific question types or topics you want included. The AI will then create a set of relevant questions for you, which you can edit as needed.</span>
         </MudText>
         <MudList T="string" Dense="true" Class="mb-4">
-            <MudListItem Icon="@Icons.Material.Filled.Bolt" IconColor="Color.Primary">
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Bolt" IconColor="Color.Primary">
                 Save time with instant question suggestions
             </MudListItem>
-            <MudListItem Icon="@Icons.Material.Filled.Edit" IconColor="Color.Secondary">
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Edit" IconColor="Color.Secondary">
                 Fully editable and customizable questions
             </MudListItem>
-            <MudListItem Icon="@Icons.Material.Filled.Lightbulb" IconColor="Color.Info">
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Lightbulb" IconColor="Color.Info">
                 Get inspired with creative, relevant prompts
             </MudListItem>
         </MudList>
-        <MudButton Href="/" Variant="Variant.Filled" Color="Color.Primary">Back to Home</MudButton>
+    </MudPaper>
+
+    <MudPaper Elevation="1" Class="pa-6 mb-8">
+        <MudText Typo="Typo.h5" Class="mb-4">10 Real-World AI Instruction Examples</MudText>
+        <MudGrid Spacing="2">
+            @foreach (var example in Examples)
+            {
+                <MudItem xs="12" md="6">
+                    <MudCard Elevation="2" Class="mb-6 h-100">
+                        <MudCardContent>
+                            <MudText Typo="Typo.h6" Class="mb-1">@example.Title</MudText>
+                            <MudText Typo="Typo.subtitle2" Class="mb-2">@example.Description</MudText>
+                            <MudText Typo="Typo.body2" Class="mb-2"><b>AI Instructions:</b> @example.Instructions</MudText>
+                            <MudText Typo="Typo.body2" Class="mb-2"><b>Resulting Questions:</b></MudText>
+                            <MudList T="string" Dense="true" Class="mb-2">
+                                @foreach (var q in example.Questions)
+                                {
+                                    <MudListItem T="string">@q</MudListItem>
+                                }
+                            </MudList>
+                            <MudText Typo="Typo.caption" Class="mt-2">@example.Explanation</MudText>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+            }
+        </MudGrid>
+    </MudPaper>
+
+    <MudPaper Elevation="0" Class="pa-4 text-center">
+        <MudButton Href="/survey/create" Variant="Variant.Filled" Color="Color.Primary" Class="mx-2">Try It Now</MudButton>
+        <MudButton Href="/" Variant="Variant.Outlined" Color="Color.Primary" Class="mx-2">Back to Home</MudButton>
     </MudPaper>
 </MudContainer>
+
+@code {
+    public class AIExample
+    {
+        public string Title { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public string Instructions { get; set; } = string.Empty;
+        public List<string> Questions { get; set; } = new();
+        public string Explanation { get; set; } = string.Empty;
+    }
+
+    public List<AIExample> Examples = new()
+    {
+        new AIExample {
+            Title = "Customer Satisfaction Survey (Service Business)",
+            Description = "Gauge how satisfied customers are after a service call for an air conditioning repair company.",
+            Instructions = "I'm an air conditioning repair technician. Create a survey to measure customer satisfaction after a service call. Include a mix of rating questions (1-10), yes/no, and one free text question for additional comments.",
+            Questions = new List<string> {
+                "How satisfied were you with the technician's professionalism? (1-10)",
+                "Did the technician explain the repairs clearly? (Yes/No)",
+                "How likely are you to recommend our service to others? (1-10)",
+                "Was your issue resolved on the first visit? (Yes/No)",
+                "What could we do to improve your experience? (Free text)"
+            },
+            Explanation = "This example shows how to describe your business and the type of feedback you want. The AI generates a balanced set of questions, including ratings, yes/no, and an open-ended prompt. You don't need to write the questions yourself—just describe your goals."
+        },
+        new AIExample {
+            Title = "Employee Engagement Survey",
+            Description = "Assess how engaged employees feel at work in a small company.",
+            Instructions = "Create a survey to measure employee engagement in a small business. Include questions about job satisfaction, communication, and opportunities for growth. Use a mix of multiple choice and rating scales.",
+            Questions = new List<string> {
+                "How satisfied are you with your current role? (1-5)",
+                "Do you feel your contributions are valued? (Yes/No)",
+                "How would you rate communication within your team? (1-5)",
+                "Are there enough opportunities for professional growth? (Yes/No)",
+                "What would make your work experience better? (Free text)"
+            },
+            Explanation = "Here, the instructions focus on the survey's purpose and desired question types. The AI creates questions that cover key engagement topics, using both ratings and multiple choice. This helps you get actionable feedback without writing each question."
+        },
+        new AIExample {
+            Title = "Event Feedback Survey (Conference)",
+            Description = "Collect feedback from attendees after a professional conference.",
+            Instructions = "Generate a survey for conference attendees to rate sessions, speakers, and overall experience. Include star ratings, yes/no, and a space for suggestions.",
+            Questions = new List<string> {
+                "How would you rate the overall conference experience? (1-5 stars)",
+                "Were the sessions relevant to your interests? (Yes/No)",
+                "How would you rate the quality of the speakers? (1-5 stars)",
+                "Would you attend this conference again? (Yes/No)",
+                "What topics would you like to see in future events? (Free text)"
+            },
+            Explanation = "This example demonstrates how to specify the event type and feedback areas. The AI produces questions that are relevant for post-event surveys, making it easy to gather useful insights from attendees."
+        },
+        new AIExample {
+            Title = "Market Research Survey (New Product)",
+            Description = "Understand potential customers' interest in a new fitness tracker.",
+            Instructions = "Create a market research survey for a new fitness tracker. Ask about current fitness habits, interest in new features, and willingness to pay. Use multiple choice and rating questions.",
+            Questions = new List<string> {
+                "How often do you use a fitness tracker? (Daily/Weekly/Never)",
+                "Which features are most important to you? (Multiple choice)",
+                "How likely are you to try a new fitness tracker? (1-10)",
+                "What is the maximum price you would pay? (Multiple choice)",
+                "What features would you like to see added? (Free text)"
+            },
+            Explanation = "By describing the product and research goals, the AI generates targeted questions for market analysis. This saves time and ensures you cover all relevant topics for your audience."
+        },
+        new AIExample {
+            Title = "School Course Evaluation",
+            Description = "Gather student feedback on a college course at the end of the semester.",
+            Instructions = "Generate a course evaluation survey for college students. Include questions about teaching quality, course materials, and overall satisfaction. Use rating scales and open-ended questions.",
+            Questions = new List<string> {
+                "How would you rate the instructor's teaching effectiveness? (1-5)",
+                "Were the course materials helpful? (Yes/No)",
+                "How challenging was the course content? (1-5)",
+                "Would you recommend this course to others? (Yes/No)",
+                "What suggestions do you have for improving the course? (Free text)"
+            },
+            Explanation = "This example shows how to instruct the AI for academic surveys. The AI covers all key areas, making it easy for educators to collect meaningful feedback from students."
+        },
+        new AIExample {
+            Title = "Customer Onboarding Experience",
+            Description = "Evaluate how new users feel about the onboarding process for a software app.",
+            Instructions = "Create a survey to assess the onboarding experience for new users of a software application. Include questions about ease of use, clarity of instructions, and overall satisfaction. Use a mix of ratings and yes/no questions.",
+            Questions = new List<string> {
+                "How easy was it to get started with the app? (1-5)",
+                "Were the onboarding instructions clear? (Yes/No)",
+                "Did you encounter any issues during setup? (Yes/No)",
+                "How satisfied are you with your first week using the app? (1-5)",
+                "What could we do to improve onboarding? (Free text)"
+            },
+            Explanation = "By focusing on the onboarding process, the AI generates questions that help product teams identify pain points and improve user experience."
+        },
+        new AIExample {
+            Title = "Patient Satisfaction Survey (Healthcare)",
+            Description = "Measure patient satisfaction after a visit to a medical clinic.",
+            Instructions = "Generate a patient satisfaction survey for a medical clinic. Include questions about wait time, staff friendliness, and quality of care. Use rating scales and yes/no questions.",
+            Questions = new List<string> {
+                "How would you rate your wait time? (1-5)",
+                "Were the staff friendly and helpful? (Yes/No)",
+                "How satisfied are you with the quality of care received? (1-5)",
+                "Did you feel your concerns were addressed? (Yes/No)",
+                "Any additional comments? (Free text)"
+            },
+            Explanation = "This example is tailored for healthcare providers. The AI covers all important aspects of a clinic visit, making it easy to collect actionable feedback from patients."
+        },
+        new AIExample {
+            Title = "Nonprofit Volunteer Feedback",
+            Description = "Get feedback from volunteers after a community event.",
+            Instructions = "Create a survey for volunteers after a nonprofit community event. Ask about event organization, communication, and overall experience. Include ratings, yes/no, and a free text question.",
+            Questions = new List<string> {
+                "How would you rate the event organization? (1-5)",
+                "Was communication clear before and during the event? (Yes/No)",
+                "Did you feel your time was valued? (Yes/No)",
+                "How likely are you to volunteer again? (1-10)",
+                "What suggestions do you have for future events? (Free text)"
+            },
+            Explanation = "This example helps nonprofits quickly gather feedback from volunteers. The AI instructions focus on the event and key areas for improvement, resulting in a well-rounded survey."
+        },
+        new AIExample {
+            Title = "Restaurant Diner Experience",
+            Description = "Collect feedback from customers after dining at a restaurant.",
+            Instructions = "Generate a survey for restaurant diners to rate food quality, service, and atmosphere. Include star ratings, yes/no, and a space for additional comments.",
+            Questions = new List<string> {
+                "How would you rate the quality of your meal? (1-5 stars)",
+                "Was your server attentive and friendly? (Yes/No)",
+                "How would you rate the restaurant's atmosphere? (1-5 stars)",
+                "Did your order arrive in a timely manner? (Yes/No)",
+                "Any suggestions for us? (Free text)"
+            },
+            Explanation = "This example is perfect for restaurant owners. The AI creates questions that cover all aspects of the dining experience, making it easy to identify strengths and areas for improvement."
+        },
+        new AIExample {
+            Title = "Political Opinion Poll",
+            Description = "Survey public opinion on a local policy proposal.",
+            Instructions = "Create a public opinion poll about a new local policy proposal. Include questions about awareness, support, and reasons for or against. Use yes/no, multiple choice, and a free text question.",
+            Questions = new List<string> {
+                "Are you aware of the new policy proposal? (Yes/No)",
+                "Do you support or oppose the proposal? (Support/Oppose/Undecided)",
+                "What is your main reason for your position? (Multiple choice)",
+                "How likely are you to vote on this issue? (1-10)",
+                "Any additional comments? (Free text)"
+            },
+            Explanation = "This example shows how to use the AI for public opinion research. The instructions guide the AI to create a balanced poll, helping you gather meaningful data from your community."
+        },
+        new AIExample {
+            Title = "Parent Feedback on School Programs",
+            Description = "Gather parent feedback on after-school programs at an elementary school.",
+            Instructions = "Generate a survey for parents to evaluate after-school programs. Include questions about program variety, child enjoyment, and communication. Use ratings, yes/no, and a free text question.",
+            Questions = new List<string> {
+                "How would you rate the variety of after-school programs? (1-5)",
+                "Is your child happy with the program? (Yes/No)",
+                "How would you rate communication from staff? (1-5)",
+                "Would you recommend these programs to other parents? (Yes/No)",
+                "What improvements would you like to see? (Free text)"
+            },
+            Explanation = "This example is for schools and parent organizations. The AI instructions focus on key areas, resulting in a survey that helps improve after-school offerings."
+        }
+    };
+}
