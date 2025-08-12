@@ -15,6 +15,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using MudBlazor;
 using MudBlazor.Services;
+using JwtIdentity.Hubs;
 using Serilog;
 using Serilog.Events;
 using Serilog.Sinks.MSSqlServer;
@@ -90,6 +91,7 @@ builder.Services.AddScoped<ISettingsService, SettingsService>();
 builder.Services.AddRazorComponents()
     .AddInteractiveWebAssemblyComponents();
 
+builder.Services.AddSignalR();
 // Add Swagger services
 if (builder.Environment.IsDevelopment())
 {
@@ -120,6 +122,7 @@ builder.Services.Configure<DataProtectionTokenProviderOptions>(options =>
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IApiAuthService, ApiAuthService>();
 builder.Services.AddScoped<ISurveyService, SurveyService>();
+builder.Services.AddScoped<ISurveyCompletionNotifier, SurveyCompletionNotifier>();
 builder.Services.AddScoped<JwtIdentity.Services.BackgroundJobs.BackgroundJobService>();
 builder.Services.AddHttpClient<IOpenAi, OpenAiService>();
 // Services required for prerendering shared client components
@@ -364,6 +367,7 @@ app.UseCors("AllowAll");
 // Map controllers
 app.MapControllers();
 
+app.MapHub<SurveyHub>("/surveyHub");
 // Configure Hangfire Dashboard with custom authorization
 app.UseHangfireDashboard("/hangfire", new DashboardOptions
 {

@@ -4,7 +4,7 @@
 
 namespace JwtIdentity.Client.Pages.Survey.Results
 {
-    public class BarChartModel : BlazorBase
+    public class BarChartModel : BlazorBase, IAsyncDisposable
     {
         [CascadingParameter(Name = "Theme")]
         public string Theme { get; set; } = string.Empty;
@@ -21,6 +21,9 @@ namespace JwtIdentity.Client.Pages.Survey.Results
         protected List<SfAccumulationChart> PieCharts { get; set; } = new();
 
         protected List<SurveyDataViewModel> SurveyData { get; set; } = new();
+
+        [Inject]
+        private SurveyHubClient SurveyHubClient { get; set; } = default!;
 
         protected List<ChartData> BarChartData { get; set; } = new();
 
@@ -54,7 +57,19 @@ namespace JwtIdentity.Client.Pages.Survey.Results
             // Load your survey data here
             await LoadData();
 
+            SurveyHubClient.SurveyUpdated += HandleSurveyUpdated;
+            await SurveyHubClient.JoinSurveyGroup(SurveyId);
+
             IsLoading = false;
+        }
+
+        private async void HandleSurveyUpdated(string id)
+        {
+            if (id == SurveyId)
+            {
+                await LoadData();
+                StateHasChanged();
+            }
         }
 
         private async Task LoadData()
@@ -234,6 +249,12 @@ namespace JwtIdentity.Client.Pages.Survey.Results
         protected string GetSubtitle()
         {
             return $"© {GetCurrentYear()} {GetRootDomain()}";
+        }
+
+        public ValueTask DisposeAsync()
+        {
+            SurveyHubClient.SurveyUpdated -= HandleSurveyUpdated;
+            return ValueTask.CompletedTask;
         }
     }
 }
