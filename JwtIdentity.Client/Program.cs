@@ -13,7 +13,7 @@ builder.Configuration
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 
   builder.Services.AddScoped<IApiService, ApiService>();
-builder.Services.AddSingleton<SurveyHubClient>();
+builder.Services.AddScoped<SurveyHubClient>();
 
   var syncfusionLicense = builder.Configuration["Syncfusion:LicenseKey"];
   if (!string.IsNullOrWhiteSpace(syncfusionLicense))

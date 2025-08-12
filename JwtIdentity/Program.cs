@@ -139,6 +139,7 @@ builder.Services.AddScoped<CustomAuthStateProvider>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUtility, JwtIdentity.Client.Helpers.Utility>();
 builder.Services.AddScoped<IWordPressBlogService, WordPressBlogService>();
+builder.Services.AddScoped<SurveyHubClient>();
 builder.Services.AddTransient<CustomAuthorizationMessageHandler>();
 builder.Services.AddMudServices(config =>
 {
