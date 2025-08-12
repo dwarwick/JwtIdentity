@@ -21,3 +21,5 @@ When creating a <MudList, always add the T parameter as T="string". See Home.raz
 The API project uses AutoMapper for mapping between entities and DTOs. The mapping profiles are located in the API project, and the AutoMapper configuration is done in Configurations/MapperConfig.cs.
 The controller endpoints that take a body take and return Viewmodels. The ViewModels are located in the Common project. 
 The client project makes API calls using IApiService. Please review the methods in this file to understand how to make API calls. The IApiService is injected in the BlazorBase class, so you can use it directly in inherited Razor components and access API methods through dependency injection.
+When using Mudchip, do not add a Closable attribute. To make it closable, just define the OnClose event. See the example in EditUserDialog.razor.
+When creating a new Razor component, always create a code behind file with the same name as the Razor component file, plus Model. For example, if the Razor component file is named MyComponent.razor, the code behind file should be named MyComponentModel.razor.cs.

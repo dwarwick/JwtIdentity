@@ -15,6 +15,11 @@
         <MudButton Variant="Variant.Text" Color="Color.Inherit" Class="mx-2" Href="/">Home</MudButton>
         <MudButton Variant="Variant.Text" Color="Color.Inherit" Class="mx-2" Href="/blogs">Blogs</MudButton>
         <MudButton Variant="Variant.Text" Color="Color.Inherit" Class="mx-2" Href="/documentation">Documentation</MudButton>
+        <MudMenu Label="Learn More" Variant="Variant.Text" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Color="Color.Inherit">
+            <MudMenuItem Href="/learn-more/ai">AI-Powered Question Generation</MudMenuItem>
+            <MudMenuItem Href="/learn-more/analytics">Real-Time Analytics</MudMenuItem>
+            <MudMenuItem Href="/learn-more/mobile">Mobile-Ready & Responsive</MudMenuItem>
+        </MudMenu>
         <AuthorizeView Roles="Admin">
             <Authorized>
                 <MudMenu Label="Admin" Variant="Variant.Text" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Color="Color.Inherit">
@@ -80,6 +85,11 @@
         <MudNavLink Href="/" Match="NavLinkMatch.All">Home</MudNavLink>
         <MudNavLink Href="/blogs" Match="NavLinkMatch.All">Blogs</MudNavLink>
         <MudNavLink Href="/documentation">Documentation</MudNavLink>
+        <MudNavGroup Title="Learn More" Icon="@Icons.Material.Filled.Info">
+            <MudNavLink Href="/learn-more/ai">AI-Powered Question Generation</MudNavLink>
+            <MudNavLink Href="/learn-more/analytics">Real-Time Analytics</MudNavLink>
+            <MudNavLink Href="/learn-more/mobile">Mobile-Ready & Responsive</MudNavLink>
+        </MudNavGroup>
         <AuthorizeView Roles="Admin">
             <Authorized>
                 <MudNavGroup Title="Admin" Expanded="false">

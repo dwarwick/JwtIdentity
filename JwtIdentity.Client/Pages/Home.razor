@@ -3,226 +3,60 @@
 @using static Microsoft.AspNetCore.Components.Web.RenderMode
 @rendermode InteractiveWebAssembly
 
-@* Add a comment to indicate that meta tags for this page are dynamically generated in App.razor *@
-@* Meta tags for SEO are handled in App.razor based on the current path *@
-
-<PageTitle>Why Create Online Surveys? - SurveyShark.site</PageTitle>
+<PageTitle>Survey Shark - Effortless Online Surveys</PageTitle>
 <HeadContent>
-    <meta name="keywords" content="online surveys, online survey tools, business insights, market research, customer feedback, Survey Shark, survey maker, survey creator, survey tools, survey platforms, best survey sites, best survey tools, survey websites, online questionnaire, survey sites, questionnaire maker, online survey creator, online questionnaire maker, online survey maker, best survey platforms, online survey platforms, survey platforms for businesses, best survey websites, easy survey creator, online survey form, online feedback form, survey platforms for research, online feedback tool, online survey companies, best online survey sites, interactive survey tools, best online surveys" />
+    <meta name="keywords" content="online surveys, survey maker, business insights, market research, customer feedback, Survey Shark, AI survey, survey platform, best survey tools" />
 </HeadContent>
 
-<MudContainer Class="mt-4 pb-16">
-    <MudGrid>
-        <MudItem xs="12">
-            <MudText Typo="Typo.h1" Align="Align.Center" Class="mb-3">Survey Shark</MudText> 
-            <MudText Typo="Typo.h2" Align="Align.Center">The All-in-One Online Survey Platform for Business Insights</MudText>
-            <MudText Typo="Typo.body1" Class="mb-4 px-2" Style="font-size: 1.1rem;">
-                <b>Create online surveys, gather market research data, and capture customer feedback with ease.</b> Survey Shark is a professional, easy-to-use online survey maker and questionnaire platform that empowers everyone – from small businesses and marketers to researchers, political campaigns, investors, and casual users. Turn feedback into actionable business insights with our powerful online survey tools and make data-driven decisions faster.
-            </MudText>
-            <MudAlert Severity="Severity.Info" Variant="Variant.Filled" Class="mb-4" Icon="@Icons.Material.Filled.SmartToy">
-                <MudText Typo="Typo.h5" Class="mb-1">NEW: Instantly Generate Survey Questions with AI</MudText>
-                <MudText Typo="Typo.body1">
-                    Save time and boost creativity with our AI-powered question generator! Simply describe your survey and let Survey Shark's advanced AI suggest a complete set of relevant, high-quality questions in seconds. You can edit, remove, or add to these questions as you wish—giving you a head start on building the perfect survey for your needs.
-                </MudText>
-                <MudText Typo="Typo.body2" Class="mt-1">
-                    <b>How it works:</b> When creating a new survey, just check the <MudChip T="string" Size="@MudBlazor.Size.Small" Color="Color.Primary">Use AI to Generate Questions</MudChip> box and (optionally) provide instructions for the types of questions you want. The AI will do the rest!
-                </MudText>
-            </MudAlert>
-            <MudText Typo="Typo.body1" Class="mb-5 px-2" Style="font-size: 1.1rem;">
-                <b>Sign up free today</b> and be among the first to use Survey Shark during our launch. Create a free account in seconds and start making the best online surveys to engage your audience!
-            </MudText>
-            
-            <MudStack Row="true" Justify="Justify.Center">
-                <iframe class="youtube-video" src=@($"https://www.youtube.com/embed/{AppSettings?.Youtube?.HomePageCode ?? ""}") allowfullscreen />
-            </MudStack>
-            
-            <MudPaper Elevation="3" Class="pa-4 mb-5 features-section">
-                <MudText Typo="Typo.h4" Class="mb-3" Align="Align.Center">
-                    <MudIcon Icon="@Icons.Material.Filled.StarRate" Class="mr-1" Color="Color.Warning" /> Why Choose Survey Shark? <MudIcon Icon="@Icons.Material.Filled.StarRate" Class="ml-1" Color="Color.Warning" />
-                </MudText>
-                <MudText Typo="Typo.body1" Class="mb-3">
-                    Survey Shark combines the capabilities of the best survey tools with an intuitive interface and unique sharing options. Here's why our platform stands out among the best survey platforms:
-                </MudText>
-                <MudGrid>
-                    <MudItem xs="12" md="6">
-                        <MudList T="string" Dense="true">
-                            <MudListItem Icon="@Icons.Material.Filled.Create" IconColor="Color.Primary">
-                                <b>Easy Survey Creator:</b> Our intuitive online survey creator and questionnaire maker lets you design surveys and online feedback forms in minutes. <b>Now with AI-powered question generation:</b> describe your survey and let our AI instantly suggest a set of relevant questions for you! No coding or experience needed – just drag, drop, and publish an engaging online survey form to start collecting responses.
-                            </MudListItem>
-                            <MudListItem Icon="@Icons.Material.Filled.Widgets" IconColor="Color.Secondary">
-                                <b>Flexible & Versatile:</b> From one-question polls to detailed multi-page questionnaires, Survey Shark adapts to your needs. Use it as a simple poll generator, an in-depth market research tool, or an interactive feedback platform. You get all the survey tools you need in one place.
-                            </MudListItem>
-                            <MudListItem Icon="@Icons.Material.Filled.Share" IconColor="Color.Success">
-                                <b>Shareable & Viral:</b> Effortlessly share your surveys via social media, email, or direct link. Unlike many survey sites, Survey Shark makes it easy for respondents to repost your survey link, helping your questionnaire reach a wider audience. This unique feature sets us apart from other online survey platforms and drives higher response rates.
-                            </MudListItem>
-                            <MudListItem Icon="@Icons.Material.Filled.Insights" IconColor="Color.Info">
-                                <b>Real-Time Insights:</b> Watch results roll in on your personal dashboard. Get real-time analytics and reporting that transform raw data into clear visualizations and actionable insights. Whether you're looking for customer feedback trends or academic research data, our survey platform for research and business provides the analytics you need.
-                            </MudListItem>
-                        </MudList>
-                    </MudItem>
-                    <MudItem xs="12" md="6">
-                        <MudList T="string" Dense="true">
-                            <MudListItem Icon="@Icons.Material.Filled.TouchApp" IconColor="Color.Warning">
-                                <b>Interactive Survey Tools:</b> Keep respondents engaged with interactive survey tools like skip logic, rating scales, and multimedia support. Create dynamic, interactive surveys that adjust to your audience's answers, ensuring you collect the best data possible.
-                            </MudListItem>
-                            <MudListItem Icon="@Icons.Material.Filled.PhoneIphone" IconColor="Color.Error">
-                                <b>Mobile-Optimized:</b> Every survey and online questionnaire you create is visually and structurally optimized for mobile and desktop viewing. Whether your participants use a smartphone, tablet, or PC, your online survey will look professional and be easy to complete. No more pinching or zooming – our responsive design guarantees a smooth experience on any device!
-                            </MudListItem>
-                            <MudListItem Icon="@Icons.Material.Filled.Security" IconColor="Color.Dark">
-                                <b>Secure & Trustworthy:</b> Your data is safe with Survey Shark. We use enterprise-grade security to protect responses and ensure privacy. Our reliable cloud infrastructure means your surveys are always accessible when you need them. Build trust with your audience using a survey platform that values security and confidentiality.
-                            </MudListItem>
-                        </MudList>
-                    </MudItem>
-                </MudGrid>
-            </MudPaper>
-            <MudPaper Elevation="2" Class="pa-4 mb-5 sharing-section">
-                <MudText Typo="Typo.h4" Class="mb-3" Align="Align.Center">
-                    <MudIcon Icon="@Icons.Material.Filled.Public" Class="mr-2" Color="Color.Info" /> Share Surveys Anywhere, Anytime
-                </MudText>
-                <MudText Typo="Typo.body1" Class="mb-3">
-                    Expand your reach beyond traditional channels. Survey Shark enables you to distribute your online surveys on any platform: share on Facebook with a single click. Share to Twitter, LinkedIn, or any social media site by pasting a link to the survey. Simply copy a direct link to your survey. Because the link can be easily reposted by others, your survey can even go viral! This means more responses, more diverse data, and better business insights. Plus, our surveys load fast and work flawlessly on any device, so you won't lose participants due to technical issues. Engaging your audience has never been this simple.
-                </MudText>
-            </MudPaper>
-            <MudText Typo="Typo.h4" Class="mt-6 mb-3" Align="Align.Center">
-                <MudIcon Icon="@Icons.Material.Filled.People" Class="mr-2" Color="Color.Success" /> Built for Every User – Businesses, Researchers, and More
-            </MudText>
-            <MudText Typo="Typo.body1" Class="mb-4">
-                Whether you're a Fortune 500 company or just getting started, Survey Shark is designed for everyone. Here's how different users succeed with our platform:
-            </MudText>
-            <MudGrid>
-                <MudItem xs="12" sm="6" md="4">
-                    <MudCard Elevation="2" Class="h-100">
-                        <MudCardHeader>
-                            <CardHeaderAvatar>
-                                <MudAvatar Color="Color.Primary">
-                                    <MudIcon Icon="@Icons.Material.Filled.BusinessCenter" />
-                                </MudAvatar>
-                            </CardHeaderAvatar>
-                            <CardHeaderContent>
-                                <MudText Typo="Typo.h6">Small Businesses & Startups</MudText>
-                            </CardHeaderContent>
-                        </MudCardHeader>
-                        <MudCardContent>
-                            <MudText>Measure customer satisfaction, collect product feedback, and conduct market research without needing a big budget. Survey Shark's easy survey tools and templates help you quickly gather the business insights that drive growth. Survey Shark is an ideal choice among survey platforms for businesses, delivering enterprise-level features with small-business simplicity.</MudText>
-                        </MudCardContent>
-                    </MudCard>
-                </MudItem>
-                <MudItem xs="12" sm="6" md="4">
-                    <MudCard Elevation="2" Class="h-100">
-                        <MudCardHeader>
-                            <CardHeaderAvatar>
-                                <MudAvatar Color="Color.Secondary">
-                                    <MudIcon Icon="@Icons.Material.Filled.Campaign" />
-                                </MudAvatar>
-                            </CardHeaderAvatar>
-                            <CardHeaderContent>
-                                <MudText Typo="Typo.h6">Marketers & Product Teams</MudText>
-                            </CardHeaderContent>
-                        </MudCardHeader>
-                        <MudCardContent>
-                            <MudText>Run targeted online surveys to gauge market trends, test new product ideas, and optimize campaigns. Use our interactive survey tools to engage customers and get higher quality feedback for data-driven marketing strategies.</MudText>
-                        </MudCardContent>
-                    </MudCard>
-                </MudItem>
-                <MudItem xs="12" sm="6" md="4">
-                    <MudCard Elevation="2" Class="h-100">
-                        <MudCardHeader>
-                            <CardHeaderAvatar>
-                                <MudAvatar Color="Color.Info">
-                                    <MudIcon Icon="@Icons.Material.Filled.School" />
-                                </MudAvatar>
-                            </CardHeaderAvatar>
-                            <CardHeaderContent>
-                                <MudText Typo="Typo.h6">Researchers & Academics</MudText>
-                            </CardHeaderContent>
-                        </MudCardHeader>
-                        <MudCardContent>
-                            <MudText>Conduct academic studies, polls, or large-scale questionnaires with confidence. Survey Shark offers the reliability and depth that survey platforms for research demand – from anonymous response options to data exports for analysis. Our online questionnaire maker is perfect for thesis research, institutional surveys, and more.</MudText>
-                        </MudCardContent>
-                    </MudCard>
-                </MudItem>
-                <MudItem xs="12" sm="6" md="4">
-                    <MudCard Elevation="2" Class="h-100">
-                        <MudCardHeader>
-                            <CardHeaderAvatar>
-                                <MudAvatar Color="Color.Success">
-                                    <MudIcon Icon="@Icons.Material.Filled.HowToVote" />
-                                </MudAvatar>
-                            </CardHeaderAvatar>
-                            <CardHeaderContent>
-                                <MudText Typo="Typo.h6">Political Campaigns & Nonprofits</MudText>
-                            </CardHeaderContent>
-                        </MudCardHeader>
-                        <MudCardContent>
-                            <MudText>Easily gather public opinion and community feedback on important issues. Share surveys via direct link or social media to reach constituents and volunteers. Survey Shark functions as a robust online feedback tool for driving engagement and informing policy or campaign decisions.</MudText>
-                        </MudCardContent>
-                    </MudCard>
-                </MudItem>
-                <MudItem xs="12" sm="6" md="4">
-                    <MudCard Elevation="2" Class="h-100">
-                        <MudCardHeader>
-                            <CardHeaderAvatar>
-                                <MudAvatar Color="Color.Warning">
-                                    <MudIcon Icon="@Icons.Material.Filled.TrendingUp" />
-                                </MudAvatar>
-                            </CardHeaderAvatar>
-                            <CardHeaderContent>
-                                <MudText Typo="Typo.h6">Investors & Analysts</MudText>
-                            </CardHeaderContent>
-                        </MudCardHeader>
-                        <MudCardContent>
-                            <MudText>Collect insights on market sentiment, employee engagement in portfolio companies, or stakeholder opinions. With real-time analytics, Survey Shark helps turn raw survey data into meaningful trends that inform investment strategies.</MudText>
-                        </MudCardContent>
-                    </MudCard>
-                </MudItem>
-                <MudItem xs="12" sm="6" md="4">
-                    <MudCard Elevation="2" Class="h-100">
-                        <MudCardHeader>
-                            <CardHeaderAvatar>
-                                <MudAvatar Color="Color.Error">
-                                    <MudIcon Icon="@Icons.Material.Filled.Groups" />
-                                </MudAvatar>
-                            </CardHeaderAvatar>
-                            <CardHeaderContent>
-                                <MudText Typo="Typo.h6">Educators & Casual Users</MudText>
-                            </CardHeaderContent>
-                        </MudCardHeader>
-                        <MudCardContent>
-                            <MudText>Create course evaluations, event registration forms, club polls, or just fun questionnaires to share with friends. Our platform's flexibility and ease-of-use make it one of the best survey sites for any purpose, professional or personal.</MudText>
-                        </MudCardContent>
-                    </MudCard>
-                </MudItem>
-            </MudGrid>
-            <MudPaper Elevation="2" Class="pa-4 my-5 mobile-section">
-                <MudGrid>
-                    <MudItem xs="12" md="8">
-                        <MudText Typo="Typo.h4" Class="mb-3">
-                            <MudIcon Icon="@Icons.Material.Filled.PhoneAndroid" Class="mr-2" Color="Color.Primary" /> Mobile-Ready and Responsive
-                        </MudText>
-                        <MudText Typo="Typo.body1" Class="mb-3">
-                            In today's world, most respondents use phones or tablets. Survey Shark is an online survey platform built with a mobile-first approach. Every survey, quiz, or feedback form you create is automatically optimized for mobile and desktop. Participants will find your surveys easy to read and complete on any screen size, increasing your completion rates and the quality of your data.
-                        </MudText>
-                        <MudText Typo="Typo.body1">
-                            You can preview exactly how your survey looks on various devices before sending it out, ensuring a seamless experience. Interactive surveys and media elements remain smooth and user-friendly across all platforms, and we make sure your survey website is accessible and attractive everywhere.
-                        </MudText>
-                    </MudItem>
-                    <MudItem xs="12" md="4" Class="d-flex justify-center align-center">
-                        <MudIcon Icon="@Icons.Material.Filled.Devices" Size="MudBlazor.Size.Large" Style="font-size: 100px;" Color="Color.Primary" />
-                    </MudItem>
-                </MudGrid>
-            </MudPaper>
-            <MudPaper Elevation="3" Class="pa-6 mt-6 mb-5 text-center signup-section">
-                <MudText Typo="Typo.h4" Class="mb-4">
-                    <MudIcon Icon="@Icons.Material.Filled.Rocket" Class="mr-2" Color="Color.Secondary" /> Ready to Get Started? Create Your Free Account Now
-                </MudText>
-                <MudText Typo="Typo.body1" Class="mb-4">
-                    Survey Shark is free to try for all users during our launch! As a new contender among the best survey platforms and best survey websites, Survey Shark brings fresh innovation to the world of online survey companies. We're confident you'll love the experience. Join today and see why Survey Shark stands out from other survey websites. Setting up your first survey takes just minutes with our easy survey creator – no training required.
-                </MudText>
-                <MudText Typo="Typo.body1" Class="mb-5">
-                    Don't miss the chance to be an early user of one of the best online survey sites in the industry. <b>Sign up for your free Survey Shark account now</b> and start creating interactive online surveys that deliver real results. Dive into the world of better surveys and smarter decisions with Survey Shark – the ultimate survey platform for businesses, researchers, and everyone in between.
-                </MudText>
-                <MudButton Href="/register" Variant="Variant.Filled" Color="Color.Primary" Size="MudBlazor.Size.Large" Class="px-8 py-2" Style="font-size: 1.2rem;">Sign Up Free</MudButton>
-            </MudPaper>
+<MudContainer Class="mt-8 mb-10">
+    <!-- Hero Section -->
+    <MudPaper Elevation="3" Class="pa-8 text-center mb-8 hero-section">
+        <MudText Typo="Typo.h1" Class="mb-2">Create Powerful Online Surveys in Minutes</MudText>
+        <MudText Typo="Typo.h5" Class="mb-4">Effortless, secure, and AI-powered survey creation for everyone.</MudText>
+        <MudButton Href="/register" Variant="Variant.Filled" Color="Color.Primary" Size="MudBlazor.Size.Large" Class="px-8 py-2 mb-2" Style="font-size: 1.2rem;">Get Started Free</MudButton>
+    </MudPaper>
+
+    <!-- Features Section -->
+    <MudGrid Spacing="2" Class="mb-8">
+        <MudItem xs="12" md="4">
+            <MudCard Elevation="2" Class="h-100 text-center pa-4">
+                <MudIcon Icon="@Icons.Material.Filled.Bolt" Size="MudBlazor.Size.Large" Color="Color.Primary" Class="mb-2" />
+                <MudText Typo="Typo.h6" Class="mb-1">AI-Powered Question Generation</MudText>
+                <MudText Typo="Typo.body2" Class="mb-2">Describe your survey and let our AI suggest relevant questions instantly.</MudText>
+                <MudButton Href="/learn-more/ai" Variant="Variant.Text" Color="Color.Primary" Size="MudBlazor.Size.Small">Learn More</MudButton>
+            </MudCard>
+        </MudItem>
+        <MudItem xs="12" md="4">
+            <MudCard Elevation="2" Class="h-100 text-center pa-4">
+                <MudIcon Icon="@Icons.Material.Filled.Insights" Size="MudBlazor.Size.Large" Color="Color.Info" Class="mb-2" />
+                <MudText Typo="Typo.h6" Class="mb-1">Real-Time Analytics</MudText>
+                <MudText Typo="Typo.body2" Class="mb-2">Visualize responses and gain insights as soon as they arrive.</MudText>
+                <MudButton Href="/learn-more/analytics" Variant="Variant.Text" Color="Color.Primary" Size="MudBlazor.Size.Small">Learn More</MudButton>
+            </MudCard>
+        </MudItem>
+        <MudItem xs="12" md="4">
+            <MudCard Elevation="2" Class="h-100 text-center pa-4">
+                <MudIcon Icon="@Icons.Material.Filled.PhoneIphone" Size="MudBlazor.Size.Large" Color="Color.Success" Class="mb-2" />
+                <MudText Typo="Typo.h6" Class="mb-1">Mobile-Ready & Responsive</MudText>
+                <MudText Typo="Typo.body2" Class="mb-2">Surveys look great and work perfectly on any device.</MudText>
+                <MudButton Href="/learn-more/mobile" Variant="Variant.Text" Color="Color.Primary" Size="MudBlazor.Size.Small">Learn More</MudButton>
+            </MudCard>
         </MudItem>
     </MudGrid>
+
+    <!-- How It Works Section -->
+    <MudPaper Elevation="1" Class="pa-6 text-center mb-8">
+        <MudText Typo="Typo.h5" Class="mb-2">How Survey Shark Works</MudText>
+        <MudList T="string" Dense="true" Class="mb-2">
+            <MudListItem Icon="@Icons.Material.Filled.Create" IconColor="Color.Primary">Sign up and create your first survey in seconds</MudListItem>
+            <MudListItem Icon="@Icons.Material.Filled.Bolt" IconColor="Color.Info">Use AI to generate or customize your questions</MudListItem>
+            <MudListItem Icon="@Icons.Material.Filled.Share" IconColor="Color.Success">Share your survey and watch results in real time</MudListItem>
+        </MudList>
+    </MudPaper>
+
+    <!-- Final CTA -->
+    <MudPaper Elevation="2" Class="pa-6 text-center">
+        <MudText Typo="Typo.h4" Class="mb-3">Ready to Get Started?</MudText>
+        <MudButton Href="/register" Variant="Variant.Filled" Color="Color.Primary" Size="MudBlazor.Size.Large" Class="px-8 py-2" Style="font-size: 1.2rem;">Sign Up Free</MudButton>
+    </MudPaper>
 </MudContainer>
