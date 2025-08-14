@@ -1,8 +1,3 @@
-using JwtIdentity.Common.ViewModels;
-using JwtIdentity.Services;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-
 namespace JwtIdentity.Controllers
 {
     [ApiController]
@@ -28,7 +23,7 @@ namespace JwtIdentity.Controllers
 
             try
             {
-                var survey = await _openAiService.GenerateSurveyAsync(request.Description);
+                var survey = await _openAiService.GenerateSurveyAsync(request.Description, request.AiInstructions);
                 if (survey == null)
                 {
                     return StatusCode(StatusCodes.Status502BadGateway, "Unable to generate survey");

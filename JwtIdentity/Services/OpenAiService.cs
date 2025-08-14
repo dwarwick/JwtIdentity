@@ -43,7 +43,7 @@ namespace JwtIdentity.Services
                 messages = new object[]
                 {
                     new { role = "system", content = "You are a helpful assistant for creating surveys." },
-                    new { role = "user", content = $"{prompt}\n\nSurvey description: {description} Additional Instructions: {aiInstructions}"}
+                    new { role = "user", content = prompt.Replace("{SURVEY_DESCRIPTION}", description).Replace("{AI_INSTRUCTIONS}", aiInstructions) }
                 }
             };
 
