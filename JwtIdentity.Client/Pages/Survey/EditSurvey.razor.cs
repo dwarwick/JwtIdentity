@@ -41,6 +41,8 @@ namespace JwtIdentity.Client.Pages.Survey
 
         protected string QuestionText { get; set; }
 
+        private string tempQuestionText;
+
         protected string NewChoiceOptionText { get; set; }
 
         private string _selectedPresetChoice = string.Empty;
@@ -173,6 +175,7 @@ namespace JwtIdentity.Client.Pages.Survey
 
                 if (success)
                 {
+                    tempQuestionText = QuestionText; // in case the question text was edited, we need to restore it after loading data
                     await LoadData();
                     QuestionSelected(Survey.Questions.FirstOrDefault(x => x.Id == choice.MultipleChoiceQuestionId));
                     _ = Snackbar.Add("Choice Deleted", MudBlazor.Severity.Success);
@@ -363,7 +366,7 @@ namespace JwtIdentity.Client.Pages.Survey
             if (SelectedQuestion != null)
             {
                 SelectedQuestionType = Enum.GetName(typeof(QuestionType), SelectedQuestion.QuestionType);
-                QuestionText = SelectedQuestion.Text;
+                QuestionText = !string.IsNullOrWhiteSpace(tempQuestionText) ? tempQuestionText : SelectedQuestion.Text;
                 IsRequired = SelectedQuestion.IsRequired;
 
                 if (SelectedQuestion.QuestionType == QuestionType.MultipleChoice)
@@ -384,6 +387,7 @@ namespace JwtIdentity.Client.Pages.Survey
 
             ManualQuestionPanelExpanded = true;
             ExistingQuestionPanelExpanded = false;
+            tempQuestionText = null;
         }
 
         protected async Task DroppedChoiceOption(List<ChoiceOptionViewModel> choices)

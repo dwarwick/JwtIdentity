@@ -12,14 +12,14 @@ builder.Configuration
 
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 
-  builder.Services.AddScoped<IApiService, ApiService>();
+builder.Services.AddScoped<IApiService, ApiService>();
 builder.Services.AddScoped<SurveyHubClient>();
 
-  var syncfusionLicense = builder.Configuration["Syncfusion:LicenseKey"];
-  if (!string.IsNullOrWhiteSpace(syncfusionLicense))
-  {
-      SyncfusionLicenseProvider.RegisterLicense(syncfusionLicense);
-  }
+var syncfusionLicense = builder.Configuration["Syncfusion:LicenseKey"];
+if (!string.IsNullOrWhiteSpace(syncfusionLicense))
+{
+    SyncfusionLicenseProvider.RegisterLicense(syncfusionLicense);
+}
 
 builder.Services.AddSyncfusionBlazor();
 builder.Services.AddBlazoredLocalStorage();
@@ -48,7 +48,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddMudServices(config =>
 {
     config.SnackbarConfiguration.PositionClass = Defaults.Classes.Position.TopCenter;
-    config.SnackbarConfiguration.PreventDuplicates = false;
+    config.SnackbarConfiguration.PreventDuplicates = true;
     config.SnackbarConfiguration.NewestOnTop = false;
     config.SnackbarConfiguration.ShowCloseIcon = true;
     config.SnackbarConfiguration.VisibleStateDuration = 10000;
