@@ -170,6 +170,86 @@ namespace JwtIdentity.Tests.ControllerTests
         }
 
         [Test]
+        public async Task PostSurvey_RemovedChoiceOption_DeletesOption()
+        {
+            // Arrange existing multiple choice question with two options
+            var mcQuestion = new MultipleChoiceQuestion
+            {
+                Id = 10,
+                Text = "MC?",
+                SurveyId = 1,
+                QuestionNumber = 3,
+                QuestionType = QuestionType.MultipleChoice,
+                CreatedById = 1,
+                Options = new List<ChoiceOption>
+                {
+                    new ChoiceOption { Id = 1, OptionText = "A", Order = 1, MultipleChoiceQuestionId = 10 },
+                    new ChoiceOption { Id = 2, OptionText = "B", Order = 2, MultipleChoiceQuestionId = 10 }
+                }
+            };
+            MockDbContext.Questions.Add(mcQuestion);
+            MockDbContext.ChoiceOptions.AddRange(mcQuestion.Options);
+            MockDbContext.SaveChanges();
+
+            var surveyVm = new SurveyViewModel
+            {
+                Id = 1,
+                Title = "Survey 1",
+                Description = "Description 1",
+                Questions = new List<QuestionViewModel>
+                {
+                    new MultipleChoiceQuestionViewModel
+                    {
+                        Id = 10,
+                        SurveyId = 1,
+                        Text = "MC?",
+                        QuestionNumber = 3,
+                        QuestionType = QuestionType.MultipleChoice,
+                        Options = new List<ChoiceOptionViewModel>
+                        {
+                            new ChoiceOptionViewModel { Id = 1, OptionText = "A", Order = 1, MultipleChoiceQuestionId = 10 }
+                            // Option with Id 2 removed
+                        }
+                    }
+                }
+            };
+
+            MockMapper.Setup(m => m.Map<Survey>(It.IsAny<SurveyViewModel>())).Returns((SurveyViewModel svm) =>
+            {
+                return new Survey
+                {
+                    Id = svm.Id,
+                    Title = svm.Title,
+                    Description = svm.Description,
+                    Guid = svm.Guid,
+                    Questions = svm.Questions.Select(qvm => new MultipleChoiceQuestion
+                    {
+                        Id = qvm.Id,
+                        Text = qvm.Text,
+                        SurveyId = svm.Id,
+                        QuestionNumber = qvm.QuestionNumber,
+                        QuestionType = qvm.QuestionType,
+                        Options = ((MultipleChoiceQuestionViewModel)qvm).Options.Select(o => new ChoiceOption
+                        {
+                            Id = o.Id,
+                            OptionText = o.OptionText,
+                            Order = o.Order,
+                            MultipleChoiceQuestionId = qvm.Id
+                        }).ToList()
+                    }).ToList<Question>()
+                };
+            });
+
+            // Act
+            var result = await _controller.PostSurvey(surveyVm);
+
+            // Assert
+            Assert.That(result.Result, Is.InstanceOf<CreatedAtActionResult>());
+            Assert.That(MockDbContext.ChoiceOptions.Any(o => o.Id == 2), Is.False);
+            Assert.That(MockDbContext.ChoiceOptions.Any(o => o.Id == 1), Is.True);
+        }
+
+        [Test]
         public async Task PutSurvey_ExistingSurvey_UpdatesSurvey()
         {
             var surveyVm = new SurveyViewModel { Id = 1, Title = "Updated", Description = "Updated", Published = true };
