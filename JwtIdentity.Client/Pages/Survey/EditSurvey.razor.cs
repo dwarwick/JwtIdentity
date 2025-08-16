@@ -258,6 +258,7 @@ namespace JwtIdentity.Client.Pages.Survey
                             SelectedQuestion.IsRequired = IsRequired;
                             _ = Survey.Questions.Remove(questionToUpdate);
                             Survey.Questions.Add(SelectedQuestion);
+                            SelectedPresetChoice = null; // Reset preset choice when updating a question
                         }
                     }
                     break;
