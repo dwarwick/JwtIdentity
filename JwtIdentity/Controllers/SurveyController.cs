@@ -313,7 +313,7 @@ namespace JwtIdentity.Controllers
                                                 _ = _context.ChoiceOptions.Add(newOption);
                                             }
                                             else
-                                            { // existing option                                            
+                                            { // existing option
                                                 var existingOption = existingMCQuestion.Options.FirstOrDefault(o => o.Id == newOption.Id);
 
                                                 if (existingOption != null && (existingOption.OptionText != newOption.OptionText || existingOption.Order != newOption.Order))
@@ -323,6 +323,21 @@ namespace JwtIdentity.Controllers
                                                     _ = _context.ChoiceOptions.Update(existingOption);
                                                 }
                                             }
+                                        }
+
+                                        // remove any options that are no longer present
+                                        var newOptionIds = (newMCQuestion.Options ?? new List<ChoiceOption>())
+                                            .Where(o => o.Id != 0)
+                                            .Select(o => o.Id)
+                                            .ToHashSet();
+
+                                        var removedOptions = existingMCQuestion.Options
+                                            .Where(o => !newOptionIds.Contains(o.Id))
+                                            .ToList();
+
+                                        if (removedOptions.Any())
+                                        {
+                                            _context.ChoiceOptions.RemoveRange(removedOptions);
                                         }
                                     }
                                     break;
