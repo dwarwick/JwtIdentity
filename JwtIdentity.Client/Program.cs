@@ -1,10 +1,13 @@
 using Blazored.LocalStorage;
 using JwtIdentity.Client.Helpers;
 using JwtIdentity.Services;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Syncfusion.Licensing;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
+builder.RootComponents.Add<HeadOutlet>("head::after");
+
 
 builder.Configuration
     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
