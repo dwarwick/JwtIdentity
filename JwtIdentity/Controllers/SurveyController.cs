@@ -287,7 +287,10 @@ namespace JwtIdentity.Controllers
                                     _ = _context.Questions.Update(existingRatingQuestion);
                                     break;
                                 case QuestionType.MultipleChoice:
-                                    var existingMCQuestion = await _context.Questions.OfType<MultipleChoiceQuestion>().AsNoTracking().Include(x => x.Options).FirstOrDefaultAsync(q => q.Id == passedInQuestion.Id);
+                                    var existingMCQuestion = await _context.Questions
+                                        .OfType<MultipleChoiceQuestion>()
+                                        .Include(x => x.Options)
+                                        .FirstOrDefaultAsync(q => q.Id == passedInQuestion.Id);
 
                                     if (existingMCQuestion != null && (existingMCQuestion.Text != passedInQuestion.Text
                                             || passedInQuestion.QuestionNumber != existingMCQuestion.QuestionNumber || existingMCQuestion.IsRequired != passedInQuestion.IsRequired))
@@ -343,7 +346,10 @@ namespace JwtIdentity.Controllers
                                     break;
 
                                 case QuestionType.SelectAllThatApply:
-                                    var existingSAQuestion = await _context.Questions.OfType<SelectAllThatApplyQuestion>().AsNoTracking().Include(x => x.Options).FirstOrDefaultAsync(q => q.Id == passedInQuestion.Id);
+                                    var existingSAQuestion = await _context.Questions
+                                        .OfType<SelectAllThatApplyQuestion>()
+                                        .Include(x => x.Options)
+                                        .FirstOrDefaultAsync(q => q.Id == passedInQuestion.Id);
 
                                     if (existingSAQuestion != null && (existingSAQuestion.Text != passedInQuestion.Text
                                             || passedInQuestion.QuestionNumber != existingSAQuestion.QuestionNumber || existingSAQuestion.IsRequired != passedInQuestion.IsRequired))
