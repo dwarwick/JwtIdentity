@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Http.Json;
 using System.Net.Http.Headers;
 using System.Text.Json;
@@ -133,6 +134,12 @@ namespace JwtIdentity.Client.Services
             if (!response.IsSuccessStatusCode)
             {
                 var error = await response.Content.ReadAsStringAsync();
+
+                if (response.StatusCode == HttpStatusCode.Unauthorized)
+                {
+                    _ = Snackbar.Add("Invalid username or password", Severity.Error);
+                    return default;
+                }
 
                 if (string.IsNullOrEmpty(error))
                 {
