@@ -8,6 +8,11 @@
 
 <PageTitle>Survey Shark - Registration</PageTitle>
 
+<HeadContent>
+    <meta name="description" content="Create your Survey Shark account to start building and sharing surveys." />
+</HeadContent>
+<MudText Typo="Typo.h1" Class="mb-4">Register</MudText>
+
 <EditForm Model="registerModel" OnValidSubmit="HandleRegister">
     <MudTextField @bind-Value="@registerModel.Email" Label="Email" InputType="InputType.Email" />
     <MudTextField @bind-Value="@registerModel.Password" Label="Password" InputType="InputType.Password" />
