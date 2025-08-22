@@ -1,6 +1,4 @@
 using Microsoft.AspNetCore.Authorization;
-using JwtIdentity.Services;
-using Microsoft.Extensions.Configuration;
 
 namespace JwtIdentity.Controllers
 {
@@ -190,7 +188,7 @@ namespace JwtIdentity.Controllers
                 _logger.LogInformation("Processing survey creation/update request from user {UserId}", createdById);
 
                 // If no questions, generate them using OpenAI
-                if (surveyViewModel.UseAi
+                if (!string.IsNullOrWhiteSpace(surveyViewModel.AiInstructions)
                     && (surveyViewModel.Questions == null || !surveyViewModel.Questions.Any())
                     && !string.IsNullOrWhiteSpace(surveyViewModel.Description))
                 {
