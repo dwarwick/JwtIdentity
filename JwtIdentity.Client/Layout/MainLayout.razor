@@ -32,23 +32,23 @@
         <div class="app-footer">
             <MudText Class="mx-auto footer-text" Typo="Typo.inherit">
                 <MudStack Row="true" Wrap="Wrap.Wrap" Spacing="2" AlignItems="AlignItems.Center" Class="justify-center">
-                    <MudImage Src="images/sectigo_trust_seal_sm_82x32.png" />
+                    <MudImage Class="d-none d-md-block" Src="images/sectigo_trust_seal_sm_82x32.png" />
                     <span>© @DateTime.Now.Year @Utility.Domain - All Rights Reserved</span>
-                    <span>|</span>
+                    <span class="d-none d-md-block">|</span>
                     
                     @if (((CustomAuthStateProvider)AuthStateProvider).CurrentUser != null && (((CustomAuthStateProvider)AuthStateProvider!).CurrentUser?.Permissions.Contains(Permissions.LeaveFeedback) ?? false))
                     {
-                        <MudLink Href="/feedback" Underline="Underline.None" Typo="Typo.inherit">Leave Feedback</MudLink>
-                        <span>|</span>
+                        <MudLink Class="d-none d-md-block" Href="/feedback" Underline="Underline.None" Typo="Typo.inherit">Leave Feedback</MudLink>
+                        <span class="d-none d-md-block">|</span>
                     }
                     
-                    <MudLink Href="/privacy-policy" Underline="Underline.None" Typo="Typo.inherit">Privacy Policy</MudLink>
-                    <span>|</span>
-                    <MudLink Href="/cookie-policy" Underline="Underline.None" Typo="Typo.inherit">Cookie Policy</MudLink>
-                    <span>|</span>
-                    <MudLink Href="javascript:void(0)" OnClick="OpenCookieSettings" Underline="Underline.None" Typo="Typo.inherit">Cookie Settings</MudLink>
-                    <span>|</span>
-                    <MudLink Href="/terms-of-service" Underline="Underline.None" Typo="Typo.inherit">Terms of Service</MudLink>
+                    <MudLink Class="d-none d-md-block" Href="/privacy-policy" Underline="Underline.None" Typo="Typo.inherit">Privacy Policy</MudLink>
+                    <span class="d-none d-md-block">|</span>
+                    <MudLink Class="d-none d-md-block" Href="/cookie-policy" Underline="Underline.None" Typo="Typo.inherit">Cookie Policy</MudLink>
+                    <span class="d-none d-md-block">|</span>
+                    <MudLink Class="d-none d-md-block" Href="javascript:void(0)" OnClick="OpenCookieSettings" Underline="Underline.None" Typo="Typo.inherit">Cookie Settings</MudLink>
+                    <span class="d-none d-md-block">|</span>
+                    <MudLink Class="d-none d-md-block" Href="/terms-of-service" Underline="Underline.None" Typo="Typo.inherit">Terms of Service</MudLink>
                 </MudStack>
             </MudText>
         </div>
