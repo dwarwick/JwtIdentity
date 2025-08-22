@@ -39,7 +39,7 @@ namespace JwtIdentity.Controllers
         public async Task<ActionResult<LoginModel>> Login([FromBody] LoginModel model)
         {
             _logger.LogInformation("Processing login request for username: {Username}", model?.Username ?? "null");
-            
+
             try
             {
                 if (model == null || !ModelState.IsValid || string.IsNullOrEmpty(model?.Username) || string.IsNullOrEmpty(model?.Password))
@@ -61,7 +61,7 @@ namespace JwtIdentity.Controllers
                 if (user == null)
                 {
                     _logger.LogWarning("Login failed: User not found: {Username}", model.Username);
-                    return Unauthorized();
+                    return BadRequest("Invalid Username or Password");
                 }
 
                 _logger.LogDebug("User found, checking password");
@@ -72,12 +72,12 @@ namespace JwtIdentity.Controllers
 
                     _logger.LogDebug("Mapping user to view model");
                     ApplicationUserViewModel applicationUserViewModel = _mapper.Map<ApplicationUserViewModel>(user);
-                    applicationUserViewModel.Token = Token;                
+                    applicationUserViewModel.Token = Token;
 
                     // 'Response' is the HttpResponse for the current request
                     var expiration = int.TryParse(_configuration["Jwt:ExpirationMinutes"], out int minutes) ? minutes : 60;
                     _logger.LogDebug("Setting auth cookie with expiration of {ExpirationMinutes} minutes", expiration);
-                    
+
                     Response.Cookies.Append(
                         "authToken",
                         Token,
@@ -112,17 +112,17 @@ namespace JwtIdentity.Controllers
                 }
 
                 _logger.LogWarning("Login failed: Invalid password for user: {Username}", model.Username);
-                return Unauthorized();
+                return BadRequest("Invalid Username or Password");
             }
             catch (DbUpdateException dbEx)
             {
-                _logger.LogError(dbEx, "Database error occurred during login for user {Username}: {Message}", 
+                _logger.LogError(dbEx, "Database error occurred during login for user {Username}: {Message}",
                     model?.Username ?? "unknown", dbEx.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError, "A database error occurred. Please try again later.");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Unexpected error during login for user {Username}: {Message}", 
+                _logger.LogError(ex, "Unexpected error during login for user {Username}: {Message}",
                     model?.Username ?? "unknown", ex.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
             }
@@ -132,13 +132,13 @@ namespace JwtIdentity.Controllers
         public async Task<IActionResult> Logout()
         {
             _logger.LogInformation("Processing logout request");
-            
+
             try
             {
                 await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
                 Response.Cookies.Delete(".AspNetCore.Identity.Application");
                 Response.Cookies.Delete("authToken"); // Delete the authToken cookie
-                
+
                 _logger.LogInformation("User successfully logged out");
                 return Ok(new { message = "Logged out" });
             }
@@ -158,7 +158,7 @@ namespace JwtIdentity.Controllers
         public async Task<ActionResult<RegisterViewModel>> Register([FromBody] RegisterViewModel model)
         {
             _logger.LogInformation("Processing registration request for email: {Email}", model?.Email ?? "null");
-            
+
             try
             {
                 if (model == null)
@@ -166,7 +166,7 @@ namespace JwtIdentity.Controllers
                     _logger.LogWarning("Registration attempt with null model");
                     return BadRequest("Invalid client request");
                 }
-                
+
                 if (!ModelState.IsValid || string.IsNullOrEmpty(model.Email) || string.IsNullOrEmpty(model.Password) || model.Password != model.ConfirmPassword)
                 {
                     _logger.LogWarning("Invalid registration attempt with invalid model state or mismatched passwords");
@@ -204,19 +204,19 @@ namespace JwtIdentity.Controllers
 
                 _logger.LogDebug("User created successfully, adding to UnconfirmedUser role");
                 model.Response = "User created successfully";
-                
+
                 var roleResult = await _userManager.AddToRoleAsync(newUser, "UnconfirmedUser");
                 if (!roleResult.Succeeded)
                 {
                     _logger.LogWarning("Failed to add user to UnconfirmedUser role: {Email}", model.Email);
                 }
-                
+
                 _logger.LogDebug("Generating email verification link for user: {Email}", model.Email);
                 string link = await _apiAuthService.GenerateEmailVerificationLink(newUser);
-                
+
                 _logger.LogDebug("Sending email verification message to: {Email}", model.Email);
                 bool emailSent = _emailService.SendEmailVerificationMessage(newUser.Email, link);
-                
+
                 if (emailSent)
                 {
                     _logger.LogInformation("Email verification message sent successfully to: {Email}", model.Email);
@@ -250,19 +250,19 @@ namespace JwtIdentity.Controllers
             }
             catch (DbUpdateException dbEx)
             {
-                _logger.LogError(dbEx, "Database error occurred during registration for email {Email}: {Message}", 
+                _logger.LogError(dbEx, "Database error occurred during registration for email {Email}: {Message}",
                     model?.Email ?? "unknown", dbEx.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError, "A database error occurred. Please try again later.");
             }
             catch (InvalidOperationException ioEx)
             {
-                _logger.LogError(ioEx, "Invalid operation during registration for email {Email}: {Message}", 
+                _logger.LogError(ioEx, "Invalid operation during registration for email {Email}: {Message}",
                     model?.Email ?? "unknown", ioEx.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred during registration. Please try again later.");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Unexpected error during registration for email {Email}: {Message}", 
+                _logger.LogError(ex, "Unexpected error during registration for email {Email}: {Message}",
                     model?.Email ?? "unknown", ex.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
             }
@@ -274,19 +274,19 @@ namespace JwtIdentity.Controllers
         public async Task<ActionResult<List<ApplicationRoleViewModel>>> GetRolesAndPermissions()
         {
             _logger.LogInformation("Processing get roles and permissions request");
-            
+
             try
             {
                 _logger.LogDebug("Querying application roles from database");
                 List<ApplicationRole> applicationRoles = await _dbContext.ApplicationRoles
                     .Include(x => x.Claims)
                     .ToListAsync();
-                    
+
                 _logger.LogDebug("Retrieved {Count} application roles with their claims", applicationRoles.Count);
-                
+
                 _logger.LogDebug("Mapping application roles to view models");
                 var result = _mapper.Map<List<ApplicationRoleViewModel>>(applicationRoles);
-                
+
                 _logger.LogInformation("Successfully retrieved roles and permissions");
                 return Ok(result);
             }
@@ -313,7 +313,7 @@ namespace JwtIdentity.Controllers
         public async Task<ActionResult<RoleClaimViewModel>> AddPermissionFromRole([FromBody] RoleClaimViewModel model)
         {
             _logger.LogInformation("Processing add permission request for role ID: {RoleId}", model?.RoleId ?? "null");
-            
+
             try
             {
                 if (model == null)
@@ -331,7 +331,7 @@ namespace JwtIdentity.Controllers
                     return Problem("Error mapping role claim data");
                 }
 
-                _logger.LogDebug("Adding role claim to database: ClaimType={ClaimType}, ClaimValue={ClaimValue} for RoleId={RoleId}", 
+                _logger.LogDebug("Adding role claim to database: ClaimType={ClaimType}, ClaimValue={ClaimValue} for RoleId={RoleId}",
                     roleClaim.ClaimType, roleClaim.ClaimValue, roleClaim.RoleId);
                 _ = _dbContext.RoleClaims.Add(roleClaim);
 
@@ -350,25 +350,25 @@ namespace JwtIdentity.Controllers
                 _logger.LogDebug("Mapping role claim entity back to view model");
                 model = _mapper.Map<RoleClaimViewModel>(roleClaim);
 
-                _logger.LogInformation("Successfully added permission {ClaimValue} to role {RoleId}", 
+                _logger.LogInformation("Successfully added permission {ClaimValue} to role {RoleId}",
                     roleClaim.ClaimValue, roleClaim.RoleId);
                 return Ok(model);
             }
             catch (DbUpdateException dbEx)
             {
-                _logger.LogError(dbEx, "Database error occurred while adding permission for role {RoleId}: {Message}", 
+                _logger.LogError(dbEx, "Database error occurred while adding permission for role {RoleId}: {Message}",
                     model?.RoleId ?? "unknown", dbEx.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError, "A database error occurred. Please try again later.");
             }
             catch (InvalidOperationException ioEx)
             {
-                _logger.LogError(ioEx, "Invalid operation while adding permission for role {RoleId}: {Message}", 
+                _logger.LogError(ioEx, "Invalid operation while adding permission for role {RoleId}: {Message}",
                     model?.RoleId ?? "unknown", ioEx.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while adding the permission. Please try again later.");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Unexpected error while adding permission for role {RoleId}: {Message}", 
+                _logger.LogError(ex, "Unexpected error while adding permission for role {RoleId}: {Message}",
                     model?.RoleId ?? "unknown", ex.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
             }
@@ -380,7 +380,7 @@ namespace JwtIdentity.Controllers
         public async Task<ActionResult<bool>> DeletePermissionFromRole([FromRoute] int Id)
         {
             _logger.LogInformation("Processing delete permission request for ID: {Id}", Id);
-            
+
             try
             {
                 if (Id == 0)
@@ -398,7 +398,7 @@ namespace JwtIdentity.Controllers
                     return NotFound("Permission not found");
                 }
 
-                _logger.LogDebug("Removing role claim: ClaimType={ClaimType}, ClaimValue={ClaimValue} from RoleId={RoleId}", 
+                _logger.LogDebug("Removing role claim: ClaimType={ClaimType}, ClaimValue={ClaimValue} from RoleId={RoleId}",
                     roleClaim.ClaimType, roleClaim.ClaimValue, roleClaim.RoleId);
                 _ = _dbContext.RoleClaims.Remove(roleClaim);
 
@@ -414,25 +414,25 @@ namespace JwtIdentity.Controllers
                 _logger.LogDebug("Saving changes to database");
                 _ = await _dbContext.SaveChangesAsync();
 
-                _logger.LogInformation("Successfully deleted permission {ClaimValue} from role {RoleId}", 
+                _logger.LogInformation("Successfully deleted permission {ClaimValue} from role {RoleId}",
                     roleClaim.ClaimValue, roleClaim.RoleId);
                 return Ok(true);
             }
             catch (DbUpdateException dbEx)
             {
-                _logger.LogError(dbEx, "Database error occurred while deleting permission with ID {Id}: {Message}", 
+                _logger.LogError(dbEx, "Database error occurred while deleting permission with ID {Id}: {Message}",
                     Id, dbEx.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError, "A database error occurred. Please try again later.");
             }
             catch (InvalidOperationException ioEx)
             {
-                _logger.LogError(ioEx, "Invalid operation while deleting permission with ID {Id}: {Message}", 
+                _logger.LogError(ioEx, "Invalid operation while deleting permission with ID {Id}: {Message}",
                     Id, ioEx.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while deleting the permission. Please try again later.");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Unexpected error while deleting permission with ID {Id}: {Message}", 
+                _logger.LogError(ex, "Unexpected error while deleting permission with ID {Id}: {Message}",
                     Id, ex.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
             }
@@ -442,7 +442,7 @@ namespace JwtIdentity.Controllers
         public async Task<IActionResult> ConfirmEmail(string token, string email)
         {
             _logger.LogInformation("Processing email confirmation request for email: {Email}", email ?? "null");
-            
+
             try
             {
                 if (string.IsNullOrEmpty(token) || string.IsNullOrEmpty(email))
@@ -462,7 +462,7 @@ namespace JwtIdentity.Controllers
                     _logger.LogWarning(fEx, "Invalid token format for email {Email}", email);
                     return BadRequest("Invalid token format");
                 }
-                
+
                 var codeDecoded = Encoding.UTF8.GetString(codeDecodedBytes);
                 _logger.LogDebug("Token decoded successfully");
 
@@ -484,13 +484,13 @@ namespace JwtIdentity.Controllers
                     {
                         _logger.LogWarning("Failed to remove user from UnconfirmedUser role: {Email}", email);
                     }
-                    
+
                     var addRoleResult = await _userManager.AddToRoleAsync(user, "User");
                     if (!addRoleResult.Succeeded)
                     {
                         _logger.LogWarning("Failed to add user to User role: {Email}", email);
                     }
-                    
+
                     _logger.LogInformation("Email successfully confirmed for user: {Email}", email);
                     return LocalRedirect("/users/emailconfirmed");
                 }
@@ -503,19 +503,19 @@ namespace JwtIdentity.Controllers
             }
             catch (DbUpdateException dbEx)
             {
-                _logger.LogError(dbEx, "Database error occurred while confirming email for {Email}: {Message}", 
+                _logger.LogError(dbEx, "Database error occurred while confirming email for {Email}: {Message}",
                     email ?? "unknown", dbEx.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError, "A database error occurred. Please try again later.");
             }
             catch (InvalidOperationException ioEx)
             {
-                _logger.LogError(ioEx, "Invalid operation while confirming email for {Email}: {Message}", 
+                _logger.LogError(ioEx, "Invalid operation while confirming email for {Email}: {Message}",
                     email ?? "unknown", ioEx.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while confirming your email. Please try again later.");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Unexpected error while confirming email for {Email}: {Message}", 
+                _logger.LogError(ex, "Unexpected error while confirming email for {Email}: {Message}",
                     email ?? "unknown", ex.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
             }
@@ -525,7 +525,7 @@ namespace JwtIdentity.Controllers
         public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordViewModel model)
         {
             _logger.LogInformation("Processing forgot password request for email: {Email}", model?.Email ?? "null");
-            
+
             try
             {
                 if (!ModelState.IsValid || model?.Email == null)
@@ -584,19 +584,19 @@ namespace JwtIdentity.Controllers
             }
             catch (DbUpdateException dbEx)
             {
-                _logger.LogError(dbEx, "Database error occurred while processing forgot password request for {Email}: {Message}", 
+                _logger.LogError(dbEx, "Database error occurred while processing forgot password request for {Email}: {Message}",
                     model?.Email ?? "unknown", dbEx.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError, new { Success = false, Message = "A database error occurred. Please try again later." });
             }
             catch (InvalidOperationException ioEx)
             {
-                _logger.LogError(ioEx, "Invalid operation while processing forgot password request for {Email}: {Message}", 
+                _logger.LogError(ioEx, "Invalid operation while processing forgot password request for {Email}: {Message}",
                     model?.Email ?? "unknown", ioEx.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError, new { Success = false, Message = "An error occurred while processing your request. Please try again later." });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Unexpected error while processing forgot password request for {Email}: {Message}", 
+                _logger.LogError(ex, "Unexpected error while processing forgot password request for {Email}: {Message}",
                     model?.Email ?? "unknown", ex.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError, new { Success = false, Message = "An unexpected error occurred. Please try again later." });
             }
@@ -606,7 +606,7 @@ namespace JwtIdentity.Controllers
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordViewModel model)
         {
             _logger.LogInformation("Processing password reset request for email: {Email}", model?.Email ?? "null");
-            
+
             try
             {
                 if (!ModelState.IsValid || model?.Email == null || model?.Token == null || model?.Password == null)
@@ -667,19 +667,19 @@ namespace JwtIdentity.Controllers
             }
             catch (DbUpdateException dbEx)
             {
-                _logger.LogError(dbEx, "Database error occurred while processing password reset for {Email}: {Message}", 
+                _logger.LogError(dbEx, "Database error occurred while processing password reset for {Email}: {Message}",
                     model?.Email ?? "unknown", dbEx.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError, new { Success = false, Message = "A database error occurred. Please try again later." });
             }
             catch (InvalidOperationException ioEx)
             {
-                _logger.LogError(ioEx, "Invalid operation while processing password reset for {Email}: {Message}", 
+                _logger.LogError(ioEx, "Invalid operation while processing password reset for {Email}: {Message}",
                     model?.Email ?? "unknown", ioEx.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError, new { Success = false, Message = "An error occurred while processing your request. Please try again later." });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Unexpected error while processing password reset for {Email}: {Message}", 
+                _logger.LogError(ex, "Unexpected error while processing password reset for {Email}: {Message}",
                     model?.Email ?? "unknown", ex.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError, new { Success = false, Message = "An unexpected error occurred. Please try again later." });
             }
@@ -689,7 +689,7 @@ namespace JwtIdentity.Controllers
         public IActionResult HandlePasswordResetEmailClick(string email, string token)
         {
             _logger.LogInformation("Processing password reset email click for email: {Email}", email ?? "null");
-            
+
             try
             {
                 if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(token))
@@ -708,7 +708,7 @@ namespace JwtIdentity.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Unexpected error while handling password reset email click for {Email}: {Message}", 
+                _logger.LogError(ex, "Unexpected error while handling password reset email click for {Email}: {Message}",
                     email ?? "unknown", ex.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
             }
