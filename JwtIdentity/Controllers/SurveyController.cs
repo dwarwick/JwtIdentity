@@ -90,12 +90,25 @@ namespace JwtIdentity.Controllers
                     return Unauthorized();
                 }
 
-                _logger.LogInformation("Retrieving surveys created by user {UserId}", createdById);
+                bool isAdmin = User.IsInRole("Admin");
 
-                var surveys = await _context.Surveys
+                _logger.LogInformation(
+                    isAdmin
+                        ? "Retrieving surveys for admin user {UserId}"
+                        : "Retrieving surveys created by user {UserId}",
+                    createdById);
+
+                var query = _context.Surveys
                     .Include(s => s.Questions.OrderBy(q => q.QuestionNumber))
-                    .Where(s => s.CreatedById == createdById)
-                    .ToListAsync();
+                    .Include(s => s.CreatedBy)
+                    .AsQueryable();
+
+                if (!isAdmin)
+                {
+                    query = query.Where(s => s.CreatedById == createdById);
+                }
+
+                var surveys = await query.ToListAsync();
 
                 // Map to view models
                 var surveyViewModels = _mapper.Map<IEnumerable<SurveyViewModel>>(surveys).ToList();
@@ -114,7 +127,11 @@ namespace JwtIdentity.Controllers
                     surveyViewModels[i].NumberOfResponses = responseCount;
                 }
 
-                _logger.LogInformation("Retrieved {Count} surveys created by user {UserId}", surveys.Count, createdById);
+                _logger.LogInformation(
+                    isAdmin
+                        ? "Retrieved {Count} surveys for admin user {UserId}"
+                        : "Retrieved {Count} surveys created by user {UserId}",
+                    surveys.Count, createdById);
                 return Ok(surveyViewModels);
             }
             catch (Exception ex)

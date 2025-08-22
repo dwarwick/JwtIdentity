@@ -158,6 +158,17 @@ namespace JwtIdentity.Tests.ControllerTests
         }
 
         [Test]
+        public async Task GetSurveysICreated_Admin_ReturnsAllSurveys()
+        {
+            HttpContext.User = CreateClaimsPrincipal(1, "admin", new[] { "Admin" });
+            var result = await _controller.GetSurveysICreated();
+            Assert.That(result.Result, Is.InstanceOf<OkObjectResult>());
+            var ok = result.Result as OkObjectResult;
+            var surveys = ok!.Value as IEnumerable<SurveyViewModel>;
+            Assert.That(surveys!.Count(), Is.EqualTo(_mockSurveys.Count));
+        }
+
+        [Test]
         public async Task GetSurveysIAnswered_ReturnsSurveysUserAnswered()
         {
             // This test assumes the user has answered at least one question in survey 1
