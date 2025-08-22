@@ -154,6 +154,10 @@
         </GridColumn>
         <GridColumn Field="Title" HeaderText="Title" Width="200" />
         <GridColumn Field="Description" HeaderText="Description" Width="400" />
+        @if (IsAdmin)
+        {
+            <GridColumn Field="CreatedBy.UserName" HeaderText="Created By" Width="160" AllowSorting="true" AllowFiltering="true" />
+        }
         <GridColumn Field="NumberOfResponses" HeaderText="Responses" Width="120" TextAlign="TextAlign.Center" />
         <GridColumn Field="CreatedDate" HeaderText="Created Date" Width="160" Type=" ColumnType.Date" Format="d" />
     </GridColumns>

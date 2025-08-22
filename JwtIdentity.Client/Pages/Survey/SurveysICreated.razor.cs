@@ -1,4 +1,6 @@
-﻿namespace JwtIdentity.Client.Pages.Survey
+﻿using JwtIdentity.Client.Services;
+
+namespace JwtIdentity.Client.Pages.Survey
 {
     public class SurveysICreatedModel : BlazorBase, IBrowserViewportObserver, IAsyncDisposable
     {
@@ -6,6 +8,8 @@
         protected IBrowserViewportService BrowserViewportService { get; set; }
 
         public List<SurveyViewModel> UserSurveys { get; set; } = new();
+
+        protected bool IsAdmin => ((CustomAuthStateProvider)AuthStateProvider).CurrentUser?.Roles.Contains("Admin") ?? false;
 
         protected int FrozenColumns { get; set; }
 
