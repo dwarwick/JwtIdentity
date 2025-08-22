@@ -2,67 +2,67 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 	<url>
 		<loc>https://surveyshark.site</loc>
-		<lastmod>2025-08-09</lastmod>
+		<lastmod>2025-08-22</lastmod>
 		<changefreq>monthly</changefreq>
 		<priority>0.8</priority>
 	</url>
 	<url>
 		<loc>https://surveyshark.site/documentation</loc>
-		<lastmod>2025-08-09</lastmod>
+		<lastmod>2025-08-22</lastmod>
 		<changefreq>monthly</changefreq>
 		<priority>0.6</priority>
 	</url>
 	<url>
 		<loc>https://surveyshark.site/login</loc>
-		<lastmod>2025-04-16</lastmod>
+		<lastmod>2025-08-22</lastmod>
 		<changefreq>monthly</changefreq>
 		<priority>0.5</priority>
 	</url>
 	<url>
 		<loc>https://surveyshark.site/register</loc>
-		<lastmod>2025-04-16</lastmod>
+		<lastmod>2025-08-22</lastmod>
 		<changefreq>monthly</changefreq>
 		<priority>0.5</priority>
 	</url>
   <url>
     <loc>https://surveyshark.site/privacy-policy</loc>
-    <lastmod>2025-08-03</lastmod>
+    <lastmod>2025-08-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
     <loc>https://surveyshark.site/terms-of-service</loc>
-    <lastmod>2025-08-03</lastmod>
+    <lastmod>2025-08-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
     <loc>https://surveyshark.site/cookie-policy</loc>
-    <lastmod>2025-08-03</lastmod>
+    <lastmod>2025-08-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
     <loc>https://surveyshark.site/blogs</loc>
-    <lastmod>2025-08-03</lastmod>
+    <lastmod>2025-08-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://surveyshark.site/learn-more/ai</loc>
-    <lastmod>2025-08-09</lastmod>
+    <lastmod>2025-08-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://surveyshark.site/learn-more/analytics</loc>
-    <lastmod>2025-08-09</lastmod>
+    <lastmod>2025-08-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://surveyshark.site/learn-more/mobile</loc>
-    <lastmod>2025-08-09</lastmod>
+    <lastmod>2025-08-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
