@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
+using JwtIdentity.Services;
+using Microsoft.Extensions.Configuration;
 
 namespace JwtIdentity.Controllers
 {
@@ -11,14 +13,18 @@ namespace JwtIdentity.Controllers
         private readonly IApiAuthService authService;
         private readonly ILogger<SurveyController> _logger;
         private readonly IOpenAi _openAiService;
+        private readonly IEmailService _emailService;
+        private readonly IConfiguration _configuration;
 
-        public SurveyController(ApplicationDbContext context, IMapper mapper, IApiAuthService authService, ILogger<SurveyController> logger, IOpenAi openAiService)
+        public SurveyController(ApplicationDbContext context, IMapper mapper, IApiAuthService authService, ILogger<SurveyController> logger, IOpenAi openAiService, IEmailService emailService, IConfiguration configuration)
         {
             _context = context;
             _mapper = mapper;
             this.authService = authService;
             _logger = logger;
             _openAiService = openAiService;
+            _emailService = emailService;
+            _configuration = configuration;
         }
 
         // GET: api/Survey/5
@@ -196,6 +202,7 @@ namespace JwtIdentity.Controllers
                 }
 
                 var survey = _mapper.Map<Survey>(surveyViewModel);
+                var isNewSurvey = survey.Id == 0;
 
                 if (survey == null)
                 {
@@ -203,7 +210,7 @@ namespace JwtIdentity.Controllers
                     return BadRequest();
                 }
 
-                if (survey.Id == 0)
+                if (isNewSurvey)
                 { // new survey
                     _logger.LogInformation("Creating new survey with title: {Title}", survey.Title);
                     survey.CreatedById = createdById;
@@ -405,6 +412,25 @@ namespace JwtIdentity.Controllers
                 }
 
                 await _context.SaveChangesAsync();
+
+                if (isNewSurvey)
+                {
+                    var user = await _context.Users.FindAsync(createdById);
+                    var userName = user?.UserName ?? createdById.ToString();
+                    var customerServiceEmail = _configuration["EmailSettings:CustomerServiceEmail"];
+                    var adminBody = $"<p>User {userName} created a new survey.</p><p>Title: {survey.Title}</p><p>Description: {survey.Description}</p>";
+                    if (!string.IsNullOrEmpty(customerServiceEmail))
+                    {
+                        await _emailService.SendEmailAsync(customerServiceEmail, $"Survey Created by {userName}", adminBody);
+                    }
+
+                    if (!string.IsNullOrEmpty(user?.Email))
+                    {
+                        var userBody = $"<p>Congratulations {userName}, you created a new survey!</p><p>Title: {survey.Title}</p><p>Description: {survey.Description}</p>";
+                        await _emailService.SendEmailAsync(user.Email, $"Survey Created: {survey.Title}", userBody);
+                    }
+                }
+
                 _logger.LogInformation("Successfully saved survey {SurveyId} with title: {Title}", survey.Id, survey.Title);
                 return CreatedAtAction(nameof(PostSurvey), new { id = survey.Id }, _mapper.Map<SurveyViewModel>(survey));
             }
@@ -450,6 +476,11 @@ namespace JwtIdentity.Controllers
                     return NotFound("Survey not found");
                 }
 
+                var userId = authService.GetUserId(User);
+                var user = await _context.Users.FindAsync(userId);
+                var userName = user?.UserName ?? userId.ToString();
+                var wasPublished = survey.Published;
+
                 // Update basic properties only
                 survey.Title = surveyViewModel.Title;
                 survey.Description = surveyViewModel.Description;
@@ -459,6 +490,23 @@ namespace JwtIdentity.Controllers
 
                 _ = await _context.SaveChangesAsync();
                 _logger.LogInformation("Successfully updated survey: {SurveyId}", survey.Id);
+
+                if (!wasPublished && survey.Published)
+                {
+                    var customerServiceEmail = _configuration["EmailSettings:CustomerServiceEmail"];
+                    var adminBody = $"<p>User {userName} published a survey.</p><p>Title: {survey.Title}</p><p>Description: {survey.Description}</p>";
+                    if (!string.IsNullOrEmpty(customerServiceEmail))
+                    {
+                        await _emailService.SendEmailAsync(customerServiceEmail, $"Survey Published by {userName}", adminBody);
+                    }
+
+                    if (!string.IsNullOrEmpty(user?.Email))
+                    {
+                        var userBody = $"<p>Congratulations {userName}, your survey has been published!</p><p>Title: {survey.Title}</p><p>Description: {survey.Description}</p>";
+                        await _emailService.SendEmailAsync(user.Email, $"Survey Published: {survey.Title}", userBody);
+                    }
+                }
+
                 return Ok(_mapper.Map<SurveyViewModel>(survey));
             }
             catch (DbUpdateConcurrencyException ex)

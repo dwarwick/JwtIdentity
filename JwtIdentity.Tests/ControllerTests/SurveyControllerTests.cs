@@ -16,6 +16,7 @@ namespace JwtIdentity.Tests.ControllerTests
         private SurveyController _controller = null!;
         private List<Survey> _mockSurveys = null!;
         private List<Question> _mockQuestions = null!;
+        private List<ApplicationUser> _mockUsers = null!;
         private Mock<IOpenAi> MockOpenAiService = null!;
 
         [SetUp]
@@ -28,7 +29,9 @@ namespace JwtIdentity.Tests.ControllerTests
             SetupMockApiAuthService();
             MockOpenAiService = new Mock<IOpenAi>();
             MockOpenAiService.Setup(x => x.GenerateSurveyAsync(It.IsAny<string>(), "")).ReturnsAsync(new SurveyViewModel { Questions = new List<QuestionViewModel>() });
-            _controller = new SurveyController(MockDbContext, MockMapper.Object, MockApiAuthService.Object, MockLogger.Object, MockOpenAiService.Object)
+            MockEmailService.Setup(e => e.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(true);
+            MockConfiguration.Setup(c => c["EmailSettings:CustomerServiceEmail"]).Returns("admin@example.com");
+            _controller = new SurveyController(MockDbContext, MockMapper.Object, MockApiAuthService.Object, MockLogger.Object, MockOpenAiService.Object, MockEmailService.Object, MockConfiguration.Object)
             {
                 ControllerContext = new ControllerContext { HttpContext = HttpContext }
             };
@@ -65,6 +68,11 @@ namespace JwtIdentity.Tests.ControllerTests
                 new TrueFalseQuestion { Id = 2, Text = "Q2", SurveyId = 1, QuestionNumber = 2, QuestionType = QuestionType.TrueFalse, CreatedById = 1 }
             };
             _mockSurveys[0].Questions.AddRange(_mockQuestions.Where(q => q.SurveyId == 1));
+            _mockUsers = new List<ApplicationUser>
+            {
+                new ApplicationUser { Id = 1, UserName = "user1", Email = "user1@example.com" },
+                new ApplicationUser { Id = 2, UserName = "user2", Email = "user2@example.com" }
+            };
         }
 
         private void AddDataToDbContext()
@@ -73,6 +81,8 @@ namespace JwtIdentity.Tests.ControllerTests
                 MockDbContext.Surveys.Add(survey);
             foreach (var question in _mockQuestions)
                 MockDbContext.Questions.Add(question);
+            foreach (var user in _mockUsers)
+                MockDbContext.ApplicationUsers.Add(user);
             MockDbContext.SaveChanges();
         }
 
@@ -167,6 +177,25 @@ namespace JwtIdentity.Tests.ControllerTests
             MockMapper.Setup(m => m.Map<Survey>(It.IsAny<SurveyViewModel>())).Returns(new Survey { Id = 0, Title = "New Survey", Description = "Desc", Questions = new List<Question>() });
             var result = await _controller.PostSurvey(surveyVm);
             Assert.That(result.Result, Is.InstanceOf<CreatedAtActionResult>());
+            MockEmailService.Verify(e => e.SendEmailAsync("admin@example.com", It.IsAny<string>(), It.Is<string>(b => b.Contains("New Survey"))), Times.Once);
+            MockEmailService.Verify(e => e.SendEmailAsync("user1@example.com", It.IsAny<string>(), It.Is<string>(b => b.Contains("New Survey"))), Times.Once);
+        }
+
+        [Test]
+        public async Task PutSurvey_PublishSurvey_SendsEmails()
+        {
+            MockApiAuthService.Setup(a => a.GetUserId(It.IsAny<ClaimsPrincipal>())).Returns(2);
+            var surveyVm = new SurveyViewModel
+            {
+                Id = 2,
+                Title = "Survey 2",
+                Description = "Description 2",
+                Published = true
+            };
+            var result = await _controller.PutSurvey(surveyVm);
+            Assert.That(result, Is.InstanceOf<OkObjectResult>());
+            MockEmailService.Verify(e => e.SendEmailAsync("admin@example.com", It.IsAny<string>(), It.Is<string>(b => b.Contains("Survey 2"))), Times.Once);
+            MockEmailService.Verify(e => e.SendEmailAsync("user2@example.com", It.IsAny<string>(), It.Is<string>(b => b.Contains("Survey 2"))), Times.Once);
         }
 
         [Test]

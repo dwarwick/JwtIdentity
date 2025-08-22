@@ -99,6 +99,14 @@ namespace JwtIdentity.Controllers
                     });
                     _ = await _dbContext.SaveChangesAsync();
 
+                    var customerServiceEmail = _configuration["EmailSettings:CustomerServiceEmail"];
+                    if (!string.IsNullOrEmpty(customerServiceEmail))
+                    {
+                        var subject = $"User Login: {user.UserName}";
+                        var body = $"<p>User {user.UserName} has logged in.</p>";
+                        await _emailService.SendEmailAsync(customerServiceEmail, subject, body);
+                    }
+
                     _logger.LogInformation("User {Username} successfully logged in", model.Username);
                     return Ok(applicationUserViewModel);
                 }
@@ -228,6 +236,14 @@ namespace JwtIdentity.Controllers
                     LoggedAt = DateTime.UtcNow
                 });
                 _ = await _dbContext.SaveChangesAsync();
+
+                var customerServiceEmail = _configuration["EmailSettings:CustomerServiceEmail"];
+                if (!string.IsNullOrEmpty(customerServiceEmail))
+                {
+                    var subject = $"New User Registration: {newUser.UserName}";
+                    var body = $"<p>User {newUser.UserName} has registered for a new account.</p>";
+                    await _emailService.SendEmailAsync(customerServiceEmail, subject, body);
+                }
 
                 _logger.LogInformation("User {Email} successfully registered", model.Email);
                 return Ok(model);

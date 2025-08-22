@@ -37,6 +37,11 @@ namespace JwtIdentity.Tests.ControllerTests
             
             // Setup email service mock
             _mockEmailService = new Mock<IEmailService>();
+            _mockEmailService.Setup(e => e.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(true);
+            _mockEmailService.Setup(e => e.SendEmailVerificationMessage(It.IsAny<string>(), It.IsAny<string>())).Returns(true);
+            MockEmailService = _mockEmailService;
+
+            MockConfiguration.Setup(c => c["EmailSettings:CustomerServiceEmail"]).Returns("admin@example.com");
             
             // Create the controller with the mocked dependencies
             _controller = new AuthController(
@@ -110,6 +115,8 @@ namespace JwtIdentity.Tests.ControllerTests
             Assert.That(userViewModel, Is.Not.Null);
             Assert.That(userViewModel.UserName, Is.EqualTo(user.UserName));
             Assert.That(userViewModel.Token, Is.EqualTo("test-jwt-token"));
+
+            _mockEmailService.Verify(e => e.SendEmailAsync("admin@example.com", It.IsAny<string>(), It.Is<string>(b => b.Contains("testuser"))), Times.Once);
         }
         
         [Test]
@@ -339,9 +346,11 @@ namespace JwtIdentity.Tests.ControllerTests
             
             // Verify email was sent
             _mockEmailService.Verify(e => e.SendEmailVerificationMessage(
-                model.Email, 
-                It.IsAny<string>()), 
+                model.Email,
+                It.IsAny<string>()),
                 Times.Once);
+
+            _mockEmailService.Verify(e => e.SendEmailAsync("admin@example.com", It.IsAny<string>(), It.Is<string>(b => b.Contains(model.Email))), Times.Once);
         }
         
         [Test]
@@ -845,9 +854,11 @@ namespace JwtIdentity.Tests.ControllerTests
             
             // Verify email was sent
             _mockEmailService.Verify(e => e.SendEmailVerificationMessage(
-                model.Email, 
-                It.IsAny<string>()), 
+                model.Email,
+                It.IsAny<string>()),
                 Times.Once);
+
+            _mockEmailService.Verify(e => e.SendEmailAsync("admin@example.com", It.IsAny<string>(), It.Is<string>(b => b.Contains(model.Email))), Times.Once);
         }
     }
 
