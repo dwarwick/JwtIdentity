@@ -40,7 +40,21 @@ function isMobile() {
 
 function scrollToElement(id) {
     const element = document.getElementById(id);
-    if (element) {
+    if (!element) return;
+
+    // The application uses a scrollable ".main-content" container rather than the
+    // document body. "scrollIntoView" on the element may try to scroll the body,
+    // which has overflow hidden, resulting in no movement. Explicitly scroll the
+    // container if it exists, falling back to the default behaviour otherwise.
+    const container = document.querySelector('.main-content');
+
+    if (container) {
+        const rect = element.getBoundingClientRect();
+        const containerRect = container.getBoundingClientRect();
+        const offset = rect.top - containerRect.top + container.scrollTop;
+        const top = offset - container.clientHeight / 2 + rect.height / 2;
+        container.scrollTo({ top, behavior: 'smooth' });
+    } else {
         element.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 }
