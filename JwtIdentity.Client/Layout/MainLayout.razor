@@ -49,6 +49,13 @@
                     <MudLink Class="d-none d-md-block" Href="javascript:void(0)" OnClick="OpenCookieSettings" Underline="Underline.None" Typo="Typo.inherit">Cookie Settings</MudLink>
                     <span class="d-none d-md-block">|</span>
                     <MudLink Class="d-none d-md-block" Href="/terms-of-service" Underline="Underline.None" Typo="Typo.inherit">Terms of Service</MudLink>
+                    <span class="d-none d-md-block">|</span>
+                    
+                    @if (!string.IsNullOrEmpty(AppSettings?.EmailSettings?.CustomerServiceEmail))
+                    {
+                        <MudLink Class="d-none d-md-block" Href="@($"mailto://{AppSettings.EmailSettings.CustomerServiceEmail}")" Underline="Underline.None" Typo="Typo.inherit">Contact Us</MudLink>
+                        <span class="d-none d-md-block">|</span>
+                    }                    
                 </MudStack>
             </MudText>
         </div>
@@ -90,7 +97,7 @@
 
 @code {
     #nullable enable
-    
+
     MudTheme mudTheme = new();
     bool _isDarkMode;
     string _theme = "light";
@@ -107,6 +114,8 @@
 
     IJSObjectReference? module;
 
+    protected AppSettings AppSettings { get; set; } = new();
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender || !OperatingSystem.IsBrowser())
@@ -116,6 +125,8 @@
 
         try
         {
+            AppSettings = await ApiService.GetAsync<AppSettings>("/api/appsettings");
+
             // reference app.js in the wwwroot folder
             module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./js/app.js");
 
@@ -167,6 +178,8 @@
             {
                 await JSRuntime.InvokeVoidAsync("loadGoogleAds");
             }
+
+            StateHasChanged();
         }
         catch (Exception ex)
         {

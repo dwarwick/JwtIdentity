@@ -3,7 +3,6 @@ using JwtIdentity.Client.Helpers;
 using JwtIdentity.Services;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using Syncfusion.Licensing;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<HeadOutlet>("head::after");
@@ -17,12 +16,6 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.
 
 builder.Services.AddScoped<IApiService, ApiService>();
 builder.Services.AddScoped<SurveyHubClient>();
-
-var syncfusionLicense = builder.Configuration["Syncfusion:LicenseKey"];
-if (!string.IsNullOrWhiteSpace(syncfusionLicense))
-{
-    SyncfusionLicenseProvider.RegisterLicense(syncfusionLicense);
-}
 
 builder.Services.AddSyncfusionBlazor();
 builder.Services.AddBlazoredLocalStorage();

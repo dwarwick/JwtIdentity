@@ -3,11 +3,10 @@ using Hangfire;
 using Hangfire.SqlServer;
 using JwtIdentity.Client.Helpers;
 using JwtIdentity.Client.Services;
+using JwtIdentity.Hubs;
 using JwtIdentity.Middleware;
-using JwtIdentity.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.OData;
@@ -15,13 +14,11 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using MudBlazor;
 using MudBlazor.Services;
-using JwtIdentity.Hubs;
 using Serilog;
 using Serilog.Events;
 using Serilog.Sinks.MSSqlServer;
 using Serilog.Sinks.RollingFileAlternate;
 using Syncfusion.Blazor;
-using Syncfusion.Licensing;
 using System.Data;
 using System.Text;
 
@@ -126,11 +123,6 @@ builder.Services.AddScoped<ISurveyCompletionNotifier, SurveyCompletionNotifier>(
 builder.Services.AddScoped<JwtIdentity.Services.BackgroundJobs.BackgroundJobService>();
 builder.Services.AddHttpClient<IOpenAi, OpenAiService>();
 // Services required for prerendering shared client components
-var syncfusionLicense = builder.Configuration["Syncfusion:LicenseKey"];
-if (!string.IsNullOrWhiteSpace(syncfusionLicense))
-{
-    SyncfusionLicenseProvider.RegisterLicense(syncfusionLicense);
-}
 builder.Services.AddSyncfusionBlazor();
 builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddCascadingAuthenticationState();
