@@ -9,6 +9,7 @@ namespace JwtIdentity.Client.Pages.Survey
 
         protected bool IsDemoUser { get; set; }
         protected int DemoStep { get; set; }
+        private int _previousDemoStep = -1;
         protected Origin AnchorOrigin { get; set; } = Origin.BottomRight;
         protected Origin TransformOrigin { get; set; } = Origin.TopLeft;
         protected bool QuestionsPanelExpanded { get; set; }
@@ -122,6 +123,32 @@ namespace JwtIdentity.Client.Pages.Survey
                     TransformOrigin = Origin.TopCenter;
                 }
                 StateHasChanged();
+            }
+
+            if (IsDemoUser && DemoStep != _previousDemoStep)
+            {
+                _previousDemoStep = DemoStep;
+                await ScrollToCurrentDemoStep();
+            }
+        }
+
+        private async Task ScrollToCurrentDemoStep()
+        {
+            var id = DemoStep switch
+            {
+                0 => "QuestionsPanel",
+                1 or 2 or 4 => "QuestionList",
+                3 or 6 => "Text",
+                5 => "QuestionTypeSelect",
+                7 => "PresetChoices",
+                8 => "SaveQuestionBtn",
+                9 => "PublishSurveyBtn",
+                _ => null
+            };
+
+            if (!string.IsNullOrEmpty(id))
+            {
+                await JSRuntime.InvokeVoidAsync("scrollToElement", id);
             }
         }
 

@@ -7,7 +7,7 @@
 
 <MudStack Row="true" Justify="Justify.SpaceBetween">
     <MudText Typo="Typo.h4">Edit Survey</MudText>
-    <MudButton Class="mt-1" ButtonType="ButtonType.Button" Variant="Variant.Filled" Color="Color.Primary" OnClick="PublishSurvey" Disabled="@(Survey.Published)">Publish Survey</MudButton>
+    <MudButton Id="PublishSurveyBtn" Class="mt-1" ButtonType="ButtonType.Button" Variant="Variant.Filled" Color="Color.Primary" OnClick="PublishSurvey" Disabled="@(Survey.Published)">Publish Survey</MudButton>
     <MudPopover Open="@ShowDemoStep(9)" AnchorOrigin="@AnchorOrigin" TransformOrigin="@TransformOrigin" Fixed="true">
         <MudPaper Class="pa-4">
             <MudText Typo="Typo.body2">Now click the Publish Survey button to publish the survey.</MudText>
@@ -22,15 +22,15 @@
     @if (Survey?.Questions != null && Survey.Questions.Count > 0)
     {
 
-            <MudExpansionPanel @bind-Expanded="QuestionsPanelExpanded">
+            <MudExpansionPanel Id="QuestionsPanel" @bind-Expanded="QuestionsPanelExpanded">
                 <TitleContent>
                     <div class="mud-expand-panel-text">Survey Questions (Select a Question to Edit it)</div>
                     <MudText Typo="Typo.caption" Align="Align.Center" Class="text-emphasis">Drag and Drop Questions to Reorder them, or click the Delete Icon to Remove a Question</MudText>
                 </TitleContent>
                 <ChildContent>
-                    
+
                 <MudPaper Class="p-2 flex-1">
-                    <MudList T="QuestionViewModel" Dense="true" SelectedValue="SelectedQuestion" SelectionMode="MudBlazor.SelectionMode.ToggleSelection" SelectedValueChanged="QuestionSelected">
+                    <MudList Id="QuestionList" T="QuestionViewModel" Dense="true" SelectedValue="SelectedQuestion" SelectionMode="MudBlazor.SelectionMode.ToggleSelection" SelectedValueChanged="QuestionSelected">
                         @foreach (var question in Survey.Questions)
                         {
                             <DragAndDrop TItem="QuestionViewModel" Items="Survey.Questions" Item="question" ItemsChanged="DroppedQuestion">
@@ -84,7 +84,7 @@
                 <MudExpansionPanel @ref="ManualQuestionPanel" @bind-Expanded="@ManualQuestionPanelExpanded" Text="Create Question Manually">
                     <MudPaper Class="p-2">
                         <MudStack Spacing="1">
-                            <MudSelect Label="Select the Question Type"
+                            <MudSelect Id="QuestionTypeSelect" Label="Select the Question Type"
                                        Value="@SelectedQuestionType"
                                        ValueChanged="@((string questionType) => HandleSelectedQuestionType(questionType))"
                                        Variant="Variant.Filled"
@@ -104,7 +104,7 @@
                             </MudPopover>
 
                              <MudText Typo="Typo.h6" Class="mt-5">Create a @StringHelper.PascalCaseToWords(SelectedQuestionType) Question</MudText>
-                             <MudTextField id="Text" Label="Question Text" @bind-Value="QuestionText" Variant="Variant.Filled" Lines="1" MaxLines="5" AutoGrow="true" Immediate="true" Counter="500" MaxLength="500" />
+                             <MudTextField Id="Text" Label="Question Text" @bind-Value="QuestionText" Variant="Variant.Filled" Lines="1" MaxLines="5" AutoGrow="true" Immediate="true" Counter="500" MaxLength="500" />
                             <MudPopover Open="@ShowDemoStep(3)" AnchorOrigin="@AnchorOrigin" TransformOrigin="@TransformOrigin" Fixed="true">
                                 <MudPaper Class="pa-4">
                                     <MudText Typo="Typo.body2" Style="white-space: pre-line">Scroll down to edit the question text.
@@ -122,7 +122,7 @@ If you edit a question, click the Save button to save the changes. If you are ha
                         </MudStack>
 
                         <MudStack Row="true">
-                            <MudButton ButtonType="ButtonType.Button" Variant="Variant.Filled" Color="Color.Primary" OnClick="AddQuestionToSurvey" Disabled="@AddQuestionToSurveyDisabled">Save Question</MudButton>
+                            <MudButton Id="SaveQuestionBtn" ButtonType="ButtonType.Button" Variant="Variant.Filled" Color="Color.Primary" OnClick="AddQuestionToSurvey" Disabled="@AddQuestionToSurveyDisabled">Save Question</MudButton>
                             <MudPopover Open="@ShowDemoStep(8)" AnchorOrigin="@AnchorOrigin" TransformOrigin="@TransformOrigin" Fixed="true">
                                 <MudPaper Class="pa-4">
                                     <MudText Typo="Typo.body2">You can see the choices down below. Click Save Question button to save the question.</MudText>
@@ -138,7 +138,7 @@ If you edit a question, click the Save button to save the changes. If you are ha
                         <MudPaper>
                             <MudText Typo="Typo.h6" Class="mb-1">Add the Question Choices</MudText>
 
-                            <MudSelect Label="Preset Choices (Will overwrite existing choices)" T="string" @bind-Value="SelectedPresetChoice" Variant="Variant.Filled" Dense="true" Class="mb-2">
+                            <MudSelect Id="PresetChoices" Label="Preset Choices (Will overwrite existing choices)" T="string" @bind-Value="SelectedPresetChoice" Variant="Variant.Filled" Dense="true" Class="mb-2">
                                 <MudSelectItem T="string" Value=null>-- Select Preset --</MudSelectItem>
                                 @foreach (var preset in PresetChoices)
                                 {
