@@ -13,6 +13,9 @@
         protected ElementReference AiRef;
         protected ElementReference CreateButtonRef;
 
+        protected Origin AnchorOrigin { get; set; } = Origin.BottomRight;
+        protected Origin TransformOrigin { get; set; } = Origin.TopLeft;
+
         protected override async Task OnInitializedAsync()
         {
             var authState = await AuthStateProvider.GetAuthenticationStateAsync();
@@ -20,6 +23,20 @@
         }
 
         protected bool ShowDemoStep(int step) => IsDemoUser && DemoStep == step;
+
+        protected override async Task OnAfterRenderAsync(bool firstRender)
+        {
+            if (firstRender)
+            {
+                var isMobile = await JSRuntime.InvokeAsync<bool>("isMobile");
+                if (isMobile)
+                {
+                    AnchorOrigin = Origin.BottomCenter;
+                    TransformOrigin = Origin.TopCenter;
+                }
+                StateHasChanged();
+            }
+        }
 
         protected void NextDemoStep()
         {
