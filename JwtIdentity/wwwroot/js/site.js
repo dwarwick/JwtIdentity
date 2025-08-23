@@ -39,24 +39,47 @@ function isMobile() {
 }
 
 function scrollToElement(id) {
-    const element = document.getElementById(id);
-    if (!element) return;
+    return new Promise(resolve => {
+        const element = document.getElementById(id);
+        if (!element) { resolve(); return; }
 
-    // The application uses a scrollable ".main-content" container rather than the
-    // document body. "scrollIntoView" on the element may try to scroll the body,
-    // which has overflow hidden, resulting in no movement. Explicitly scroll the
-    // container if it exists, falling back to the default behaviour otherwise.
-    const container = document.querySelector('.main-content');
+        // The application uses a scrollable ".main-content" container rather than the
+        // document body. "scrollIntoView" on the element may try to scroll the body,
+        // which has overflow hidden, resulting in no movement. Explicitly scroll the
+        // container if it exists, falling back to the default behaviour otherwise.
+        const container = document.querySelector('.main-content');
 
-    if (container) {
-        const rect = element.getBoundingClientRect();
-        const containerRect = container.getBoundingClientRect();
-        const offset = rect.top - containerRect.top + container.scrollTop;
-        const top = offset - container.clientHeight / 2 + rect.height / 2;
-        container.scrollTo({ top, behavior: 'smooth' });
-    } else {
-        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
+        const finish = () => {
+            if (container) {
+                container.removeEventListener('scroll', onScroll);
+            }
+            resolve();
+        };
+
+        let onScroll = null;
+
+        if (container) {
+            const rect = element.getBoundingClientRect();
+            const containerRect = container.getBoundingClientRect();
+            const offset = rect.top - containerRect.top + container.scrollTop;
+            const top = offset - container.clientHeight / 2 + rect.height / 2;
+
+            onScroll = () => {
+                if (Math.abs(container.scrollTop - top) <= 1) {
+                    finish();
+                }
+            };
+
+            container.addEventListener('scroll', onScroll);
+            container.scrollTo({ top, behavior: 'smooth' });
+
+            // Fallback in case the scroll event doesn't fire
+            setTimeout(finish, 500);
+        } else {
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            setTimeout(resolve, 500);
+        }
+    });
 }
 
 function loadGoogleAds() {
