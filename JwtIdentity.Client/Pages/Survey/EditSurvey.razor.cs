@@ -7,6 +7,13 @@ namespace JwtIdentity.Client.Pages.Survey
     {
         private bool ResetQuestions;
 
+        protected bool IsDemoUser { get; set; }
+        protected int DemoStep { get; set; }
+        protected Origin AnchorOrigin { get; set; } = Origin.BottomRight;
+        protected Origin TransformOrigin { get; set; } = Origin.TopLeft;
+        protected bool QuestionsPanelExpanded { get; set; }
+        protected bool ShowDemoStep(int step) => IsDemoUser && DemoStep == step;
+
         [Parameter]
         public string SurveyId { get; set; }
 
@@ -64,6 +71,11 @@ namespace JwtIdentity.Client.Pages.Survey
                             MultipleChoiceQuestion.Options.Add(new ChoiceOptionViewModel { OptionText = option, Order = i++ });
                         }
                     }
+
+                    if (IsDemoUser && DemoStep == 7 && value == "Yes No Partially")
+                    {
+                        DemoStep = 8;
+                    }
                 }
             }
         }
@@ -86,14 +98,53 @@ namespace JwtIdentity.Client.Pages.Survey
 
         protected override async Task OnInitializedAsync()
         {
-            // get the survey based on the SurveyId
             await LoadData();
+
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            IsDemoUser = authState.User.Identity?.Name == "DemoUser@surveyshark.site";
 
             if (await AuthService.GetUserId() != Survey.CreatedById)
             {
                 Navigation.NavigateTo("/");
 
                 _ = Snackbar.Add("You are not authorized to edit this survey.", MudBlazor.Severity.Error);
+            }
+        }
+
+        protected override async Task OnAfterRenderAsync(bool firstRender)
+        {
+            if (firstRender)
+            {
+                var isMobile = await JSRuntime.InvokeAsync<bool>("isMobile");
+                if (isMobile)
+                {
+                    AnchorOrigin = Origin.BottomCenter;
+                    TransformOrigin = Origin.TopCenter;
+                }
+                StateHasChanged();
+            }
+        }
+
+        protected void NextDemoStep()
+        {
+            if (!IsDemoUser) return;
+
+            switch (DemoStep)
+            {
+                case 0:
+                    QuestionsPanelExpanded = true;
+                    DemoStep = 1;
+                    break;
+                case 1:
+                    DemoStep = 2;
+                    break;
+                case 3:
+                    DemoStep = 4;
+                    break;
+                case 6:
+                    QuestionText = "Did the representative answer all of your questions?";
+                    DemoStep = 7;
+                    break;
             }
         }
 
@@ -287,6 +338,10 @@ namespace JwtIdentity.Client.Pages.Survey
             if (await UpdateSurvey())
             {
                 _ = Snackbar.Add("Question Added / Updated", MudBlazor.Severity.Success);
+                if (IsDemoUser && DemoStep == 8)
+                {
+                    DemoStep = 9;
+                }
             }
             else
             {
@@ -330,7 +385,7 @@ namespace JwtIdentity.Client.Pages.Survey
             if (publishedSurvey.Published)
             {
                 _ = Snackbar.Add("Survey Published", Severity.Success);
-                Navigation.NavigateTo("/");
+                Navigation.NavigateTo("/mysurveys/surveysicreated");
             }
             else
             {
@@ -344,6 +399,11 @@ namespace JwtIdentity.Client.Pages.Survey
             QuestionText = null;
             MultipleChoiceQuestion = new MultipleChoiceQuestionViewModel();
             ResetQuestions = true;
+
+            if (IsDemoUser && DemoStep == 5 && questionType.Replace(" ", "") == Enum.GetName(QuestionType.MultipleChoice))
+            {
+                DemoStep = 6;
+            }
         }
 
         protected void QuestionSelected(QuestionViewModel input)
@@ -355,6 +415,13 @@ namespace JwtIdentity.Client.Pages.Survey
                 QuestionText = null;
                 MultipleChoiceQuestion = null;
                 IsRequired = true;
+                ManualQuestionPanelExpanded = true;
+                ExistingQuestionPanelExpanded = false;
+
+                if (IsDemoUser && DemoStep == 4)
+                {
+                    DemoStep = 5;
+                }
 
                 return;
             }
@@ -389,6 +456,11 @@ namespace JwtIdentity.Client.Pages.Survey
             ManualQuestionPanelExpanded = true;
             ExistingQuestionPanelExpanded = false;
             tempQuestionText = null;
+
+            if (IsDemoUser && DemoStep == 2)
+            {
+                DemoStep = 3;
+            }
         }
 
         protected async Task DroppedChoiceOption(List<ChoiceOptionViewModel> choices)

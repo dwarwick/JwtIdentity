@@ -8,6 +8,11 @@
 <MudStack Row="true" Justify="Justify.SpaceBetween">
     <MudText Typo="Typo.h4">Edit Survey</MudText>
     <MudButton Class="mt-1" ButtonType="ButtonType.Button" Variant="Variant.Filled" Color="Color.Primary" OnClick="PublishSurvey" Disabled="@(Survey.Published)">Publish Survey</MudButton>
+    <MudPopover Open="@ShowDemoStep(9)" AnchorOrigin="@AnchorOrigin" TransformOrigin="@TransformOrigin" Fixed="true">
+        <MudPaper Class="pa-4">
+            <MudText Typo="Typo.body2">Now click the Publish Survey button to publish the survey.</MudText>
+        </MudPaper>
+    </MudPopover>
 </MudStack>
 <MudTextField Label="Survey Title" T="string" Value="Survey.Title" ValueChanged="@((e) => UpdateTitleDescription(e, "title"))" Class="my-2" Variant="Variant.Filled" />
 <MudTextField Label="Survey Description" T="string" Value="Survey.Description" ValueChanged="@((e) => UpdateTitleDescription(e, "description"))" Class="mb-2" Variant="Variant.Filled" Lines="3" MaxLines="5" AutoGrow="true" Counter="500" MaxLength="500" />
@@ -16,13 +21,13 @@
 <MudExpansionPanels MultiExpansion="true">
     @if (Survey?.Questions != null && Survey.Questions.Count > 0)
     {
-        
-            <MudExpansionPanel>
+
+            <MudExpansionPanel @bind-Expanded="QuestionsPanelExpanded">
                 <TitleContent>
                     <div class="mud-expand-panel-text">Survey Questions (Select a Question to Edit it)</div>
-                    <MudText Typo="Typo.caption" Align="Align.Center" Class="text-emphasis">Drag and Drop Questions to Reorder them, or click the Delete Icon to Remove a Question</MudText>                    
+                    <MudText Typo="Typo.caption" Align="Align.Center" Class="text-emphasis">Drag and Drop Questions to Reorder them, or click the Delete Icon to Remove a Question</MudText>
                 </TitleContent>
-                <ChildContent>                    
+                <ChildContent>
                     
                 <MudPaper Class="p-2 flex-1">
                     <MudList T="QuestionViewModel" Dense="true" SelectedValue="SelectedQuestion" SelectionMode="MudBlazor.SelectionMode.ToggleSelection" SelectedValueChanged="QuestionSelected">
@@ -47,7 +52,29 @@
                 </MudPaper>
                 </ChildContent>
             </MudExpansionPanel>
-        
+            <MudPopover Open="@ShowDemoStep(0)" AnchorOrigin="@AnchorOrigin" TransformOrigin="@TransformOrigin" Fixed="true">
+                <MudPaper Class="pa-4">
+                    <MudText Typo="Typo.body2">Expand the Questions Accordion by clicking it.</MudText>
+                    <MudButton Class="mt-2" OnClick="NextDemoStep">Next</MudButton>
+                </MudPaper>
+            </MudPopover>
+            <MudPopover Open="@ShowDemoStep(1)" AnchorOrigin="@AnchorOrigin" TransformOrigin="@TransformOrigin" Fixed="true">
+                <MudPaper Class="pa-4">
+                    <MudText Typo="Typo.body2">The questions can be reordered by dragging and dropping them.</MudText>
+                    <MudButton Class="mt-2" OnClick="NextDemoStep">Next</MudButton>
+                </MudPaper>
+            </MudPopover>
+            <MudPopover Open="@ShowDemoStep(2)" AnchorOrigin="@AnchorOrigin" TransformOrigin="@TransformOrigin" Fixed="true">
+                <MudPaper Class="pa-4">
+                    <MudText Typo="Typo.body2">Click a question to select it. The question text will turn blue when it is selected.</MudText>
+                </MudPaper>
+            </MudPopover>
+            <MudPopover Open="@ShowDemoStep(4)" AnchorOrigin="@AnchorOrigin" TransformOrigin="@TransformOrigin" Fixed="true">
+                <MudPaper Class="pa-4">
+                    <MudText Typo="Typo.body2">Click the selected question to deselect it.</MudText>
+                </MudPaper>
+            </MudPopover>
+
     }
 
     @if (!Survey.Published)
@@ -69,14 +96,38 @@
                                 {
                                     <MudSelectItem Value="@(StringHelper.PascalCaseToWords(questionType))" />
                                 }
-                            </MudSelect>
+                             </MudSelect>
+                            <MudPopover Open="@ShowDemoStep(5)" AnchorOrigin="@AnchorOrigin" TransformOrigin="@TransformOrigin" Fixed="true">
+                                <MudPaper Class="pa-4">
+                                    <MudText Typo="Typo.body2">Select Multiple Choice for the question type.</MudText>
+                                </MudPaper>
+                            </MudPopover>
 
-                            <MudText Typo="Typo.h6" Class="mt-5">Create a @StringHelper.PascalCaseToWords(SelectedQuestionType) Question</MudText>
-                            <MudTextField id="Text" Label="Question Text" @bind-Value="QuestionText" Variant="Variant.Filled" Lines="1" MaxLines="5" AutoGrow="true" Immediate="true" Counter="500" MaxLength="500" />
+                             <MudText Typo="Typo.h6" Class="mt-5">Create a @StringHelper.PascalCaseToWords(SelectedQuestionType) Question</MudText>
+                             <MudTextField id="Text" Label="Question Text" @bind-Value="QuestionText" Variant="Variant.Filled" Lines="1" MaxLines="5" AutoGrow="true" Immediate="true" Counter="500" MaxLength="500" />
+                            <MudPopover Open="@ShowDemoStep(3)" AnchorOrigin="@AnchorOrigin" TransformOrigin="@TransformOrigin" Fixed="true">
+                                <MudPaper Class="pa-4">
+                                    <MudText Typo="Typo.body2" Style="white-space: pre-line">Scroll down to edit the question text.
+If you selected a multiple choice question, you will be able to see the multiple choice options. You can add / delete, or edit these options.
+If you edit a question, click the Save button to save the changes. If you are happy with the questions and are ready to share the survey, click the Publish button in the upper right of this page.</MudText>
+                                    <MudButton Class="mt-2" OnClick="NextDemoStep">Next</MudButton>
+                                </MudPaper>
+                            </MudPopover>
+                            <MudPopover Open="@ShowDemoStep(6)" AnchorOrigin="@AnchorOrigin" TransformOrigin="@TransformOrigin" Fixed="true">
+                                <MudPaper Class="pa-4">
+                                    <MudText Typo="Typo.body2">We will now create a multiple choice question.</MudText>
+                                    <MudButton Class="mt-2" OnClick="NextDemoStep">Next</MudButton>
+                                </MudPaper>
+                            </MudPopover>
                         </MudStack>
 
                         <MudStack Row="true">
                             <MudButton ButtonType="ButtonType.Button" Variant="Variant.Filled" Color="Color.Primary" OnClick="AddQuestionToSurvey" Disabled="@AddQuestionToSurveyDisabled">Save Question</MudButton>
+                            <MudPopover Open="@ShowDemoStep(8)" AnchorOrigin="@AnchorOrigin" TransformOrigin="@TransformOrigin" Fixed="true">
+                                <MudPaper Class="pa-4">
+                                    <MudText Typo="Typo.body2">You can see the choices down below. Click Save Question button to save the question.</MudText>
+                                </MudPaper>
+                            </MudPopover>
                             <MudCheckBox T="bool" @bind-Value="IsRequired" Label="Is Required?" Color="Color.Primary" Disabled="@AddQuestionToSurveyDisabled" />
                         </MudStack>
                     </MudPaper>
@@ -94,6 +145,11 @@
                                     <MudSelectItem Value="@preset.Key">@preset.Key</MudSelectItem>
                                 }
                             </MudSelect>
+                            <MudPopover Open="@ShowDemoStep(7)" AnchorOrigin="@AnchorOrigin" TransformOrigin="@TransformOrigin" Fixed="true">
+                                <MudPaper Class="pa-4">
+                                    <MudText Typo="Typo.body2">Now we will pick appropriate choices for this question. Expand the Preset Choices drop-down and select Yes No Partially.</MudText>
+                                </MudPaper>
+                            </MudPopover>
 
                             <MudTextField id="Choice" Label="Choice Text" @bind-Value="NewChoiceOptionText" Variant="Variant.Filled" Lines="1" MaxLines="5" AutoGrow="true" Immediate="true" Counter="50" MaxLength="50" />
 
