@@ -2,6 +2,25 @@
 {
     public class HomeModel : BlazorBase
     {
-        // Home page is now static; AppSettings and OnInitializedAsync removed for simplicity
+        protected bool DemoLoading { get; set; }
+
+        protected async Task StartDemo()
+        {
+            if (DemoLoading) return;
+            DemoLoading = true;
+
+            Response<ApplicationUserViewModel> loginResponse = await AuthService.Login(new ApplicationUserViewModel()
+            {
+                UserName = "logmeindemouser",
+                Password = "123"
+            });
+
+            if (loginResponse.Success)
+            {
+                Navigation.NavigateTo("/survey/create");
+            }
+
+            DemoLoading = false;
+        }
     }
 }

@@ -190,7 +190,7 @@ namespace JwtIdentity.Tests.ControllerTests
             // Arrange
             var model = new LoginModel
             {
-                Username = "logmein",
+                Username = "logmeinanonymoususer",
                 Password = "anypassword" // Will be ignored and replaced with anonymous password
             };
 
@@ -237,6 +237,55 @@ namespace JwtIdentity.Tests.ControllerTests
             var userViewModel = okResult.Value as ApplicationUserViewModel;
             Assert.That(userViewModel, Is.Not.Null);
             Assert.That(userViewModel.UserName, Is.EqualTo("anonymous"));
+        }
+
+        [Test]
+        public async Task Login_WithDemoUser_ShouldUseDemoCredentials()
+        {
+            // Arrange
+            var model = new LoginModel
+            {
+                Username = "logmeindemouser",
+                Password = "anypassword"
+            };
+
+            var anonymousPassword = "anonymous123";
+            MockConfiguration.Setup(c => c["AnonymousPassword"]).Returns(anonymousPassword);
+
+            var demoUser = new ApplicationUser
+            {
+                Id = 1000,
+                UserName = "DemoUser@surveyshark.site",
+                Email = "DemoUser@surveyshark.site"
+            };
+
+            MockUserManager.Setup(um => um.FindByNameAsync("DemoUser@surveyshark.site"))
+                .ReturnsAsync(demoUser);
+
+            MockUserManager.Setup(um => um.CheckPasswordAsync(demoUser, anonymousPassword))
+                .ReturnsAsync(true);
+
+            MockApiAuthService.Setup(a => a.GenerateJwtToken(demoUser))
+                .ReturnsAsync("demo-jwt-token");
+
+            MockMapper.Setup(m => m.Map<ApplicationUserViewModel>(demoUser))
+                .Returns(new ApplicationUserViewModel
+                {
+                    Id = demoUser.Id,
+                    UserName = demoUser.UserName,
+                    Email = demoUser.Email
+                });
+
+            // Act
+            var result = await _controller.Login(model);
+
+            // Assert
+            Assert.That(result.Result, Is.InstanceOf<OkObjectResult>());
+            var okResult = result.Result as OkObjectResult;
+            Assert.That(okResult, Is.Not.Null);
+            var userViewModel = okResult!.Value as ApplicationUserViewModel;
+            Assert.That(userViewModel, Is.Not.Null);
+            Assert.That(userViewModel!.UserName, Is.EqualTo("DemoUser@surveyshark.site"));
         }
 
         [Test]

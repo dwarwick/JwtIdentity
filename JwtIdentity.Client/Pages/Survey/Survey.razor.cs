@@ -82,7 +82,7 @@ namespace JwtIdentity.Client.Pages.Survey
 
             if (IsAnonymousUser)
             {
-                Response<ApplicationUserViewModel> loginResponse = await AuthService.Login(new ApplicationUserViewModel() { UserName = "logmein", Password = "123" });
+                Response<ApplicationUserViewModel> loginResponse = await AuthService.Login(new ApplicationUserViewModel() { UserName = "logmeinanonymoususer", Password = "123" });
                 if (!loginResponse.Success)
                 {
                     Navigation.NavigateTo("/");

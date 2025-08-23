@@ -48,10 +48,16 @@ namespace JwtIdentity.Controllers
                     return BadRequest("Invalid client request");
                 }
 
-                if (model.Username == "logmein")
+                if (model.Username == "logmeinanonymoususer")
                 {
-                    _logger.LogDebug("Special 'logmein' username detected, using anonymous user");
+                    _logger.LogDebug("Special 'logmeinanonymoususer' username detected, using anonymous user");
                     model.Username = "anonymous";
+                    model.Password = _configuration["AnonymousPassword"] ?? string.Empty;
+                }
+                else if (model.Username == "logmeindemouser")
+                {
+                    _logger.LogDebug("Special 'logmeindemouser' username detected, using demo user");
+                    model.Username = "DemoUser@surveyshark.site";
                     model.Password = _configuration["AnonymousPassword"] ?? string.Empty;
                 }
 
