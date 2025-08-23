@@ -8,11 +8,6 @@
         protected bool IsDemoUser { get; set; }
         protected int DemoStep { get; set; }
 
-        protected ElementReference TitleRef;
-        protected ElementReference DescriptionRef;
-        protected ElementReference AiRef;
-        protected ElementReference CreateButtonRef;
-
         protected Origin AnchorOrigin { get; set; } = Origin.BottomRight;
         protected Origin TransformOrigin { get; set; } = Origin.TopLeft;
 
