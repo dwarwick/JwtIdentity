@@ -5,6 +5,49 @@
         protected SurveyViewModel Survey = new SurveyViewModel();
         protected bool IsBusy = false;
 
+        protected bool IsDemoUser { get; set; }
+        protected int DemoStep { get; set; }
+
+        protected ElementReference TitleRef;
+        protected ElementReference DescriptionRef;
+        protected ElementReference AiRef;
+        protected ElementReference CreateButtonRef;
+
+        protected override async Task OnInitializedAsync()
+        {
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            IsDemoUser = authState.User.Identity?.Name == "DemoUser@surveyshark.site";
+        }
+
+        protected bool ShowDemoStep(int step) => IsDemoUser && DemoStep == step;
+
+        protected void NextDemoStep()
+        {
+            if (!IsDemoUser) return;
+
+            switch (DemoStep)
+            {
+                case 0:
+                    Survey.Title = "Customer Satisfaction Survey";
+                    DemoStep = 1;
+                    break;
+                case 1:
+                    Survey.Description = "Please take our customer satisfaction survey so we can get valuable feedback from you regarding our service. The description helps guide the AI engine on what type of questions to create.";
+                    DemoStep = 2;
+                    break;
+                case 2:
+                    Survey.AiInstructions = "Create 10 questions. 9 of the questions should be multiple choice and yes / no questions. The last question should be a free text question that will give the customer a chance to leave additional feedback.";
+                    DemoStep = 3;
+                    break;
+                case 3:
+                    DemoStep = 4;
+                    break;
+                case 4:
+                    DemoStep = 5;
+                    break;
+            }
+        }
+
         protected async Task CreateSurvey()
         {
             if (IsBusy) return;

@@ -96,6 +96,19 @@ namespace JwtIdentity.Data
                     ConcurrencyStamp = "be6fc596-979b-42b1-906e-d6d5a59d6fce",
                     SecurityStamp = string.Empty,
                     Theme = "light"
+                },
+                new ApplicationUser
+                {
+                    Id = 4,
+                    UserName = "DemoUser@surveyshark.site",
+                    NormalizedUserName = "DEMOUSER@SURVEYSHARK.SITE",
+                    Email = "DemoUser@surveyshark.site",
+                    NormalizedEmail = "DEMOUSER@SURVEYSHARK.SITE",
+                    EmailConfirmed = true,
+                    PasswordHash = "AQAAAAIAAYagAAAAEDaaeD+y1I6b06Mfnm/tKqk8uIC+IIyCC5XMjODRg0PAJuxDcmPh6iihBkSLhMoyJQ==",
+                    ConcurrencyStamp = "be6fc596-979b-42b1-906e-d6d5a59d6fce",
+                    SecurityStamp = string.Empty,
+                    Theme = "light"
                 }
             );
 
@@ -103,7 +116,8 @@ namespace JwtIdentity.Data
             _ = builder.Entity<IdentityUserRole<int>>().HasData(
                 new IdentityUserRole<int> { UserId = 1, RoleId = 1 }, // Admin
                 new IdentityUserRole<int> { UserId = 2, RoleId = 2 },  // User
-                new IdentityUserRole<int> { UserId = 3, RoleId = 4 }  // AnonymousUser
+                new IdentityUserRole<int> { UserId = 3, RoleId = 4 },  // AnonymousUser
+                new IdentityUserRole<int> { UserId = 4, RoleId = 2 }  // DemoUser
             );
 
             var type = typeof(Permissions);
