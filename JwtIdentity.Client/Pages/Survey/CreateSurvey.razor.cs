@@ -48,7 +48,7 @@
                     DemoStep = 2;
                     break;
                 case 2:
-                    Survey.AiInstructions = "Create 10 questions. 9 of the questions should be multiple choice and yes / no questions. The last question should be a free text question that will give the customer a chance to leave additional feedback.";
+                    Survey.AiInstructions = "Create 10 questions. The last question should be a free text question that will give the customer a chance to leave additional feedback.";
                     DemoStep = 3;
                     break;
                 case 3:

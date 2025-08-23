@@ -15,7 +15,7 @@
             <MudTextField id="Title" Label="Title" @bind-Value="Survey.Title" Variant="Variant.Filled" Lines="1" MaxLines="5" AutoGrow="true" Immediate="true" Counter="50" MaxLength="50" />
             <MudPopover Open="@ShowDemoStep(0)" AnchorOrigin="@AnchorOrigin" TransformOrigin="@TransformOrigin" Fixed="true">
                 <MudPaper Class="pa-4">
-                    <MudText Typo="Typo.body2">Let's start with a title for your survey. Click Next to use our suggestion.</MudText>
+                    <MudText Typo="Typo.body2">Let's start with a title for your survey.</MudText>
                     <MudButton Class="mt-2" OnClick="NextDemoStep">Next</MudButton>
                 </MudPaper>
             </MudPopover>
@@ -24,7 +24,7 @@
             <MudTextField id="Description" Label="Description" @bind-Value="Survey.Description" Variant="Variant.Filled" Lines="5" MaxLines="10" AutoGrow="true" Immediate="true" Counter="250" MaxLength="250" />
             <MudPopover Open="@ShowDemoStep(1)" AnchorOrigin="@AnchorOrigin" TransformOrigin="@TransformOrigin" Fixed="true">
                 <MudPaper Class="pa-4">
-                    <MudText Typo="Typo.body2">Great! Now add a description. This helps guide the AI engine. Click Next to fill it in.</MudText>
+                    <MudText Typo="Typo.body2">Great! Now add a description. This helps guide the AI engine.</MudText>
                     <MudButton Class="mt-2" OnClick="NextDemoStep">Next</MudButton>
                 </MudPaper>
             </MudPopover>
@@ -54,7 +54,7 @@
                 HelperText="Although not required, providing instructions helps the AI, in case you want specific types of questions."/>
             <MudPopover Open="@ShowDemoStep(2)" AnchorOrigin="@AnchorOrigin" TransformOrigin="@TransformOrigin" Fixed="true">
                 <MudPaper Class="pa-4">
-                    <MudText Typo="Typo.body2">Provide instructions for the AI-generated questions. Click Next to use an example.</MudText>
+                    <MudText Typo="Typo.body2">Provide instructions for the AI-generated questions.</MudText>
                     <MudButton Class="mt-2" OnClick="NextDemoStep">Next</MudButton>
                 </MudPaper>
             </MudPopover>
@@ -64,7 +64,11 @@
         <SpinnerButton IsBusy="@IsBusy" ButtonType="ButtonType.Submit" Color="Color.Primary" Text="Create" Disabled="@(Survey.Id > 0)" />
         <MudPopover Open="@ShowDemoStep(4)" AnchorOrigin="@AnchorOrigin" TransformOrigin="@TransformOrigin" Fixed="true">
             <MudPaper Class="pa-4">
-                <MudText Typo="Typo.body2">All set! Click the Create button to generate your survey.</MudText>
+                <MudText Typo="Typo.body2" Style="white-space: pre-line">
+                All set!
+                Feel free to edit the text in any of these fields to see what difference it makes.
+                Click the Create button to generate your survey.
+                </MudText>
                 <MudButton Class="mt-2" OnClick="NextDemoStep">Close</MudButton>
             </MudPaper>
         </MudPopover>
