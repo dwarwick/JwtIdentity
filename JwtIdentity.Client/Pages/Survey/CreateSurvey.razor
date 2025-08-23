@@ -41,35 +41,35 @@
     </div>
 </EditForm>
 
-<MudPopover Open="@ShowDemoStep(0)" AnchorReference="AnchorReference.Element" AnchorEl="@TitleRef">
+<MudPopover Open="@ShowDemoStep(0)" AnchorReference="AnchorReference.Element" AnchorEl="@TitleRef" AnchorOrigin="@AnchorOrigin" TransformOrigin="@TransformOrigin" OffsetX="5" OffsetY="5">
     <MudPaper Class="pa-4">
         <MudText Typo="Typo.body2">Let's start with a title for your survey. Click Next to use our suggestion.</MudText>
         <MudButton Class="mt-2" OnClick="NextDemoStep">Next</MudButton>
     </MudPaper>
 </MudPopover>
 
-<MudPopover Open="@ShowDemoStep(1)" AnchorReference="AnchorReference.Element" AnchorEl="@DescriptionRef">
+<MudPopover Open="@ShowDemoStep(1)" AnchorReference="AnchorReference.Element" AnchorEl="@DescriptionRef" AnchorOrigin="@AnchorOrigin" TransformOrigin="@TransformOrigin" OffsetX="5" OffsetY="5">
     <MudPaper Class="pa-4">
         <MudText Typo="Typo.body2">Great! Now add a description. This helps guide the AI engine. Click Next to fill it in.</MudText>
         <MudButton Class="mt-2" OnClick="NextDemoStep">Next</MudButton>
     </MudPaper>
 </MudPopover>
 
-<MudPopover Open="@ShowDemoStep(2)" AnchorReference="AnchorReference.Element" AnchorEl="@AiRef">
+<MudPopover Open="@ShowDemoStep(2)" AnchorReference="AnchorReference.Element" AnchorEl="@AiRef" AnchorOrigin="@AnchorOrigin" TransformOrigin="@TransformOrigin" OffsetX="5" OffsetY="5">
     <MudPaper Class="pa-4">
         <MudText Typo="Typo.body2">Provide instructions for the AI-generated questions. Click Next to use an example.</MudText>
         <MudButton Class="mt-2" OnClick="NextDemoStep">Next</MudButton>
     </MudPaper>
 </MudPopover>
 
-<MudPopover Open="@ShowDemoStep(3)" AnchorReference="AnchorReference.Element" AnchorEl="@DescriptionRef">
+<MudPopover Open="@ShowDemoStep(3)" AnchorReference="AnchorReference.Element" AnchorEl="@DescriptionRef" AnchorOrigin="@AnchorOrigin" TransformOrigin="@TransformOrigin" OffsetX="5" OffsetY="5">
     <MudPaper Class="pa-4">
         <MudText Typo="Typo.body2">Only the title and description are required to create a survey. AI instructions are optional.</MudText>
         <MudButton Class="mt-2" OnClick="NextDemoStep">Next</MudButton>
     </MudPaper>
 </MudPopover>
 
-<MudPopover Open="@ShowDemoStep(4)" AnchorReference="AnchorReference.Element" AnchorEl="@CreateButtonRef">
+<MudPopover Open="@ShowDemoStep(4)" AnchorReference="AnchorReference.Element" AnchorEl="@CreateButtonRef" AnchorOrigin="@AnchorOrigin" TransformOrigin="@TransformOrigin" OffsetX="5" OffsetY="5">
     <MudPaper Class="pa-4">
         <MudText Typo="Typo.body2">All set! Click the Create button to generate your survey.</MudText>
         <MudButton Class="mt-2" OnClick="NextDemoStep">Close</MudButton>

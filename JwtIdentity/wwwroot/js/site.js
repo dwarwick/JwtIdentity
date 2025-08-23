@@ -33,6 +33,11 @@ function registerCaptchaCallback(dotnetHelper) {
     window.dotnetHelper = dotnetHelper;
 }
 
+// Returns true if the screen width is typical of a mobile device
+function isMobile() {
+    return window.innerWidth <= 768;
+}
+
 function loadGoogleAds() {
     if (document.getElementById('google-ads-script')) {
         return; // Avoid loading multiple times
