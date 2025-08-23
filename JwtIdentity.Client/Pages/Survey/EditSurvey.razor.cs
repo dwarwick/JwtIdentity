@@ -149,6 +149,9 @@ namespace JwtIdentity.Client.Pages.Survey
             if (!string.IsNullOrEmpty(id))
             {
                 await JSRuntime.InvokeVoidAsync("scrollToElement", id);
+
+                // Ensure any demo popover tied to the element renders after the scroll
+                StateHasChanged();
             }
         }
 
