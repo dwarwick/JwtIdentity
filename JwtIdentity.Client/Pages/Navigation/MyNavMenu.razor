@@ -129,6 +129,12 @@
         <MudNavLink Href="/privacy-policy" Underline="Underline.None" Typo="Typo.inherit">Privacy Policy</MudNavLink>        
         <MudNavLink Href="/cookie-policy" Underline="Underline.None" Typo="Typo.inherit">Cookie Policy</MudNavLink>        
         <MudNavLink Href="/terms-of-service" Underline="Underline.None" Typo="Typo.inherit">Terms of Service</MudNavLink>
+
+        @if (!string.IsNullOrEmpty(AppSettings?.EmailSettings?.CustomerServiceEmail))
+        {            
+            <MudNavLink Href="@($"mailto://{AppSettings.EmailSettings.CustomerServiceEmail}")" Underline="Underline.None" Typo="Typo.inherit">Contact Us</MudNavLink>                        
+        }
+
         <MudImage Src="images/sectigo_trust_seal_sm_82x32.png" Alt="Sectigo Trust Seal" />
     </MudNavMenu>
 </MudDrawer>

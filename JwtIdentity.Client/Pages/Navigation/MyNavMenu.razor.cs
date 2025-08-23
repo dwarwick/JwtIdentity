@@ -13,6 +13,13 @@
         public EventCallback<bool> DarkThemeChanged { get; set; }
         protected bool _drawerOpen { get; set; } = false;
 
+        protected AppSettings AppSettings { get; set; } = new();
+
+        protected override async Task OnInitializedAsync()
+        {
+            AppSettings = await ApiService.GetAsync<AppSettings>("/api/appsettings");
+        }
+
         protected override void OnInitialized()
         {
             ((CustomAuthStateProvider)AuthStateProvider!).OnLoggedOut += UpdateLoggedIn;

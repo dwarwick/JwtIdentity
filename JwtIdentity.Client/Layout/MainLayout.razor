@@ -49,12 +49,11 @@
                     <MudLink Class="d-none d-md-block" Href="javascript:void(0)" OnClick="OpenCookieSettings" Underline="Underline.None" Typo="Typo.inherit">Cookie Settings</MudLink>
                     <span class="d-none d-md-block">|</span>
                     <MudLink Class="d-none d-md-block" Href="/terms-of-service" Underline="Underline.None" Typo="Typo.inherit">Terms of Service</MudLink>
-                    <span class="d-none d-md-block">|</span>
-                    
+                                        
                     @if (!string.IsNullOrEmpty(AppSettings?.EmailSettings?.CustomerServiceEmail))
                     {
-                        <MudLink Class="d-none d-md-block" Href="@($"mailto://{AppSettings.EmailSettings.CustomerServiceEmail}")" Underline="Underline.None" Typo="Typo.inherit">Contact Us</MudLink>
                         <span class="d-none d-md-block">|</span>
+                        <MudLink Class="d-none d-md-block" Href="@($"mailto://{AppSettings.EmailSettings.CustomerServiceEmail}")" Underline="Underline.None" Typo="Typo.inherit">Contact Us</MudLink>                        
                     }                    
                 </MudStack>
             </MudText>
