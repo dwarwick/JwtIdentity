@@ -49,8 +49,12 @@
                                         {
                                             css += " alternate-background-red";
                                         }
+
+                                        <MudListItem Class="@css" Text="@($"{question.QuestionNumber}. {question.Text}")" Value="@question" />
                                     }
+
                                         <MudListItem Class=@css Text="@($"{question.QuestionNumber}. {question.Text}")" Value="@question" Style="animation: alternate-background-red 0.5s infinite alternate; background-color: red !important;" />
+
 
                                     @if (question.IsRequired)
                                     {
