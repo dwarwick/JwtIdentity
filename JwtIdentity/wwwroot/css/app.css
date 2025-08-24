@@ -517,6 +517,10 @@ td.e-summarycell.e-templatecell.e-leftalign {
 .alternate-background-red {
     animation: alternate-background-red 0.5s infinite alternate;
 }
+.mud-list-item.alternate-background-red,
+.mud-selected-item.alternate-background-red {
+    animation: alternate-background-red 0.5s infinite alternate !important;
+}
 @keyframes alternate-background-red {
     from { background-color: inherit; }
     to { background-color: red; }
