@@ -49,8 +49,9 @@
                                         {
                                             css += " alternate-background-red";
                                         }
+
+                                        <MudListItem Class="@css" Text="@($"{question.QuestionNumber}. {question.Text}")" Value="@question" />
                                     }
-                                        <MudListItem Class=@css Text="@($"{question.QuestionNumber}. {question.Text}")" Value="@question" />
 
                                     @if (question.IsRequired)
                                     {
