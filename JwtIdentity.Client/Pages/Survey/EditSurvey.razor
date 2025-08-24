@@ -53,6 +53,9 @@
                                         <MudListItem Class="@css" Text="@($"{question.QuestionNumber}. {question.Text}")" Value="@question" />
                                     }
 
+                                        <MudListItem Class=@css Text="@($"{question.QuestionNumber}. {question.Text}")" Value="@question" Style="animation: alternate-background-red 0.5s infinite alternate; background-color: red !important;" />
+
+
                                     @if (question.IsRequired)
                                     {
                                         <MudText Color="Color.Error" Typo="Typo.caption" Class="RequiredStar">*</MudText>
