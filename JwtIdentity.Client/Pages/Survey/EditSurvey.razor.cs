@@ -127,8 +127,8 @@ namespace JwtIdentity.Client.Pages.Survey
 
             if (IsDemoUser && DemoStep != _previousDemoStep)
             {
-                _previousDemoStep = DemoStep;
                 await ScrollToCurrentDemoStep();
+                _previousDemoStep = DemoStep;
             }
         }
 
