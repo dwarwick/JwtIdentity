@@ -21,8 +21,13 @@
 <MudExpansionPanels MultiExpansion="true">
     @if (Survey?.Questions != null && Survey.Questions.Count > 0)
     {
+            string panelCss = "";
+            if (ShowDemoStep(0))
+            {
+                panelCss = "alternate-background-red";
+            }
 
-            <MudExpansionPanel Id="QuestionsPanel" @bind-Expanded="QuestionsPanelExpanded">
+            <MudExpansionPanel Id="QuestionsPanel" Expanded="QuestionsPanelExpanded" Class=@panelCss ExpandedChanged="@(() => HandleQuestionsPanelExpanded())">
                 <TitleContent>
                     <div class="mud-expand-panel-text">Survey Questions (Select a Question to Edit it)</div>
                     <MudText Typo="Typo.caption" Align="Align.Center" Class="text-emphasis">Drag and Drop Questions to Reorder them, or click the Delete Icon to Remove a Question</MudText>
@@ -37,7 +42,15 @@
                                 <MudStack Class=".d-flex.flex-row.gap-3.ai-style-change-1" Row="true" AlignItems="AlignItems.Center">
                                     <MudIconButton Icon="@Icons.Material.Filled.Delete" ButtonType="ButtonType.Button" OnClick="@(() => DeleteQuestion(question))" />
                                     <MudIcon Class="drag-icon ai-style-change-9" Icon="@Icons.Material.Filled.DragIndicator" />
-                                    <MudListItem Class="ai-style-change-3 ai-style-change-6" Text="@($"{question.QuestionNumber}. {question.Text}")" Value="@question" />
+
+                                    @{
+                                        string css = "ai-style-change-3 ai-style-change-6";
+                                        if ((ShowDemoStep(2) || ShowDemoStep(4)) && question.QuestionNumber == 1)
+                                        {
+                                            css += " alternate-background-red";
+                                        }
+                                    }
+                                        <MudListItem Class=@css Text="@($"{question.QuestionNumber}. {question.Text}")" Value="@question" />
 
                                     @if (question.IsRequired)
                                     {
@@ -54,8 +67,7 @@
             </MudExpansionPanel>
             <MudPopover Open="@ShowDemoStep(0)" AnchorOrigin="@AnchorOrigin" TransformOrigin="@TransformOrigin" Fixed="true">
                 <MudPaper Class="pa-4">
-                    <MudText Typo="Typo.body2">Expand the Questions Accordion by clicking it.</MudText>
-                    <MudButton Class="mt-2" OnClick="NextDemoStep">Next</MudButton>
+                    <MudText Typo="Typo.body2">Expand the Survey Questions Accordion by clicking it.</MudText>                    
                 </MudPaper>
             </MudPopover>
             <MudPopover Open="@ShowDemoStep(1)" AnchorOrigin="@AnchorOrigin" TransformOrigin="@TransformOrigin" Fixed="true">
@@ -66,7 +78,7 @@
             </MudPopover>
             <MudPopover Open="@ShowDemoStep(2)" AnchorOrigin="@AnchorOrigin" TransformOrigin="@TransformOrigin" Fixed="true">
                 <MudPaper Class="pa-4">
-                    <MudText Typo="Typo.body2">Click a question to select it. The question text will turn blue when it is selected.</MudText>
+                    <MudText Typo="Typo.body2">Click a question number 1 to select it. The question text will turn blue when it is selected.</MudText>
                 </MudPaper>
             </MudPopover>
             <MudPopover Open="@ShowDemoStep(4)" AnchorOrigin="@AnchorOrigin" TransformOrigin="@TransformOrigin" Fixed="true">
@@ -104,12 +116,13 @@
                             </MudPopover>
 
                              <MudText Typo="Typo.h6" Class="mt-5">Create a @StringHelper.PascalCaseToWords(SelectedQuestionType) Question</MudText>
-                             <MudTextField Id="Text" Label="Question Text" @bind-Value="QuestionText" Variant="Variant.Filled" Lines="1" MaxLines="5" AutoGrow="true" Immediate="true" Counter="500" MaxLength="500" />
+                        <MudTextField Id="Text" Label="Question Text" @bind-Value="QuestionText" Variant="Variant.Filled" Lines="1" MaxLines="5" AutoGrow="true" Immediate="true" Counter="500" MaxLength="500" Class="@(ShowDemoStep(3) ? "alternate-background-red" : "")" />
                             <MudPopover Open="@ShowDemoStep(3)" AnchorOrigin="@AnchorOrigin" TransformOrigin="@TransformOrigin" Fixed="true">
                                 <MudPaper Class="pa-4">
                                     <MudText Typo="Typo.body2" Style="white-space: pre-line">Scroll down to edit the question text.
-If you selected a multiple choice question, you will be able to see the multiple choice options. You can add / delete, or edit these options.
-If you edit a question, click the Save button to save the changes. If you are happy with the questions and are ready to share the survey, click the Publish button in the upper right of this page.</MudText>
+If you selected a multiple choice question, you will be able to see the multiple choice options down below. You can add / delete, or edit these options.
+If you edit a question, click the Save Question button to save the changes. 
+If you are happy with the questions and are ready to share the survey, click the Publish button in the upper right of this page.</MudText>
                                     <MudButton Class="mt-2" OnClick="NextDemoStep">Next</MudButton>
                                 </MudPaper>
                             </MudPopover>

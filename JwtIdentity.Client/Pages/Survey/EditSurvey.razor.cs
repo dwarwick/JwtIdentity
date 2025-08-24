@@ -161,10 +161,6 @@ namespace JwtIdentity.Client.Pages.Survey
 
             switch (DemoStep)
             {
-                case 0:
-                    QuestionsPanelExpanded = true;
-                    DemoStep = 1;
-                    break;
                 case 1:
                     DemoStep = 2;
                     break;
@@ -487,7 +483,7 @@ namespace JwtIdentity.Client.Pages.Survey
             ExistingQuestionPanelExpanded = false;
             tempQuestionText = null;
 
-            if (IsDemoUser && DemoStep == 2)
+            if (IsDemoUser && DemoStep == 2 && input.QuestionNumber == 1)
             {
                 DemoStep = 3;
             }
@@ -649,6 +645,15 @@ namespace JwtIdentity.Client.Pages.Survey
             else
             {
                 _ = Snackbar.Add("Problem Updating Survey", MudBlazor.Severity.Error);
+            }
+        }
+
+        protected void HandleQuestionsPanelExpanded()
+        {
+            QuestionsPanelExpanded = !QuestionsPanelExpanded;
+            if (IsDemoUser && DemoStep == 0 && QuestionsPanelExpanded)
+            {
+                DemoStep = 1;
             }
         }
     }
