@@ -1,4 +1,7 @@
-﻿namespace JwtIdentity.Client.Pages.Navigation
+using System.Security.Claims;
+using JwtIdentity.Common.Auth;
+
+namespace JwtIdentity.Client.Pages.Navigation
 {
     public class MyNavMenuModel : BlazorBase, IDisposable
     {
@@ -15,9 +18,16 @@
 
         protected AppSettings AppSettings { get; set; } = new();
 
+        protected bool IsAuthenticated { get; private set; }
+        protected bool IsAdmin { get; private set; }
+        protected bool CanCreateSurvey { get; private set; }
+        protected bool CanLeaveFeedback { get; private set; }
+        protected bool CanUseHangfire { get; private set; }
+
         protected override async Task OnInitializedAsync()
         {
             AppSettings = await ApiService.GetPublicAsync<AppSettings>("/api/appsettings");
+            await SetAuthFlagsAsync();
         }
 
         protected override void OnInitialized()
@@ -26,6 +36,28 @@
             _authorizationHandler = CustomAuthorizationMessageHandler;
             _authorizationHandler.OnUnauthorized += UpdateLoggedIn;
             _drawerOpen = false;
+        }
+
+        private async Task SetAuthFlagsAsync()
+        {
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+            IsAuthenticated = user.Identity?.IsAuthenticated ?? false;
+            if (IsAuthenticated)
+            {
+                IsAdmin = user.IsInRole("Admin");
+                var permissions = user.Claims
+                    .Where(c => c.Type == CustomClaimTypes.Permission)
+                    .Select(c => c.Value)
+                    .ToHashSet();
+                CanCreateSurvey = permissions.Contains(Permissions.CreateSurvey);
+                CanLeaveFeedback = permissions.Contains(Permissions.LeaveFeedback);
+                CanUseHangfire = permissions.Contains(Permissions.UseHangfire);
+            }
+            else
+            {
+                IsAdmin = CanCreateSurvey = CanLeaveFeedback = CanUseHangfire = false;
+            }
         }
 
         protected void ToggleDrawer()
@@ -39,8 +71,9 @@
             await DarkThemeChanged.InvokeAsync(value);
         }
 
-        protected void UpdateLoggedIn()
+        protected async void UpdateLoggedIn()
         {
+            await SetAuthFlagsAsync();
             StateHasChanged();
         }
 
@@ -67,3 +100,4 @@
         }
     }
 }
+
