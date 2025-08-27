@@ -99,7 +99,7 @@ namespace JwtIdentity.Data
                 },
                 new ApplicationUser
                 {
-                    Id = 4,
+                    Id = -1,
                     UserName = "DemoUser@surveyshark.site",
                     NormalizedUserName = "DEMOUSER@SURVEYSHARK.SITE",
                     Email = "DemoUser@surveyshark.site",
@@ -117,7 +117,7 @@ namespace JwtIdentity.Data
                 new IdentityUserRole<int> { UserId = 1, RoleId = 1 }, // Admin
                 new IdentityUserRole<int> { UserId = 2, RoleId = 2 },  // User
                 new IdentityUserRole<int> { UserId = 3, RoleId = 4 },  // AnonymousUser
-                new IdentityUserRole<int> { UserId = 4, RoleId = 2 }  // DemoUser
+                new IdentityUserRole<int> { UserId = -1, RoleId = 2 }  // DemoUser
             );
 
             var type = typeof(Permissions);
