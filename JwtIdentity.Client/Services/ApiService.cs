@@ -13,12 +13,14 @@ namespace JwtIdentity.Client.Services
         private readonly JsonSerializerOptions _options;
         private readonly IHttpClientFactory _httpClientFactory;
         private HttpClient? _httpClient;
+        private HttpClient? _publicHttpClient;
         private readonly NavigationManager navigationManager;
         private readonly IServiceProvider serviceProvider;
         private readonly IHttpContextAccessor? _httpContextAccessor;
 
         private ISnackbar Snackbar => serviceProvider.GetRequiredService<ISnackbar>();
         private HttpClient Client => _httpClient ??= _httpClientFactory.CreateClient("AuthorizedClient");
+        private HttpClient PublicClient => _publicHttpClient ??= _httpClientFactory.CreateClient("PublicClient");
 
         public ApiService(IHttpClientFactory httpClientFactory, NavigationManager navigationManager, IServiceProvider serviceProvider, IHttpContextAccessor? httpContextAccessor = null)
         {
@@ -42,6 +44,34 @@ namespace JwtIdentity.Client.Services
         {
             SetAuthHeaderFromCookie();
             var response = await Client.GetAsync($"{endpoint}");
+            if (!response.IsSuccessStatusCode)
+            {
+                var error = await response.Content.ReadAsStringAsync();
+
+                if (string.IsNullOrEmpty(error))
+                {
+                    _ = Snackbar.Add("There was a problem with the request", Severity.Error);
+                    return default;
+                }
+                else
+                {
+                    _ = Snackbar.Add(error, Severity.Error);
+                    return default;
+                }
+            }
+
+            if (response.Content.Headers.ContentType?.MediaType == "text/html")
+            {
+                _ = Snackbar.Add("Unexpected response. Please log in.", Severity.Error);
+                return default;
+            }
+
+            return await response.Content.ReadFromJsonAsync<T>(_options);
+        }
+
+        public async Task<T> GetPublicAsync<T>(string endpoint)
+        {
+            var response = await PublicClient.GetAsync($"{endpoint}");
             if (!response.IsSuccessStatusCode)
             {
                 var error = await response.Content.ReadAsStringAsync();
