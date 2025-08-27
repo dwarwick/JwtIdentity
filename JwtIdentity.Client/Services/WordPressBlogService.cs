@@ -23,7 +23,7 @@ namespace JwtIdentity.Services
         {
             try
             {
-                AppSettings = await _apiService.GetAsync<AppSettings>("/api/appsettings");
+                AppSettings = await _apiService.GetPublicAsync<AppSettings>("/api/appsettings");
 
                 // Read the WordPress site domain from configuration (appsettings.json)
                 _siteDomain = AppSettings.WordPress.SiteDomain ?? throw new Exception("WordPress site domain not configured");
@@ -31,8 +31,8 @@ namespace JwtIdentity.Services
 
                 _getUrl = _getUrl.Replace("{Wordpress:SiteDomain}", _siteDomain);
 
-                // Use the NoAuthClient for WordPress API requests
-                var httpClient = _httpClientFactory.CreateClient("NoAuthClient");
+                // Use the PublicClient for WordPress API requests
+                var httpClient = _httpClientFactory.CreateClient("PublicClient");
 
                 var response = await httpClient.GetAsync(_getUrl);
                 _ = response.EnsureSuccessStatusCode();
@@ -61,15 +61,15 @@ namespace JwtIdentity.Services
         {
             try
             {
-                AppSettings = await _apiService.GetAsync<AppSettings>("/api/appsettings");
+                AppSettings = await _apiService.GetPublicAsync<AppSettings>("/api/appsettings");
                 _siteDomain = AppSettings.WordPress.SiteDomain ?? throw new Exception("WordPress site domain not configured");
 
                 _getUrl = AppSettings.WordPress.SinglePostUrl ?? throw new Exception("WordPress Get Url not configured");
                 _getUrl = _getUrl.Replace("{Wordpress:SiteDomain}", _siteDomain);
                 _getUrl = _getUrl.Replace("{postSlug}", postSlug);
 
-                // Use the NoAuthClient for WordPress API requests
-                var httpClient = _httpClientFactory.CreateClient("NoAuthClient");
+                // Use the PublicClient for WordPress API requests
+                var httpClient = _httpClientFactory.CreateClient("PublicClient");
 
                 var response = await httpClient.GetAsync(_getUrl);
                 _ = response.EnsureSuccessStatusCode();

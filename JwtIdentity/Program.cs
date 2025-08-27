@@ -150,7 +150,7 @@ builder.Services.AddHttpClient("AuthorizedClient", (sp, client) =>
     var request = accessor.HttpContext?.Request;
     client.BaseAddress = new Uri($"{request?.Scheme}://{request?.Host}");
 }).AddHttpMessageHandler<CustomAuthorizationMessageHandler>();
-builder.Services.AddHttpClient("NoAuthClient", (sp, client) =>
+builder.Services.AddHttpClient("PublicClient", (sp, client) =>
 {
     var accessor = sp.GetRequiredService<IHttpContextAccessor>();
     var request = accessor.HttpContext?.Request;

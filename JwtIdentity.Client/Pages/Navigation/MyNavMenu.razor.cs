@@ -17,7 +17,7 @@
 
         protected override async Task OnInitializedAsync()
         {
-            AppSettings = await ApiService.GetAsync<AppSettings>("/api/appsettings");
+            AppSettings = await ApiService.GetPublicAsync<AppSettings>("/api/appsettings");
         }
 
         protected override void OnInitialized()

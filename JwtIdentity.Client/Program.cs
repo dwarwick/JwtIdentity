@@ -62,7 +62,10 @@ builder.Services.AddHttpClient("AuthorizedClient", client =>
 .AddHttpMessageHandler<CustomAuthorizationMessageHandler>();
 
 
-// Register a named HttpClient called "NoAuthClient" for unauthenticated requests
-builder.Services.AddHttpClient("NoAuthClient");
+// Register a named HttpClient called "PublicClient" for unauthenticated requests
+builder.Services.AddHttpClient("PublicClient", client =>
+{
+    client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress);
+});
 
 await builder.Build().RunAsync();

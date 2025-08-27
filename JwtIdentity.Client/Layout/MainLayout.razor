@@ -124,7 +124,7 @@
 
         try
         {
-            AppSettings = await ApiService.GetAsync<AppSettings>("/api/appsettings");
+            AppSettings = await ApiService.GetPublicAsync<AppSettings>("/api/appsettings");
 
             // reference app.js in the wwwroot folder
             module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./js/app.js");
