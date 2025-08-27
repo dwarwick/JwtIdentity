@@ -14,9 +14,11 @@ namespace JwtIdentity.Client.Pages.Navigation
 
         [Parameter]
         public EventCallback<bool> DarkThemeChanged { get; set; }
-        protected bool _drawerOpen { get; set; } = false;
 
-        protected AppSettings AppSettings { get; set; } = new();
+        [Parameter]
+        public AppSettings AppSettings { get; set; } = new();
+
+        protected bool _drawerOpen { get; set; } = false;
 
         protected bool IsAuthenticated { get; private set; }
         protected bool IsAdmin { get; private set; }
@@ -26,7 +28,6 @@ namespace JwtIdentity.Client.Pages.Navigation
 
         protected override async Task OnInitializedAsync()
         {
-            AppSettings = await ApiService.GetPublicAsync<AppSettings>("/api/appsettings");
             await SetAuthFlagsAsync();
         }
 
