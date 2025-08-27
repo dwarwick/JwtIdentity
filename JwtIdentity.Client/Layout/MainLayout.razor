@@ -19,7 +19,7 @@
 <CascadingValue Value="_theme" Name="Theme">
     <div class="app-container">
         <!-- Fixed height header -->
-        <MyNavMenu @bind-DarkTheme="@_isDarkMode" @bind-DarkTheme:after="HandleThemeChanged" />        
+        <MyNavMenu AppSettings="@AppSettings" @bind-DarkTheme="@_isDarkMode" @bind-DarkTheme:after="HandleThemeChanged" />
         
         <!-- Flexible main content with scrolling -->
         <div class="main-content">

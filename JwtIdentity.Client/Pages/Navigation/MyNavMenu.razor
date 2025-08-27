@@ -20,52 +20,45 @@
             <MudMenuItem Href="/learn-more/analytics">Real-Time Analytics</MudMenuItem>
             <MudMenuItem Href="/learn-more/mobile">Mobile-Ready & Responsive</MudMenuItem>
         </MudMenu>
-        <AuthorizeView Roles="Admin">
-            <Authorized>
-                <MudMenu Label="Admin" Variant="Variant.Text" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Color="Color.Inherit">
-                    <MudMenuItem Href="/admin/feedback">Manage Feedback</MudMenuItem>
-                    <MudMenuItem Href="/admin/users">Manage Users</MudMenuItem>
-                    <MudMenuItem Href="/admin/settings">Settings Management</MudMenuItem>
-                    <MudMenuItem Href="/admin/logs">System Logs</MudMenuItem>
-                    <MudMenuItem Href="/ManageRolePermissions">Manage Permissions</MudMenuItem>
-                    <AuthorizeView Policy="@Permissions.UseHangfire" Context="hangfireAuth">
-                        <Authorized>
-                            <MudMenuItem Href="/hangfire">Background Jobs</MudMenuItem>
-                        </Authorized>
-                    </AuthorizeView>
-                </MudMenu>
-            </Authorized>
-        </AuthorizeView>
-        <AuthorizeView Policy="@Permissions.CreateSurvey">
-            <Authorized>
-                <MudMenu Label="Surveys" Variant="Variant.Text" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Color="Color.Inherit">
-                    <MudMenuItem Href="/survey/create">Create Survey</MudMenuItem>
-                    <MudMenuItem Href="/mysurveys/surveysicreated">Surveys I've Created</MudMenuItem>
-                    <MudMenuItem Href="/survey/surveysianswered">Surveys I've Answered</MudMenuItem>
-                </MudMenu>
-            </Authorized>
-        </AuthorizeView>
-        <AuthorizeView>
-            <Authorized>
-                @if (((CustomAuthStateProvider)AuthStateProvider).CurrentUser != null && (((CustomAuthStateProvider)AuthStateProvider!).CurrentUser?.Permissions.Contains(Permissions.LeaveFeedback) ?? false))
+        @if (IsAuthenticated && IsAdmin)
+        {
+            <MudMenu Label="Admin" Variant="Variant.Text" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Color="Color.Inherit">
+                <MudMenuItem Href="/admin/feedback">Manage Feedback</MudMenuItem>
+                <MudMenuItem Href="/admin/users">Manage Users</MudMenuItem>
+                <MudMenuItem Href="/admin/settings">Settings Management</MudMenuItem>
+                <MudMenuItem Href="/admin/logs">System Logs</MudMenuItem>
+                <MudMenuItem Href="/ManageRolePermissions">Manage Permissions</MudMenuItem>
+                @if (CanUseHangfire)
                 {
-                    <MudMenu Label="Feedback" Variant="Variant.Text" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Color="Color.Inherit">                    
-                        <MudMenuItem Href="/feedback">Leave Feedback</MudMenuItem>                                    
-                        <MudMenuItem Href="/feedback/my">My Feedback</MudMenuItem>
-                    </MudMenu>
+                    <MudMenuItem Href="/hangfire">Background Jobs</MudMenuItem>
                 }
-            </Authorized>            
-        </AuthorizeView>
+            </MudMenu>
+        }
+        @if (IsAuthenticated && CanCreateSurvey)
+        {
+            <MudMenu Label="Surveys" Variant="Variant.Text" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Color="Color.Inherit">
+                <MudMenuItem Href="/survey/create">Create Survey</MudMenuItem>
+                <MudMenuItem Href="/mysurveys/surveysicreated">Surveys I've Created</MudMenuItem>
+                <MudMenuItem Href="/survey/surveysianswered">Surveys I've Answered</MudMenuItem>
+            </MudMenu>
+        }
+        @if (IsAuthenticated && CanLeaveFeedback)
+        {
+            <MudMenu Label="Feedback" Variant="Variant.Text" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Color="Color.Inherit">
+                <MudMenuItem Href="/feedback">Leave Feedback</MudMenuItem>
+                <MudMenuItem Href="/feedback/my">My Feedback</MudMenuItem>
+            </MudMenu>
+        }
         <div class="mx-1">
-            <AuthorizeView>
-                <Authorized>
-                    <MudButton Variant="Variant.Text" Color="Color.Inherit" Class="mx-2" Href="logout">Logout</MudButton>
-                </Authorized>
-                <NotAuthorized>
-                    <MudButton Variant="Variant.Text" Color="Color.Inherit" Class="mx-2" Href="login">Login</MudButton>
-                    <MudButton Variant="Variant.Text" Color="Color.Inherit" Class="mx-2" Href="register">Register</MudButton>
-                </NotAuthorized>
-            </AuthorizeView>
+            @if (IsAuthenticated)
+            {
+                <MudButton Variant="Variant.Text" Color="Color.Inherit" Class="mx-2" Href="logout">Logout</MudButton>
+            }
+            else
+            {
+                <MudButton Variant="Variant.Text" Color="Color.Inherit" Class="mx-2" Href="login">Login</MudButton>
+                <MudButton Variant="Variant.Text" Color="Color.Inherit" Class="mx-2" Href="register">Register</MudButton>
+            }
         </div>
     </div>
 </MudAppBar>
@@ -73,15 +66,15 @@
 <MudDrawer @bind-Open="_drawerOpen" Anchor="MudBlazor.Anchor.Left" Variant="DrawerVariant.Temporary" Elevation="1">
     <MudDrawerHeader>Menu</MudDrawerHeader>
     <MudNavMenu>
-        <AuthorizeView>
-            <Authorized>
-                <MudNavLink Href="logout">Logout</MudNavLink>
-            </Authorized>
-            <NotAuthorized>
-                <MudNavLink Href="login">Login</MudNavLink>
-                <MudNavLink Href="register">Register</MudNavLink>
-            </NotAuthorized>
-        </AuthorizeView>
+        @if (IsAuthenticated)
+        {
+            <MudNavLink Href="logout">Logout</MudNavLink>
+        }
+        else
+        {
+            <MudNavLink Href="login">Login</MudNavLink>
+            <MudNavLink Href="register">Register</MudNavLink>
+        }
         <MudNavLink Href="/" Match="NavLinkMatch.All">Home</MudNavLink>
         <MudNavLink Href="/blogs" Match="NavLinkMatch.All">Blogs</MudNavLink>
         <MudNavLink Href="/documentation">Documentation</MudNavLink>
@@ -90,44 +83,37 @@
             <MudNavLink Href="/learn-more/analytics">Real-Time Analytics</MudNavLink>
             <MudNavLink Href="/learn-more/mobile">Mobile-Ready & Responsive</MudNavLink>
         </MudNavGroup>
-        <AuthorizeView Roles="Admin">
-            <Authorized>
-                <MudNavGroup Title="Admin" Expanded="false">
-                    <MudNavLink Href="/admin/feedback">Manage Feedback</MudNavLink>
-                    <MudNavLink Href="/admin/users">Manage Users</MudNavLink>
-                    <MudNavLink Href="/admin/settings">Settings Management</MudNavLink>
-                    <MudNavLink Href="/admin/logs">System Logs</MudNavLink>
-                    <MudNavLink Href="/ManageRolePermissions">Manage Permissions</MudNavLink>
-                    <AuthorizeView Policy="@Permissions.UseHangfire" Context="hangfireDrawerAuth">
-                        <Authorized>
-                            <MudNavLink Href="/hangfire">Background Jobs</MudNavLink>
-                        </Authorized>
-                    </AuthorizeView>
-                </MudNavGroup>
-            </Authorized>
-        </AuthorizeView>
-        <AuthorizeView Policy="@Permissions.CreateSurvey">
-            <Authorized>
-                <MudNavGroup Title="Surveys" Expanded="false">
-                    <MudNavLink Href="/survey/create">Create Survey</MudNavLink>
-                    <MudNavLink Href="/mysurveys/surveysicreated">Surveys I've Created</MudNavLink>
-                    <MudNavLink Href="/survey/surveysianswered">Surveys I've Answered</MudNavLink>
-                </MudNavGroup>
-            </Authorized>
-        </AuthorizeView>
-        <AuthorizeView>
-            <Authorized>
-                @if (((CustomAuthStateProvider)AuthStateProvider).CurrentUser != null && (((CustomAuthStateProvider)AuthStateProvider!).CurrentUser?.Permissions.Contains(Permissions.LeaveFeedback) ?? false))
+        @if (IsAuthenticated && IsAdmin)
+        {
+            <MudNavGroup Title="Admin" Expanded="false">
+                <MudNavLink Href="/admin/feedback">Manage Feedback</MudNavLink>
+                <MudNavLink Href="/admin/users">Manage Users</MudNavLink>
+                <MudNavLink Href="/admin/settings">Settings Management</MudNavLink>
+                <MudNavLink Href="/admin/logs">System Logs</MudNavLink>
+                <MudNavLink Href="/ManageRolePermissions">Manage Permissions</MudNavLink>
+                @if (CanUseHangfire)
                 {
-                    <MudNavGroup Title="Feedback" Expanded="false">                    
-                        <MudNavLink Href="/feedback">Leave Feedback</MudNavLink>                                    
-                        <MudNavLink Href="/feedback/my">My Feedback</MudNavLink>
-                    </MudNavGroup>
-                }   
-            </Authorized>            
-        </AuthorizeView>
-        <MudNavLink Href="/privacy-policy" Underline="Underline.None" Typo="Typo.inherit">Privacy Policy</MudNavLink>        
-        <MudNavLink Href="/cookie-policy" Underline="Underline.None" Typo="Typo.inherit">Cookie Policy</MudNavLink>        
+                    <MudNavLink Href="/hangfire">Background Jobs</MudNavLink>
+                }
+            </MudNavGroup>
+        }
+        @if (IsAuthenticated && CanCreateSurvey)
+        {
+            <MudNavGroup Title="Surveys" Expanded="false">
+                <MudNavLink Href="/survey/create">Create Survey</MudNavLink>
+                <MudNavLink Href="/mysurveys/surveysicreated">Surveys I've Created</MudNavLink>
+                <MudNavLink Href="/survey/surveysianswered">Surveys I've Answered</MudNavLink>
+            </MudNavGroup>
+        }
+        @if (IsAuthenticated && CanLeaveFeedback)
+        {
+            <MudNavGroup Title="Feedback" Expanded="false">
+                <MudNavLink Href="/feedback">Leave Feedback</MudNavLink>
+                <MudNavLink Href="/feedback/my">My Feedback</MudNavLink>
+            </MudNavGroup>
+        }
+        <MudNavLink Href="/privacy-policy" Underline="Underline.None" Typo="Typo.inherit">Privacy Policy</MudNavLink>
+        <MudNavLink Href="/cookie-policy" Underline="Underline.None" Typo="Typo.inherit">Cookie Policy</MudNavLink>
         <MudNavLink Href="/terms-of-service" Underline="Underline.None" Typo="Typo.inherit">Terms of Service</MudNavLink>
 
         @if (!string.IsNullOrEmpty(AppSettings?.EmailSettings?.CustomerServiceEmail))
