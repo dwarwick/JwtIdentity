@@ -515,15 +515,18 @@ td.e-summarycell.e-templatecell.e-leftalign {
 
 /* Alternating red/default background color every 0.5s */
 .alternate-background-red {
+    --alternate-bg-color: inherit;
     animation: alternate-background-red 0.5s infinite alternate;
 }
 .mud-list-item.alternate-background-red,
-.mud-selected-item.alternate-background-red {
+.mud-selected-item.alternate-background-red,
+.mud-primary-hover.alternate-background-red {
     animation: alternate-background-red 0.5s infinite alternate !important;
+    background-color: var(--alternate-bg-color) !important;
 }
 @keyframes alternate-background-red {
-    from { background-color: inherit; }
-    to { background-color: red; }
+    from { --alternate-bg-color: inherit; }
+    to { --alternate-bg-color: red; }
 }
 
 /* Respect reduced motion preferences */
