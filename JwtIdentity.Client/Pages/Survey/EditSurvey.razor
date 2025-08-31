@@ -7,7 +7,7 @@
 
 <MudStack Row="true" Justify="Justify.SpaceBetween">
     <MudText Typo="Typo.h4">Edit Survey</MudText>
-    <MudButton Id="PublishSurveyBtn" Class="mt-1" ButtonType="ButtonType.Button" Variant="Variant.Filled" Color="Color.Primary" OnClick="PublishSurvey" Disabled="@(Survey.Published)">Publish Survey</MudButton>
+    <MudButton Id="PublishSurveyBtn" Class="mt-1 ms-auto" ButtonType="ButtonType.Button" Variant="Variant.Filled" Color="Color.Primary" OnClick="PublishSurvey" Disabled="@(Survey.Published)">Publish Survey</MudButton>
     <MudPopover Open="@ShowDemoStep(9)" AnchorOrigin="@AnchorOrigin" TransformOrigin="@TransformOrigin" Fixed="true">
         <MudPaper Class="pa-4">
             <MudText Typo="Typo.body2">Now click the Publish Survey button to publish the survey.</MudText>
@@ -27,7 +27,7 @@
                 panelCss = "alternate-background-red";
             }
 
-            <MudExpansionPanel Id="QuestionsPanel" Expanded="QuestionsPanelExpanded" Class=@panelCss ExpandedChanged="@(() => HandleQuestionsPanelExpanded())">
+            <MudExpansionPanel Id="QuestionsPanel" Expanded="@QuestionsPanelExpanded" Class=@panelCss ExpandedChanged="HandleQuestionsPanelExpanded">
                 <TitleContent>
                     <div class="mud-expand-panel-text">Survey Questions (Select a Question to Edit it)</div>
                     <MudText Typo="Typo.caption" Align="Align.Center" Class="text-emphasis">Drag and Drop Questions to Reorder them, or click the Delete Icon to Remove a Question</MudText>
@@ -43,17 +43,16 @@
                                     <MudIconButton Icon="@Icons.Material.Filled.Delete" ButtonType="ButtonType.Button" OnClick="@(() => DeleteQuestion(question))" />
                                     <MudIcon Class="drag-icon ai-style-change-9" Icon="@Icons.Material.Filled.DragIndicator" />
 
-                                    @{
-                                        string css = "ai-style-change-3 ai-style-change-6";
-                                        if ((ShowDemoStep(2) || ShowDemoStep(4)) && question.QuestionNumber == 1)
+                                        @{
+                                            string css = "ai-style-change-3 ai-style-change-6";
+                                        
+                                        if ((ShowDemoStep(2) || ShowDemoStep(4) || ShowDemoStep(6)) && question.QuestionNumber == 1)
                                         {
-                                            css += " alternate-background-red";
-                                        }
+                                                css += " alternate-background-red";
+                                        }                                        
 
                                         <MudListItem Class="@css" Text="@($"{question.QuestionNumber}. {question.Text}")" Value="@question" />
                                     }
-
-                                        <MudListItem Class=@css Text="@($"{question.QuestionNumber}. {question.Text}")" Value="@question" Style="animation: alternate-background-red 0.5s infinite alternate; background-color: red !important;" />
 
 
                                     @if (question.IsRequired)
@@ -100,7 +99,11 @@
                 <MudExpansionPanel @ref="ManualQuestionPanel" @bind-Expanded="@ManualQuestionPanelExpanded" Text="Create Question Manually">
                     <MudPaper Class="p-2">
                         <MudStack Spacing="1">
-                            <MudSelect Id="QuestionTypeSelect" Label="Select the Question Type"
+                        @{
+                            string QuestionTypeSelectCss = ShowDemoStep(5) ? "alternate-background-red" : "";                            
+                        }
+
+                        <MudSelect Id="QuestionTypeSelect" Label="Select the Question Type" Class="@QuestionTypeSelectCss"
                                        Value="@SelectedQuestionType"
                                        ValueChanged="@((string questionType) => HandleSelectedQuestionType(questionType))"
                                        Variant="Variant.Filled"
