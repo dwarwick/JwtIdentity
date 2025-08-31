@@ -12,7 +12,9 @@
     <ValidationSummary />
     <MudStack Spacing="1">
         <div>
-            <MudTextField id="Title" Label="Title" @bind-Value="Survey.Title" Variant="Variant.Filled" Lines="1" MaxLines="5" AutoGrow="true" Immediate="true" Counter="50" MaxLength="50" />
+            <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 0 })">
+                <MudTextField id="Title" Label="Title" @bind-Value="Survey.Title" Variant="Variant.Filled" Lines="1" MaxLines="5" AutoGrow="true" Immediate="true" Counter="50" MaxLength="50" />
+            </DemoBorder>
             <MudPopover Open="@ShowDemoStep(0)" AnchorOrigin="@AnchorOrigin" TransformOrigin="@TransformOrigin" Fixed="true">
                 <MudPaper Class="pa-4">
                     <MudText Typo="Typo.body2">Let's start with a title for your survey.</MudText>
@@ -21,7 +23,9 @@
             </MudPopover>
         </div>
         <div>
-            <MudTextField id="Description" Label="Description" @bind-Value="Survey.Description" Variant="Variant.Filled" Lines="5" MaxLines="10" AutoGrow="true" Immediate="true" Counter="250" MaxLength="250" />
+            <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 1 })">
+                <MudTextField id="Description" Label="Description" @bind-Value="Survey.Description" Variant="Variant.Filled" Lines="5" MaxLines="10" AutoGrow="true" Immediate="true" Counter="250" MaxLength="250" />
+            </DemoBorder>
             <MudPopover Open="@ShowDemoStep(1)" AnchorOrigin="@AnchorOrigin" TransformOrigin="@TransformOrigin" Fixed="true">
                 <MudPaper Class="pa-4">
                     <MudText Typo="Typo.body2">Great! Now add a description. This helps guide the AI engine.</MudText>
@@ -35,39 +39,43 @@
                 </MudPaper>
             </MudPopover>
         </div>
-        
-        <MudAlert Severity="Severity.Info" Class="mt-2" >
+
+        <MudAlert Severity="Severity.Info" Class="mt-2">
             <MudText Typo="Typo.body2">You can use AI to generate questions for your survey. If you choose to do so, please provide clear instructions in the field below. As always, you will be able to edit or delete those questions, and add more questions.</MudText>
         </MudAlert>
 
         <div>
-            <MudTextField id="AiInstructions"
-                Label="Instructions to AI"
-                @bind-Value="Survey.AiInstructions"
-                Variant="Variant.Filled"
-                Lines="5" MaxLines="10"
-                AutoGrow="true"
-                Immediate="true"
-                Counter="500"
-                MaxLength="500"
-                Placeholder="Example: I am creating a survey that is designed to find out how people feel about my most recent service call. I am an air conditioning repair technician. Create a mix of Rating 1 to 10 question types. Create 1 Free Text response type question at the end that will allow users to provide any additional details about their experience."
-                HelperText="Although not required, providing instructions helps the AI, in case you want specific types of questions."/>
-            <MudPopover Open="@ShowDemoStep(2)" AnchorOrigin="@AnchorOrigin" TransformOrigin="@TransformOrigin" Fixed="true">
-                <MudPaper Class="pa-4">
-                    <MudText Typo="Typo.body2">Provide instructions for the AI-generated questions.</MudText>
-                    <MudButton Class="mt-2" OnClick="NextDemoStep">Next</MudButton>
-                </MudPaper>
-            </MudPopover>
+            <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 2 })">
+                <MudTextField id="AiInstructions"
+                              Label="Instructions to AI"
+                              @bind-Value="Survey.AiInstructions"
+                              Variant="Variant.Filled"
+                              Lines="5" MaxLines="10"
+                              AutoGrow="true"
+                              Immediate="true"
+                              Counter="500"
+                              MaxLength="500"
+                              Placeholder="Example: I am creating a survey that is designed to find out how people feel about my most recent service call. I am an air conditioning repair technician. Create a mix of Rating 1 to 10 question types. Create 1 Free Text response type question at the end that will allow users to provide any additional details about their experience."
+                              HelperText="Although not required, providing instructions helps the AI, in case you want specific types of questions." />
+                <MudPopover Open="@ShowDemoStep(2)" AnchorOrigin="@AnchorOrigin" TransformOrigin="@TransformOrigin" Fixed="true">
+                    <MudPaper Class="pa-4">
+                        <MudText Typo="Typo.body2">Provide instructions for the AI-generated questions.</MudText>
+                        <MudButton Class="mt-2" OnClick="NextDemoStep">Next</MudButton>
+                    </MudPaper>
+                </MudPopover>
+            </DemoBorder>
         </div>
     </MudStack>
     <div>
-        <SpinnerButton IsBusy="@IsBusy" ButtonType="ButtonType.Submit" Color="Color.Primary" Text="Create" Disabled="@(Survey.Id > 0)" />
+        <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 4 })">
+            <SpinnerButton IsBusy="@IsBusy" ButtonType="ButtonType.Submit" Color="Color.Primary" Text="Create" Disabled="@(Survey.Id > 0)" />
+        </DemoBorder>
         <MudPopover Open="@ShowDemoStep(4)" AnchorOrigin="@AnchorOrigin" TransformOrigin="@TransformOrigin" Fixed="true">
             <MudPaper Class="pa-4">
                 <MudText Typo="Typo.body2" Style="white-space: pre-line">
-                All set!
-                Feel free to edit the text in any of these fields to see what difference it makes.
-                Click the Create button to generate your survey.
+                    All set!
+                    Feel free to edit the text in any of these fields to see what difference it makes.
+                    Click the Create button to generate your survey.
                 </MudText>
                 <MudButton Class="mt-2" OnClick="NextDemoStep">Close</MudButton>
             </MudPaper>

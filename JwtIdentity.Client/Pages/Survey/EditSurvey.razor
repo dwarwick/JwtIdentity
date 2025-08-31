@@ -6,14 +6,11 @@
 <PageTitle>Survey Shark - Edit Survey</PageTitle>
 
 <MudStack Row="true" Justify="Justify.SpaceBetween">
-    <MudText Typo="Typo.h4">Edit Survey</MudText>
-    @{
-        string publishButtonCss = ShowDemoStep(9) ? "demo-success-border ms-auto mt-1" : "ms-auto mt-1";
-    }
+    <MudText Typo="Typo.h4">Edit Survey</MudText>    
 
-    <div class="@publishButtonCss">
+    <DemoBorder Class="ms-auto mt-1" CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>(){9})">
         <MudButton Id="PublishSurveyBtn" ButtonType="ButtonType.Button" Variant="Variant.Filled" Color="Color.Primary" OnClick="PublishSurvey" Disabled="@(Survey.Published)">Publish Survey</MudButton>
-    </div>
+    </DemoBorder>
     <MudPopover Open="@ShowDemoStep(9)" AnchorOrigin="@AnchorOrigin" TransformOrigin="@TransformOrigin" Fixed="true">
         <MudPaper Class="pa-4">
             <MudText Typo="Typo.body2">Now click the Publish Survey button to publish the survey.</MudText>
@@ -26,14 +23,8 @@
 <div class="d-md-flex flex-column justify-space-evenly gap-2">
     <MudExpansionPanels MultiExpansion="true">
         @if (Survey?.Questions != null && Survey.Questions.Count > 0)
-        {
-            string panelCss = "";
-            if (ShowDemoStep(0))
-            {
-                panelCss = "demo-success-border";
-            }
-
-            <div class="@panelCss">
+        {            
+            <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>(){0})">
                 <MudExpansionPanel Id="QuestionsPanel" Expanded="@QuestionsPanelExpanded" ExpandedChanged="HandleQuestionsPanelExpanded">
                     <TitleContent>
                         <div class="mud-expand-panel-text">Survey Questions (Select a Question to Edit it)</div>
@@ -50,19 +41,17 @@
                                             <MudIconButton Icon="@Icons.Material.Filled.Delete" ButtonType="ButtonType.Button" OnClick="@(() => DeleteQuestion(question))" />
                                             <MudIcon Class="drag-icon ai-style-change-9" Icon="@Icons.Material.Filled.DragIndicator" />
 
-                                            @{
-                                                string questionCss = "";
-
-                                                if ((ShowDemoStep(2) || ShowDemoStep(4) || ShowDemoStep(6)) && question.QuestionNumber == 1)
-                                                {
-                                                    questionCss = " demo-success-border";
-                                                }
-
-                                                <div class="@questionCss">
+                                            @if (question.QuestionNumber == 1)
+                                            {
+                                                <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>(){2,4,6})">
                                                     <MudListItem Class="ai-style-change-3 ai-style-change-6" Text="@($"{question.QuestionNumber}. {question.Text}")" Value="@question" />
-                                                </div>
+                                                </DemoBorder>
                                             }
-
+                                            else
+                                            {
+                                                <MudListItem Class="ai-style-change-3 ai-style-change-6" Text="@($"{question.QuestionNumber}. {question.Text}")" Value="@question" />
+                                            }
+                                            
 
                                             @if (question.IsRequired)
                                             {
@@ -77,7 +66,7 @@
                         </MudPaper>
                     </ChildContent>
                 </MudExpansionPanel>
-            </div>
+            </DemoBorder>
             <MudPopover Open="@ShowDemoStep(0)" AnchorOrigin="@AnchorOrigin" TransformOrigin="@TransformOrigin" Fixed="true">
                 <MudPaper Class="pa-4">
                     <MudText Typo="Typo.body2">Expand the Survey Questions Accordion by clicking it.</MudText>
