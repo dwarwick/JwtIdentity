@@ -514,23 +514,15 @@ td.e-summarycell.e-templatecell.e-leftalign {
 }
 
 /* Alternating red/default background color every 0.5s */
-.alternate-background-red {
-    --alternate-bg-color: inherit;
-    animation: alternate-background-red 0.5s infinite alternate;
-    background-color: var(--alternate-bg-color);
-}
-.mud-list-item.alternate-background-red,
-.mud-selected-item.alternate-background-red,
-.mud-primary-hover.alternate-background-red {
-    animation: alternate-background-red 0.5s infinite alternate !important;
-    background-color: var(--alternate-bg-color) !important;
-}
-@keyframes alternate-background-red {
-    from { --alternate-bg-color: inherit; }
-    to { --alternate-bg-color: red; }
+.demo-success-border {
+    box-shadow: 0 0 0 2px var(--mud-palette-success);
+    border-radius: 4px;
+    padding: 5px;
 }
 
-/* Respect reduced motion preferences */
-@media (prefers-reduced-motion: reduce) {
-    .alternate-background-red { animation: none; }
+.mud-list-item.demo-success-border,
+.mud-selected-item.demo-success-border,
+.mud-primary-hover.demo-success-border {
+    box-shadow: 0 0 0 2px var(--mud-palette-success) !important;
+    border-radius: 4px;
 }
