@@ -27,7 +27,7 @@
                 panelCss = "alternate-background-red";
             }
 
-            <MudExpansionPanel Id="QuestionsPanel" Expanded="QuestionsPanelExpanded" Class=@panelCss ExpandedChanged="@(() => HandleQuestionsPanelExpanded())">
+            <MudExpansionPanel Id="QuestionsPanel" Expanded="@QuestionsPanelExpanded" Class=@panelCss ExpandedChanged="HandleQuestionsPanelExpanded">
                 <TitleContent>
                     <div class="mud-expand-panel-text">Survey Questions (Select a Question to Edit it)</div>
                     <MudText Typo="Typo.caption" Align="Align.Center" Class="text-emphasis">Drag and Drop Questions to Reorder them, or click the Delete Icon to Remove a Question</MudText>

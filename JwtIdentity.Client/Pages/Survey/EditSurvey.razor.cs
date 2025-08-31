@@ -648,10 +648,10 @@ namespace JwtIdentity.Client.Pages.Survey
             }
         }
 
-        protected void HandleQuestionsPanelExpanded()
+        protected void HandleQuestionsPanelExpanded(bool expanded)
         {
-            QuestionsPanelExpanded = !QuestionsPanelExpanded;
-            if (IsDemoUser && DemoStep == 0 && QuestionsPanelExpanded)
+            QuestionsPanelExpanded = expanded;
+            if (IsDemoUser && DemoStep == 0 && expanded)
             {
                 DemoStep = 1;
             }
