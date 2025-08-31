@@ -517,7 +517,9 @@ td.e-summarycell.e-templatecell.e-leftalign {
 .demo-success-border {
     box-shadow: 0 0 0 2px var(--mud-palette-success);
     border-radius: 4px;
+    padding: 5px;
 }
+
 .mud-list-item.demo-success-border,
 .mud-selected-item.demo-success-border,
 .mud-primary-hover.demo-success-border {
