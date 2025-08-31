@@ -24,7 +24,7 @@
             string panelCss = "";
             if (ShowDemoStep(0))
             {
-                panelCss = "alternate-background-red";
+                panelCss = "demo-success-border";
             }
 
             <MudExpansionPanel Id="QuestionsPanel" Expanded="@QuestionsPanelExpanded" Class=@panelCss ExpandedChanged="HandleQuestionsPanelExpanded">
@@ -48,7 +48,7 @@
                                         
                                         if ((ShowDemoStep(2) || ShowDemoStep(4) || ShowDemoStep(6)) && question.QuestionNumber == 1)
                                         {
-                                                css += " alternate-background-red";
+                                                css += " demo-success-border";
                                         }                                        
 
                                         <MudListItem Class="@css" Text="@($"{question.QuestionNumber}. {question.Text}")" Value="@question" />
@@ -100,7 +100,7 @@
                     <MudPaper Class="p-2">
                         <MudStack Spacing="1">
                         @{
-                            string QuestionTypeSelectCss = ShowDemoStep(5) ? "alternate-background-red" : "";                            
+                            string QuestionTypeSelectCss = ShowDemoStep(5) ? "demo-success-border" : "";
                         }
 
                         <MudSelect Id="QuestionTypeSelect" Label="Select the Question Type" Class="@QuestionTypeSelectCss"
@@ -123,7 +123,7 @@
                             </MudPopover>
 
                              <MudText Typo="Typo.h6" Class="mt-5">Create a @StringHelper.PascalCaseToWords(SelectedQuestionType) Question</MudText>
-                        <MudTextField Id="Text" Label="Question Text" @bind-Value="QuestionText" Variant="Variant.Filled" Lines="1" MaxLines="5" AutoGrow="true" Immediate="true" Counter="500" MaxLength="500" Class="@(ShowDemoStep(3) ? "alternate-background-red" : "")" />
+                        <MudTextField Id="Text" Label="Question Text" @bind-Value="QuestionText" Variant="Variant.Filled" Lines="1" MaxLines="5" AutoGrow="true" Immediate="true" Counter="500" MaxLength="500" Class="@(ShowDemoStep(3) ? "demo-success-border" : "")" />
                             <MudPopover Open="@ShowDemoStep(3)" AnchorOrigin="@AnchorOrigin" TransformOrigin="@TransformOrigin" Fixed="true">
                                 <MudPaper Class="pa-4">
                                     <MudText Typo="Typo.body2" Style="white-space: pre-line">Scroll down to edit the question text.
