@@ -8,9 +8,11 @@
 <MudStack Row="true" Justify="Justify.SpaceBetween">
     <MudText Typo="Typo.h4">Edit Survey</MudText>    
 
-    <DemoBorder Class="ms-auto mt-1" CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>(){9})">
+
+    <DemoBorder Class="ms-auto mt-2" CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 9 })" IsButton="true">
         <MudButton Id="PublishSurveyBtn" ButtonType="ButtonType.Button" Variant="Variant.Filled" Color="Color.Primary" OnClick="PublishSurvey" Disabled="@(Survey.Published)">Publish Survey</MudButton>
     </DemoBorder>
+
     <MudPopover Open="@ShowDemoStep(9)" AnchorOrigin="@AnchorOrigin" TransformOrigin="@TransformOrigin" Fixed="true">
         <MudPaper Class="pa-4">
             <MudText Typo="Typo.body2">Now click the Publish Survey button to publish the survey.</MudText>
@@ -75,7 +77,9 @@
             <MudPopover Open="@ShowDemoStep(1)" AnchorOrigin="@AnchorOrigin" TransformOrigin="@TransformOrigin" Fixed="true">
                 <MudPaper Class="pa-4">
                     <MudText Typo="Typo.body2">The questions can be reordered by dragging and dropping them.</MudText>
-                    <MudButton Class="mt-2" OnClick="NextDemoStep">Next</MudButton>
+                    <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 1 })" IsButton="true">
+                        <MudButton Class="mt-2" OnClick="NextDemoStep">Next</MudButton>
+                    </DemoBorder>
                 </MudPaper>
             </MudPopover>
             <MudPopover Open="@ShowDemoStep(2)" AnchorOrigin="@AnchorOrigin" TransformOrigin="@TransformOrigin" Fixed="true">
@@ -134,24 +138,26 @@
                                     If you edit a question, click the Save Question button to save the changes.
                                     If you are happy with the questions and are ready to share the survey, click the Publish button in the upper right of this page.
                                 </MudText>
-                                <MudButton Class="mt-2" OnClick="NextDemoStep">Next</MudButton>
+                                <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 3 })" IsButton="true">
+                                    <MudButton Class="mt-2" OnClick="NextDemoStep">Next</MudButton>
+                                </DemoBorder>
                             </MudPaper>
                         </MudPopover>
                         <MudPopover Open="@ShowDemoStep(6)" AnchorOrigin="@AnchorOrigin" TransformOrigin="@TransformOrigin" Fixed="true">
                             <MudPaper Class="pa-4">
                                 <MudText Typo="Typo.body2">We will now create a multiple choice question.</MudText>
-                                <MudButton Class="mt-2" OnClick="NextDemoStep">Next</MudButton>
+                                <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 6 })" IsButton="true">
+                                    <MudButton Class="mt-2" OnClick="NextDemoStep">Next</MudButton>
+                                </DemoBorder>
                             </MudPaper>
                         </MudPopover>
                     </MudStack>
 
                     <MudStack Row="true">
-                        @{
-                            string saveButtonCss = ShowDemoStep(8) ? "demo-success-border" : "";
-                        }
-                        <div class="@saveButtonCss">
+                       
+                        <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>(){8})" IsButton="true">
                             <MudButton Id="SaveQuestionBtn" ButtonType="ButtonType.Button" Variant="Variant.Filled" Color="Color.Primary" OnClick="AddQuestionToSurvey" Disabled="@AddQuestionToSurveyDisabled">Save Question</MudButton>
-                        </div>
+                        </DemoBorder>
                         <MudPopover Open="@ShowDemoStep(8)" AnchorOrigin="@AnchorOrigin" TransformOrigin="@TransformOrigin" Fixed="true">
                             <MudPaper Class="pa-4">
                                 <MudText Typo="Typo.body2">You can see the choices down below. Click Save Question button to save the question.</MudText>

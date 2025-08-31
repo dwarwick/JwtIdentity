@@ -1,7 +1,7 @@
 ﻿@inherits DemoBorderModel
 
 @{
-    string showDemoStepCss = ShowDemoStep() ? "demo-success-border" : "";
+    string showDemoStepCss = ShowDemoStep() ? IsButton ? "demo-primary-border" : "demo-success-border" : "";
 }
 <div class=@($"{Class} {showDemoStepCss} ")>
     @ChildContent

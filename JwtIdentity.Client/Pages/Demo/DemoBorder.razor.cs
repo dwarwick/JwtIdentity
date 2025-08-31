@@ -15,6 +15,9 @@ namespace JwtIdentity.Client.Pages.Demo
         [Parameter]
         public List<int> StepsToShow { get; set; }
 
+        [Parameter]
+        public bool IsButton { get; set; } = false;
+
         protected bool ShowDemoStep() => IsDemoUser && StepsToShow.Contains(CurrentDemoStep);
 
         protected bool IsDemoUser { get; set; }

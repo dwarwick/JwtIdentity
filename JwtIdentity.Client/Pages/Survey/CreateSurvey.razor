@@ -18,7 +18,9 @@
             <MudPopover Open="@ShowDemoStep(0)" AnchorOrigin="@AnchorOrigin" TransformOrigin="@TransformOrigin" Fixed="true">
                 <MudPaper Class="pa-4">
                     <MudText Typo="Typo.body2">Let's start with a title for your survey.</MudText>
-                    <MudButton Class="mt-2" OnClick="NextDemoStep">Next</MudButton>
+                    <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 0 })" IsButton="true">
+                        <MudButton Class="mt-2" OnClick="NextDemoStep">Next</MudButton>
+                    </DemoBorder>
                 </MudPaper>
             </MudPopover>
         </div>
@@ -29,13 +31,17 @@
             <MudPopover Open="@ShowDemoStep(1)" AnchorOrigin="@AnchorOrigin" TransformOrigin="@TransformOrigin" Fixed="true">
                 <MudPaper Class="pa-4">
                     <MudText Typo="Typo.body2">Great! Now add a description. This helps guide the AI engine.</MudText>
-                    <MudButton Class="mt-2" OnClick="NextDemoStep">Next</MudButton>
+                    <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 1 })" IsButton="true">
+                        <MudButton Class="mt-2" OnClick="NextDemoStep">Next</MudButton>
+                    </DemoBorder>
                 </MudPaper>
             </MudPopover>
             <MudPopover Open="@ShowDemoStep(3)" AnchorOrigin="@AnchorOrigin" TransformOrigin="@TransformOrigin" Fixed="true">
                 <MudPaper Class="pa-4">
                     <MudText Typo="Typo.body2">Only the title and description are required to create a survey. AI instructions are optional.</MudText>
-                    <MudButton Class="mt-2" OnClick="NextDemoStep">Next</MudButton>
+                    <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 3 })" IsButton="true">
+                        <MudButton Class="mt-2" OnClick="NextDemoStep">Next</MudButton>
+                    </DemoBorder>
                 </MudPaper>
             </MudPopover>
         </div>
@@ -60,14 +66,16 @@
                 <MudPopover Open="@ShowDemoStep(2)" AnchorOrigin="@AnchorOrigin" TransformOrigin="@TransformOrigin" Fixed="true">
                     <MudPaper Class="pa-4">
                         <MudText Typo="Typo.body2">Provide instructions for the AI-generated questions.</MudText>
-                        <MudButton Class="mt-2" OnClick="NextDemoStep">Next</MudButton>
+                        <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 2 })" IsButton="true">
+                            <MudButton Class="mt-2" OnClick="NextDemoStep">Next</MudButton>
+                        </DemoBorder>
                     </MudPaper>
                 </MudPopover>
             </DemoBorder>
         </div>
     </MudStack>
     <div>
-        <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 4 })">
+        <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 4, 5 })" IsButton="true">
             <SpinnerButton IsBusy="@IsBusy" ButtonType="ButtonType.Submit" Color="Color.Primary" Text="Create" Disabled="@(Survey.Id > 0)" />
         </DemoBorder>
         <MudPopover Open="@ShowDemoStep(4)" AnchorOrigin="@AnchorOrigin" TransformOrigin="@TransformOrigin" Fixed="true">
@@ -77,7 +85,9 @@
                     Feel free to edit the text in any of these fields to see what difference it makes.
                     Click the Create button to generate your survey.
                 </MudText>
-                <MudButton Class="mt-2" OnClick="NextDemoStep">Close</MudButton>
+                <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 4 })" IsButton="true">
+                    <MudButton Class="mt-2" OnClick="NextDemoStep">Close</MudButton>
+                </DemoBorder>
             </MudPaper>
         </MudPopover>
     </div>
