@@ -576,3 +576,12 @@ td.e-summarycell.e-templatecell.e-leftalign {
 @media (prefers-reduced-motion: reduce) {
     .demo-primary-border::after { animation: none; }
 }
+
+.demo-popup {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-radius: 8px;
+    border: 2px solid var(--mud-palette-primary, #1976d2);
+    padding: 1rem;
+    background-color: var(--mud-palette-surface);
+    transition: all 0.3s ease;
+}

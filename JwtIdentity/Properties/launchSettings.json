@@ -24,7 +24,7 @@
       "browser": "chrome"
     },
     "watch-https": {
-      "commandName": "Executable",
+      "commandName": "Project",
       "executablePath": "dotnet",
       "commandLineArgs": "watch run --launch-profile https",
       "workingDirectory": "$(ProjectDir)",

@@ -30,7 +30,7 @@
             </DemoBorder>
             <MudPopover Open="@ShowDemoStep(1)" AnchorOrigin="@AnchorOrigin" TransformOrigin="@TransformOrigin" Fixed="true">
                 <MudPaper Class="pa-4">
-                    <MudText Typo="Typo.body2">Great! Now add a description. This helps guide the AI engine.</MudText>
+                    <MudText Typo="Typo.body2">Great! Now add a description. This helps guide the AI engine, and tells the survey taker what the survey is about.</MudText>
                     <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 1 })" IsButton="true">
                         <MudButton Class="mt-2" OnClick="NextDemoStep">Next</MudButton>
                     </DemoBorder>
@@ -38,7 +38,7 @@
             </MudPopover>
             <MudPopover Open="@ShowDemoStep(3)" AnchorOrigin="@AnchorOrigin" TransformOrigin="@TransformOrigin" Fixed="true">
                 <MudPaper Class="pa-4">
-                    <MudText Typo="Typo.body2">Only the title and description are required to create a survey. AI instructions are optional.</MudText>
+                    <MudText Typo="Typo.body2">Only the title and description are required to create a survey. AI instructions are optional. The title and description will be shown to the survey taker. The AI instructions are not shown to the user.</MudText>
                     <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 3 })" IsButton="true">
                         <MudButton Class="mt-2" OnClick="NextDemoStep">Next</MudButton>
                     </DemoBorder>

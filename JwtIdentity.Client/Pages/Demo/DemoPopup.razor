@@ -1,0 +1,7 @@
+﻿@inherits DemoPopupModel
+
+<MudPopover Open="@ShowDemoStep()" AnchorOrigin="@AnchorOrigin" TransformOrigin="@TransformOrigin" Fixed="true" Class=@($"{Class} demo-popup")>
+    <MudPaper Class="pa-4">
+        @ChildContent
+    </MudPaper>
+</MudPopover>
