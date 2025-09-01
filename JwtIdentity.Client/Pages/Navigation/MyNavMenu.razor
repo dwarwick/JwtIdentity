@@ -50,7 +50,7 @@
             </MudMenu>
         }
         <div class="mx-1">
-            @if (IsAuthenticated)
+            @if (IsAuthenticated && !IsDemoUser)
             {
                 <MudButton Variant="Variant.Text" Color="Color.Inherit" Class="mx-2" Href="logout">Logout</MudButton>
             }
@@ -66,7 +66,7 @@
 <MudDrawer @bind-Open="_drawerOpen" Anchor="MudBlazor.Anchor.Left" Variant="DrawerVariant.Temporary" Elevation="1">
     <MudDrawerHeader>Menu</MudDrawerHeader>
     <MudNavMenu>
-        @if (IsAuthenticated)
+        @if (IsAuthenticated && !IsDemoUser)
         {
             <MudNavLink Href="logout">Logout</MudNavLink>
         }

@@ -62,6 +62,44 @@ namespace JwtIdentity.Client.Services
             }
         }
 
+        public async Task<Response<ApplicationUserViewModel>> StartDemo()
+        {
+            Response<ApplicationUserViewModel> response;
+            try
+            {
+                ((CustomAuthStateProvider)_customAuthStateProvider).CurrentUser = await _apiService.PostAsync<ApplicationUserViewModel>("api/auth/demo", null);
+
+                if (((CustomAuthStateProvider)_customAuthStateProvider).CurrentUser != null && !string.IsNullOrEmpty(((CustomAuthStateProvider)_customAuthStateProvider).CurrentUser?.Token))
+                {
+                    response = new Response<ApplicationUserViewModel>
+                    {
+                        Data = ((CustomAuthStateProvider)_customAuthStateProvider).CurrentUser,
+                        Success = true,
+                    };
+
+                    await LocalStorage.SetItemAsync("authToken", response.Data.Token);
+                    await ((CustomAuthStateProvider)_customAuthStateProvider).LoggedIn();
+                    ((CustomAuthStateProvider)_customAuthStateProvider)._httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", response.Data.Token);
+
+                    return response;
+                }
+                else
+                {
+                    response = new Response<ApplicationUserViewModel>
+                    {
+                        Data = null,
+                        Success = false,
+                        Message = "Failed to start demo"
+                    };
+                    return response;
+                }
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
         public async Task Logout()
         {
             await ((CustomAuthStateProvider)this._customAuthStateProvider).LoggedOut();
