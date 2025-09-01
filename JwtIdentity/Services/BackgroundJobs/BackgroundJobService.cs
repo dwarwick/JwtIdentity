@@ -1,6 +1,7 @@
 using Hangfire;
 using JwtIdentity.Data;
 using JwtIdentity.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace JwtIdentity.Services.BackgroundJobs
 {
@@ -51,6 +52,11 @@ namespace JwtIdentity.Services.BackgroundJobs
                     "daily-summary-report",
                     () => SendDailySummaryReport(customerServiceEmail),
                     Cron.Daily(7, 0)); // Run at 7:00 AM every day
+
+                RecurringJob.AddOrUpdate(
+                    "demo-cleanup",
+                    () => DemoCleanup(),
+                    Cron.Daily());
                     
                 _logger.LogInformation("Hangfire recurring jobs scheduled successfully");
                 
@@ -189,6 +195,76 @@ namespace JwtIdentity.Services.BackgroundJobs
                 });
                 await _dbContext.SaveChangesAsync();
                 
+                throw;
+            }
+        }
+
+        public async Task DemoCleanup()
+        {
+            try
+            {
+                var cutoff = DateTime.UtcNow.AddHours(-24);
+                var demoUsers = await _dbContext.ApplicationUsers
+                    .Where(u => u.UserName.StartsWith("DemoUser_") && u.CreatedDate < cutoff)
+                    .ToListAsync();
+
+                if (demoUsers.Any())
+                {
+                    var userIds = demoUsers.Select(u => u.Id).ToList();
+                    var surveys = await _dbContext.Surveys
+                        .Where(s => userIds.Contains(s.CreatedById))
+                        .ToListAsync();
+
+                    if (surveys.Any())
+                    {
+                        var surveyIds = surveys.Select(s => s.Id).ToList();
+
+                        var mcQuestions = await _dbContext.Questions
+                            .OfType<MultipleChoiceQuestion>()
+                            .Where(q => surveyIds.Contains(q.SurveyId))
+                            .Include(q => q.Options)
+                            .ToListAsync();
+
+                        var selectQuestions = await _dbContext.Questions
+                            .OfType<SelectAllThatApplyQuestion>()
+                            .Where(q => surveyIds.Contains(q.SurveyId))
+                            .Include(q => q.Options)
+                            .ToListAsync();
+
+                        _dbContext.ChoiceOptions.RemoveRange(mcQuestions.SelectMany(q => q.Options));
+                        _dbContext.ChoiceOptions.RemoveRange(selectQuestions.SelectMany(q => q.Options));
+
+                        var questions = await _dbContext.Questions
+                            .Where(q => surveyIds.Contains(q.SurveyId))
+                            .ToListAsync();
+
+                        _dbContext.Questions.RemoveRange(questions);
+
+                        _dbContext.Surveys.RemoveRange(surveys);
+                    }
+
+                    _dbContext.ApplicationUsers.RemoveRange(demoUsers);
+                    await _dbContext.SaveChangesAsync();
+
+                    _dbContext.LogEntries.Add(new LogEntry
+                    {
+                        Message = $"DemoCleanup removed {demoUsers.Count} users and {surveys.Count} surveys",
+                        Level = "Info",
+                        LoggedAt = DateTime.UtcNow
+                    });
+                    await _dbContext.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error during demo cleanup");
+                _dbContext.LogEntries.Add(new LogEntry
+                {
+                    Message = $"Error during demo cleanup: {ex.Message}",
+                    Level = "Error",
+                    LoggedAt = DateTime.UtcNow
+                });
+                await _dbContext.SaveChangesAsync();
                 throw;
             }
         }
