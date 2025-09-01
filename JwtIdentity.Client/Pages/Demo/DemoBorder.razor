@@ -3,6 +3,6 @@
 @{
     string showDemoStepCss = ShowDemoStep() ? IsButton ? "demo-primary-border" : "demo-success-border" : "";
 }
-<div class=@($"{Class} {showDemoStepCss} ")>
+<div class=@($"{Class} {showDemoStepCss}")>
     @ChildContent
 </div>

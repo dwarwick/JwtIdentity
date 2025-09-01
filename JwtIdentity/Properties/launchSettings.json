@@ -5,14 +5,14 @@
       "launchBrowser": true,
       "launchUrl": "https://localhost:5001",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development",
-        "DOTNET_BROWSER": "chrome"
+        "ASPNETCORE_ENVIRONMENT": "Development"
       },
       "dotnetRunMessages": true,
       "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}",
       "applicationUrl": "https://localhost:5001",
       "hotReloadEnabled": true,
-      "hotReloadProfile": "aspnetcore"
+      "hotReloadProfile": "aspnetcore",
+      "browser": "chrome"
     },
     "Swagger": {
       "commandName": "Project",
@@ -24,7 +24,7 @@
       "browser": "chrome"
     },
     "watch-https": {
-      "commandName": "Executable",
+      "commandName": "Project",
       "executablePath": "dotnet",
       "commandLineArgs": "watch run --launch-profile https",
       "workingDirectory": "$(ProjectDir)",

@@ -44,7 +44,7 @@
                     DemoStep = 1;
                     break;
                 case 1:
-                    Survey.Description = "Please take our customer satisfaction survey so we can get valuable feedback from you regarding our service. The description helps guide the AI engine on what type of questions to create.";
+                    Survey.Description = "Please take our customer satisfaction survey so we can get valuable feedback from you regarding our service.";
                     DemoStep = 2;
                     break;
                 case 2:
