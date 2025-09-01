@@ -83,7 +83,7 @@ namespace JwtIdentity.Client.Pages.Navigation
             await InvokeAsync(StateHasChanged);
         }
 
-        private async Task AuthStateChanged(Task<AuthenticationState> task)
+        private async void AuthStateChanged(Task<AuthenticationState> task)
         {
             await SetAuthFlagsAsync();
             await InvokeAsync(StateHasChanged);
