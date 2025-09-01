@@ -27,7 +27,8 @@
         protected override async Task OnInitializedAsync()
         {
             var authState = await AuthStateProvider.GetAuthenticationStateAsync();
-            IsDemoUser = authState.User.Identity?.Name == "DemoUser@surveyshark.site";
+            var userName = authState.User.Identity?.Name ?? string.Empty;
+            IsDemoUser = userName.StartsWith("DemoUser") && userName.EndsWith("@surveyshark.site");
         }
     }
 }

@@ -134,6 +134,83 @@ namespace JwtIdentity.Controllers
             }
         }
 
+        [HttpPost("demo")]
+        public async Task<ActionResult<ApplicationUserViewModel>> CreateDemoUser()
+        {
+            _logger.LogInformation("Creating new demo user");
+
+            try
+            {
+                var baseUser = await _userManager.FindByNameAsync("DemoUser@surveyshark.site");
+                if (baseUser == null)
+                {
+                    _logger.LogWarning("Base demo user not found");
+                    return StatusCode(StatusCodes.Status500InternalServerError, "Base demo user not found");
+                }
+
+                var guid = Guid.NewGuid().ToString();
+                var userName = $"DemoUser_{guid}@surveyshark.site";
+                var now = DateTime.UtcNow;
+
+                var newUser = new ApplicationUser
+                {
+                    UserName = userName,
+                    Email = userName,
+                    EmailConfirmed = true,
+                    Theme = baseUser.Theme,
+                    CreatedDate = now,
+                    UpdatedDate = now
+                };
+
+                var password = _configuration["AnonymousPassword"] ?? string.Empty;
+                var createResult = await _userManager.CreateAsync(newUser, password);
+                if (!createResult.Succeeded)
+                {
+                    var errors = string.Join(", ", createResult.Errors.Select(e => e.Description));
+                    _logger.LogError("Failed to create demo user: {Errors}", errors);
+                    return StatusCode(StatusCodes.Status500InternalServerError, "Failed to create demo user");
+                }
+
+                var baseRoles = await _userManager.GetRolesAsync(baseUser);
+                if (baseRoles.Any())
+                {
+                    await _userManager.AddToRolesAsync(newUser, baseRoles);
+                }
+
+                string token = await _apiAuthService.GenerateJwtToken(newUser);
+                var viewModel = _mapper.Map<ApplicationUserViewModel>(newUser);
+                viewModel.Token = token;
+
+                var expiration = int.TryParse(_configuration["Jwt:ExpirationMinutes"], out int minutes) ? minutes : 60;
+                Response.Cookies.Append(
+                    "authToken",
+                    token,
+                    new CookieOptions
+                    {
+                        HttpOnly = true,
+                        Secure = true,
+                        SameSite = SameSiteMode.Strict,
+                        Expires = DateTime.Now.AddMinutes(expiration)
+                    }
+                );
+
+                _dbContext.LogEntries.Add(new LogEntry
+                {
+                    Message = $"Demo user {userName} created at {DateTime.UtcNow}",
+                    Level = "Info",
+                    LoggedAt = DateTime.UtcNow
+                });
+                await _dbContext.SaveChangesAsync();
+
+                return Ok(viewModel);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating demo user");
+                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while creating demo user");
+            }
+        }
+
         [HttpPost("logout")]
         public async Task<IActionResult> Logout()
         {

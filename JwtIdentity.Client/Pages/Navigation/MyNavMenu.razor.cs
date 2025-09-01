@@ -25,6 +25,7 @@ namespace JwtIdentity.Client.Pages.Navigation
         protected bool CanCreateSurvey { get; private set; }
         protected bool CanLeaveFeedback { get; private set; }
         protected bool CanUseHangfire { get; private set; }
+        protected bool IsDemoUser { get; private set; }
 
         protected override async Task OnInitializedAsync()
         {
@@ -44,6 +45,8 @@ namespace JwtIdentity.Client.Pages.Navigation
             var authState = await AuthStateProvider.GetAuthenticationStateAsync();
             var user = authState.User;
             IsAuthenticated = user.Identity?.IsAuthenticated ?? false;
+            var userName = user.Identity?.Name ?? string.Empty;
+            IsDemoUser = userName.StartsWith("DemoUser") && userName.EndsWith("@surveyshark.site");
             if (IsAuthenticated)
             {
                 IsAdmin = user.IsInRole("Admin");

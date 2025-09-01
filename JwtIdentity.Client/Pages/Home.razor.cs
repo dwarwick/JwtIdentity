@@ -9,11 +9,7 @@
             if (DemoLoading) return;
             DemoLoading = true;
 
-            Response<ApplicationUserViewModel> loginResponse = await AuthService.Login(new ApplicationUserViewModel()
-            {
-                UserName = "logmeindemouser",
-                Password = "123"
-            });
+            Response<ApplicationUserViewModel> loginResponse = await AuthService.StartDemo();
 
             if (loginResponse.Success)
             {
