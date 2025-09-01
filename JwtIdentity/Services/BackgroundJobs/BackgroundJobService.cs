@@ -215,7 +215,34 @@ namespace JwtIdentity.Services.BackgroundJobs
                         .Where(s => userIds.Contains(s.CreatedById))
                         .ToListAsync();
 
-                    _dbContext.Surveys.RemoveRange(surveys);
+                    if (surveys.Any())
+                    {
+                        var surveyIds = surveys.Select(s => s.Id).ToList();
+
+                        var mcQuestions = await _dbContext.Questions
+                            .OfType<MultipleChoiceQuestion>()
+                            .Where(q => surveyIds.Contains(q.SurveyId))
+                            .Include(q => q.Options)
+                            .ToListAsync();
+
+                        var selectQuestions = await _dbContext.Questions
+                            .OfType<SelectAllThatApplyQuestion>()
+                            .Where(q => surveyIds.Contains(q.SurveyId))
+                            .Include(q => q.Options)
+                            .ToListAsync();
+
+                        _dbContext.ChoiceOptions.RemoveRange(mcQuestions.SelectMany(q => q.Options));
+                        _dbContext.ChoiceOptions.RemoveRange(selectQuestions.SelectMany(q => q.Options));
+
+                        var questions = await _dbContext.Questions
+                            .Where(q => surveyIds.Contains(q.SurveyId))
+                            .ToListAsync();
+
+                        _dbContext.Questions.RemoveRange(questions);
+
+                        _dbContext.Surveys.RemoveRange(surveys);
+                    }
+
                     _dbContext.ApplicationUsers.RemoveRange(demoUsers);
                     await _dbContext.SaveChangesAsync();
 
