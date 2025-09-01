@@ -158,7 +158,11 @@ builder.Services.AddHttpClient("PublicClient", (sp, client) =>
 });
 builder.Services.AddScoped<IApiService, ApiService>();
 // Replace the existing line with the following line
-builder.Services.AddAutoMapper(cfg => cfg.AddProfile<MapperConfig>());
+builder.Services.AddAutoMapper(cfg =>
+{
+    cfg.AddProfile<MapperConfig>();
+    cfg.LicenseKey = "eyJhbGciOiJSUzI1NiIsImtpZCI6Ikx1Y2t5UGVubnlTb2Z0d2FyZUxpY2Vuc2VLZXkvYmJiMTNhY2I1OTkwNGQ4OWI0Y2IxYzg1ZjA4OGNjZjkiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2x1Y2t5cGVubnlzb2Z0d2FyZS5jb20iLCJhdWQiOiJMdWNreVBlbm55U29mdHdhcmUiLCJleHAiOiIxNzg4MjIwODAwIiwiaWF0IjoiMTc1NjY5MTE3NyIsImFjY291bnRfaWQiOiIwMTk5MDJmMjJlY2I3NTBlOTRjNDhlZWE0YjFkNzM3YyIsImN1c3RvbWVyX2lkIjoiY3RtXzAxazQxZjg3d3A2ZGJubno1a3Z2cndwc2Q3Iiwic3ViX2lkIjoiLSIsImVkaXRpb24iOiIwIiwidHlwZSI6IjIifQ.thuLRUaNy79IvVnToW3UZuDDadomRQ22bOpqcbeiMD5OjB6O_2xw2aszK2nDumNAGTVIbXvsBO4LX3wshIP2mK8Me9BrHWOg9fjKUUmFhGCQA4paIpTEaP69c2Wop1NrciWX4ql2U79eM1qo5f6IlVFAqfabHebGZ7t6TOxwKI46i8bJtRtFsuuJZMisSdfUYcHRbjqXh9Tg8TD_eFKaXFx-JDQVk81AW_BccvPv1i2uA9w0_s0W3G0z4qqt8fnvtsUyGyA2ZTAflu2QtY-WmDSJwbXWpy6bIIPvjrZSOfjkgtI3ZIMQ-3bV0E_5NzKYJTT2lfd2MrwM4rEO7HZm0A";
+});
 builder.Services.AddAuthentication(options =>
 {
     // Let cookies handle the challenge (so it can do 302 to /not-authorized):
