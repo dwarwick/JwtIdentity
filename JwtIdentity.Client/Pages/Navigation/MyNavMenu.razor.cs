@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using JwtIdentity.Common.Auth;
+using Microsoft.AspNetCore.Components.Authorization;
 
 namespace JwtIdentity.Client.Pages.Navigation
 {
@@ -37,6 +38,7 @@ namespace JwtIdentity.Client.Pages.Navigation
             ((CustomAuthStateProvider)AuthStateProvider!).OnLoggedOut += UpdateLoggedIn;
             _authorizationHandler = CustomAuthorizationMessageHandler;
             _authorizationHandler.OnUnauthorized += UpdateLoggedIn;
+            AuthStateProvider.AuthenticationStateChanged += AuthStateChanged;
             _drawerOpen = false;
         }
 
@@ -78,7 +80,13 @@ namespace JwtIdentity.Client.Pages.Navigation
         protected async void UpdateLoggedIn()
         {
             await SetAuthFlagsAsync();
-            StateHasChanged();
+            await InvokeAsync(StateHasChanged);
+        }
+
+        private async void AuthStateChanged(Task<AuthenticationState> task)
+        {
+            await SetAuthFlagsAsync();
+            await InvokeAsync(StateHasChanged);
         }
 
         protected virtual void Dispose(bool disposing)
@@ -92,6 +100,7 @@ namespace JwtIdentity.Client.Pages.Navigation
                     {
                         _authorizationHandler.OnUnauthorized -= UpdateLoggedIn;
                     }
+                    AuthStateProvider.AuthenticationStateChanged -= AuthStateChanged;
                 }
                 _disposed = true;
             }
