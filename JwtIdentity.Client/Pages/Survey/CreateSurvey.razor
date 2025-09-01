@@ -15,35 +15,23 @@
             <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 0 })">
                 <MudTextField id="Title" Label="Title" @bind-Value="Survey.Title" Variant="Variant.Filled" Lines="1" MaxLines="5" AutoGrow="true" Immediate="true" Counter="50" MaxLength="50" />
             </DemoBorder>
-            <MudPopover Open="@ShowDemoStep(0)" AnchorOrigin="@AnchorOrigin" TransformOrigin="@TransformOrigin" Fixed="true">
-                <MudPaper Class="pa-4">
-                    <MudText Typo="Typo.body2">Let's start with a title for your survey.</MudText>
-                    <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 0 })" IsButton="true">
-                        <MudButton Class="mt-2" OnClick="NextDemoStep">Next</MudButton>
-                    </DemoBorder>
-                </MudPaper>
-            </MudPopover>
+            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 0 })">
+                <MudText Typo="Typo.body2">Let's start with a title for your survey.</MudText>
+                <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 0 })" IsButton="true">
+                    <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
+                </DemoBorder>
+            </DemoPopup>
         </div>
         <div>
             <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 1 })">
                 <MudTextField id="Description" Label="Description" @bind-Value="Survey.Description" Variant="Variant.Filled" Lines="5" MaxLines="10" AutoGrow="true" Immediate="true" Counter="250" MaxLength="250" />
             </DemoBorder>
-            <MudPopover Open="@ShowDemoStep(1)" AnchorOrigin="@AnchorOrigin" TransformOrigin="@TransformOrigin" Fixed="true">
-                <MudPaper Class="pa-4">
-                    <MudText Typo="Typo.body2">Great! Now add a description. This helps guide the AI engine, and tells the survey taker what the survey is about.</MudText>
-                    <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 1 })" IsButton="true">
-                        <MudButton Class="mt-2" OnClick="NextDemoStep">Next</MudButton>
-                    </DemoBorder>
-                </MudPaper>
-            </MudPopover>
-            <MudPopover Open="@ShowDemoStep(3)" AnchorOrigin="@AnchorOrigin" TransformOrigin="@TransformOrigin" Fixed="true">
-                <MudPaper Class="pa-4">
-                    <MudText Typo="Typo.body2">Only the title and description are required to create a survey. AI instructions are optional. The title and description will be shown to the survey taker. The AI instructions are not shown to the user.</MudText>
-                    <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 3 })" IsButton="true">
-                        <MudButton Class="mt-2" OnClick="NextDemoStep">Next</MudButton>
-                    </DemoBorder>
-                </MudPaper>
-            </MudPopover>
+            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 1 })">
+                <MudText Typo="Typo.body2">Great! Now add a description. This helps guide the AI engine, and tells the survey taker what the survey is about.</MudText>
+                <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 1 })" IsButton="true">
+                    <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
+                </DemoBorder>
+            </DemoPopup>
         </div>
 
         <MudAlert Severity="Severity.Info" Class="mt-2">
@@ -63,32 +51,38 @@
                               MaxLength="500"
                               Placeholder="Example: I am creating a survey that is designed to find out how people feel about my most recent service call. I am an air conditioning repair technician. Create a mix of Rating 1 to 10 question types. Create 1 Free Text response type question at the end that will allow users to provide any additional details about their experience."
                               HelperText="Although not required, providing instructions helps the AI, in case you want specific types of questions." />
-                <MudPopover Open="@ShowDemoStep(2)" AnchorOrigin="@AnchorOrigin" TransformOrigin="@TransformOrigin" Fixed="true">
-                    <MudPaper Class="pa-4">
-                        <MudText Typo="Typo.body2">Provide instructions for the AI-generated questions.</MudText>
-                        <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 2 })" IsButton="true">
-                            <MudButton Class="mt-2" OnClick="NextDemoStep">Next</MudButton>
-                        </DemoBorder>
-                    </MudPaper>
-                </MudPopover>
             </DemoBorder>
-        </div>
-    </MudStack>
-    <div>
-        <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 4, 5 })" IsButton="true">
-            <SpinnerButton IsBusy="@IsBusy" ButtonType="ButtonType.Submit" Color="Color.Primary" Text="Create" Disabled="@(Survey.Id > 0)" />
-        </DemoBorder>
-        <MudPopover Open="@ShowDemoStep(4)" AnchorOrigin="@AnchorOrigin" TransformOrigin="@TransformOrigin" Fixed="true">
-            <MudPaper Class="pa-4">
-                <MudText Typo="Typo.body2" Style="white-space: pre-line">
+            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 2 })">
+
+                <MudText Typo="Typo.body2">Provide instructions for the AI-generated questions.</MudText>
+                <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 2 })" IsButton="true">
+                    <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
+                </DemoBorder>
+            </DemoPopup>
+
+            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 3 })">
+                <MudText Typo="Typo.body2">Only the title and description are required to create a survey. AI instructions are optional. The title and description will be shown to the survey taker. The AI instructions are not shown to the user.</MudText>
+                <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 3 })" IsButton="true">
+                    <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
+                </DemoBorder>
+            </DemoPopup>
+
+            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 4 })">
+                <MudText Typo="Typo.body2">
                     All set!
                     Feel free to edit the text in any of these fields to see what difference it makes.
                     Click the Create button to generate your survey.
                 </MudText>
                 <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 4 })" IsButton="true">
-                    <MudButton Class="mt-2" OnClick="NextDemoStep">Close</MudButton>
+                    <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Close</MudButton>
                 </DemoBorder>
-            </MudPaper>
-        </MudPopover>
-    </div>
+            </DemoPopup>
+
+        </div>
+    </MudStack>
+
+    <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 4, 5 })" IsButton="true">
+        <SpinnerButton IsBusy="@IsBusy" ButtonType="ButtonType.Submit" Color="Color.Primary" Text="Create" Disabled="@(Survey.Id > 0)" />
+    </DemoBorder>
+
 </EditForm>
