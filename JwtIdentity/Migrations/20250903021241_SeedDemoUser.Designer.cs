@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace JwtIdentity.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250823160617_SeedDemoUser")]
+    [Migration("20250903021241_SeedDemoUser")]
     partial class SeedDemoUser
     {
         /// <inheritdoc />
