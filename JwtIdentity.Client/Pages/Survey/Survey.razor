@@ -66,7 +66,7 @@
                         {
                             <MudText Color="Color.Error" Typo="Typo.caption" Class="RequiredStar">*</MudText>
                         }
-                        <span class="question-number">@questionNumber.</span>
+                        <span id="@questionNumber" class="question-number">@questionNumber.</span>
                         <span class="question-text">@question.Text</span>
                     </MudText>
 
@@ -192,7 +192,7 @@
                                    OnClick="@(() => SubmitSurvey())"
                                    Disabled="@(Preview || (IsAnonymousUser && !AgreedToTerms))"
                                    title="@(Preview ? "Survey cannot be submitted in Preview mode" : "Submit")"
-                                   Class="survey-submit-btn">
+                                   Class="survey-submit-btn" id="survey-submit-btn">
                             Submit Survey
                         </MudButton>
                     </DemoBorder>
@@ -200,6 +200,13 @@
                         <MudText Typo="Typo.body2">The submit survey button is disabled in preview mode. It becomes active once all required questions are answered in a real survey.</MudText>
                         <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 1 })" IsButton="true">
                             <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Close</MudButton>
+                        </DemoBorder>
+                    </DemoPopup>
+
+                    <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 2 })">
+                        <MudText Typo="Typo.body2">This is the end of the demo. Please register for an account to start creating your own surveys.</MudText>
+                        <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 2 })" IsButton="true">
+                            <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
                         </DemoBorder>
                     </DemoPopup>
                 </div>

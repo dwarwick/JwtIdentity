@@ -105,7 +105,7 @@
                     var guid = (context as SurveyViewModel).Guid;
                     var isPublished = (context as SurveyViewModel).Published;
 
-                    <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 0 })" IsButton="true">
+                    <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 0,6 })" IsButton="true">
                         <MudButton Class="survey-action-button preview-button"
                                   Href=@($"survey/{guid}?Preview=true")
                                   Target="_blank"
@@ -195,6 +195,10 @@
                         <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 5 })" IsButton="true">
                             <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Close</MudButton>
                         </DemoBorder>
+                    </DemoPopup>
+
+                    <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 6 })">
+                        <MudText Typo="Typo.body2">Go ahead and click the Preview button to preview what the survey will look like.</MudText>                        
                     </DemoPopup>
                 }
                 </div>

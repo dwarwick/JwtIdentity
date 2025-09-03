@@ -5,6 +5,8 @@ namespace JwtIdentity.Client.Pages.Survey
 {
     public class SurveyModel : BlazorBase, IAsyncDisposable
     {
+        private int _previousDemoStep = -1;
+
         [Parameter]
         public Guid SurveyId { get; set; }
 
@@ -75,6 +77,12 @@ namespace JwtIdentity.Client.Pages.Survey
                 {
                     Logger?.LogWarning("OperatingSystem.IsBrowser() returned false; captcha not rendered.");
                 }
+            }
+
+            if (IsDemoUser && DemoStep != _previousDemoStep)
+            {
+                await ScrollToCurrentDemoStep();
+                _previousDemoStep = DemoStep;
             }
         }
 
@@ -464,6 +472,30 @@ namespace JwtIdentity.Client.Pages.Survey
         {
             if (!IsDemoUser) return;
             DemoStep++;
+
+            if (DemoStep == 3)
+            {
+                AuthService.Logout();
+                Navigation.NavigateTo("/");
+            }
+        }
+
+        private async Task ScrollToCurrentDemoStep()
+        {
+            var id = DemoStep switch
+            {
+                0 => "1",
+                1 => "survey-submit-btn",
+                _ => null
+            };
+
+            if (!string.IsNullOrEmpty(id))
+            {
+                await JSRuntime.InvokeVoidAsync("scrollToElement", id);
+
+                // Ensure any demo popover tied to the element renders after the scroll
+                StateHasChanged();
+            }
         }
     }
 }
