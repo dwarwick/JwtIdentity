@@ -59,7 +59,7 @@ namespace JwtIdentity.Client.Services
                 var serverUser = new ClaimsPrincipal(new ClaimsIdentity(serverClaims, "jwt"));
 
                 var serverUserId = serverClaims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-                if (!string.IsNullOrEmpty(serverUserId))
+                if (!string.IsNullOrEmpty(serverUserId) && CurrentUser == null)
                 {
                     CurrentUser = await _apiService.GetAsync<ApplicationUserViewModel>($"{ApiEndpoints.ApplicationUser}/{serverUserId}");
                 }
@@ -90,7 +90,10 @@ namespace JwtIdentity.Client.Services
 
             var userId = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
 
-            CurrentUser = await _apiService.GetAsync<ApplicationUserViewModel>($"{ApiEndpoints.ApplicationUser}/{userId}");
+            if (CurrentUser == null && !string.IsNullOrEmpty(userId))
+            {
+                CurrentUser = await _apiService.GetAsync<ApplicationUserViewModel>($"{ApiEndpoints.ApplicationUser}/{userId}");
+            }
 
             var authState = Task.FromResult(new AuthenticationState(user));
 
