@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -27,12 +28,12 @@ namespace JwtIdentity.Migrations
             migrationBuilder.DeleteData(
                 table: "AspNetUserRoles",
                 keyColumns: new[] { "RoleId", "UserId" },
-                keyValues: new object[] { 2, 4 });
+                keyValues: new object[] { 2, -1 });
 
             migrationBuilder.DeleteData(
                 table: "AspNetUsers",
                 keyColumn: "Id",
-                keyValue: 4);
+                keyValue: -1);
         }
     }
 }

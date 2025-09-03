@@ -256,7 +256,7 @@ namespace JwtIdentity.Migrations
                         },
                         new
                         {
-                            Id = 4,
+                            Id = -1,
                             AccessFailedCount = 0,
                             ConcurrencyStamp = "be6fc596-979b-42b1-906e-d6d5a59d6fce",
                             CreatedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
@@ -672,7 +672,7 @@ namespace JwtIdentity.Migrations
                         },
                         new
                         {
-                            UserId = 4,
+                            UserId = -1,
                             RoleId = 2
                         });
                 });

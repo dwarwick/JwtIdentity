@@ -80,7 +80,10 @@ namespace JwtIdentity.BunitTests
         // Fake implementation for DI
         private class FakeCustomAuthorizationMessageHandler : JwtIdentity.Client.Services.CustomAuthorizationMessageHandler
         {
-            public FakeCustomAuthorizationMessageHandler() : base(new MockNavigationManager(), new ServiceCollection().BuildServiceProvider()) { }
+            public FakeCustomAuthorizationMessageHandler()
+                : base(new MockNavigationManager(), new ServiceCollection().BuildServiceProvider(), new Mock<ILocalStorageService>().Object)
+            {
+            }
         }
     }
 
