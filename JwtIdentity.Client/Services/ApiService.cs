@@ -22,6 +22,14 @@ namespace JwtIdentity.Client.Services
         private HttpClient Client => _httpClient ??= _httpClientFactory.CreateClient("AuthorizedClient");
         private HttpClient PublicClient => _publicHttpClient ??= _httpClientFactory.CreateClient("PublicClient");
 
+        private void ShowSnackbar(string message, Severity severity)
+        {
+            if (OperatingSystem.IsBrowser())
+            {
+                _ = Snackbar.Add(message, severity);
+            }
+        }
+
         public ApiService(IHttpClientFactory httpClientFactory, NavigationManager navigationManager, IServiceProvider serviceProvider, IHttpContextAccessor? httpContextAccessor = null)
         {
             _options = new JsonSerializerOptions
@@ -50,19 +58,19 @@ namespace JwtIdentity.Client.Services
 
                 if (string.IsNullOrEmpty(error))
                 {
-                    _ = Snackbar.Add("There was a problem with the request", Severity.Error);
+                    ShowSnackbar("There was a problem with the request", Severity.Error);
                     return default;
                 }
                 else
                 {
-                    _ = Snackbar.Add(error, Severity.Error);
+                    ShowSnackbar(error, Severity.Error);
                     return default;
                 }
             }
 
             if (response.Content.Headers.ContentType?.MediaType == "text/html")
             {
-                _ = Snackbar.Add("Unexpected response. Please log in.", Severity.Error);
+                ShowSnackbar("Unexpected response. Please log in.", Severity.Error);
                 return default;
             }
 
@@ -78,19 +86,19 @@ namespace JwtIdentity.Client.Services
 
                 if (string.IsNullOrEmpty(error))
                 {
-                    _ = Snackbar.Add("There was a problem with the request", Severity.Error);
+                    ShowSnackbar("There was a problem with the request", Severity.Error);
                     return default;
                 }
                 else
                 {
-                    _ = Snackbar.Add(error, Severity.Error);
+                    ShowSnackbar(error, Severity.Error);
                     return default;
                 }
             }
 
             if (response.Content.Headers.ContentType?.MediaType == "text/html")
             {
-                _ = Snackbar.Add("Unexpected response. Please log in.", Severity.Error);
+                ShowSnackbar("Unexpected response. Please log in.", Severity.Error);
                 return default;
             }
 
@@ -122,11 +130,11 @@ namespace JwtIdentity.Client.Services
 
                     if (string.IsNullOrEmpty(error))
                     {
-                        _ = Snackbar.Add("There was a problem with the request", Severity.Error);
+                        ShowSnackbar("There was a problem with the request", Severity.Error);
                     }
                     else
                     {
-                        _ = Snackbar.Add(error, Severity.Error);
+                        ShowSnackbar(error, Severity.Error);
                     }
                 }
             }
@@ -145,11 +153,11 @@ namespace JwtIdentity.Client.Services
 
                 if (string.IsNullOrEmpty(error))
                 {
-                    _ = Snackbar.Add("There was a problem with the request", Severity.Error);
+                    ShowSnackbar("There was a problem with the request", Severity.Error);
                 }
                 else
                 {
-                    _ = Snackbar.Add(error, Severity.Error);
+                    ShowSnackbar(error, Severity.Error);
                 }
             }
 
@@ -167,18 +175,18 @@ namespace JwtIdentity.Client.Services
 
                 if (response.StatusCode == HttpStatusCode.Unauthorized)
                 {
-                    _ = Snackbar.Add("Invalid username or password", Severity.Error);
+                    ShowSnackbar("Invalid username or password", Severity.Error);
                     return default;
                 }
 
                 if (string.IsNullOrEmpty(error))
                 {
-                    _ = Snackbar.Add("There was a problem with the request", Severity.Error);
+                    ShowSnackbar("There was a problem with the request", Severity.Error);
                     return default;
                 }
                 else
                 {
-                    _ = Snackbar.Add(error, Severity.Error);
+                    ShowSnackbar(error, Severity.Error);
                     return default;
                 }
             }
@@ -193,7 +201,7 @@ namespace JwtIdentity.Client.Services
 
             if (!response.IsSuccessStatusCode)
             {
-                _ = Snackbar.Add("There was a problem with the request", Severity.Error);
+                ShowSnackbar("There was a problem with the request", Severity.Error);
                 return default;
             }
 
@@ -228,7 +236,7 @@ namespace JwtIdentity.Client.Services
             catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
             {
                 navigationManager.NavigateTo("/");
-                _ = Snackbar.Add("The URL was invalid.", Severity.Error);
+                ShowSnackbar("The URL was invalid.", Severity.Error);
 
                 return new HttpResponseMessage(System.Net.HttpStatusCode.OK);
             }
