@@ -23,10 +23,13 @@ namespace JwtIdentity.Client.Services
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            var token = await localStorage.GetItemAsync<string>("authToken");
-            if (!string.IsNullOrWhiteSpace(token) && request.Headers.Authorization is null)
+            if (OperatingSystem.IsBrowser())
             {
-                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                var token = await localStorage.GetItemAsync<string>("authToken");
+                if (!string.IsNullOrWhiteSpace(token) && request.Headers.Authorization is null)
+                {
+                    request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                }
             }
 
             var response = await base.SendAsync(request, cancellationToken);
@@ -39,7 +42,10 @@ namespace JwtIdentity.Client.Services
             else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
             {
                 _navigationManager.NavigateTo("/");
-                _ = Snackbar.Add("The page does not exist.", Severity.Error);
+                if (OperatingSystem.IsBrowser())
+                {
+                    _ = Snackbar.Add("The page does not exist.", Severity.Error);
+                }
             }
 
             return response;
