@@ -5,6 +5,8 @@ namespace JwtIdentity.Client.Pages.Survey
 {
     public class SurveyModel : BlazorBase, IAsyncDisposable
     {
+        private int _previousDemoStep = -1;
+
         [Parameter]
         public Guid SurveyId { get; set; }
 
@@ -32,8 +34,17 @@ namespace JwtIdentity.Client.Pages.Survey
 
         protected bool AgreedToTerms { get; set; }
 
-        protected override Task OnInitializedAsync()
+        protected bool IsDemoUser { get; set; }
+        protected int DemoStep { get; set; }
+
+        protected bool ShowDemoStep(int step) => IsDemoUser && DemoStep == step;
+
+        protected override async Task OnInitializedAsync()
         {
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            var userName = authState.User.Identity?.Name ?? string.Empty;
+            IsDemoUser = userName.StartsWith("DemoUser") && userName.EndsWith("@surveyshark.site");
+
             var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
             var queryParams = QueryHelpers.ParseQuery(uri.Query);
 
@@ -45,8 +56,6 @@ namespace JwtIdentity.Client.Pages.Survey
             {
                 ViewAnswers = bool.Parse(viewAnswers);
             }
-
-            return Task.CompletedTask;
         }
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -68,6 +77,12 @@ namespace JwtIdentity.Client.Pages.Survey
                 {
                     Logger?.LogWarning("OperatingSystem.IsBrowser() returned false; captcha not rendered.");
                 }
+            }
+
+            if (IsDemoUser && DemoStep != _previousDemoStep)
+            {
+                await ScrollToCurrentDemoStep();
+                _previousDemoStep = DemoStep;
             }
         }
 
@@ -451,6 +466,36 @@ namespace JwtIdentity.Client.Pages.Survey
             }
 
             StateHasChanged();
+        }
+
+        protected void NextDemoStep()
+        {
+            if (!IsDemoUser) return;
+            DemoStep++;
+
+            if (DemoStep == 3)
+            {
+                AuthService.Logout();
+                Navigation.NavigateTo("/");
+            }
+        }
+
+        private async Task ScrollToCurrentDemoStep()
+        {
+            var id = DemoStep switch
+            {
+                0 => "1",
+                1 => "survey-submit-btn",
+                _ => null
+            };
+
+            if (!string.IsNullOrEmpty(id))
+            {
+                await JSRuntime.InvokeVoidAsync("scrollToElement", id);
+
+                // Ensure any demo popover tied to the element renders after the scroll
+                StateHasChanged();
+            }
         }
     }
 }
