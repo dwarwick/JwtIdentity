@@ -21,15 +21,19 @@ namespace JwtIdentity.Client.Services
         {
             var response = await base.SendAsync(request, cancellationToken);
 
-            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            // Avoid redirect loops when executing outside of a browser context (e.g., server prerendering)
+            if (OperatingSystem.IsBrowser())
             {
-                OnUnauthorized?.Invoke();
-                _navigationManager.NavigateTo("not-authorized");
-            }
-            else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
-            {
-                _navigationManager.NavigateTo("/");
-                _ = Snackbar.Add("The page does not exist.", Severity.Error);
+                if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                {
+                    OnUnauthorized?.Invoke();
+                    _navigationManager.NavigateTo("not-authorized");
+                }
+                else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                {
+                    _navigationManager.NavigateTo("/");
+                    _ = Snackbar.Add("The page does not exist.", Severity.Error);
+                }
             }
 
             return response;
