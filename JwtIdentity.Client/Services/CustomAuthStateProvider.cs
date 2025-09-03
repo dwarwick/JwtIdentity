@@ -37,69 +37,77 @@ namespace JwtIdentity.Client.Services
         {
             var anonymous = new ClaimsPrincipal(new ClaimsIdentity());
 
-            if (!OperatingSystem.IsBrowser())
+            try
             {
-                var token = _httpContextAccessor?.HttpContext?.Request.Cookies["authToken"];
-                if (string.IsNullOrEmpty(token))
+                if (!OperatingSystem.IsBrowser())
+                {
+                    var token = _httpContextAccessor?.HttpContext?.Request.Cookies["authToken"];
+                    if (string.IsNullOrEmpty(token))
+                    {
+                        return new AuthenticationState(anonymous);
+                    }
+
+                    var serverToken = jwtSecurityTokenHandler.ReadJwtToken(token);
+                    if (serverToken.ValidTo < DateTime.UtcNow)
+                    {
+                        return new AuthenticationState(anonymous);
+                    }
+
+                    _httpClient ??= _httpClientFactory.CreateClient("AuthorizedClient");
+                    _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+                    var serverClaims = serverToken.Claims.ToList();
+                    serverClaims.Add(new Claim(ClaimTypes.Name, serverToken.Subject));
+                    var serverUser = new ClaimsPrincipal(new ClaimsIdentity(serverClaims, "jwt"));
+
+                    var serverUserId = serverClaims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+                    if (!string.IsNullOrEmpty(serverUserId) && CurrentUser == null)
+                    {
+                        CurrentUser = await _apiService.GetAsync<ApplicationUserViewModel>($"{ApiEndpoints.ApplicationUser}/{serverUserId}");
+                    }
+
+                    return new AuthenticationState(serverUser);
+                }
+
+                var savedToken = await _localStorage.GetItemAsync<string>("authToken");
+                if (savedToken == null)
                 {
                     return new AuthenticationState(anonymous);
                 }
 
-                var serverToken = jwtSecurityTokenHandler.ReadJwtToken(token);
-                if (serverToken.ValidTo < DateTime.UtcNow)
+                var tokenContent = jwtSecurityTokenHandler.ReadJwtToken(savedToken);
+
+                if (tokenContent.ValidTo < DateTime.UtcNow)
                 {
+                    await _localStorage.RemoveItemAsync("authToken");
                     return new AuthenticationState(anonymous);
                 }
 
                 _httpClient ??= _httpClientFactory.CreateClient("AuthorizedClient");
-                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", savedToken);
 
-                var serverClaims = serverToken.Claims.ToList();
-                serverClaims.Add(new Claim(ClaimTypes.Name, serverToken.Subject));
-                var serverUser = new ClaimsPrincipal(new ClaimsIdentity(serverClaims, "jwt"));
+                var claims = await GetClaims();
 
-                var serverUserId = serverClaims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-                if (!string.IsNullOrEmpty(serverUserId) && CurrentUser == null)
+                var user = new ClaimsPrincipal(new ClaimsIdentity(claims, "jwt"));
+
+                var userId = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+                if (CurrentUser == null && !string.IsNullOrEmpty(userId))
                 {
-                    CurrentUser = await _apiService.GetAsync<ApplicationUserViewModel>($"{ApiEndpoints.ApplicationUser}/{serverUserId}");
+                    CurrentUser = await _apiService.GetAsync<ApplicationUserViewModel>($"{ApiEndpoints.ApplicationUser}/{userId}");
                 }
 
-                return new AuthenticationState(serverUser);
-            }
+                var authState = Task.FromResult(new AuthenticationState(user));
 
-            var savedToken = await _localStorage.GetItemAsync<string>("authToken");
-            if (savedToken == null)
+                NotifyAuthenticationStateChanged(authState);
+
+                return await authState;
+            }
+            catch (Exception ex)
             {
+                Console.Error.WriteLine($"Failed to get authentication state: {ex.Message}");
                 return new AuthenticationState(anonymous);
             }
-
-            var tokenContent = jwtSecurityTokenHandler.ReadJwtToken(savedToken);
-
-            if (tokenContent.ValidTo < DateTime.UtcNow)
-            {
-                await _localStorage.RemoveItemAsync("authToken");
-                return new AuthenticationState(anonymous);
-            }
-
-            _httpClient ??= _httpClientFactory.CreateClient("AuthorizedClient");
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", savedToken);
-
-            var claims = await GetClaims();
-
-            var user = new ClaimsPrincipal(new ClaimsIdentity(claims, "jwt"));
-
-            var userId = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-
-            if (CurrentUser == null && !string.IsNullOrEmpty(userId))
-            {
-                CurrentUser = await _apiService.GetAsync<ApplicationUserViewModel>($"{ApiEndpoints.ApplicationUser}/{userId}");
-            }
-
-            var authState = Task.FromResult(new AuthenticationState(user));
-
-            NotifyAuthenticationStateChanged(authState);
-
-            return await authState;
         }
 
         public async Task LoggedIn()
