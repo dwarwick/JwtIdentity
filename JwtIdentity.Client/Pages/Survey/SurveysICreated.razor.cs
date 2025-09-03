@@ -13,6 +13,11 @@ namespace JwtIdentity.Client.Pages.Survey
 
         protected int FrozenColumns { get; set; }
 
+        protected bool IsDemoUser { get; set; }
+        protected int DemoStep { get; set; }
+
+        protected bool ShowDemoStep(int step) => IsDemoUser && DemoStep == step;
+
         protected static string GetTitleText(bool published) => published ? "Copy Survey Link" : "Survey not published";
 
         protected static string ShareButtonDisabled(bool published, bool disabledCondition) => published == disabledCondition ? "disabled" : "";
@@ -28,6 +33,10 @@ namespace JwtIdentity.Client.Pages.Survey
         protected override async Task OnInitializedAsync()
         {
             UserSurveys = (await ApiService.GetAsync<List<SurveyViewModel>>($"{ApiEndpoints.Survey}/surveysicreated")).ToList();
+
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            var userName = authState.User.Identity?.Name ?? string.Empty;
+            IsDemoUser = userName.StartsWith("DemoUser") && userName.EndsWith("@surveyshark.site");
         }
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -127,5 +136,11 @@ namespace JwtIdentity.Client.Pages.Survey
         }
 
         public async ValueTask DisposeAsync() => await BrowserViewportService.UnsubscribeAsync(this);
+
+        protected void NextDemoStep()
+        {
+            if (!IsDemoUser) return;
+            DemoStep++;
+        }
     }
 }

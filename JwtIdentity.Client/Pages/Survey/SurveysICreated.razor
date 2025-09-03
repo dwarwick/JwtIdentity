@@ -105,49 +105,97 @@
                     var guid = (context as SurveyViewModel).Guid;
                     var isPublished = (context as SurveyViewModel).Published;
 
-                    <MudButton Class="survey-action-button preview-button" 
-                              Href=@($"survey/{guid}?Preview=true") 
-                              Target="_blank" 
-                              title="Preview Survey" 
-                              Variant="Variant.Filled">
-                        <MudIcon Icon="@Icons.Material.Filled.Visibility" Class="mr-1" Size="MudBlazor.Size.Small" /> Preview
-                    </MudButton>
-                    
-                    <MudButton Class=@($"survey-action-button copy-button {ShareButtonDisabled(isPublished, false)}") 
-                              Variant="Variant.Filled" 
-                              OnClick="@(async () => await CopySurveyLinkAsync(guid))" 
-                              title="@(GetTitleText(isPublished))">
-                        <MudIcon Icon="@Icons.Material.Filled.ContentCopy" Class="mr-1" Size="MudBlazor.Size.Small" /> Copy Link
-                    </MudButton>
+                    <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 0 })" IsButton="true">
+                        <MudButton Class="survey-action-button preview-button"
+                                  Href=@($"survey/{guid}?Preview=true")
+                                  Target="_blank"
+                                  title="Preview Survey"
+                                  Variant="Variant.Filled">
+                            <MudIcon Icon="@Icons.Material.Filled.Visibility" Class="mr-1" Size="MudBlazor.Size.Small" /> Preview
+                        </MudButton>
+                    </DemoBorder>
+                    <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 0 })">
+                        <MudText Typo="Typo.body2">Preview your survey without recording responses.</MudText>
+                        <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 0 })" IsButton="true">
+                            <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
+                        </DemoBorder>
+                    </DemoPopup>
 
-                    <div class=@($"fb-share-button d-flex {ShareButtonDisabled(isPublished, false)}")
-                         data-href=@($"https://{Utility.Domain}/survey/{guid}")
-                         data-layout="button_count"
-                         data-size="small"
-                         @onclick="@(() => HandleShareClick(guid, isPublished))">
-                        <div class="fb-xfbml-parse-ignore mud-palette-white">Share</div>
-                        <svg viewBox="0 0 12 12" preserveAspectRatio="xMidYMid meet">
-                            <path class="svg-icon-path" d="M9.1,0.1V2H8C7.6,2,7.3,2.1,7.1,2.3C7,2.4,6.9,2.7,6.9,3v1.4H9L8.8,6.5H6.9V12H4.7V6.5H2.9V4.4h1.8V2.8 c0-0.9,0.3-1.6,0.7-2.1C6,0.2,6.6,0,7.5,0C8.2,0,8.7,0,9.1,0.1z"></path>
-                        </svg>
-                    </div>
+                    <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 1 })" IsButton="true">
+                        <MudButton Class=@($"survey-action-button copy-button {ShareButtonDisabled(isPublished, false)}")
+                                  Variant="Variant.Filled"
+                                  OnClick="@(async () => await CopySurveyLinkAsync(guid))"
+                                  title="@(GetTitleText(isPublished))">
+                            <MudIcon Icon="@Icons.Material.Filled.ContentCopy" Class="mr-1" Size="MudBlazor.Size.Small" /> Copy Link
+                        </MudButton>
+                    </DemoBorder>
+                    <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 1 })">
+                        <MudText Typo="Typo.body2">Copy the survey link to share manually. @(isPublished ? "" : "This button is disabled until the survey is published.")</MudText>
+                        <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 1 })" IsButton="true">
+                            <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
+                        </DemoBorder>
+                    </DemoPopup>
 
-                    <MudButton Class=@($"survey-action-button edit-button {ShareButtonDisabled(isPublished, true)}") 
-                              Variant="Variant.Filled" 
-                              OnClick="@(() => AddEditQuestions(guid, isPublished))">
-                        <MudIcon Icon="@Icons.Material.Filled.Edit" Class="mr-1" Size="MudBlazor.Size.Small" /> Edit
-                    </MudButton>
-                    
-                    <MudButton Class=@($"survey-action-button charts-button {ShareButtonDisabled(isPublished, false)}") 
-                              Variant="Variant.Filled" 
-                              OnClick="@(() => ViewCharts(guid, isPublished))">
-                        <MudIcon Icon="@Icons.Material.Filled.BarChart" Class="mr-1" Size="MudBlazor.Size.Small" /> Charts
-                    </MudButton>
-                    
-                    <MudButton Class=@($"survey-action-button grid-button {ShareButtonDisabled(isPublished, false)}") 
-                              Variant="Variant.Filled" 
-                              OnClick="@(() => ViewGrid(guid, isPublished))">
-                        <MudIcon Icon="@Icons.Material.Filled.TableChart" Class="mr-1" Size="MudBlazor.Size.Small" /> Grid
-                    </MudButton>
+                    <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 2 })" IsButton="true">
+                        <div class=@($"fb-share-button d-flex {ShareButtonDisabled(isPublished, false)}")
+                             data-href=@($"https://{Utility.Domain}/survey/{guid}")
+                             data-layout="button_count"
+                             data-size="small"
+                             @onclick="@(() => HandleShareClick(guid, isPublished))">
+                            <div class="fb-xfbml-parse-ignore mud-palette-white">Share</div>
+                            <svg viewBox="0 0 12 12" preserveAspectRatio="xMidYMid meet">
+                                <path class="svg-icon-path" d="M9.1,0.1V2H8C7.6,2,7.3,2.1,7.1,2.3C7,2.4,6.9,2.7,6.9,3v1.4H9L8.8,6.5H6.9V12H4.7V6.5H2.9V4.4h1.8V2.8 c0-0.9,0.3-1.6,0.7-2.1C6,0.2,6.6,0,7.5,0C8.2,0,8.7,0,9.1,0.1z"></path>
+                            </svg>
+                        </div>
+                    </DemoBorder>
+                    <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 2 })">
+                        <MudText Typo="Typo.body2">Share the survey directly on Facebook. @(isPublished ? "" : "It's disabled until the survey is published.")</MudText>
+                        <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 2 })" IsButton="true">
+                            <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
+                        </DemoBorder>
+                    </DemoPopup>
+
+                    <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 3 })" IsButton="true">
+                        <MudButton Class=@($"survey-action-button edit-button {ShareButtonDisabled(isPublished, true)}")
+                                  Variant="Variant.Filled"
+                                  OnClick="@(() => AddEditQuestions(guid, isPublished))">
+                            <MudIcon Icon="@Icons.Material.Filled.Edit" Class="mr-1" Size="MudBlazor.Size.Small" /> Edit
+                        </MudButton>
+                    </DemoBorder>
+                    <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 3 })">
+                        <MudText Typo="Typo.body2">Edit lets you modify questions before publishing. @(isPublished ? "This button is disabled because the survey is published." : "")</MudText>
+                        <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 3 })" IsButton="true">
+                            <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
+                        </DemoBorder>
+                    </DemoPopup>
+
+                    <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 4 })" IsButton="true">
+                        <MudButton Class=@($"survey-action-button charts-button {ShareButtonDisabled(isPublished, false)}")
+                                  Variant="Variant.Filled"
+                                  OnClick="@(() => ViewCharts(guid, isPublished))">
+                            <MudIcon Icon="@Icons.Material.Filled.BarChart" Class="mr-1" Size="MudBlazor.Size.Small" /> Charts
+                        </MudButton>
+                    </DemoBorder>
+                    <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 4 })">
+                        <MudText Typo="Typo.body2">View charts of survey results. @(isPublished ? "" : "This is disabled until the survey is published.")</MudText>
+                        <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 4 })" IsButton="true">
+                            <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
+                        </DemoBorder>
+                    </DemoPopup>
+
+                    <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 5 })" IsButton="true">
+                        <MudButton Class=@($"survey-action-button grid-button {ShareButtonDisabled(isPublished, false)}")
+                                  Variant="Variant.Filled"
+                                  OnClick="@(() => ViewGrid(guid, isPublished))">
+                            <MudIcon Icon="@Icons.Material.Filled.TableChart" Class="mr-1" Size="MudBlazor.Size.Small" /> Grid
+                        </MudButton>
+                    </DemoBorder>
+                    <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 5 })">
+                        <MudText Typo="Typo.body2">View individual responses in a grid. @(isPublished ? "" : "It's disabled until the survey is published.")</MudText>
+                        <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 5 })" IsButton="true">
+                            <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Close</MudButton>
+                        </DemoBorder>
+                    </DemoPopup>
                 }
                 </div>
             </Template>

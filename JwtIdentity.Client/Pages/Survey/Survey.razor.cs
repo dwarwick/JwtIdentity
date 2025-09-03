@@ -32,8 +32,17 @@ namespace JwtIdentity.Client.Pages.Survey
 
         protected bool AgreedToTerms { get; set; }
 
-        protected override Task OnInitializedAsync()
+        protected bool IsDemoUser { get; set; }
+        protected int DemoStep { get; set; }
+
+        protected bool ShowDemoStep(int step) => IsDemoUser && DemoStep == step;
+
+        protected override async Task OnInitializedAsync()
         {
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            var userName = authState.User.Identity?.Name ?? string.Empty;
+            IsDemoUser = userName.StartsWith("DemoUser") && userName.EndsWith("@surveyshark.site");
+
             var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
             var queryParams = QueryHelpers.ParseQuery(uri.Query);
 
@@ -45,8 +54,6 @@ namespace JwtIdentity.Client.Pages.Survey
             {
                 ViewAnswers = bool.Parse(viewAnswers);
             }
-
-            return Task.CompletedTask;
         }
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -451,6 +458,12 @@ namespace JwtIdentity.Client.Pages.Survey
             }
 
             StateHasChanged();
+        }
+
+        protected void NextDemoStep()
+        {
+            if (!IsDemoUser) return;
+            DemoStep++;
         }
     }
 }
