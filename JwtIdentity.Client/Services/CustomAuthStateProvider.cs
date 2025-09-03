@@ -97,11 +97,10 @@ namespace JwtIdentity.Client.Services
                     CurrentUser = await _apiService.GetAsync<ApplicationUserViewModel>($"{ApiEndpoints.ApplicationUser}/{userId}");
                 }
 
-                var authState = Task.FromResult(new AuthenticationState(user));
-
-                NotifyAuthenticationStateChanged(authState);
-
-                return await authState;
+                // Return the current authentication state without triggering an
+                // additional notification. Consumers are notified explicitly when
+                // login or logout events occur.
+                return new AuthenticationState(user);
             }
             catch (Exception ex)
             {
