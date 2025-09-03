@@ -1,4 +1,5 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Http;
 
 namespace JwtIdentity.Data
 {
@@ -16,10 +17,10 @@ namespace JwtIdentity.Data
     {
         private readonly IHttpContextAccessor httpContextAccessor;
 
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, IHttpContextAccessor httpContextAccessor)
-        : base(options)
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, IHttpContextAccessor? httpContextAccessor = null)
+            : base(options)
         {
-            this.httpContextAccessor = httpContextAccessor;
+            this.httpContextAccessor = httpContextAccessor ?? new HttpContextAccessor();
         }
 
         public DbSet<ApplicationUser> ApplicationUsers { get; set; }
