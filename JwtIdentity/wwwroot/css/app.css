@@ -523,6 +523,7 @@ td.e-summarycell.e-templatecell.e-leftalign {
 /* Pulsating demo success border (animated border width without layout shift) */
 .demo-success-border {
     position: relative;
+    display: block;
 }
 .demo-success-border::after {
     content: "";
@@ -557,6 +558,7 @@ td.e-summarycell.e-templatecell.e-leftalign {
 .demo-primary-border {
     position: relative;
     padding: 5px;
+    display: inline-block;
 }
     .demo-primary-border::after {
         content: "";

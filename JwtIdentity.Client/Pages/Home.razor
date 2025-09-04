@@ -13,8 +13,15 @@
     <MudPaper Elevation="3" Class="pa-8 text-center mb-8 hero-section">
         <MudText Typo="Typo.h1" Class="mb-2">Create Powerful Online Surveys in Minutes</MudText>
         <MudText Typo="Typo.h5" Class="mb-4">Effortless, secure, and AI-powered survey creation for everyone.</MudText>
-        <MudButton Href="/register" Variant="Variant.Filled" Color="Color.Primary" Size="MudBlazor.Size.Large" Class="px-8 py-2 mb-2" Style="font-size: 1.2rem;">Get Started Free</MudButton>
-        <MudButton OnClick="StartDemo" Disabled="@DemoLoading" Variant="Variant.Outlined" Color="Color.Secondary" Size="MudBlazor.Size.Large" Class="px-8 py-2 ms-2 mb-2" Style="font-size: 1.2rem;">Try Demo</MudButton>
+        <MudStack Row="true"
+                  Justify="Justify.Center"
+                  AlignItems="AlignItems.Center"
+                  Spacing="2">
+            <MudButton Href="/register" Variant="Variant.Filled" Color="Color.Primary" Size="MudBlazor.Size.Large" Class="px-8 py-3" Style="font-size: 1.2rem;">Get Started Free</MudButton>
+            <DemoBorder IsButton="true" AllUsers="true">
+                <MudButton OnClick="StartDemo" Disabled="@DemoLoading" Variant="Variant.Outlined" Color="Color.Secondary" Size="MudBlazor.Size.Large" Style="font-size: 1.2rem;">Try Demo</MudButton>
+            </DemoBorder>
+        </MudStack>
     </MudPaper>
 
     <!-- Features Section -->
