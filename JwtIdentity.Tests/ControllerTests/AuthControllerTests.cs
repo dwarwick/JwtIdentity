@@ -81,6 +81,10 @@ namespace JwtIdentity.Tests.ControllerTests
             MockUserManager.Setup(um => um.CheckPasswordAsync(user, model.Password))
                 .ReturnsAsync(true);
 
+            // Setup UserManager to return roles for the user
+            MockUserManager.Setup(um => um.GetRolesAsync(user))
+                .ReturnsAsync(new List<string> { "User" });
+
             // Setup ApiAuthService to generate a token
             MockApiAuthService.Setup(a => a.GenerateJwtToken(user))
                 .ReturnsAsync("test-jwt-token");
@@ -212,6 +216,10 @@ namespace JwtIdentity.Tests.ControllerTests
             MockUserManager.Setup(um => um.CheckPasswordAsync(anonymousUser, anonymousPassword))
                 .ReturnsAsync(true);
 
+            // Setup UserManager to return roles for the anonymous user
+            MockUserManager.Setup(um => um.GetRolesAsync(anonymousUser))
+                .ReturnsAsync(new List<string> { "User" });
+
             // Setup ApiAuthService to generate a token
             MockApiAuthService.Setup(a => a.GenerateJwtToken(anonymousUser))
                 .ReturnsAsync("anonymous-jwt-token");
@@ -264,6 +272,10 @@ namespace JwtIdentity.Tests.ControllerTests
 
             MockUserManager.Setup(um => um.CheckPasswordAsync(demoUser, anonymousPassword))
                 .ReturnsAsync(true);
+
+            // Setup UserManager to return roles for the demo user
+            MockUserManager.Setup(um => um.GetRolesAsync(demoUser))
+                .ReturnsAsync(new List<string> { "User" });
 
             MockApiAuthService.Setup(a => a.GenerateJwtToken(demoUser))
                 .ReturnsAsync("demo-jwt-token");

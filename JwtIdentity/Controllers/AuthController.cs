@@ -80,6 +80,27 @@ namespace JwtIdentity.Controllers
                     ApplicationUserViewModel applicationUserViewModel = _mapper.Map<ApplicationUserViewModel>(user);
                     applicationUserViewModel.Token = Token;
 
+                    // Populate roles for the logged-in user
+                    var roles = await _userManager.GetRolesAsync(user);
+                    applicationUserViewModel.Roles = roles.ToList();
+
+                    // Populate permissions based on roles
+                    if (roles.Contains("Admin"))
+                    {
+                        var type = typeof(Permissions);
+                        applicationUserViewModel.Permissions = type.GetFields().Select(q => q.Name).ToList();
+                    }
+                    else
+                    {
+                        var rolePermissions = from ur in _dbContext.UserRoles
+                                              where ur.UserId == user.Id
+                                              join r in _dbContext.Roles on ur.RoleId equals r.Id
+                                              join rc in _dbContext.RoleClaims on r.Id equals rc.RoleId
+                                              select rc.ClaimValue;
+
+                        applicationUserViewModel.Permissions = await rolePermissions.Distinct().ToListAsync();
+                    }
+
                     // 'Response' is the HttpResponse for the current request
                     var expiration = int.TryParse(_configuration["Jwt:ExpirationMinutes"], out int minutes) ? minutes : 60;
                     _logger.LogDebug("Setting auth cookie with expiration of {ExpirationMinutes} minutes", expiration);
@@ -180,6 +201,27 @@ namespace JwtIdentity.Controllers
                 string token = await _apiAuthService.GenerateJwtToken(newUser);
                 var viewModel = _mapper.Map<ApplicationUserViewModel>(newUser);
                 viewModel.Token = token;
+
+                // Populate roles for the demo user
+                var newUserRoles = await _userManager.GetRolesAsync(newUser);
+                viewModel.Roles = newUserRoles.ToList();
+
+                // Populate permissions based on roles
+                if (newUserRoles.Contains("Admin"))
+                {
+                    var type = typeof(Permissions);
+                    viewModel.Permissions = type.GetFields().Select(q => q.Name).ToList();
+                }
+                else
+                {
+                    var rolePermissions = from ur in _dbContext.UserRoles
+                                          where ur.UserId == newUser.Id
+                                          join r in _dbContext.Roles on ur.RoleId equals r.Id
+                                          join rc in _dbContext.RoleClaims on r.Id equals rc.RoleId
+                                          select rc.ClaimValue;
+
+                    viewModel.Permissions = await rolePermissions.Distinct().ToListAsync();
+                }
 
                 var expiration = int.TryParse(_configuration["Jwt:ExpirationMinutes"], out int minutes) ? minutes : 60;
                 Response.Cookies.Append(
