@@ -67,8 +67,11 @@ namespace JwtIdentity.Client.Pages.Survey
                     await HandleLoggingInUser();
                     await LoadData();
 
-                    await JSRuntime.InvokeVoidAsync("registerCaptchaCallback", objRef);
-                    await JSRuntime.InvokeVoidAsync("renderReCaptcha", "captcha-container", Configuration["ReCaptcha:SiteKey"]);
+                    if (Survey != null && Survey.Id > 0)
+                    {
+                        await JSRuntime.InvokeVoidAsync("registerCaptchaCallback", objRef);
+                        await JSRuntime.InvokeVoidAsync("renderReCaptcha", "captcha-container", Configuration["ReCaptcha:SiteKey"]);
+                    }
 
                     Loading = false;
                     StateHasChanged();
