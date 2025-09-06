@@ -17,8 +17,11 @@
         [Parameter]
         public bool IsButton { get; set; } = false;
 
-        protected Origin AnchorOrigin { get; set; } = Origin.BottomRight;
-        protected Origin TransformOrigin { get; set; } = Origin.TopLeft;
+        [Parameter]
+        public Origin AnchorOrigin { get; set; } = Origin.BottomRight;
+
+        [Parameter]
+        public Origin TransformOrigin { get; set; } = Origin.TopLeft;
 
         protected bool ShowDemoStep() => IsDemoUser && StepsToShow.Contains(CurrentDemoStep);
 
