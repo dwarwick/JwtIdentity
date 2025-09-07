@@ -429,12 +429,19 @@ function clearCookieConsent() {
 function printElement(element) {
     const printWindow = window.open('', '_blank');
     printWindow.document.write('<html><head><title>Print</title>');
+    // Include existing head content for styles/scripts
     printWindow.document.write(document.head.innerHTML);
+    // Add print specific styles
+    printWindow.document.write('<style>@media print { .print-chart { break-after: page; page-break-after: always; } .print-chart:last-child { break-after: avoid; page-break-after: auto; } }</style>');
     printWindow.document.write('</head><body>');
-    printWindow.document.write(element.outerHTML);
+    // Only write the inner HTML of the element (charts)
+    printWindow.document.write(element.innerHTML);
     printWindow.document.write('</body></html>');
     printWindow.document.close();
-    printWindow.focus();
-    printWindow.print();
-    printWindow.close();
+    // Wait for the new window to finish loading before printing
+    printWindow.onload = () => {
+        printWindow.focus();
+        printWindow.print();
+        printWindow.close();
+    };
 }

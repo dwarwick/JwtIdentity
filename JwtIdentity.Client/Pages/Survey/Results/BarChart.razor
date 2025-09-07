@@ -133,25 +133,29 @@
                     @switch (SelectedChartType)
                     {
                         case "Bar":
-                            <SfChart @ref="BarCharts[localIndex]" Title="@($"{localIndex + 1}. {question}")" SubTitle="@(GetSubtitle())" Theme="@CurrentTheme" Width="@ChartWidth" Height="@ChartHeight">
-                                <ChartTooltipSettings Enable="true" />
-                                <ChartPrimaryXAxis ValueType="Syncfusion.Blazor.Charts.ValueType.Category" />
-                                <ChartPrimaryYAxis Interval="1" />
-                                <ChartSeriesCollection>
-                                    <ChartSeries DataSource="@(BarChartDataForPrint[localIndex])" XName="X" YName="Y" Type="ChartSeriesType.Column" Fill="rgba(61, 44, 191, 1)" />
-                                </ChartSeriesCollection>
-                            </SfChart>
+                            <div class="print-chart">
+                                <SfChart @ref="BarCharts[localIndex]" Title="@($"{localIndex + 1}. {question}")" SubTitle="@(GetSubtitle())" Theme="@CurrentTheme" Width="@ChartWidth" Height="@ChartHeight">
+                                    <ChartTooltipSettings Enable="true" />
+                                    <ChartPrimaryXAxis ValueType="Syncfusion.Blazor.Charts.ValueType.Category" />
+                                    <ChartPrimaryYAxis Interval="1" />
+                                    <ChartSeriesCollection>
+                                        <ChartSeries DataSource="@(BarChartDataForPrint[localIndex])" XName="X" YName="Y" Type="ChartSeriesType.Column" Fill="rgba(61, 44, 191, 1)" />
+                                    </ChartSeriesCollection>
+                                </SfChart>
+                            </div>
                             break;
 
                         case "Pie":
-                            <SfAccumulationChart @ref="PieCharts[localIndex]" Title="@($"{localIndex + 1}. {question}")" SubTitle="@(GetSubtitle())" Theme="@CurrentTheme" Width="@ChartWidth" Height="@ChartHeight">
-                                <AccumulationChartTooltipSettings Enable="true" />
-                                <AccumulationChartSeriesCollection>
-                                    <AccumulationChartSeries DataSource="@(PieChartDataForPrint[localIndex])" XName="X" YName="Y" Radius="70%">
-                                        <AccumulationDataLabelSettings Visible="true" Position="AccumulationLabelPosition.Outside" Format="{value}%" />
-                                    </AccumulationChartSeries>
-                                </AccumulationChartSeriesCollection>
-                            </SfAccumulationChart>                            
+                            <div class="print-chart">
+                                <SfAccumulationChart @ref="PieCharts[localIndex]" Title="@($"{localIndex + 1}. {question}")" SubTitle="@(GetSubtitle())" Theme="@CurrentTheme" Width="@ChartWidth" Height="@ChartHeight">
+                                    <AccumulationChartTooltipSettings Enable="true" />
+                                    <AccumulationChartSeriesCollection>
+                                        <AccumulationChartSeries DataSource="@(PieChartDataForPrint[localIndex])" XName="X" YName="Y" Radius="70%">
+                                            <AccumulationDataLabelSettings Visible="true" Position="AccumulationLabelPosition.Outside" Format="{value}%" />
+                                        </AccumulationChartSeries>
+                                    </AccumulationChartSeriesCollection>
+                                </SfAccumulationChart>
+                            </div>
                             break;
                     }
                     questionIndex++;
