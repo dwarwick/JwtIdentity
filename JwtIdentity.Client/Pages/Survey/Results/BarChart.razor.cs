@@ -240,18 +240,24 @@ namespace JwtIdentity.Client.Pages.Survey.Results
 
                         for (int i = 0; i < BarCharts.Count; i++)
                         {
-                            await Task.Delay(100);
-                            await BarCharts[i].ExportAsync(SelectedExportType, $"{SelectedChartType}_Chart_Q{i + 1}.{SelectedExportType}", Syncfusion.PdfExport.PdfPageOrientation.Landscape, true);
+                            if (BarCharts[i] != null)
+                            {
+                                await Task.Delay(100);
+                                await BarCharts[i].ExportAsync(SelectedExportType, $"{SelectedChartType}_Chart_Q{i + 1}.{SelectedExportType}", Syncfusion.PdfExport.PdfPageOrientation.Landscape, true);
+                            }
                         }
                         break;
                     case "Pie":
                         ChartWidth = "1000";
                         ChartHeight = "700";
 
-                        for (int i = 0; i < BarCharts.Count; i++)
+                        for (int i = 0; i < PieCharts.Count; i++)
                         {
-                            await Task.Delay(100);
-                            await PieCharts[i].ExportAsync(SelectedExportType, $"{SelectedChartType}_Chart_Q{i + 1}.{SelectedExportType}", Syncfusion.PdfExport.PdfPageOrientation.Landscape, true);
+                            if (PieCharts[i] != null)
+                            {
+                                await Task.Delay(100);
+                                await PieCharts[i].ExportAsync(SelectedExportType, $"{SelectedChartType}_Chart_Q{i + 1}.{SelectedExportType}", Syncfusion.PdfExport.PdfPageOrientation.Landscape, true);
+                            }
                         }
                         break;
                 }
@@ -278,10 +284,12 @@ namespace JwtIdentity.Client.Pages.Survey.Results
                     }
                     else
                     {
-                        for (int i = 0; i < BarCharts.Count; i++)
+                        // Print all bar charts at once using the container reference
+                        var chart = BarCharts.FirstOrDefault(c => c != null);
+                        if (chart != null)
                         {
                             await Task.Delay(100);
-                            await BarCharts[i].PrintAsync(Element);
+                            await chart.PrintAsync(Element);
                         }
                     }
 
@@ -296,11 +304,12 @@ namespace JwtIdentity.Client.Pages.Survey.Results
                     }
                     else
                     {
-                        for (int i = 0; i < PieCharts.Count; i++)
+                        // Print all pie charts at once using the container reference
+                        var chart = PieCharts.FirstOrDefault(c => c != null);
+                        if (chart != null)
                         {
                             await Task.Delay(100);
-
-                            await PieCharts[i].PrintAsync(Element);
+                            await chart.PrintAsync(Element);
                         }
                     }
                     break;
