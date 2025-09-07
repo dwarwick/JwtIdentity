@@ -429,8 +429,12 @@ function clearCookieConsent() {
 function printElement(element) {
     const printWindow = window.open('', '_blank');
     printWindow.document.write('<html><head><title>Print</title>');
-    // Include existing head content for styles/scripts
-    printWindow.document.write(document.head.innerHTML);
+    // Include existing head content for styles but exclude scripts
+    const headContent = Array.from(document.head.children)
+        .filter(node => node.tagName !== 'SCRIPT')
+        .map(node => node.outerHTML)
+        .join('');
+    printWindow.document.write(headContent);
     // Add print specific styles
     printWindow.document.write('<style>@media print { .print-chart { break-after: page; page-break-after: always; } .print-chart:last-child { break-after: avoid; page-break-after: auto; } }</style>');
     printWindow.document.write('</head><body>');
