@@ -22,8 +22,6 @@ namespace JwtIdentity.Client.Pages.Survey.Results
 
         protected List<SfAccumulationChart> PieCharts { get; set; } = new();
 
-        protected List<ElementReference> ChartElements { get; set; } = new();
-
         protected List<SurveyDataViewModel> SurveyData { get; set; } = new();
 
         [Inject]
@@ -144,7 +142,6 @@ namespace JwtIdentity.Client.Pages.Survey.Results
 
             BarCharts.Clear();
             PieCharts.Clear();
-            ChartElements.Clear();
 
             if (question != null)
             {
@@ -160,12 +157,11 @@ namespace JwtIdentity.Client.Pages.Survey.Results
             }
             else
             {
-                // Initialize with placeholders for chart and element references
+                // Initialize with placeholders for chart references
                 for (int i = 0; i < SurveyData.Count; i++)
                 {
                     BarCharts.Add(null);
                     PieCharts.Add(null);
-                    ChartElements.Add(new());
                 }
 
                 GetDataToPrintAllCharts();
@@ -297,8 +293,6 @@ namespace JwtIdentity.Client.Pages.Survey.Results
             }
             else
             {
-                ElementReference[] elements = ChartElements.Where(e => !string.IsNullOrWhiteSpace(e.Id)).ToArray();
-
                 switch (SelectedChartType)
                 {
                     case "Bar":
@@ -312,7 +306,7 @@ namespace JwtIdentity.Client.Pages.Survey.Results
                 }
 
                 await Task.Delay(100);
-                await JSRuntime.InvokeVoidAsync("printCharts", elements);
+                await JSRuntime.InvokeVoidAsync("printElement", Element);
             }
 
             ChartWidth = "100%";
