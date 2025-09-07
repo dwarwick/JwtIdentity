@@ -442,14 +442,14 @@ function printElement(element) {
 
     // Wait for the new window to finish loading before printing
     printWindow.onload = () => {
-        serializeElementToJson(element); // For debugging purposes
-        console.log('body', printWindow.document.body);
-        // Clone the entire element to preserve all charts
-        const clone = element.cloneNode(true);
-        // Remove any script tags from the clone for safety
-        clone.querySelectorAll('script').forEach(script => script.remove());
-        // Append the cloned content to the print window's body
-        printWindow.document.body.appendChild(clone);
+        // Clone each chart individually to ensure all charts are printed
+        const charts = element.querySelectorAll('.print-chart');
+        charts.forEach(chart => {
+            const clone = chart.cloneNode(true);
+            // Remove any script tags from the clone for safety
+            clone.querySelectorAll('script').forEach(script => script.remove());
+            printWindow.document.body.appendChild(clone);
+        });
 
         printWindow.focus();
         printWindow.print();
