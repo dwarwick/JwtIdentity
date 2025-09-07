@@ -212,23 +212,44 @@ namespace JwtIdentity.Client.Pages.Survey.Results
 
         protected async Task PrintChart()
         {
-            switch (SelectedChartType)
+            if (SelectedQuestion != null)
             {
-                case "Bar":
-                    ChartWidth = "950";
-                    ChartHeight = "700";
+                switch (SelectedChartType)
+                {
+                    case "Bar":
+                        ChartWidth = "950";
+                        ChartHeight = "700";
 
-                    await Task.Delay(100);
+                        await Task.Delay(100);
 
-                    await chartObj.PrintAsync(Element);
-                    break;
-                case "Pie":
-                    ChartWidth = "1000";
-                    ChartHeight = "700";
-                    await Task.Delay(100);
-                    await pieChartObj.PrintAsync(Element);
-                    break;
+                        await chartObj.PrintAsync(Element);
+                        break;
+                    case "Pie":
+                        ChartWidth = "1000";
+                        ChartHeight = "700";
+                        await Task.Delay(100);
+                        await pieChartObj.PrintAsync(Element);
+                        break;
+                }
             }
+            else
+            {
+                switch (SelectedChartType)
+                {
+                    case "Bar":
+                        ChartWidth = "950";
+                        ChartHeight = "700";
+                        break;
+                    case "Pie":
+                        ChartWidth = "1000";
+                        ChartHeight = "700";
+                        break;
+                }
+
+                await Task.Delay(100);
+                await JSRuntime.InvokeVoidAsync("printElement", Element);
+            }
+
             ChartWidth = "100%";
             ChartHeight = "100%";
         }
