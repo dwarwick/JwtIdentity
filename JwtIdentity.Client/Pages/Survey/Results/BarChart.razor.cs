@@ -271,49 +271,44 @@ namespace JwtIdentity.Client.Pages.Survey.Results
 
         protected async Task PrintChart()
         {
-            switch (SelectedChartType)
+            if (SelectedQuestion != null)
             {
-                case "Bar":
-                    ChartWidth = "950";
-                    ChartHeight = "700";
+                switch (SelectedChartType)
+                {
+                    case "Bar":
+                        ChartWidth = "950";
+                        ChartHeight = "700";
 
-                    if (SelectedQuestion != null && chartObj != null)
-                    {
                         await Task.Delay(100);
-                        await chartObj.PrintAsync(Element);
-                    }
-                    else
-                    {
-                        // Print all bar charts at once using the container reference
-                        var chart = BarCharts.FirstOrDefault(c => c != null);
-                        if (chart != null)
-                        {
-                            await Task.Delay(100);
-                            await chart.PrintAsync(Element);
-                        }
-                    }
 
-                    break;
-                case "Pie":
-                    ChartWidth = "1000";
-                    ChartHeight = "700";
-                    if (SelectedQuestion != null && pieChartObj != null)
-                    {
+                        await chartObj.PrintAsync(Element);
+                        break;
+                    case "Pie":
+                        ChartWidth = "1000";
+                        ChartHeight = "700";
                         await Task.Delay(100);
                         await pieChartObj.PrintAsync(Element);
-                    }
-                    else
-                    {
-                        // Print all pie charts at once using the container reference
-                        var chart = PieCharts.FirstOrDefault(c => c != null);
-                        if (chart != null)
-                        {
-                            await Task.Delay(100);
-                            await chart.PrintAsync(Element);
-                        }
-                    }
-                    break;
+                        break;
+                }
             }
+            else
+            {
+                switch (SelectedChartType)
+                {
+                    case "Bar":
+                        ChartWidth = "950";
+                        ChartHeight = "700";
+                        break;
+                    case "Pie":
+                        ChartWidth = "1000";
+                        ChartHeight = "700";
+                        break;
+                }
+
+                await Task.Delay(100);
+                await JSRuntime.InvokeVoidAsync("printElement", Element);
+            }
+
             ChartWidth = "100%";
             ChartHeight = "100%";
         }
