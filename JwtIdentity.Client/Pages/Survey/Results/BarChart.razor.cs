@@ -49,7 +49,8 @@ namespace JwtIdentity.Client.Pages.Survey.Results
 
         protected bool IsLoading { get; set; } = true;
 
-        protected ElementReference Element { get; set; }
+        protected ElementReference SingleChartElement { get; set; }
+        protected ElementReference AllChartsElement { get; set; }
 
         protected bool IsDemoUser { get; set; }
         protected int DemoStep { get; set; }
@@ -281,13 +282,13 @@ namespace JwtIdentity.Client.Pages.Survey.Results
 
                         await Task.Delay(100);
 
-                        await chartObj.PrintAsync(Element);
+                        await chartObj.PrintAsync(SingleChartElement);
                         break;
                     case "Pie":
                         ChartWidth = "1000";
                         ChartHeight = "700";
                         await Task.Delay(100);
-                        await pieChartObj.PrintAsync(Element);
+                        await pieChartObj.PrintAsync(SingleChartElement);
                         break;
                 }
             }
@@ -306,7 +307,7 @@ namespace JwtIdentity.Client.Pages.Survey.Results
                 }
 
                 await Task.Delay(100);
-                await JSRuntime.InvokeVoidAsync("printElement", Element);
+                await JSRuntime.InvokeVoidAsync("printElement", AllChartsElement);
             }
 
             ChartWidth = "100%";
