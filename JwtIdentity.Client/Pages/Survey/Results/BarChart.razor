@@ -133,7 +133,7 @@
                     @switch (SelectedChartType)
                     {
                         case "Bar":
-                            <div class="print-chart" @ref="ChartElements[localIndex]">
+                            <div class="print-chart">
                                 <SfChart @ref="BarCharts[localIndex]" Title="@($"{localIndex + 1}. {question}")" SubTitle="@(GetSubtitle())" Theme="@CurrentTheme" Width="@ChartWidth" Height="@ChartHeight">
                                     <ChartTooltipSettings Enable="true" />
                                     <ChartPrimaryXAxis ValueType="Syncfusion.Blazor.Charts.ValueType.Category" />
@@ -146,7 +146,7 @@
                             break;
 
                         case "Pie":
-                            <div class="print-chart" @ref="ChartElements[localIndex]">
+                            <div class="print-chart">
                                 <SfAccumulationChart @ref="PieCharts[localIndex]" Title="@($"{localIndex + 1}. {question}")" SubTitle="@(GetSubtitle())" Theme="@CurrentTheme" Width="@ChartWidth" Height="@ChartHeight">
                                     <AccumulationChartTooltipSettings Enable="true" />
                                     <AccumulationChartSeriesCollection>

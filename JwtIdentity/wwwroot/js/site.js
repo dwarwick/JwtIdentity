@@ -439,36 +439,11 @@ function printElement(element) {
     printWindow.document.write('<style>@media print { .print-chart { break-after: page; page-break-after: always; } .print-chart:last-child { break-after: avoid; page-break-after: auto; } }</style>');
     printWindow.document.write('</head><body>');
     // Only write the inner HTML of the element (charts)
-    printWindow.document.write(element.innerHTML);
+    const html = element.innerHTML.replace(/<script[\s\S]*?<\/script>/gi, '');
+    printWindow.document.write(html);
     printWindow.document.write('</body></html>');
     printWindow.document.close();
     // Wait for the new window to finish loading before printing
-    printWindow.onload = () => {
-        printWindow.focus();
-        printWindow.print();
-        printWindow.close();
-    };
-}
-
-// Print multiple chart elements sequentially
-function printCharts(elements) {
-    const printWindow = window.open('', '_blank');
-    printWindow.document.write('<html><head><title>Print</title>');
-    const headContent = Array.from(document.head.children)
-        .filter(node => node.tagName !== 'SCRIPT')
-        .map(node => node.outerHTML)
-        .join('');
-    printWindow.document.write(headContent);
-    printWindow.document.write('<style>@media print { .print-chart { break-after: page; page-break-after: always; } .print-chart:last-child { break-after: avoid; page-break-after: auto; } }</style>');
-    printWindow.document.write('</head><body>');
-    elements.forEach(e => {
-        if (e) {
-            const html = e.outerHTML.replace(/<script[\s\S]*?<\/script>/gi, '');
-            printWindow.document.write(html);
-        }
-    });
-    printWindow.document.write('</body></html>');
-    printWindow.document.close();
     printWindow.onload = () => {
         printWindow.focus();
         printWindow.print();
