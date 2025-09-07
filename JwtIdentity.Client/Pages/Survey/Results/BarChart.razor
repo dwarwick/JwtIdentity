@@ -9,14 +9,35 @@
 
     <div class="d-flex flex-column">
         <div class="row">
-            <div class="col-11">
-                <MudSelect T="QuestionViewModel" Label="Select Question" Value="SelectedQuestion" Variant="Variant.Filled" Class="w-100 mb-1" ValueChanged="@((e) => HandleSelectQuestion(e))" ToStringFunc="@QuestionDropdownConverter">
-                    <MudSelectItem Value="@((QuestionViewModel?)null)">All Questions</MudSelectItem>
-                    @foreach (var question in SurveyData.OrderBy(x => x.Question.QuestionNumber).Select(x => x.Question))
+            <div class="col-11"> @* Select Question Dropdown *@
+                <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 0,1 })">
+                    <MudSelect T="QuestionViewModel" Label="Select Question" Value="SelectedQuestion" Variant="Variant.Filled" Class="w-100 mb-1" ValueChanged="@((e) => HandleSelectQuestion(e))" ToStringFunc="@QuestionDropdownConverter">
+                        <MudSelectItem Value="@((QuestionViewModel?)null)">All Questions</MudSelectItem>
+                        @foreach (var question in SurveyData.OrderBy(x => x.Question.QuestionNumber).Select(x => x.Question))
+                        {
+                            <MudSelectItem T="QuestionViewModel" Value="@question">@($"{question.QuestionNumber}. {question.Text}")</MudSelectItem>
+                        }
+                    </MudSelect>
+                </DemoBorder>
+                @{
+                    string demoQuestionText = 
+                    DemoStep == 0 ? @"This page displays your survey results for each question in chart form. 
+                    Select the question to view results for, or select All Questions from the dropdown. 
+                    We are currentlty viewing the results for question 1." : 
+                    DemoStep == 1 ? @"Go ahead and select All Questions from the dropdown. 
+                    All Questions is above question 1." :
+                    DemoStep == 2 ? @"Scroll down to view the results of each question. Click next when you are ready to continue.
+                    Note that the results would be more informative if several people had taken the survey." : "";
+                }
+                <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 0,1,2 })" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopLeft">
+                    <MudText Typo="Typo.body2" Style="white-space: pre-line">@demoQuestionText</MudText>
+                    @if (DemoStep == 0 || DemoStep == 2)
                     {
-                        <MudSelectItem T="QuestionViewModel" Value="@question">@($"{question.QuestionNumber}. {question.Text}")</MudSelectItem>
-                    }
-                </MudSelect>
+                        <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 0,2 })" IsButton="true">
+                            <MudButton id="DemoNext_button" OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
+                        </DemoBorder>
+                    }                    
+                </DemoPopup>
             </div>
             <div class="col-1">
                 <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="my-1 w-100" OnClick="PrintChart"> Print</MudButton>
@@ -24,11 +45,16 @@
         </div>
 
         <div class="row">
-            <div class="col-6">
-                <MudSelect T="string" Label="Select Chart Type" @bind-Value="SelectedChartType" Variant="Variant.Filled" Class="mb-1">
-                    <MudSelectItem T="string" Value="@("Bar")">Bar</MudSelectItem>
-                    <MudSelectItem T="string" Value="@("Pie")">Pie</MudSelectItem>
-                </MudSelect>
+            <div class="col-6"> @* Select Chart Type Dropdown *@
+                <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 3 })">
+                    <MudSelect T="string" Label="Select Chart Type" @bind-Value="SelectedChartType" Variant="Variant.Filled" Class="mb-1">
+                        <MudSelectItem T="string" Value="@("Bar")">Bar</MudSelectItem>
+                        <MudSelectItem T="string" Value="@("Pie")">Pie</MudSelectItem>
+                    </MudSelect>
+                </DemoBorder>
+                <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 3 })" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopLeft">
+                    <MudText Typo="Typo.body2" Style="white-space: pre-line">You can change to a Pie Chart using this dropdown. Go ahead and select Pie Chart from the Chart Type dropdown.</MudText>                    
+                </DemoPopup>
             </div>
 
             <div class="col-5">
@@ -55,7 +81,7 @@
                 case "Bar":
                     <SfChart @ref="chartObj" Title="@($"{SelectedQuestion.QuestionNumber}. {SelectedQuestion.Text}")" SubTitle="@(GetSubtitle())" Theme="@CurrentTheme" Width="@ChartWidth" Height="@ChartHeight">
                         <ChartTooltipSettings Enable="true" />
-                        <ChartTitleStyle TextOverflow="TextOverflow.Wrap" TextAlignment="Alignment.Center"></ChartTitleStyle>                        
+                        <ChartTitleStyle TextOverflow="TextOverflow.Wrap" TextAlignment="Alignment.Center"></ChartTitleStyle>
                         <ChartPrimaryXAxis ValueType="Syncfusion.Blazor.Charts.ValueType.Category" />
                         <ChartPrimaryYAxis Interval="1" />
                         <ChartSeriesCollection>
@@ -64,11 +90,11 @@
                         <ChartAnnotations>
                             <ChartAnnotation X="105" Y="35" CoordinateUnits="Units.Pixel" Region="Regions.Chart">
                                 <ContentTemplate>
-                                    <img src="/images/logo_200_60.png" alt="Website Logo" width="200" height="60"/>
+                                    <img src="/images/logo_200_60.png" alt="Website Logo" width="200" height="60" />
                                 </ContentTemplate>
                             </ChartAnnotation>
                         </ChartAnnotations>
-                        <ChartMargin Left="5" Right="5" Top="65" Bottom="0"></ChartMargin>                        
+                        <ChartMargin Left="5" Right="5" Top="65" Bottom="0"></ChartMargin>
                     </SfChart>
                     break;
 
@@ -84,12 +110,13 @@
                         <AccumulationChartAnnotations>
                             <AccumulationChartAnnotation X="105" Y="35" CoordinateUnits="Units.Pixel" Region="Regions.Chart">
                                 <ContentTemplate>
-                                    <img src="/images/logo_200_60.png" alt="Website Logo" width="200" height="60"/>
+                                    <img src="/images/logo_200_60.png" alt="Website Logo" width="200" height="60" />
                                 </ContentTemplate>
                             </AccumulationChartAnnotation>
                         </AccumulationChartAnnotations>
-                        <AccumulationChartMargin Left="5" Right="5" Top="65" Bottom="0"></AccumulationChartMargin> 
-                    </SfAccumulationChart>
+                        <AccumulationChartMargin Left="5" Right="5" Top="65" Bottom="0"></AccumulationChartMargin>
+                    </SfAccumulationChart>                    
+
                     break;
             }
         </span>
@@ -98,7 +125,7 @@
     {
         int questionIndex = 0;
         <span id="AllCharts" @ref="Element">
-            <MudStack Spacing="1">                
+            <MudStack Spacing="1">
 
                 @foreach (var question in SurveyData.OrderBy(x => x.Question.QuestionNumber).Select(x => x.Question.Text))
                 {
@@ -124,13 +151,15 @@
                                         <AccumulationDataLabelSettings Visible="true" Position="AccumulationLabelPosition.Outside" Format="{value}%" />
                                     </AccumulationChartSeries>
                                 </AccumulationChartSeriesCollection>
-                            </SfAccumulationChart>
+                            </SfAccumulationChart>                            
                             break;
                     }
                     questionIndex++;
                 }
             </MudStack>
         </span>
+
+        @if (IsDemoUser && DemoStep == 3 && SelectedChartType == "Pie") NextDemoStep();
     }
 }
 

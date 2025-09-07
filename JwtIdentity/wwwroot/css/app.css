@@ -587,3 +587,7 @@ td.e-summarycell.e-templatecell.e-leftalign {
     background-color: var(--mud-palette-surface) !important;
     transition: all 0.3s ease;
 }
+
+.demo-primary-border > #survey-submit-btn {
+    margin-top: inherit;
+}

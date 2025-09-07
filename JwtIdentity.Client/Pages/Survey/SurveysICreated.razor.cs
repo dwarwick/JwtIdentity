@@ -1,11 +1,12 @@
-﻿using JwtIdentity.Client.Services;
-
-namespace JwtIdentity.Client.Pages.Survey
+﻿namespace JwtIdentity.Client.Pages.Survey
 {
     public class SurveysICreatedModel : BlazorBase, IBrowserViewportObserver, IAsyncDisposable
     {
         [Inject]
         protected IBrowserViewportService BrowserViewportService { get; set; }
+
+        [SupplyParameterFromQuery]
+        public int DemoStep { get; set; }
 
         public List<SurveyViewModel> UserSurveys { get; set; } = new();
 
@@ -14,7 +15,7 @@ namespace JwtIdentity.Client.Pages.Survey
         protected int FrozenColumns { get; set; }
 
         protected bool IsDemoUser { get; set; }
-        protected int DemoStep { get; set; }
+
 
         protected bool ShowDemoStep(int step) => IsDemoUser && DemoStep == step;
 
@@ -51,6 +52,8 @@ namespace JwtIdentity.Client.Pages.Survey
 
         protected async Task CopySurveyLinkAsync(string guid)
         {
+            if (IsDemoUser && DemoStep != 1) return;
+
             if (!UserSurveys.FirstOrDefault(x => x.Guid == guid).Published)
             {
                 _ = Snackbar.Add("Survey not published", Severity.Error);
@@ -61,6 +64,11 @@ namespace JwtIdentity.Client.Pages.Survey
             await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", url);
 
             _ = Snackbar.Add("Survey link copied to clipboard", Severity.Success);
+
+            if (IsDemoUser && DemoStep == 1)
+            {
+                NextDemoStep();
+            }
         }
 
         protected void CheckDisabledButton(string guid)
@@ -86,6 +94,13 @@ namespace JwtIdentity.Client.Pages.Survey
             await JSRuntime.InvokeVoidAsync("open", url, "_blank");
         }
 
+        protected async Task HandlePreviewClick(string guid)
+        {
+            if (IsDemoUser && DemoStep != 0) return;
+
+            await JSRuntime.InvokeVoidAsync("open", $"/survey/{guid}?Preview=true", "_blank");
+        }
+
         protected void AddEditQuestions(string guid, bool published)
         {
             if (published)
@@ -104,6 +119,8 @@ namespace JwtIdentity.Client.Pages.Survey
                 _ = Snackbar.Add("Survey not published. You cannot view charts if it has not been published.", Severity.Error);
                 return;
             }
+
+            if (IsDemoUser && DemoStep != 5) return;
 
             NavigationManager.NavigateTo($"/survey/responses/{guid}");
         }
@@ -137,10 +154,17 @@ namespace JwtIdentity.Client.Pages.Survey
 
         public async ValueTask DisposeAsync() => await BrowserViewportService.UnsubscribeAsync(this);
 
-        protected void NextDemoStep()
+        protected async Task NextDemoStep(string guid = "")
         {
             if (!IsDemoUser) return;
             DemoStep++;
+
+            switch (DemoStep)
+            {
+                case 3:
+                    await JSRuntime.InvokeVoidAsync("open", $"/survey/{guid}", "_blank");
+                    break;
+            }
         }
     }
 }
