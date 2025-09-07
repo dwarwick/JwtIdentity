@@ -442,6 +442,8 @@ function printElement(element) {
 
     // Wait for the new window to finish loading before printing
     printWindow.onload = () => {
+        serializeElementToJson(element); // For debugging purposes
+        console.log('body', printWindow.document.body);
         // Clone the entire element to preserve all charts
         const clone = element.cloneNode(true);
         // Remove any script tags from the clone for safety
@@ -453,4 +455,30 @@ function printElement(element) {
         printWindow.print();
         printWindow.close();
     };
+}
+
+// Create a function to serialize the entire element from the printElement function as json and write it to the console
+function serializeElementToJson(element) {
+    function serializeNode(node) {
+        const obj = {
+            nodeType: node.nodeType,
+            nodeName: node.nodeName,
+        };
+        if (node.nodeType === Node.ELEMENT_NODE) {
+            obj.attributes = {};
+            for (let attr of node.attributes) {
+                obj.attributes[attr.name] = attr.value;
+            }
+            obj.children = [];
+            for (let child of node.childNodes) {
+                obj.children.push(serializeNode(child));
+            }
+        } else if (node.nodeType === Node.TEXT_NODE) {
+            obj.textContent = node.textContent;
+        }
+        return obj;
+    }
+    const serialized = serializeNode(element);
+    console.log(JSON.stringify(serialized, null, 2));
+    return serialized;
 }
