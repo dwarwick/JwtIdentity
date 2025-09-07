@@ -437,14 +437,18 @@ function printElement(element) {
     printWindow.document.write(headContent);
     // Add print specific styles
     printWindow.document.write('<style>@media print { .print-chart { break-after: page; page-break-after: always; } .print-chart:last-child { break-after: avoid; page-break-after: auto; } }</style>');
-    printWindow.document.write('</head><body>');
-    // Only write the inner HTML of the element (charts)
-    const html = element.innerHTML.replace(/<script[\s\S]*?<\/script>/gi, '');
-    printWindow.document.write(html);
-    printWindow.document.write('</body></html>');
+    printWindow.document.write('</head><body></body></html>');
     printWindow.document.close();
+
     // Wait for the new window to finish loading before printing
     printWindow.onload = () => {
+        // Clone the entire element to preserve all charts
+        const clone = element.cloneNode(true);
+        // Remove any script tags from the clone for safety
+        clone.querySelectorAll('script').forEach(script => script.remove());
+        // Append the cloned content to the print window's body
+        printWindow.document.body.appendChild(clone);
+
         printWindow.focus();
         printWindow.print();
         printWindow.close();
