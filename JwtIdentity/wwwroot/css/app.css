@@ -599,7 +599,8 @@ td.e-summarycell.e-templatecell.e-leftalign {
     }
 
     /* Make only print-section content visible */
-    .print-section, .print-section * {
+    .print-section,
+    .print-section * {
         visibility: visible;
     }
 
@@ -611,12 +612,17 @@ td.e-summarycell.e-templatecell.e-leftalign {
         width: 100%;
     }
 
-    /* Page breaks between each section */
-    .print-section {
+    /* Ensure flex layouts don't truncate content when printing */
+    .print-section .mud-stack {
+        display: block;
+    }
+
+    /* Page breaks between each chart */
+    .print-chart {
         page-break-after: always;
     }
 
-        .print-section:last-child {
-            page-break-after: auto;
-        }
+    .print-chart:last-child {
+        page-break-after: auto;
+    }
 }
