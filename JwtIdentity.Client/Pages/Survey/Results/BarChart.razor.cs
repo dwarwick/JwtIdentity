@@ -306,12 +306,15 @@ namespace JwtIdentity.Client.Pages.Survey.Results
                         break;
                 }
 
-                await Task.Delay(100);
-                await JSRuntime.InvokeVoidAsync("printElement", AllChartsElement);
+                StateHasChanged();
+                await Task.Delay(5000);
+
+                await JSRuntime.InvokeVoidAsync("printPage");
             }
 
             ChartWidth = "100%";
             ChartHeight = "100%";
+            StateHasChanged();
         }
 
         protected Func<QuestionViewModel, string> QuestionDropdownConverter = p => p == null ? "All Questions" : $"{p.QuestionNumber}. {p.Text}";

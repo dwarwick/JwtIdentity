@@ -482,3 +482,7 @@ function serializeElementToJson(element) {
     console.log(JSON.stringify(serialized, null, 2));
     return serialized;
 }
+
+    function printPage() {
+        window.print();
+  }

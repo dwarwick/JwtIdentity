@@ -591,3 +591,32 @@ td.e-summarycell.e-templatecell.e-leftalign {
 .demo-primary-border > #survey-submit-btn {
     margin-top: inherit;
 }
+
+@media print {
+    /* Hide everything by default */
+    body * {
+        visibility: hidden;
+    }
+
+    /* Make only print-section content visible */
+    .print-section, .print-section * {
+        visibility: visible;
+    }
+
+    /* Position them correctly */
+    .print-section {
+        position: relative;
+        top: 0;
+        left: 0;
+        width: 100%;
+    }
+
+    /* Page breaks between each section */
+    .print-section {
+        page-break-after: always;
+    }
+
+        .print-section:last-child {
+            page-break-after: auto;
+        }
+}
