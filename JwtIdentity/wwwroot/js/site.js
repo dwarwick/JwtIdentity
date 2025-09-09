@@ -436,7 +436,7 @@ function printElement(element) {
         .join('');
     printWindow.document.write(headContent);
     // Add print specific styles
-    printWindow.document.write('<style>@media print { .print-chart { break-after: page; page-break-after: always; } .print-chart:last-child { break-after: avoid; page-break-after: auto; } }</style>');
+    printWindow.document.write('<style>@media print { .print-chart { break-inside: avoid; page-break-inside: avoid; } .print-chart:not(:last-child) { break-after: page; page-break-after: always; } }</style>');
     printWindow.document.write('</head><body></body></html>');
     printWindow.document.close();
 
