@@ -596,12 +596,14 @@ td.e-summarycell.e-templatecell.e-leftalign {
     /* Hide everything by default */
     body * {
         visibility: hidden;
+        position: absolute;
     }
 
     /* Make only print-section content visible */
     .print-section,
     .print-section * {
         visibility: visible;
+        position: initial;
     }
 
     /* Allow the full document to expand for printing */
@@ -632,7 +634,13 @@ td.e-summarycell.e-templatecell.e-leftalign {
         page-break-after: always;
     }
 
+    .print-chart:first-child {
+        break-before: avoid;
+        page-break-before: auto;
+    }
+
     .print-chart:last-child {
+        break-after: avoid;
         page-break-after: auto;
     }
 
