@@ -604,6 +604,16 @@ td.e-summarycell.e-templatecell.e-leftalign {
         visibility: visible;
     }
 
+    /* Allow the full document to expand for printing */
+    html,
+    body,
+    .app-container,
+    .main-content {
+        overflow: visible !important;
+        height: auto !important;
+        max-height: none !important;
+    }
+
     /* Position them correctly */
     .print-section {
         position: relative;
