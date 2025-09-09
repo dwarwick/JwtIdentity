@@ -281,13 +281,14 @@ namespace JwtIdentity.Client.Pages.Survey.Results
                         ChartHeight = "700";
 
                         await Task.Delay(100);
-
+                        await JSRuntime.InvokeVoidAsync("adjustChartsForPrint");
                         await chartObj.PrintAsync(SingleChartElement);
                         break;
                     case "Pie":
                         ChartWidth = "1000";
                         ChartHeight = "700";
                         await Task.Delay(100);
+                        await JSRuntime.InvokeVoidAsync("adjustChartsForPrint");
                         await pieChartObj.PrintAsync(SingleChartElement);
                         break;
                 }
@@ -308,7 +309,7 @@ namespace JwtIdentity.Client.Pages.Survey.Results
 
                 StateHasChanged();
                 await Task.Delay(5000);
-
+                await JSRuntime.InvokeVoidAsync("adjustChartsForPrint");
                 await JSRuntime.InvokeVoidAsync("printPage");
             }
 

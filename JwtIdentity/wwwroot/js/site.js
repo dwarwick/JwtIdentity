@@ -426,6 +426,20 @@ function clearCookieConsent() {
 }
 
 // Print the supplied element and all of its contents
+function adjustChartsForPrint() {
+    const charts = document.querySelectorAll('#SingleChart, .print-chart');
+    charts.forEach(chart => {
+        chart.classList.remove('fill-width', 'fill-height');
+        const rect = chart.getBoundingClientRect();
+        if (rect.width > rect.height) {
+            chart.classList.add('fill-width');
+        } else {
+            chart.classList.add('fill-height');
+        }
+    });
+}
+
 function printPage() {
+    adjustChartsForPrint();
     window.print();
 }
