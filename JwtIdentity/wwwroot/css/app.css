@@ -625,4 +625,16 @@ td.e-summarycell.e-templatecell.e-leftalign {
     .print-chart:last-child {
         page-break-after: auto;
     }
+
+    #AllCharts,
+    .print-section {
+        overflow: visible;
+        height: auto;
+        max-height: none;
+    }
+
+    .print-chart {
+        page-break-inside: avoid; /* keeps each chart whole */
+        break-after: page; /* optional: put each chart on its own page */
+    }
 }
