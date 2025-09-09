@@ -428,6 +428,10 @@ function clearCookieConsent() {
 // Print the supplied element and all of its contents
 function printElement(element) {
     const printWindow = window.open('', '_blank');
+    if (!printWindow || !printWindow.document) {
+        console.error('Unable to open print window. It may have been blocked by the browser.');
+        return;
+    }
     printWindow.document.write('<html><head><title>Print</title>');
     // Include existing head content for styles but exclude scripts
     const headContent = Array.from(document.head.children)
