@@ -618,9 +618,12 @@ td.e-summarycell.e-templatecell.e-leftalign {
         overflow: visible !important;
     }
 
-    /* Ensure charts print in document flow */
+    /* Ensure charts print in document flow and start at the top of the first page */
     .print-section {
         width: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
     }
 
     /* Ensure flex layouts don't truncate content when printing */
