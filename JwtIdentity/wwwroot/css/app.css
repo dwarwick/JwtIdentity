@@ -596,14 +596,12 @@ td.e-summarycell.e-templatecell.e-leftalign {
     /* Hide everything by default */
     body * {
         visibility: hidden;
-        display: none;
     }
 
     /* Make only print-section content visible */
     .print-section,
     .print-section * {
         visibility: visible;
-        display: block;
     }
 
     /* Allow the full document to expand for printing */
@@ -618,9 +616,6 @@ td.e-summarycell.e-templatecell.e-leftalign {
 
     /* Position them correctly */
     .print-section {
-        position: absolute;
-        top: 0;
-        left: 0;
         width: 100%;
     }
 
@@ -631,10 +626,12 @@ td.e-summarycell.e-templatecell.e-leftalign {
 
     /* Each chart prints on its own page */
     .print-chart {
-        page-break-inside: avoid; /* keep each chart whole */
+        break-inside: avoid;
+        page-break-inside: avoid;
     }
 
     .print-chart:not(:last-child) {
+        break-after: page;
         page-break-after: always;
     }
 
