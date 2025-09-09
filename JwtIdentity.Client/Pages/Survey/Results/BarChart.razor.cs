@@ -309,7 +309,7 @@ namespace JwtIdentity.Client.Pages.Survey.Results
                 StateHasChanged();
                 await Task.Delay(5000);
 
-                await JSRuntime.InvokeVoidAsync("printPage");
+                await JSRuntime.InvokeVoidAsync("printElement", AllChartsElement);
             }
 
             ChartWidth = "100%";
