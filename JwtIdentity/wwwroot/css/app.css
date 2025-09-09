@@ -596,14 +596,18 @@ td.e-summarycell.e-templatecell.e-leftalign {
     /* Hide everything by default */
     body * {
         visibility: hidden;
-        height: 0 !important;
     }
 
     /* Make only print-section content visible */
     .print-section,
     .print-section * {
         visibility: visible;
-        height: auto !important;
+    }
+
+    /* Remove code block text shadows for clearer printing */
+    code[class*=language-],
+    pre[class*=language-] {
+        text-shadow: none;
     }
 
     /* Allow the full document to expand for printing */
@@ -612,8 +616,6 @@ td.e-summarycell.e-templatecell.e-leftalign {
     .app-container,
     .main-content {
         overflow: visible !important;
-        height: auto !important;
-        max-height: none !important;
     }
 
     /* Ensure charts print in document flow */
@@ -640,7 +642,5 @@ td.e-summarycell.e-templatecell.e-leftalign {
     #AllCharts,
     .print-section {
         overflow: visible;
-        height: auto;
-        max-height: none;
     }
 }

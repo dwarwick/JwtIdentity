@@ -84,11 +84,6 @@ code[class*=language-], pre[class*=language-] {
         background: #b3d4fc
     }
 
-@media print {
-    code[class*=language-], pre[class*=language-] {
-        text-shadow: none
-    }
-}
 
 pre[class*=language-] {
     padding: 1em;
@@ -171,48 +166,3 @@ pre[class*=language-] {
     background-color: var(--signup-bg);
 }
 
-@media print {
-    body * {
-        visibility: hidden;
-        height: 0 !important;
-    }
-
-    .print-section,
-    .print-section * {
-        visibility: visible;
-    }
-
-    html,
-    body,
-    .app-container,
-    .main-content {
-        overflow: visible !important;
-        height: auto !important;
-        max-height: none !important;
-    }
-
-    .print-section {
-        width: 100%;
-    }
-
-    .print-section .mud-stack {
-        display: block;
-    }
-
-    .print-chart {
-        break-inside: avoid;
-        page-break-inside: avoid;
-    }
-
-    .print-chart:not(:last-child) {
-        break-after: page;
-        page-break-after: always;
-    }
-
-    #AllCharts,
-    .print-section {
-        overflow: visible;
-        height: auto;
-        max-height: none;
-    }
-}
