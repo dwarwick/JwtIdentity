@@ -646,4 +646,33 @@ td.e-summarycell.e-templatecell.e-leftalign {
     .print-section {
         overflow: visible;
     }
+
+    /* Scale charts to fill the printable area based on aspect ratio */
+    #SingleChart.fill-width,
+    .print-chart.fill-width {
+        width: 100%;
+        height: auto;
+    }
+
+    #SingleChart.fill-width svg,
+    #SingleChart.fill-width canvas,
+    .print-chart.fill-width svg,
+    .print-chart.fill-width canvas {
+        width: 100% !important;
+        height: auto !important;
+    }
+
+    #SingleChart.fill-height,
+    .print-chart.fill-height {
+        height: 100vh;
+        width: auto;
+    }
+
+    #SingleChart.fill-height svg,
+    #SingleChart.fill-height canvas,
+    .print-chart.fill-height svg,
+    .print-chart.fill-height canvas {
+        height: 100vh !important;
+        width: auto !important;
+    }
 }
