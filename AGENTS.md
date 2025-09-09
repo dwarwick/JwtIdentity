@@ -23,3 +23,6 @@ The controller endpoints that take a body take and return Viewmodels. The ViewMo
 The client project makes API calls using IApiService. Please review the methods in this file to understand how to make API calls. The IApiService is injected in the BlazorBase class, so you can use it directly in inherited Razor components and access API methods through dependency injection.
 When using Mudchip, do not add a Closable attribute. To make it closable, just define the OnClose event. See the example in EditUserDialog.razor.
 When creating a new Razor component, always create a code behind file with the same name as the Razor component file, plus Model. For example, if the Razor component file is named MyComponent.razor, the code behind file should be named MyComponentModel.razor.cs.
+app-dark.css is used for dark mode. It should only contain dark mode styles. Do not add any other styles to this file.
+app-light.css is used for light mode. It should only contain light mode styles. Do not add any other styles to this file.
+app.css is used for styles that are common to both dark mode and light mode. Do not add any dark mode or light mode specific styles to this file.
