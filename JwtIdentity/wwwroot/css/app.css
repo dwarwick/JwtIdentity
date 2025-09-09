@@ -635,6 +635,7 @@ td.e-summarycell.e-templatecell.e-leftalign {
     .print-chart {
         break-inside: avoid;
         page-break-inside: avoid;
+        padding-bottom: 40px;
     }
 
     .print-chart:not(:last-child) {
