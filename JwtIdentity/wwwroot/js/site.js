@@ -426,67 +426,6 @@ function clearCookieConsent() {
 }
 
 // Print the supplied element and all of its contents
-function printElement(element) {
-    const printWindow = window.open('', '_blank');
-    if (!printWindow || !printWindow.document) {
-        console.error('Unable to open print window. It may have been blocked by the browser.');
-        return;
-    }
-    printWindow.document.write('<html><head><title>Print</title>');
-    // Include existing head content for styles but exclude scripts
-    const headContent = Array.from(document.head.children)
-        .filter(node => node.tagName !== 'SCRIPT')
-        .map(node => node.outerHTML)
-        .join('');
-    printWindow.document.write(headContent);
-    // Add print specific styles
-    printWindow.document.write('<style>@media print { .print-chart { break-inside: avoid; page-break-inside: avoid; } .print-chart:not(:last-child) { break-after: page; page-break-after: always; } }</style>');
-    printWindow.document.write('</head><body></body></html>');
-    printWindow.document.close();
-
-    // Wait for the new window to finish loading before printing
-    printWindow.onload = () => {
-        // Clone each chart individually to ensure all charts are printed
-        const charts = element.querySelectorAll('.print-chart');
-        charts.forEach(chart => {
-            const clone = chart.cloneNode(true);
-            // Remove any script tags from the clone for safety
-            clone.querySelectorAll('script').forEach(script => script.remove());
-            printWindow.document.body.appendChild(clone);
-        });
-
-        printWindow.focus();
-        printWindow.print();
-        printWindow.close();
-    };
+function printPage() {
+    window.print();
 }
-
-// Create a function to serialize the entire element from the printElement function as json and write it to the console
-function serializeElementToJson(element) {
-    function serializeNode(node) {
-        const obj = {
-            nodeType: node.nodeType,
-            nodeName: node.nodeName,
-        };
-        if (node.nodeType === Node.ELEMENT_NODE) {
-            obj.attributes = {};
-            for (let attr of node.attributes) {
-                obj.attributes[attr.name] = attr.value;
-            }
-            obj.children = [];
-            for (let child of node.childNodes) {
-                obj.children.push(serializeNode(child));
-            }
-        } else if (node.nodeType === Node.TEXT_NODE) {
-            obj.textContent = node.textContent;
-        }
-        return obj;
-    }
-    const serialized = serializeNode(element);
-    console.log(JSON.stringify(serialized, null, 2));
-    return serialized;
-}
-
-    function printPage() {
-        window.print();
-  }
