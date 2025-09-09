@@ -596,12 +596,14 @@ td.e-summarycell.e-templatecell.e-leftalign {
     /* Hide everything by default */
     body * {
         visibility: hidden;
+        height: 0 !important;
     }
 
     /* Make only print-section content visible */
     .print-section,
     .print-section * {
         visibility: visible;
+        height: auto !important;
     }
 
     /* Allow the full document to expand for printing */
@@ -617,6 +619,9 @@ td.e-summarycell.e-templatecell.e-leftalign {
     /* Position them correctly */
     .print-section {
         width: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
     }
 
     /* Ensure flex layouts don't truncate content when printing */
