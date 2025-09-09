@@ -631,12 +631,11 @@ td.e-summarycell.e-templatecell.e-leftalign {
 
     /* Each chart prints on its own page */
     .print-chart {
-        page-break-after: always;
         page-break-inside: avoid; /* keep each chart whole */
     }
 
-    .print-chart:last-child {
-        page-break-after: auto;
+    .print-chart:not(:last-child) {
+        page-break-after: always;
     }
 
     #AllCharts,
