@@ -587,3 +587,60 @@ td.e-summarycell.e-templatecell.e-leftalign {
     background-color: var(--mud-palette-surface) !important;
     transition: all 0.3s ease;
 }
+
+.demo-primary-border > #survey-submit-btn {
+    margin-top: inherit;
+}
+
+@media print {
+    /* Hide everything by default */
+    body * {
+        visibility: hidden;
+    }
+
+    /* Make only print-section content visible */
+    .print-section,
+    .print-section * {
+        visibility: visible;
+    }
+
+    /* Remove code block text shadows for clearer printing */
+    code[class*=language-],
+    pre[class*=language-] {
+        text-shadow: none;
+    }
+
+    /* Allow the full document to expand for printing */
+    html,
+    body,
+    .app-container,
+    .main-content {
+        overflow: visible !important;
+    }
+
+    /* Ensure charts print in document flow */
+    .print-section {
+        width: 100%;
+    }
+
+    /* Ensure flex layouts don't truncate content when printing */
+    .print-section .mud-stack {
+        display: block;
+    }
+
+    /* Each chart prints on its own page */
+    .print-chart {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+
+    .print-chart:not(:last-child) {
+        break-after: page;
+        page-break-after: always;
+    }
+
+    #AllCharts,
+    .print-section {
+        overflow: visible;
+    }
+}

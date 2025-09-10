@@ -6,6 +6,8 @@ namespace JwtIdentity.Client.Pages.Survey.Results
 {
     public class BarChartModel : BlazorBase, IAsyncDisposable
     {
+        private int _previousDemoStep = -1;
+
         [CascadingParameter(Name = "Theme")]
         public string Theme { get; set; } = string.Empty;
 
@@ -47,7 +49,13 @@ namespace JwtIdentity.Client.Pages.Survey.Results
 
         protected bool IsLoading { get; set; } = true;
 
-        protected ElementReference Element { get; set; }
+        protected ElementReference SingleChartElement { get; set; }
+        protected ElementReference AllChartsElement { get; set; }
+
+        protected bool IsDemoUser { get; set; }
+        protected int DemoStep { get; set; }
+
+        protected bool ShowDemoStep(int step) => IsDemoUser && DemoStep == step;
 
         protected override async Task OnInitializedAsync()
         {
@@ -60,7 +68,46 @@ namespace JwtIdentity.Client.Pages.Survey.Results
             SurveyHubClient.SurveyUpdated += HandleSurveyUpdated;
             await SurveyHubClient.JoinSurveyGroup(SurveyId);
 
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            var userName = authState.User.Identity?.Name ?? string.Empty;
+            IsDemoUser = userName.StartsWith("DemoUser") && userName.EndsWith("@surveyshark.site");
+
             IsLoading = false;
+        }
+
+        protected override async Task OnAfterRenderAsync(bool firstRender)
+        {
+            if (IsDemoUser && DemoStep != _previousDemoStep && IsLoading == false)
+            {
+                await ScrollToCurrentDemoStep();
+                _previousDemoStep = DemoStep;
+            }
+        }
+
+        private async Task ScrollToCurrentDemoStep()
+        {
+            var id = DemoStep switch
+            {
+                0 => "",
+                1 => "",
+                _ => null
+            };
+
+            if (!string.IsNullOrEmpty(id))
+            {
+                await JSRuntime.InvokeVoidAsync("scrollToElement", id);
+
+                // Ensure any demo popover tied to the element renders after the scroll
+                StateHasChanged();
+            }
+        }
+
+        protected void NextDemoStep()
+        {
+            if (!IsDemoUser) return;
+            DemoStep++;
+
+            StateHasChanged();
         }
 
         private async void HandleSurveyUpdated(string id)
@@ -85,6 +132,8 @@ namespace JwtIdentity.Client.Pages.Survey.Results
 
         protected void HandleSelectQuestion(QuestionViewModel question)
         {
+            if (IsDemoUser && DemoStep != 1) return;
+
             IsLoading = true;
 
             SelectedQuestion = question;
@@ -109,7 +158,7 @@ namespace JwtIdentity.Client.Pages.Survey.Results
             }
             else
             {
-                // Initialize with null values
+                // Initialize with placeholders for chart references
                 for (int i = 0; i < SurveyData.Count; i++)
                 {
                     BarCharts.Add(null);
@@ -117,6 +166,11 @@ namespace JwtIdentity.Client.Pages.Survey.Results
                 }
 
                 GetDataToPrintAllCharts();
+
+                if (IsDemoUser && DemoStep == 1)
+                {
+                    NextDemoStep();
+                }
             }
 
             IsLoading = false;
@@ -187,18 +241,24 @@ namespace JwtIdentity.Client.Pages.Survey.Results
 
                         for (int i = 0; i < BarCharts.Count; i++)
                         {
-                            await Task.Delay(100);
-                            await BarCharts[i].ExportAsync(SelectedExportType, $"{SelectedChartType}_Chart_Q{i + 1}.{SelectedExportType}", Syncfusion.PdfExport.PdfPageOrientation.Landscape, true);
+                            if (BarCharts[i] != null)
+                            {
+                                await Task.Delay(100);
+                                await BarCharts[i].ExportAsync(SelectedExportType, $"{SelectedChartType}_Chart_Q{i + 1}.{SelectedExportType}", Syncfusion.PdfExport.PdfPageOrientation.Landscape, true);
+                            }
                         }
                         break;
                     case "Pie":
                         ChartWidth = "1000";
                         ChartHeight = "700";
 
-                        for (int i = 0; i < BarCharts.Count; i++)
+                        for (int i = 0; i < PieCharts.Count; i++)
                         {
-                            await Task.Delay(100);
-                            await PieCharts[i].ExportAsync(SelectedExportType, $"{SelectedChartType}_Chart_Q{i + 1}.{SelectedExportType}", Syncfusion.PdfExport.PdfPageOrientation.Landscape, true);
+                            if (PieCharts[i] != null)
+                            {
+                                await Task.Delay(100);
+                                await PieCharts[i].ExportAsync(SelectedExportType, $"{SelectedChartType}_Chart_Q{i + 1}.{SelectedExportType}", Syncfusion.PdfExport.PdfPageOrientation.Landscape, true);
+                            }
                         }
                         break;
                 }
@@ -222,13 +282,13 @@ namespace JwtIdentity.Client.Pages.Survey.Results
 
                         await Task.Delay(100);
 
-                        await chartObj.PrintAsync(Element);
+                        await chartObj.PrintAsync(SingleChartElement);
                         break;
                     case "Pie":
                         ChartWidth = "1000";
                         ChartHeight = "700";
                         await Task.Delay(100);
-                        await pieChartObj.PrintAsync(Element);
+                        await pieChartObj.PrintAsync(SingleChartElement);
                         break;
                 }
             }
@@ -246,12 +306,15 @@ namespace JwtIdentity.Client.Pages.Survey.Results
                         break;
                 }
 
-                await Task.Delay(100);
-                await JSRuntime.InvokeVoidAsync("printElement", Element);
+                StateHasChanged();
+                await Task.Delay(5000);
+
+                await JSRuntime.InvokeVoidAsync("printPage");
             }
 
             ChartWidth = "100%";
             ChartHeight = "100%";
+            StateHasChanged();
         }
 
         protected Func<QuestionViewModel, string> QuestionDropdownConverter = p => p == null ? "All Questions" : $"{p.QuestionNumber}. {p.Text}";

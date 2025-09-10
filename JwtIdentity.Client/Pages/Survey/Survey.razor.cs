@@ -82,7 +82,7 @@ namespace JwtIdentity.Client.Pages.Survey
                 }
             }
 
-            if (IsDemoUser && DemoStep != _previousDemoStep)
+            if (IsDemoUser && DemoStep != _previousDemoStep && Loading == false)
             {
                 await ScrollToCurrentDemoStep();
                 _previousDemoStep = DemoStep;
@@ -365,7 +365,15 @@ namespace JwtIdentity.Client.Pages.Survey
                 }
 
                 _ = Snackbar.Add("Survey submitted successfully", Severity.Success);
-                Navigation.NavigateTo("/");
+
+                if (IsDemoUser)
+                {
+                    Navigation.NavigateTo("/mysurveys/surveysicreated?DemoStep=3");
+                }
+                else
+                {
+                    Navigation.NavigateTo("/");
+                }
             }
             else
             {
@@ -476,10 +484,9 @@ namespace JwtIdentity.Client.Pages.Survey
             if (!IsDemoUser) return;
             DemoStep++;
 
-            if (DemoStep == 3)
+            if (DemoStep == 3 && Preview)
             {
-                AuthService.Logout();
-                Navigation.NavigateTo("/");
+                Navigation.NavigateTo("/mysurveys/surveysicreated?DemoStep=1");
             }
         }
 
@@ -487,7 +494,7 @@ namespace JwtIdentity.Client.Pages.Survey
         {
             var id = DemoStep switch
             {
-                0 => "1",
+                0 => "2",
                 1 => "survey-submit-btn",
                 _ => null
             };

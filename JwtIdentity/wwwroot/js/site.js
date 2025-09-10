@@ -426,15 +426,6 @@ function clearCookieConsent() {
 }
 
 // Print the supplied element and all of its contents
-function printElement(element) {
-    const printWindow = window.open('', '_blank');
-    printWindow.document.write('<html><head><title>Print</title>');
-    printWindow.document.write(document.head.innerHTML);
-    printWindow.document.write('</head><body>');
-    printWindow.document.write(element.outerHTML);
-    printWindow.document.write('</body></html>');
-    printWindow.document.close();
-    printWindow.focus();
-    printWindow.print();
-    printWindow.close();
+function printPage() {
+    window.print();
 }

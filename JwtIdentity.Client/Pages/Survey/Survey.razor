@@ -6,7 +6,7 @@
 
 <div class="survey-container">
     @if (!isCaptchaVerified && !Preview && !ViewAnswers)
-    {       
+    {
         <MudText Typo="Typo.h5" Class="mb-4" Align="Align.Center">Verification Required</MudText>
         <!-- reCAPTCHA widget with data-callback pointing to our JS function -->
         <div id="captcha-container">
@@ -26,7 +26,7 @@
         @if (Survey != null && Survey.Id > 0 && !Loading)
         {
             <MudText Typo="Typo.h4" Class="survey-title">@Survey.Title</MudText>
-            <MudText Typo="Typo.subtitle1" Class="survey-description">@Survey.Description</MudText>            
+            <MudText Typo="Typo.subtitle1" Class="survey-description">@Survey.Description</MudText>
 
             if (IsAnonymousUser)
             {
@@ -55,131 +55,132 @@
                 </div>
             }
 
-              @foreach (var question in Survey.Questions.OrderBy(x => x.QuestionNumber))
-              {
-                  int questionNumber = Survey.Questions.OrderBy(x => x.QuestionNumber).ToList().FindIndex(x => x.Id == question.Id) + 1;
-                  bool isFirst = questionNumber == 1;
-                  <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(isFirst ? new List<int>() { 0 } : new List<int>())">
-                  <div class="question-container">
-                    <MudText>
-                        @if (question.IsRequired == true)
-                        {
-                            <MudText Color="Color.Error" Typo="Typo.caption" Class="RequiredStar">*</MudText>
-                        }
-                        <span id="@questionNumber" class="question-number">@questionNumber.</span>
-                        <span class="question-text">@question.Text</span>
-                    </MudText>
-
-                    @if (question.Answers.Count > 0)
-                    {
-                        <div class="options-container">
-                            @if (question.QuestionType == QuestionType.MultipleChoice)
-                            {
-                                MultipleChoiceAnswerViewModel answer = question.Answers.FirstOrDefault() as MultipleChoiceAnswerViewModel;
-
-                                <MudPaper Elevation="0" Class="pa-2">
-                                    <MudRadioGroup @key="question" T="int" Value="answer.SelectedOptionId" ValueChanged="@((v) => HandleAnswerQuestion(answer, v))" Disabled="@(ViewAnswers || (IsAnonymousUser && !AgreedToTerms))" >
-                                        <MudStack Spacing="2">
-                                            @foreach (var option in ((MultipleChoiceQuestionViewModel)question).Options.OrderBy(o => o.Order))
-                                            {
-                                                <MudRadio Color="Color.Primary" Label="@option.OptionText" Value="@option.Id" />
-                                            }
-                                        </MudStack>
-                                    </MudRadioGroup>
-                                </MudPaper>
-                            }
-                            else if (question.QuestionType == QuestionType.Rating1To10)
-                            { 
-                                Rating1To10AnswerViewModel answer = question.Answers.FirstOrDefault() as Rating1To10AnswerViewModel;
-
-                                <MudPaper Elevation="0" Class="pa-2">
-                                    <MudRadioGroup @key="question" T="int" Value="answer.SelectedOptionId" ValueChanged="@((v) => HandleAnswerQuestion(answer, v))" Disabled="@(ViewAnswers || (IsAnonymousUser && !AgreedToTerms))">
-                                        <div class="rating-options">
-                                            <MudPaper Class="rating-option" Elevation="0">
-                                                <MudRadio Color="Color.Primary" Label="1" Value="1" LabelPlacement="Placement.Left" />
-                                                <MudRadio Color="Color.Primary" Label="2" Value="2" LabelPlacement="Placement.Left" />
-                                                <MudRadio Color="Color.Primary" Label="3" Value="3" LabelPlacement="Placement.Left" />
-                                                <MudRadio Color="Color.Primary" Label="4" Value="4" LabelPlacement="Placement.Left" />
-                                                <MudRadio Color="Color.Primary" Label="5" Value="5" LabelPlacement="Placement.Left" />
-                                                <MudRadio Color="Color.Primary" Label="6" Value="6" LabelPlacement="Placement.Left" />
-                                                <MudRadio Color="Color.Primary" Label="7" Value="7" LabelPlacement="Placement.Left" />
-                                                <MudRadio Color="Color.Primary" Label="8" Value="8" LabelPlacement="Placement.Left" />
-                                                <MudRadio Color="Color.Primary" Label="9" Value="9" LabelPlacement="Placement.Left" />
-                                                <MudRadio Color="Color.Primary" Label="10" Value="10" LabelPlacement="Placement.Left" />
-                                            </MudPaper>
-                                        </div>
-                                    </MudRadioGroup>
-                                </MudPaper>
-                            }
-                            else if (question.QuestionType == QuestionType.Text)
-                            {
-                                TextAnswerViewModel answer = question.Answers.FirstOrDefault() as TextAnswerViewModel;
-
-                                <MudTextField @key="question"
-                                T="string"
-                                Value="answer.Text"
-                                ValueChanged="@((t) => HandleAnswerQuestion(answer, t))"
-                                Label="Your response"
-                                Variant="Variant.Outlined"
-                                FullWidth="true"
-                                Lines="3"
-                                Disabled="@(ViewAnswers || (IsAnonymousUser && !AgreedToTerms))" />
-                            }
-                            else if (question.QuestionType == QuestionType.TrueFalse)
-                            {
-                                TrueFalseAnswerViewModel answer = question.Answers.FirstOrDefault() as TrueFalseAnswerViewModel;
-
-                                <MudPaper Elevation="0" Class="pa-2">
-                                    <MudRadioGroup @key="question" T="bool?" Value="answer.Value" ValueChanged="@((v) => HandleAnswerQuestion(answer, v))" Disabled="@(ViewAnswers || (IsAnonymousUser && !AgreedToTerms))">
-                                        <MudStack Row="true" Spacing="4">
-                                            <MudRadio Color="Color.Primary" T="bool?" Label="True" Value="@((bool?)true)" />
-                                            <MudRadio Color="Color.Primary" T="bool?" Label="False" Value="@((bool?)false)" />
-                                        </MudStack>
-                                    </MudRadioGroup>
-                                </MudPaper>
-                            }
-                            else if (question.QuestionType == QuestionType.SelectAllThatApply)
-                            {
-                                var saQuestion = question as SelectAllThatApplyQuestionViewModel;
-                                SelectAllThatApplyAnswerViewModel saAnswer = saQuestion.Answers.FirstOrDefault() as SelectAllThatApplyAnswerViewModel;
-
-                                <MudPaper Elevation="0" Class="pa-2">
-                                    <MudStack Spacing="2">
-                                        @for (int i = 0; i < saQuestion.Options.Count; i++)
-                                        {
-                                            var option = saQuestion.Options[i];
-                                            var index = i; // Capture the index for the closure
-
-                                            // Ensure the SelectedOptions list has enough elements
-                                            while (saAnswer.SelectedOptions.Count <= index)
-                                            {
-                                                saAnswer.SelectedOptions.Add(false);
-                                            }
-
-                                            <MudCheckBox @key="option"
-                                            T="bool"
-                                            Color="Color.Primary"
-                                            Label="@option.OptionText"
-                                            Value="@saAnswer.SelectedOptions[index]"
-                                            ValueChanged="@((bool v) => HandleSelectAllThatApplyOption(saAnswer, index, v, option.Id))"
-                                            Disabled="@(ViewAnswers || (IsAnonymousUser && !AgreedToTerms))" />
-                                        }
-                                    </MudStack>
-                                </MudPaper>
-                            }
-                        </div>
-                    }
-                </div>
-            </DemoBorder>
-            @if (isFirst)
+            @foreach (var question in Survey.Questions.OrderBy(x => x.QuestionNumber))
             {
-                <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 0 })">
-                    <MudText Typo="Typo.body2">Select an option to see how respondents will answer. Responses aren't saved in preview mode.</MudText>
-                    <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 0 })" IsButton="true">
-                        <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
-                    </DemoBorder>
-                </DemoPopup>
-            }
+                int questionNumber = Survey.Questions.OrderBy(x => x.QuestionNumber).ToList().FindIndex(x => x.Id == question.Id) + 1;                
+                <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(Preview && questionNumber == 1 ? new List<int>() { 0 } : new List<int>())">
+                    <div class="question-container">
+                        <MudText>
+                            @if (question.IsRequired == true)
+                            {
+                                <MudText Color="Color.Error" Typo="Typo.caption" Class="RequiredStar">*</MudText>
+                            }
+                            <span id="@questionNumber" class="question-number">@questionNumber.</span>
+                            <span class="question-text">@question.Text</span>
+                        </MudText>
+
+                        @if (question.Answers.Count > 0)
+                        {
+                            <div class="options-container">
+                                @if (question.QuestionType == QuestionType.MultipleChoice)
+                                {
+                                    MultipleChoiceAnswerViewModel answer = question.Answers.FirstOrDefault() as MultipleChoiceAnswerViewModel;
+
+                                    <MudPaper Elevation="0" Class="pa-2">
+                                    <MudRadioGroup @key="question" T="int" Value="answer.SelectedOptionId" ValueChanged="@((v) => HandleAnswerQuestion(answer, v))" Disabled="@(ViewAnswers || (IsAnonymousUser && !AgreedToTerms))" >
+                                            <MudStack Spacing="2">
+                                                @foreach (var option in ((MultipleChoiceQuestionViewModel)question).Options.OrderBy(o => o.Order))
+                                                {
+                                                    <MudRadio Color="Color.Primary" Label="@option.OptionText" Value="@option.Id" />
+                                                }
+                                            </MudStack>
+                                        </MudRadioGroup>
+                                    </MudPaper>
+                                }
+                                else if (question.QuestionType == QuestionType.Rating1To10)
+                                {
+                                    Rating1To10AnswerViewModel answer = question.Answers.FirstOrDefault() as Rating1To10AnswerViewModel;
+
+                                    <MudPaper Elevation="0" Class="pa-2">
+                                        <MudRadioGroup @key="question" T="int" Value="answer.SelectedOptionId" ValueChanged="@((v) => HandleAnswerQuestion(answer, v))" Disabled="@(ViewAnswers || (IsAnonymousUser && !AgreedToTerms))">
+                                            <div class="rating-options">
+                                                <MudPaper Class="rating-option" Elevation="0">
+                                                    <MudRadio Color="Color.Primary" Label="1" Value="1" LabelPlacement="Placement.Left" />
+                                                    <MudRadio Color="Color.Primary" Label="2" Value="2" LabelPlacement="Placement.Left" />
+                                                    <MudRadio Color="Color.Primary" Label="3" Value="3" LabelPlacement="Placement.Left" />
+                                                    <MudRadio Color="Color.Primary" Label="4" Value="4" LabelPlacement="Placement.Left" />
+                                                    <MudRadio Color="Color.Primary" Label="5" Value="5" LabelPlacement="Placement.Left" />
+                                                    <MudRadio Color="Color.Primary" Label="6" Value="6" LabelPlacement="Placement.Left" />
+                                                    <MudRadio Color="Color.Primary" Label="7" Value="7" LabelPlacement="Placement.Left" />
+                                                    <MudRadio Color="Color.Primary" Label="8" Value="8" LabelPlacement="Placement.Left" />
+                                                    <MudRadio Color="Color.Primary" Label="9" Value="9" LabelPlacement="Placement.Left" />
+                                                    <MudRadio Color="Color.Primary" Label="10" Value="10" LabelPlacement="Placement.Left" />
+                                                </MudPaper>
+                                            </div>
+                                        </MudRadioGroup>
+                                    </MudPaper>
+                                }
+                                else if (question.QuestionType == QuestionType.Text)
+                                {
+                                    TextAnswerViewModel answer = question.Answers.FirstOrDefault() as TextAnswerViewModel;
+
+                                    <MudTextField @key="question"
+                                                  T="string"
+                                                  Value="answer.Text"
+                                                  ValueChanged="@((t) => HandleAnswerQuestion(answer, t))"
+                                                  Label="Your response"
+                                                  Variant="Variant.Outlined"
+                                                  FullWidth="true"
+                                                  Lines="3"
+                                                  Disabled="@(ViewAnswers || (IsAnonymousUser && !AgreedToTerms))" />
+                                }
+                                else if (question.QuestionType == QuestionType.TrueFalse)
+                                {
+                                    TrueFalseAnswerViewModel answer = question.Answers.FirstOrDefault() as TrueFalseAnswerViewModel;
+
+                                    <MudPaper Elevation="0" Class="pa-2">
+                                        <MudRadioGroup @key="question" T="bool?" Value="answer.Value" ValueChanged="@((v) => HandleAnswerQuestion(answer, v))" Disabled="@(ViewAnswers || (IsAnonymousUser && !AgreedToTerms))">
+                                            <MudStack Row="true" Spacing="4">
+                                                <MudRadio Color="Color.Primary" T="bool?" Label="True" Value="@((bool?)true)" />
+                                                <MudRadio Color="Color.Primary" T="bool?" Label="False" Value="@((bool?)false)" />
+                                            </MudStack>
+                                        </MudRadioGroup>
+                                    </MudPaper>
+                                }
+                                else if (question.QuestionType == QuestionType.SelectAllThatApply)
+                                {
+                                    var saQuestion = question as SelectAllThatApplyQuestionViewModel;
+                                    SelectAllThatApplyAnswerViewModel saAnswer = saQuestion.Answers.FirstOrDefault() as SelectAllThatApplyAnswerViewModel;
+
+                                    <MudPaper Elevation="0" Class="pa-2">
+                                        <MudStack Spacing="2">
+                                            @for (int i = 0; i < saQuestion.Options.Count; i++)
+                                            {
+                                                var option = saQuestion.Options[i];
+                                                var index = i; // Capture the index for the closure
+
+                                                // Ensure the SelectedOptions list has enough elements
+                                                while (saAnswer.SelectedOptions.Count <= index)
+                                                {
+                                                    saAnswer.SelectedOptions.Add(false);
+                                                }
+
+                                                <MudCheckBox @key="option"
+                                                             T="bool"
+                                                             Color="Color.Primary"
+                                                             Label="@option.OptionText"
+                                                             Value="@saAnswer.SelectedOptions[index]"
+                                                             ValueChanged="@((bool v) => HandleSelectAllThatApplyOption(saAnswer, index, v, option.Id))"
+                                                             Disabled="@(ViewAnswers || (IsAnonymousUser && !AgreedToTerms))" />
+                                            }
+                                        </MudStack>
+                                    </MudPaper>
+                                }
+                                
+                            </div>
+                        }                        
+                    </div>
+                    @if (questionNumber == 2)
+                    {
+                        string Step0Text = Preview ? "This is what the survey will look like. Feel free to click around. Responses aren't saved in preview mode." : "Go ahead and answer all questions and then submit the survey to continue the demo.";
+                        <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 0 })" AnchorOrigin="Origin.TopLeft" TransformOrigin="Origin.TopLeft">
+                            <MudText Typo="Typo.body2">@Step0Text</MudText>
+                            <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 0 })" IsButton="true">
+                                <MudButton id="DemoNext_button" OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
+                            </DemoBorder>
+                        </DemoPopup>
+                    }
+                </DemoBorder>                
             }
 
             if (!ViewAnswers)
@@ -196,16 +197,12 @@
                             Submit Survey
                         </MudButton>
                     </DemoBorder>
-                    <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 1 })">
-                        <MudText Typo="Typo.body2">The submit survey button is disabled in preview mode. It becomes active once all required questions are answered in a real survey.</MudText>
-                        <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 1 })" IsButton="true">
-                            <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Close</MudButton>
-                        </DemoBorder>
-                    </DemoPopup>
-
-                    <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 2 })">
-                        <MudText Typo="Typo.body2">This is the end of the demo. Please register for an account to start creating your own surveys.</MudText>
-                        <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 2 })" IsButton="true">
+                    @{
+                        string demoText = DemoStep == 1 ? "The submit survey button is disabled in preview mode. It becomes active once all required questions are answered in a real survey." : DemoStep == 2 ? "Click Next to continue the demo." : "";
+                    }
+                    <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(Preview ? new List<int>() { 1, 2 } : new List<int>(){})">
+                        <MudText Typo="Typo.body2">@demoText</MudText>
+                        <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 1, 2 })" IsButton="true">
                             <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
                         </DemoBorder>
                     </DemoPopup>
