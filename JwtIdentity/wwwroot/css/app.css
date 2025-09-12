@@ -596,14 +596,12 @@ td.e-summarycell.e-templatecell.e-leftalign {
     /* Hide everything by default */
     body * {
         visibility: hidden;
-        display: none;
     }
 
     /* Make only print-section content visible */
     .print-section,
     .print-section * {
         visibility: visible;
-        display: block;
     }
 
     /* Remove code block text shadows for clearer printing */
