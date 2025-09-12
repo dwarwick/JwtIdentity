@@ -596,12 +596,14 @@ td.e-summarycell.e-templatecell.e-leftalign {
     /* Hide everything by default */
     body * {
         visibility: hidden;
+        display: none;
     }
 
     /* Make only print-section content visible */
     .print-section,
     .print-section * {
         visibility: visible;
+        display: block;
     }
 
     /* Remove code block text shadows for clearer printing */
@@ -621,9 +623,7 @@ td.e-summarycell.e-templatecell.e-leftalign {
     /* Ensure charts print in document flow */
     .print-section {
         width: 100%;
-        position: absolute;
-        top: 0;
-        left: 0;
+        position: static;
     }
 
     /* Ensure flex layouts don't truncate content when printing */
