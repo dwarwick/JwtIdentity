@@ -75,7 +75,7 @@
 
     @if (!IsLoading && SelectedQuestion != null)
     {
-        <span id="SingleChart" @ref="SingleChartElement">
+        <div id="AllCharts" @ref="SingleChartElement">
             @switch (SelectedChartType)
             {
                 case "Bar":
@@ -119,7 +119,7 @@
 
                     break;
             }
-        </span>
+        </div>
     }
     else if (!IsLoading && SurveyData.Count > 0 && BarChartDataForPrint.Count == SurveyData.Count && PieChartDataForPrint.Count == SurveyData.Count)
     {
