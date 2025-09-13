@@ -18,6 +18,7 @@ namespace JwtIdentity.Tests.ControllerTests
         private List<Question> _mockQuestions = null!;
         private List<ApplicationUser> _mockUsers = null!;
         private Mock<IOpenAi> MockOpenAiService = null!;
+        private Mock<ISurveyService> MockSurveyService = null!;
 
         [SetUp]
         public override void BaseSetUp()
@@ -31,7 +32,8 @@ namespace JwtIdentity.Tests.ControllerTests
             MockOpenAiService.Setup(x => x.GenerateSurveyAsync(It.IsAny<string>(), "")).ReturnsAsync(new SurveyViewModel { Questions = new List<QuestionViewModel>() });
             MockEmailService.Setup(e => e.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(true);
             MockConfiguration.Setup(c => c["EmailSettings:CustomerServiceEmail"]).Returns("admin@example.com");
-            _controller = new SurveyController(MockDbContext, MockMapper.Object, MockApiAuthService.Object, MockLogger.Object, MockOpenAiService.Object, MockEmailService.Object, MockConfiguration.Object)
+            MockSurveyService = new Mock<ISurveyService>();
+            _controller = new SurveyController(MockDbContext, MockMapper.Object, MockApiAuthService.Object, MockLogger.Object, MockOpenAiService.Object, MockEmailService.Object, MockConfiguration.Object, MockSurveyService.Object)
             {
                 ControllerContext = new ControllerContext { HttpContext = HttpContext }
             };
