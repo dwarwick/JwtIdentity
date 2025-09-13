@@ -40,14 +40,23 @@
                 </DemoPopup>
             </div>
             <div class="col-1">
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="my-1 w-100" OnClick="PrintChart"> Print</MudButton>
+                <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 4 })" IsButton="true">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="my-1 w-100" OnClick="PrintChart"> Print</MudButton>
+                </DemoBorder>
+
+                <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 4 })" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopLeft">
+                    <MudText Typo="Typo.body2" Style="white-space: pre-line">If you click Print, the chart(s) that is/are displayed can be printed. Feel free to try it if you want.</MudText>                    
+                    <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 0, 2 })" IsButton="true">
+                        <MudButton id="DemoNext_button" OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
+                    </DemoBorder>                    
+                </DemoPopup>
             </div>
         </div>
 
         <div class="row">
             <div class="col-6"> @* Select Chart Type Dropdown *@
                 <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 3 })">
-                    <MudSelect T="string" Label="Select Chart Type" @bind-Value="SelectedChartType" Variant="Variant.Filled" Class="mb-1">
+                    <MudSelect id="ChartType_dropdown" T="string" Label="Select Chart Type" @bind-Value="SelectedChartType" Variant="Variant.Filled" Class="mb-1">
                         <MudSelectItem T="string" Value="@("Bar")">Bar</MudSelectItem>
                         <MudSelectItem T="string" Value="@("Pie")">Pie</MudSelectItem>
                     </MudSelect>
@@ -57,17 +66,28 @@
                 </DemoPopup>
             </div>
 
-            <div class="col-5">
-
-                <MudSelect T="ExportType" Label="Select Export Type" @bind-Value="SelectedExportType" Variant="Variant.Filled" Class="mb-1">
-                    @foreach (var exportType in Enum.GetValues(typeof(ExportType)).Cast<ExportType>())
-                    {
-                        <MudSelectItem T="ExportType" Value="@exportType">@exportType.ToString()</MudSelectItem>
-                    }
-                </MudSelect>
+            <div class="col-5"> @* Select Export Type Dropdown *@
+                <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 5 })">
+                    <MudSelect T="ExportType" Label="Select Export Type" @bind-Value="SelectedExportType" Variant="Variant.Filled" Class="mb-1">
+                        @foreach (var exportType in Enum.GetValues(typeof(ExportType)).Cast<ExportType>())
+                        {
+                            <MudSelectItem T="ExportType" Value="@exportType">@exportType.ToString()</MudSelectItem>
+                        }
+                    </MudSelect>
+                </DemoBorder>
+                <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 5 })" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopLeft">
+                    <MudText Typo="Typo.body2" Style="white-space: pre-line">You can export the chart(s) in a variety of formats using this dropdown. 
+                        Feel free to try it out if you want. When you are done, you can close this popup.
+                    </MudText>
+                    <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 5 })" IsButton="true">
+                        <MudButton id="DemoNext_button" OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
+                    </DemoBorder>
+                </DemoPopup>
             </div>
             <div class="col-1">
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="my-1 w-100" OnClick="ExportChart">Export</MudButton>
+                <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 5 })" IsButton="true">
+                <MudButton id="ExportChart_button" Variant="Variant.Filled" Color="Color.Primary" Class="my-1 w-100" OnClick="ExportChart">Export</MudButton>
+                </DemoBorder>
             </div>
         </div>
     </div>

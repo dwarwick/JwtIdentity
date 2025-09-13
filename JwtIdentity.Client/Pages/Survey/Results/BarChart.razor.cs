@@ -90,14 +90,20 @@ namespace JwtIdentity.Client.Pages.Survey.Results
             {
                 0 => "",
                 1 => "",
+                3 => "ChartType_dropdown",
+                5 => "ExportChart_button",
                 _ => null
             };
 
             if (!string.IsNullOrEmpty(id))
             {
-                await JSRuntime.InvokeVoidAsync("scrollToElement", id);
+                await JSRuntime.InvokeVoidAsync(
+    "scrollToElement",
+            "ChartType_dropdown",
+            new { behavior = "smooth", block = "start", headerOffset = 0 } // adjust offset if you have a sticky header
+                );
 
-                // Ensure any demo popover tied to the element renders after the scroll
+                await Task.Yield(); // or a tiny delay
                 StateHasChanged();
             }
         }
@@ -108,6 +114,11 @@ namespace JwtIdentity.Client.Pages.Survey.Results
             DemoStep++;
 
             StateHasChanged();
+
+            if (DemoStep == 6)
+            {
+                Navigation.NavigateTo("/mysurveys/surveysicreated?DemoStep=6");
+            }
         }
 
         private async void HandleSurveyUpdated(string id)
