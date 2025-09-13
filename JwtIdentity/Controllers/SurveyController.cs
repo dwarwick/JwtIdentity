@@ -13,8 +13,9 @@ namespace JwtIdentity.Controllers
         private readonly IOpenAi _openAiService;
         private readonly IEmailService _emailService;
         private readonly IConfiguration _configuration;
+        private readonly ISurveyService _surveyService;
 
-        public SurveyController(ApplicationDbContext context, IMapper mapper, IApiAuthService authService, ILogger<SurveyController> logger, IOpenAi openAiService, IEmailService emailService, IConfiguration configuration)
+        public SurveyController(ApplicationDbContext context, IMapper mapper, IApiAuthService authService, ILogger<SurveyController> logger, IOpenAi openAiService, IEmailService emailService, IConfiguration configuration, ISurveyService surveyService)
         {
             _context = context;
             _mapper = mapper;
@@ -23,6 +24,7 @@ namespace JwtIdentity.Controllers
             _openAiService = openAiService;
             _emailService = emailService;
             _configuration = configuration;
+            _surveyService = surveyService;
         }
 
         // GET: api/Survey/5
@@ -519,6 +521,11 @@ namespace JwtIdentity.Controllers
                     {
                         var userBody = $"<p>Congratulations {userName}, your survey has been published!</p><p>Title: {survey.Title}</p><p>Description: {survey.Description}</p>";
                         await _emailService.SendEmailAsync(user.Email, $"Survey Published: {survey.Title}", userBody);
+                    }
+
+                    if (user?.Email != null && user.Email.Contains("DemoUser", StringComparison.OrdinalIgnoreCase))
+                    {
+                        await _surveyService.GenerateDemoSurveyResponsesAsync(survey);
                     }
                 }
 
