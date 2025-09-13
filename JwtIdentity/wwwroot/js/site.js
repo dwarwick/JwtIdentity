@@ -425,7 +425,122 @@ function clearCookieConsent() {
     return true;
 }
 
-// Print the supplied element and all of its contents
-function printPage() {
-    window.print();
-}
+(function () {
+
+    function buildPrintCss() {
+        return `
+      @page { size: auto; margin: 12.7mm; } /* ~0.5in */
+
+      html, body { height: auto; }
+      body { margin: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+      /* Wrap that will contain our cloned charts */
+      #AllChartsPrint { width: 100%; margin: 0; padding: 0; }
+
+      /* Turn off flex during print */
+      #AllChartsPrint .d-flex { display: block !important; gap: 0 !important; }
+
+      /* Exactly one chart per page */
+      #AllChartsPrint .print-chart {
+        break-inside: avoid !important;         /* modern */
+        page-break-inside: avoid !important;     /* legacy */
+        margin: 0 0 12.7mm 0 !important;
+      }
+      /* Start every *subsequent* chart on a new page */
+      #AllChartsPrint .print-chart + .print-chart {
+        break-before: page !important;           /* modern */
+        page-break-before: always !important;    /* legacy */
+      }
+
+      /* Syncfusion specifics: prevent title/subtitle cropping */
+      #AllChartsPrint .e-chart { overflow: visible !important; height: auto !important; }
+      #AllChartsPrint svg { overflow: visible !important; }
+
+      /* (Optional) lock a predictable chart height */
+      /* #AllChartsPrint .e-chart svg { height: 450px !important; } */
+    `;
+    }
+
+    function cloneStylesInto(head, fromDoc) {
+        // Keep relative URLs correct inside the iframe
+        const base = fromDoc.createElement('base');
+        base.href = document.baseURI;
+        head.appendChild(base);
+
+        // Copy <link rel="stylesheet"> and <style> so theme/fonts load
+        const nodes = Array.from(document.querySelectorAll('link[rel="stylesheet"], style'));
+        nodes.forEach(n => head.appendChild(n.cloneNode(true)));
+
+        // Add our print-only stylesheet
+        const style = fromDoc.createElement('style');
+        style.textContent = buildPrintCss();
+        head.appendChild(style);
+    }
+
+    function readyWhenStylesLoaded(doc, cb) {
+        const links = Array.from(doc.querySelectorAll('link[rel="stylesheet"]'));
+        if (links.length === 0) return cb();
+        let remaining = links.length;
+        links.forEach(l => {
+            const done = () => { if (--remaining === 0) cb(); };
+            l.addEventListener('load', done);
+            l.addEventListener('error', done);
+        });
+    }
+
+    window.printPage = function printPage() {
+        const source = document.getElementById('AllCharts');
+        if (!source) { window.print(); return; }
+
+        // Create an offscreen iframe just for printing
+        const iframe = document.createElement('iframe');
+        iframe.style.position = 'fixed';
+        iframe.style.right = '0';
+        iframe.style.bottom = '0';
+        iframe.style.width = '0';
+        iframe.style.height = '0';
+        iframe.style.border = '0';
+        iframe.setAttribute('aria-hidden', 'true');
+        document.body.appendChild(iframe);
+
+        const doc = iframe.contentDocument || iframe.contentWindow.document;
+
+        // Basic HTML skeleton
+        doc.open();
+        doc.write('<!doctype html><html><head></head><body></body></html>');
+        doc.close();
+
+        // Head: copy styles + add our print CSS
+        cloneStylesInto(doc.head, doc);
+
+        // Body: clone the charts
+        const wrapper = doc.createElement('div');
+        wrapper.id = 'AllChartsPrint';
+        // Deep clone, keep inline styles/attributes intact
+        const clone = source.cloneNode(true);
+        // De-dupe the id to avoid collisions inside iframe (not strictly required but tidy)
+        clone.id = 'AllChartsPrintContent';
+        wrapper.appendChild(clone);
+        doc.body.appendChild(wrapper);
+
+        // When stylesheets are ready, print
+        readyWhenStylesLoaded(doc, () => {
+            // Give layout a tick, then print
+            setTimeout(() => {
+                iframe.contentWindow.focus();
+                iframe.contentWindow.print();
+
+                // Clean up after printing (works in Chromium/Edge)
+                const cleanup = () => {
+                    iframe.remove();
+                    window.removeEventListener('focus', cleanup);
+                };
+                iframe.contentWindow.addEventListener('afterprint', cleanup, { once: true });
+
+                // Fallback cleanup if 'afterprint' doesn't fire (older Safari)
+                setTimeout(cleanup, 5000);
+            }, 50);
+        });
+    };
+
+})();

@@ -592,58 +592,77 @@ td.e-summarycell.e-templatecell.e-leftalign {
     margin-top: inherit;
 }
 
+/* Page margins for all printers */
+@page {
+    size: auto;
+    margin: 12.7mm; /* ~0.5in */
+}
+
+/* PRINT-ONLY rules */
 @media print {
-    /* Hide everything by default */
-    body * {
-        visibility: hidden;
+
+    /* Preserve colors */
+    body {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        margin: 0 !important;
     }
 
-    /* Make only print-section content visible */
-    .print-section,
-    .print-section * {
-        visibility: visible;
+        /* When we are printing charts, hide EVERYTHING except the print root */
+        body[data-printing="charts"] > *:not(#__print-root) {
+            display: none !important;
+        }
+
+    /* The isolated print container we inject */
+    #__print-root {
+        display: block !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
     }
 
-    /* Remove code block text shadows for clearer printing */
-    code[class*=language-],
-    pre[class*=language-] {
-        text-shadow: none;
-    }
-
-    /* Allow the full document to expand for printing */
-    html,
-    body,
-    .app-container,
-    .main-content {
+    /* Our cloned charts container */
+    #AllChartsPrint {
+        position: static !important;
+        width: 100% !important;
+        height: auto !important;
+        max-height: none !important;
         overflow: visible !important;
+        margin: 0 !important;
+        padding: 0 !important;
     }
 
-    /* Ensure charts print in document flow */
-    .print-section {
-        width: 100%;
-        position: absolute;
-        top: 0;
-        left: 0;
-    }
+        /* Disable flex for reliable page breaks */
+        #AllChartsPrint .d-flex {
+            display: block !important;
+            gap: 0 !important;
+        }
 
-    /* Ensure flex layouts don't truncate content when printing */
-    .print-section .mud-stack {
-        display: block;
-    }
+        /* Exactly one chart per page, never split */
+        #AllChartsPrint .print-chart {
+            break-inside: avoid !important; /* modern */
+            page-break-inside: avoid !important; /* legacy */
+            break-after: page !important;
+            page-break-after: always !important;
+            margin: 0 0 12.7mm 0 !important;
+        }
 
-    /* Each chart prints on its own page */
-    .print-chart {
-        break-inside: avoid;
-        page-break-inside: avoid;
-    }
+            #AllChartsPrint .print-chart:last-child {
+                break-after: auto !important;
+                page-break-after: auto !important;
+                margin-bottom: 0 !important;
+            }
 
-    .print-chart:not(:last-child) {
-        break-after: page;
-        page-break-after: always;
-    }
+        /* Syncfusion specifics: prevent title/subtitle clipping */
+        #AllChartsPrint .e-chart {
+            overflow: visible !important; /* override inline overflow:hidden */
+            height: auto !important; /* ignore inline height:100% */
+        }
 
-    #AllCharts,
-    .print-section {
-        overflow: visible;
-    }
+        #AllChartsPrint svg {
+            overflow: visible !important;
+        }
+
+    /* Optional: lock visual height if you want consistent page fill */
+    /* #AllChartsPrint .e-chart svg { height: 450px !important; } */
 }
