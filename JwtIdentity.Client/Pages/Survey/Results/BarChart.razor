@@ -75,7 +75,7 @@
 
     @if (!IsLoading && SelectedQuestion != null)
     {
-        <div id="AllCharts" @ref="SingleChartElement">
+        <div id="PrintArea" @ref="SingleChartElement">
             @switch (SelectedChartType)
             {
                 case "Bar":
@@ -124,7 +124,7 @@
     else if (!IsLoading && SurveyData.Count > 0 && BarChartDataForPrint.Count == SurveyData.Count && PieChartDataForPrint.Count == SurveyData.Count)
     {
         int questionIndex = 0;
-        <div id="AllCharts" @ref="AllChartsElement" class="print-section">
+        <div id="PrintArea" @ref="AllChartsElement" class="print-section">
             <MudStack Spacing="1">
 
                 @foreach (var question in SurveyData.OrderBy(x => x.Question.QuestionNumber).Select(x => x.Question.Text))

@@ -489,7 +489,7 @@ function clearCookieConsent() {
     }
 
     window.printPage = function printPage() {
-        const source = document.getElementById('AllCharts');
+        const source = document.getElementById('PrintArea');
         if (!source) { window.print(); return; }
 
         // Create an offscreen iframe just for printing
