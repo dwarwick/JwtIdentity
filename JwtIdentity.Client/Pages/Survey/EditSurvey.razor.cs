@@ -76,10 +76,10 @@ namespace JwtIdentity.Client.Pages.Survey
                         }
                     }
 
-                if (IsDemoUser && DemoStep == 8 && value == "Yes No Partially")
-                {
-                    DemoStep = 9;
-                }
+                    if (IsDemoUser && DemoStep == 8 && value == "Yes No Partially")
+                    {
+                        DemoStep = 9;
+                    }
                 }
             }
         }
@@ -143,10 +143,13 @@ namespace JwtIdentity.Client.Pages.Survey
             var id = DemoStep switch
             {
                 0 => "QuestionsPanel",
-                1 => "AcceptQuestionsBtn",
-                2 or 3 or 5 => "QuestionList",
-                4 or 7 => "Text",
+                1 => "demoQuestion_text",
+                2 => "RegenerateQuestionsBtn",
+                3 => "SurveyDescription_textbox",
+                4 => "Text",
+                5 => "question_0",
                 6 => "QuestionTypeSelect",
+                7 => "Text",
                 8 => "PresetChoices",
                 9 => "SaveQuestionBtn",
                 10 => "PublishSurveyBtn",
@@ -155,7 +158,11 @@ namespace JwtIdentity.Client.Pages.Survey
 
             if (!string.IsNullOrEmpty(id))
             {
-                await JSRuntime.InvokeVoidAsync("scrollToElement", id);
+                await JSRuntime.InvokeVoidAsync(
+    "scrollToElement",
+            id,
+            new { behavior = "smooth", block = "center", headerOffset = 0 } // adjust offset if you have a sticky header
+                );
 
                 // Ensure any demo popover tied to the element renders after the scroll
                 StateHasChanged();
@@ -169,7 +176,14 @@ namespace JwtIdentity.Client.Pages.Survey
             switch (DemoStep)
             {
                 case 2:
-                    DemoStep = 3;
+                    if (SelectedQuestion == null || SelectedQuestion.QuestionNumber != 1)
+                    {
+                        DemoStep = 3;
+                    }
+                    else
+                    {
+                        DemoStep = 4;
+                    }
                     break;
                 case 4:
                     DemoStep = 5;

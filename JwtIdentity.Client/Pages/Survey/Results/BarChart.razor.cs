@@ -100,7 +100,7 @@ namespace JwtIdentity.Client.Pages.Survey.Results
                 await JSRuntime.InvokeVoidAsync(
     "scrollToElement",
             "ChartType_dropdown",
-            new { behavior = "smooth", block = "start", headerOffset = 0 } // adjust offset if you have a sticky header
+            new { behavior = "smooth", block = "center", headerOffset = 0 } // adjust offset if you have a sticky header
                 );
 
                 await Task.Yield(); // or a tiny delay
