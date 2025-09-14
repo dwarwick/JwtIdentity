@@ -17,7 +17,9 @@
             AllowTextWrap="true"
             TextWrapSettings="@GridSettings.TextWrapSettings"
             GridLines="@GridSettings.GridLines"
-            AllowExcelExport="true">
+            AllowExcelExport="true"
+            ShowColumnChooser="true"
+            Toolbar="@ToolbarItems">
 
         <GridTemplates>
             <ToolbarTemplate>
@@ -40,14 +42,23 @@
 
             @foreach (var q in Survey.Questions)
             {
-                <GridColumn Field="@_propertyMap[q.Id]"
+                <GridColumn Field="@_propertyMap[q.Id]" 
                             HeaderText="@q.Text"
                             Type="@(q.QuestionType == QuestionType.Rating1To10
                                     ? ColumnType.Integer
                                     : q.QuestionType == QuestionType.TrueFalse
                                     ? ColumnType.Boolean
                                     : ColumnType.String)"
-                            TextAlign="TextAlign.Left" />
+                            TextAlign="TextAlign.Left" >
+                    
+                    <HeaderTemplate>
+                        <div title="@q.Text">
+                            @q.Text
+                        </div>
+                    </HeaderTemplate>
+                </GridColumn>
+
+                
             }
 
         </GridColumns>

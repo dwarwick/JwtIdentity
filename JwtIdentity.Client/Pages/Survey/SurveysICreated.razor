@@ -106,7 +106,7 @@
                         var isPublished = (context as SurveyViewModel).Published;
 
                         <div> @* Preview Button *@
-                            <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 0, 6 })" IsButton="true">
+                            <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 0 })" IsButton="true">
                                 <MudButton Class="survey-action-button preview-button"                                           
                                            OnClick="@(async () => await HandlePreviewClick(guid))"                                           
                                            title="Preview Survey"

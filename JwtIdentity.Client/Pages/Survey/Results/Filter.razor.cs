@@ -25,6 +25,8 @@ namespace JwtIdentity.Client.Pages.Survey.Results
 
         protected int TotalRowCount { get; set; }
 
+        public string[] ToolbarItems { get; set; } = new string[] { "ColumnChooser" };
+
         protected override async Task OnInitializedAsync()
         {
             await LoadData();
