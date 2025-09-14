@@ -76,9 +76,9 @@ namespace JwtIdentity.Client.Pages.Survey
                         }
                     }
 
-                    if (IsDemoUser && DemoStep == 9 && value == "Yes No Partially")
+                    if (IsDemoUser && DemoStep == 8 && value == "Yes No Partially")
                     {
-                        DemoStep = 10;
+                        DemoStep = 9;
                     }
                 }
             }
@@ -143,20 +143,26 @@ namespace JwtIdentity.Client.Pages.Survey
             var id = DemoStep switch
             {
                 0 => "QuestionsPanel",
-                1 => "AcceptQuestionsBtn",
-                2 => "QuestionsPanel",
-                3 or 4 or 6 => "QuestionList",
-                5 or 8 => "Text",
-                7 => "QuestionTypeSelect",
-                9 => "PresetChoices",
-                10 => "SaveQuestionBtn",
-                11 => "PublishSurveyBtn",
+                1 => "demoQuestion_text",
+                2 => "RegenerateQuestionsBtn",
+                3 => "SurveyDescription_textbox",
+                4 => "Text",
+                5 => "question_0",
+                6 => "QuestionTypeSelect",
+                7 => "Text",
+                8 => "PresetChoices",
+                9 => "SaveQuestionBtn",
+                10 => "PublishSurveyBtn",
                 _ => null
             };
 
             if (!string.IsNullOrEmpty(id))
             {
-                await JSRuntime.InvokeVoidAsync("scrollToElement", id);
+                await JSRuntime.InvokeVoidAsync(
+    "scrollToElement",
+            id,
+            new { behavior = "smooth", block = "center", headerOffset = 0 } // adjust offset if you have a sticky header
+                );
 
                 // Ensure any demo popover tied to the element renders after the scroll
                 StateHasChanged();
@@ -169,15 +175,22 @@ namespace JwtIdentity.Client.Pages.Survey
 
             switch (DemoStep)
             {
-                case 3:
-                    DemoStep = 4;
+                case 2:
+                    if (SelectedQuestion == null || SelectedQuestion.QuestionNumber != 1)
+                    {
+                        DemoStep = 3;
+                    }
+                    else
+                    {
+                        DemoStep = 4;
+                    }
                     break;
-                case 5:
-                    DemoStep = 6;
+                case 4:
+                    DemoStep = 5;
                     break;
-                case 8:
+                case 7:
                     QuestionText = "Did the representative answer all of your questions?";
-                    DemoStep = 9;
+                    DemoStep = 8;
                     break;
             }
         }
@@ -375,9 +388,9 @@ namespace JwtIdentity.Client.Pages.Survey
             if (await UpdateSurvey())
             {
                 _ = Snackbar.Add("Question Added / Updated", MudBlazor.Severity.Success);
-                if (IsDemoUser && DemoStep == 10)
+                if (IsDemoUser && DemoStep == 9)
                 {
-                    DemoStep = 11;
+                    DemoStep = 10;
                 }
             }
             else
@@ -437,9 +450,9 @@ namespace JwtIdentity.Client.Pages.Survey
             MultipleChoiceQuestion = new MultipleChoiceQuestionViewModel();
             ResetQuestions = true;
 
-            if (IsDemoUser && DemoStep == 7 && questionType.Replace(" ", "") == Enum.GetName(QuestionType.MultipleChoice))
+            if (IsDemoUser && DemoStep == 6 && questionType.Replace(" ", "") == Enum.GetName(QuestionType.MultipleChoice))
             {
-                DemoStep = 8;
+                DemoStep = 7;
             }
         }
 
@@ -455,9 +468,9 @@ namespace JwtIdentity.Client.Pages.Survey
                 ManualQuestionPanelExpanded = true;
                 ExistingQuestionPanelExpanded = false;
 
-                if (IsDemoUser && DemoStep == 6)
+                if (IsDemoUser && DemoStep == 5)
                 {
-                    DemoStep = 7;
+                    DemoStep = 6;
                 }
 
                 return;
@@ -500,9 +513,9 @@ namespace JwtIdentity.Client.Pages.Survey
                 {
                     DemoStep = 1;
                 }
-                else if (DemoStep == 4 && input.QuestionNumber == 1)
+                else if (DemoStep == 3 && input.QuestionNumber == 1)
                 {
-                    DemoStep = 5;
+                    DemoStep = 4;
                 }
             }
         }
@@ -734,10 +747,6 @@ namespace JwtIdentity.Client.Pages.Survey
         protected void HandleQuestionsPanelExpanded(bool expanded)
         {
             QuestionsPanelExpanded = expanded;
-            if (IsDemoUser && DemoStep == 2 && expanded)
-            {
-                DemoStep = 3;
-            }
         }
     }
 }
