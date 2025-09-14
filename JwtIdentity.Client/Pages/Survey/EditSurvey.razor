@@ -20,6 +20,22 @@
 <MudTextField Label="Survey Title" T="string" Value="Survey.Title" ValueChanged="@((e) => UpdateTitleDescription(e, "title"))" Class="my-2" Variant="Variant.Filled" />
 <MudTextField Label="Survey Description" T="string" Value="Survey.Description" ValueChanged="@((e) => UpdateTitleDescription(e, "description"))" Class="mb-2" Variant="Variant.Filled" Lines="3" MaxLines="5" AutoGrow="true" Counter="500" MaxLength="500" />
 
+@if (!string.IsNullOrWhiteSpace(Survey.AiInstructions))
+{
+    <MudTextField Label="AI Prompt" T="string" Value="Survey.AiInstructions" ValueChanged="@UpdateAiInstructions" Class="mb-2" Variant="Variant.Filled" Lines="3" MaxLines="6" AutoGrow="true" Counter="500" MaxLength="500" />
+}
+
+@if (RequiresReview)
+{
+    <MudAlert Severity="Severity.Warning" Class="mb-2">
+        <MudText Typo="Typo.body2">Please review the AI generated questions and answers. You may regenerate up to 2 times.</MudText>
+        <MudStack Row="true" Spacing="1" Class="mt-2">
+            <MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="RegenerateQuestions" Disabled="@(Survey.AiRetryCount >= 2)">Regenerate Questions</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AcceptQuestions">Accept Questions</MudButton>
+        </MudStack>
+    </MudAlert>
+}
+
 <div class="d-md-flex flex-column justify-space-evenly gap-2">
     <MudExpansionPanels MultiExpansion="true">
         @if (Survey?.Questions != null && Survey.Questions.Count > 0)
@@ -36,10 +52,13 @@
                             <MudList Id="QuestionList" T="QuestionViewModel" Dense="true" SelectedValue="SelectedQuestion" SelectionMode="MudBlazor.SelectionMode.ToggleSelection" SelectedValueChanged="QuestionSelected">
                                 @foreach (var question in Survey.Questions)
                                 {
-                                    <DragAndDrop TItem="QuestionViewModel" Items="Survey.Questions" Item="question" ItemsChanged="DroppedQuestion">
+                                    <DragAndDrop TItem="QuestionViewModel" Items="Survey.Questions" Item="question" ItemsChanged="@(CanEditQuestions ? DroppedQuestion : null)">
                                         <MudStack Class=".d-flex.flex-row.gap-3.ai-style-change-1" Row="true" AlignItems="AlignItems.Center">
-                                            <MudIconButton Icon="@Icons.Material.Filled.Delete" ButtonType="ButtonType.Button" OnClick="@(() => DeleteQuestion(question))" />
-                                            <MudIcon Class="drag-icon ai-style-change-9" Icon="@Icons.Material.Filled.DragIndicator" />
+                                            @if (CanEditQuestions)
+                                            {
+                                                <MudIconButton Icon="@Icons.Material.Filled.Delete" ButtonType="ButtonType.Button" OnClick="@(() => DeleteQuestion(question))" />
+                                                <MudIcon Class="drag-icon ai-style-change-9" Icon="@Icons.Material.Filled.DragIndicator" />
+                                            }
 
                                             @if (question.QuestionNumber == 1)
                                             {
@@ -86,14 +105,12 @@
 
         @if (!Survey.Published)
         {
-            @* <MudStack Class="flex-1" Spacing="2"> *@
-
+            @if (CanEditQuestions)
+            {
             <MudExpansionPanel @ref="ManualQuestionPanel" @bind-Expanded="@ManualQuestionPanelExpanded" Text="Create Question Manually">
                 <MudPaper Class="p-2">
                     <MudStack Spacing="1">
-                        @{
-                            bool purpleBorder = ShowDemoStep(3);
-                        }
+                        @{ bool purpleBorder = ShowDemoStep(3); }
                         <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 3, 5 })" IsButton="@purpleBorder">
                             <MudSelect Id="QuestionTypeSelect" Label="Select the Question Type"
                                        Value="@SelectedQuestionType"
@@ -109,39 +126,16 @@
                                 }
                             </MudSelect>
                         </DemoBorder>
-                        <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 5 })">
-                            <MudText Typo="Typo.body2">Currently, the Question Type is set to Text. Select Multiple Choice for the question type.</MudText>
-                        </DemoPopup>
-
                         <MudText Typo="Typo.h6" Class="mt-5">Create a @StringHelper.PascalCaseToWords(SelectedQuestionType) Question</MudText>
                         <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 3, 6 })">
                             <MudTextField Id="Text" Label="Question Text" @bind-Value="QuestionText" Variant="Variant.Filled" Lines="1" MaxLines="5" AutoGrow="true" Immediate="true" Counter="500" MaxLength="500" />
                         </DemoBorder>
-                        <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 3 })">
-                            <MudText Typo="Typo.body2" Style="white-space: pre-line">
-                                Scroll down to edit the <span style="color: var(--mud-palette-success);">question text</span>.
-                                If you selected a <span style="color: var(--mud-palette-primary);">multiple choice</span> question, you will be able to see the multiple choice options down below (scroll down). You can add / delete, or edit these options.
-                            </MudText>
-                            <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 3 })" IsButton="true">
-                                <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
-                            </DemoBorder>
-                        </DemoPopup>
-                        <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 6 })">
-                            <MudText Typo="Typo.body2">We will now create a multiple choice question.</MudText>
-                            <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 6 })" IsButton="true">
-                                <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
-                            </DemoBorder>
-                        </DemoPopup>
                     </MudStack>
 
                     <MudStack Row="true">
-
                         <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 8 })" IsButton="true">
                             <MudButton Id="SaveQuestionBtn" ButtonType="ButtonType.Button" Variant="Variant.Filled" Color="Color.Primary" OnClick="AddQuestionToSurvey" Disabled="@AddQuestionToSurveyDisabled">Save Question</MudButton>
                         </DemoBorder>
-                        <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 8 })">
-                                <MudText Typo="Typo.body2">Scroll down so you can see the choices down below. Click Save Question button to save the question.</MudText>
-                        </DemoPopup>
                         <MudCheckBox T="bool" @bind-Value="IsRequired" Label="Is Required?" Color="Color.Primary" Disabled="@AddQuestionToSurveyDisabled" />
                     </MudStack>
                 </MudPaper>
@@ -151,18 +145,13 @@
                 {
                     <MudPaper>
                         <MudText Typo="Typo.h6" Class="mb-1">Add the Question Choices</MudText>
-                        <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 7 })">
-                            <MudSelect Id="PresetChoices" Label="Preset Choices (Will overwrite existing choices)" T="string" @bind-Value="SelectedPresetChoice" Variant="Variant.Filled" Dense="true">
-                                <MudSelectItem T="string" Value=null>-- Select Preset --</MudSelectItem>
-                                @foreach (var preset in PresetChoices)
-                                {
-                                    <MudSelectItem Value="@preset.Key">@preset.Key</MudSelectItem>
-                                }
-                            </MudSelect>
-                        </DemoBorder>
-                        <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 7 })">
-                            <MudText Typo="Typo.body2">Now we will pick appropriate choices for this question. Expand the Preset Choices drop-down and select Yes No Partially.</MudText>
-                        </DemoPopup>
+                        <MudSelect Id="PresetChoices" Label="Preset Choices (Will overwrite existing choices)" T="string" @bind-Value="SelectedPresetChoice" Variant="Variant.Filled" Dense="true">
+                            <MudSelectItem T="string" Value=null>-- Select Preset --</MudSelectItem>
+                            @foreach (var preset in PresetChoices)
+                            {
+                                <MudSelectItem Value="@preset.Key">@preset.Key</MudSelectItem>
+                            }
+                        </MudSelect>
 
                         <MudTextField id="Choice" Label="Choice Text" @bind-Value="NewChoiceOptionText" Variant="Variant.Filled" Lines="1" MaxLines="5" AutoGrow="true" Immediate="true" Counter="50" MaxLength="50" />
 
@@ -194,8 +183,22 @@
                 </SfAutoComplete>
 
             </MudExpansionPanel>
-
-            @* </MudStack> *@
+            }
+            else if (SelectedQuestion != null)
+            {
+                <MudPaper Class="p-2 mt-2">
+                    <MudText Typo="Typo.h6">@SelectedQuestion.Text</MudText>
+                    @if (SelectedQuestion.QuestionType == QuestionType.MultipleChoice || SelectedQuestion.QuestionType == QuestionType.SelectAllThatApply)
+                    {
+                        <MudList T="string" Dense="true">
+                            @foreach (var opt in MultipleChoiceQuestion.Options)
+                            {
+                                <MudListItem Text="@opt.OptionText" />
+                            }
+                        </MudList>
+                    }
+                </MudPaper>
+            }
         }
         else
         {
