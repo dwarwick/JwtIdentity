@@ -29,7 +29,8 @@ namespace JwtIdentity.Tests.ControllerTests
             SetupMockMapper();
             SetupMockApiAuthService();
             MockOpenAiService = new Mock<IOpenAi>();
-            MockOpenAiService.Setup(x => x.GenerateSurveyAsync(It.IsAny<string>(), "")).ReturnsAsync(new SurveyViewModel { Questions = new List<QuestionViewModel>() });
+            MockOpenAiService.Setup(x => x.GenerateSurveyAsync(It.IsAny<string>(), It.IsAny<string>()))
+                .ReturnsAsync(new SurveyViewModel { Questions = new List<QuestionViewModel>() });
             MockEmailService.Setup(e => e.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(true);
             MockConfiguration.Setup(c => c["EmailSettings:CustomerServiceEmail"]).Returns("admin@example.com");
             MockSurveyService = new Mock<ISurveyService>();
@@ -209,6 +210,49 @@ namespace JwtIdentity.Tests.ControllerTests
             Assert.That(result, Is.InstanceOf<OkObjectResult>());
             MockEmailService.Verify(e => e.SendEmailAsync("admin@example.com", It.IsAny<string>(), It.Is<string>(b => b.Contains("Survey 2"))), Times.Once);
             MockEmailService.Verify(e => e.SendEmailAsync("user2@example.com", It.IsAny<string>(), It.Is<string>(b => b.Contains("Survey 2"))), Times.Once);
+        }
+
+        [Test]
+        public async Task RegenerateQuestions_RemovesExistingChoiceOptions()
+        {
+            var survey = new Survey
+            {
+                Id = 3,
+                Title = "Survey 3",
+                Description = "Desc 3",
+                Guid = "guid-3",
+                CreatedById = 1,
+                Questions = new List<Question>
+                {
+                    new SelectAllThatApplyQuestion
+                    {
+                        Id = 3,
+                        SurveyId = 3,
+                        Text = "Q1",
+                        QuestionNumber = 1,
+                        QuestionType = QuestionType.SelectAllThatApply,
+                        CreatedById = 1,
+                        Options = new List<ChoiceOption>
+                        {
+                            new ChoiceOption { Id = 1, SelectAllThatApplyQuestionId = 3, OptionText = "Opt1", Order = 1 },
+                            new ChoiceOption { Id = 2, SelectAllThatApplyQuestionId = 3, OptionText = "Opt2", Order = 2 }
+                        }
+                    }
+                }
+            };
+
+            MockDbContext.Surveys.Add(survey);
+            MockDbContext.Questions.AddRange(survey.Questions);
+            MockDbContext.ChoiceOptions.AddRange(((SelectAllThatApplyQuestion)survey.Questions[0]).Options);
+            await MockDbContext.SaveChangesAsync();
+
+            var surveyVm = new SurveyViewModel { Id = survey.Id, AiInstructions = "new" };
+
+            var result = await _controller.RegenerateQuestions(surveyVm);
+
+            Assert.That(result.Result, Is.InstanceOf<OkObjectResult>());
+            Assert.That(MockDbContext.Questions.Count(q => q.SurveyId == survey.Id), Is.EqualTo(0));
+            Assert.That(MockDbContext.ChoiceOptions.Count(), Is.EqualTo(0));
         }
 
         [Test]
