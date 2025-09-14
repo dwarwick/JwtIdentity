@@ -20,7 +20,7 @@
 <MudTextField Label="Survey Title" T="string" Value="Survey.Title" ValueChanged="@((e) => UpdateTitleDescription(e, "title"))" Class="my-2" Variant="Variant.Filled" />
 <MudTextField Label="Survey Description" T="string" Value="Survey.Description" ValueChanged="@((e) => UpdateTitleDescription(e, "description"))" Class="mb-2" Variant="Variant.Filled" Lines="3" MaxLines="5" AutoGrow="true" Counter="500" MaxLength="500" />
 
-@if (!string.IsNullOrWhiteSpace(Survey.AiInstructions))
+@if (!string.IsNullOrWhiteSpace(Survey.AiInstructions) && !CanEditQuestions)
 {
     <MudTextField Label="AI Prompt" T="string" Value="Survey.AiInstructions" ValueChanged="@UpdateAiInstructions" Class="mb-2" Variant="Variant.Filled" Lines="3" MaxLines="6" AutoGrow="true" Counter="500" MaxLength="500" />
 }
@@ -195,6 +195,21 @@
                             {
                                 <MudListItem Text="@opt.OptionText" />
                             }
+                        </MudList>
+                    }
+                    else if (SelectedQuestion.QuestionType == QuestionType.Text)
+                    {
+                        <MudText Typo="Typo.body2">A text box will be shown.</MudText>
+                    }
+                    else if (SelectedQuestion.QuestionType == QuestionType.Rating1To10)
+                    {
+                        <MudText Typo="Typo.body2">The survey taker will be shown a 1 to 10 rating scale where 10 is the maximum.</MudText>
+                    }
+                    else if (SelectedQuestion.QuestionType == QuestionType.TrueFalse)
+                    {
+                        <MudList T="string" Dense="true">
+                            <MudListItem Text="True" />
+                            <MudListItem Text="False" />
                         </MudList>
                     }
                 </MudPaper>
