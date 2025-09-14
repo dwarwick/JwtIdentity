@@ -708,8 +708,8 @@ namespace JwtIdentity.Client.Pages.Survey
             var response = await ApiService.PostAsync(ApiEndpoints.Survey + "/accept", Survey);
             if (response != null)
             {
-                Survey = response;
-                QuestionsPanelExpanded = true;
+                await LoadData();
+
                 _ = Snackbar.Add("Questions accepted", MudBlazor.Severity.Success);
                 if (IsDemoUser && DemoStep == 11)
                 {
