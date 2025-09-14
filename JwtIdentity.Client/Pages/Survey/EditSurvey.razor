@@ -31,7 +31,7 @@
         <MudText Typo="Typo.body2">Please review the AI generated questions and answers. You may regenerate up to 2 times.</MudText>
         <MudStack Row="true" Spacing="1" Class="mt-2">
             <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 10 })" IsButton="true">
-                <MudButton Id="RegenerateQuestionsBtn" Variant="Variant.Filled" Color="Color.Secondary" OnClick="RegenerateQuestions" Disabled="@(Survey.AiRetryCount >= 2)">Regenerate Questions</MudButton>
+                <SpinnerButton Text="Regenerate Questions" Color="Color.Secondary" OnClick="RegenerateQuestions" Disabled="@(Survey.AiRetryCount >= 2)" IsBusy="@RegeneratingQuestions" />
             </DemoBorder>
             <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 11 })" IsButton="true">
                 <MudButton Id="AcceptQuestionsBtn" Variant="Variant.Filled" Color="Color.Primary" OnClick="AcceptQuestions">Accept Questions</MudButton>

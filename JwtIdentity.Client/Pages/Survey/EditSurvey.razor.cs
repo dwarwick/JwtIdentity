@@ -100,6 +100,7 @@ namespace JwtIdentity.Client.Pages.Survey
         protected bool ExistingQuestionPanelExpanded { get; set; } = false;
         protected bool ManualQuestionPanelExpanded { get; set; } = true;
 
+        protected bool RegeneratingQuestions { get; set; }
 
         protected override async Task OnInitializedAsync()
         {
@@ -679,6 +680,9 @@ namespace JwtIdentity.Client.Pages.Survey
         protected async Task RegenerateQuestions()
         {
             if (Survey.AiRetryCount >= 2) return;
+
+            RegeneratingQuestions = true;
+
             var response = await ApiService.PostAsync(ApiEndpoints.Survey + "/regenerate", Survey);
             if (response != null)
             {
@@ -695,6 +699,8 @@ namespace JwtIdentity.Client.Pages.Survey
             {
                 _ = Snackbar.Add("Problem regenerating questions", MudBlazor.Severity.Error);
             }
+
+            RegeneratingQuestions = false;
         }
 
         protected async Task AcceptQuestions()
@@ -714,6 +720,8 @@ namespace JwtIdentity.Client.Pages.Survey
             {
                 _ = Snackbar.Add("Problem updating survey", MudBlazor.Severity.Error);
             }
+
+            StateHasChanged();
         }
 
         protected void HandleQuestionsPanelExpanded(bool expanded)
