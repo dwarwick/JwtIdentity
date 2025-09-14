@@ -23,6 +23,8 @@ namespace JwtIdentity.Client.Pages.Survey.Results
 
         protected Dictionary<int, Dictionary<int, int>> OptionCounts { get; set; } = new();
 
+        protected int TotalRowCount { get; set; }
+
         protected override async Task OnInitializedAsync()
         {
             await LoadData();
@@ -90,6 +92,7 @@ namespace JwtIdentity.Client.Pages.Survey.Results
             SurveyRows = BuildSurveyRowsAsExpando(Survey.Questions, allAnswers).ToList();
 
             ComputeOptionCountsFromRows(SurveyRows);
+            TotalRowCount = SurveyRows.Count;
 
             columnsInitialized = true;
 
@@ -252,10 +255,11 @@ namespace JwtIdentity.Client.Pages.Survey.Results
         // call this whenever the grid renders or finishes an action
         private async Task RefreshCountsAsync()
         {
-            // Grab whatever rows are showing (empty if none)
-            var view = await Grid.GetCurrentViewRecordsAsync()
-                       ?? Enumerable.Empty<ExpandoObject>();
+            // Get all records that match the current filter (ignoring paging)
+            var data = await Grid.GetFilteredRecordsAsync();
+            var view = data as IEnumerable<ExpandoObject> ?? Enumerable.Empty<ExpandoObject>();
 
+            TotalRowCount = view.Count();
             ComputeOptionCountsFromRows(view);
             StateHasChanged();
         }
