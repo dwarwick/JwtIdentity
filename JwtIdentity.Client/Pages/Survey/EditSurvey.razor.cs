@@ -76,9 +76,9 @@ namespace JwtIdentity.Client.Pages.Survey
                         }
                     }
 
-                    if (IsDemoUser && DemoStep == 7 && value == "Yes No Partially")
+                    if (IsDemoUser && DemoStep == 9 && value == "Yes No Partially")
                     {
-                        DemoStep = 8;
+                        DemoStep = 10;
                     }
                 }
             }
@@ -143,14 +143,14 @@ namespace JwtIdentity.Client.Pages.Survey
             var id = DemoStep switch
             {
                 0 => "QuestionsPanel",
-                1 or 2 or 4 => "QuestionList",
-                3 or 6 => "Text",
-                5 => "QuestionTypeSelect",
-                7 => "PresetChoices",
-                8 => "SaveQuestionBtn",
-                9 => "PublishSurveyBtn",
-                10 => "RegenerateQuestionsBtn",
-                11 => "AcceptQuestionsBtn",
+                1 => "AcceptQuestionsBtn",
+                2 => "QuestionsPanel",
+                3 or 4 or 6 => "QuestionList",
+                5 or 8 => "Text",
+                7 => "QuestionTypeSelect",
+                9 => "PresetChoices",
+                10 => "SaveQuestionBtn",
+                11 => "PublishSurveyBtn",
                 _ => null
             };
 
@@ -169,15 +169,15 @@ namespace JwtIdentity.Client.Pages.Survey
 
             switch (DemoStep)
             {
-                case 1:
-                    DemoStep = 2;
-                    break;
                 case 3:
                     DemoStep = 4;
                     break;
-                case 6:
+                case 5:
+                    DemoStep = 6;
+                    break;
+                case 8:
                     QuestionText = "Did the representative answer all of your questions?";
-                    DemoStep = 7;
+                    DemoStep = 9;
                     break;
             }
         }
@@ -375,9 +375,9 @@ namespace JwtIdentity.Client.Pages.Survey
             if (await UpdateSurvey())
             {
                 _ = Snackbar.Add("Question Added / Updated", MudBlazor.Severity.Success);
-                if (IsDemoUser && DemoStep == 8)
+                if (IsDemoUser && DemoStep == 10)
                 {
-                    DemoStep = 9;
+                    DemoStep = 11;
                 }
             }
             else
@@ -437,9 +437,9 @@ namespace JwtIdentity.Client.Pages.Survey
             MultipleChoiceQuestion = new MultipleChoiceQuestionViewModel();
             ResetQuestions = true;
 
-            if (IsDemoUser && DemoStep == 5 && questionType.Replace(" ", "") == Enum.GetName(QuestionType.MultipleChoice))
+            if (IsDemoUser && DemoStep == 7 && questionType.Replace(" ", "") == Enum.GetName(QuestionType.MultipleChoice))
             {
-                DemoStep = 6;
+                DemoStep = 8;
             }
         }
 
@@ -455,9 +455,9 @@ namespace JwtIdentity.Client.Pages.Survey
                 ManualQuestionPanelExpanded = true;
                 ExistingQuestionPanelExpanded = false;
 
-                if (IsDemoUser && DemoStep == 4)
+                if (IsDemoUser && DemoStep == 6)
                 {
-                    DemoStep = 5;
+                    DemoStep = 7;
                 }
 
                 return;
@@ -494,9 +494,16 @@ namespace JwtIdentity.Client.Pages.Survey
             ExistingQuestionPanelExpanded = false;
             tempQuestionText = null;
 
-            if (IsDemoUser && DemoStep == 2 && input.QuestionNumber == 1)
+            if (IsDemoUser)
             {
-                DemoStep = 3;
+                if (DemoStep == 0 && input.QuestionNumber == 1)
+                {
+                    DemoStep = 1;
+                }
+                else if (DemoStep == 4 && input.QuestionNumber == 1)
+                {
+                    DemoStep = 5;
+                }
             }
         }
 
@@ -690,9 +697,9 @@ namespace JwtIdentity.Client.Pages.Survey
                 SelectedQuestion = null;
                 QuestionsPanelExpanded = true;
                 _ = Snackbar.Add("Questions regenerated", MudBlazor.Severity.Success);
-                if (IsDemoUser && DemoStep == 10)
+                if (IsDemoUser && DemoStep == 1 && Survey.AiRetryCount >= 2)
                 {
-                    DemoStep = 11;
+                    DemoStep = 2;
                 }
             }
             else
@@ -711,9 +718,9 @@ namespace JwtIdentity.Client.Pages.Survey
                 await LoadData();
 
                 _ = Snackbar.Add("Questions accepted", MudBlazor.Severity.Success);
-                if (IsDemoUser && DemoStep == 11)
+                if (IsDemoUser && DemoStep == 1)
                 {
-                    DemoStep = 0;
+                    DemoStep = 2;
                 }
             }
             else
@@ -727,9 +734,9 @@ namespace JwtIdentity.Client.Pages.Survey
         protected void HandleQuestionsPanelExpanded(bool expanded)
         {
             QuestionsPanelExpanded = expanded;
-            if (IsDemoUser && DemoStep == 0 && expanded)
+            if (IsDemoUser && DemoStep == 2 && expanded)
             {
-                DemoStep = 1;
+                DemoStep = 3;
             }
         }
     }

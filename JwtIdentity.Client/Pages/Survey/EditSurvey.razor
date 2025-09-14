@@ -9,12 +9,12 @@
     <MudText Typo="Typo.h4">Edit Survey</MudText>
 
 
-    <DemoBorder Class="ms-auto mt-2" CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 9 })" IsButton="true">
+    <DemoBorder Class="ms-auto mt-2" CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 11 })" IsButton="true">
         <MudButton Id="PublishSurveyBtn" ButtonType="ButtonType.Button" Variant="Variant.Filled" Color="Color.Primary" OnClick="PublishSurvey" Disabled="@(Survey.Published)">Publish Survey</MudButton>
     </DemoBorder>
 
-    <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 9 })">        
-        <MudText Typo="Typo.body2">Now click the Publish Survey button to publish the survey.</MudText>        
+    <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 11 })">
+        <MudText Typo="Typo.body2">Now click the Publish Survey button to publish the survey.</MudText>
     </DemoPopup>
 </MudStack>
 <MudTextField Label="Survey Title" T="string" Value="Survey.Title" ValueChanged="@((e) => UpdateTitleDescription(e, "title"))" Class="my-2" Variant="Variant.Filled" />
@@ -30,18 +30,15 @@
     <MudAlert Severity="Severity.Warning" Class="mb-2">
         <MudText Typo="Typo.body2">Please review the AI generated questions and answers. You may regenerate up to 2 times.</MudText>
         <MudStack Row="true" Spacing="1" Class="mt-2">
-            <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 10 })" IsButton="true">
+            <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 1 })" IsButton="true">
                 <SpinnerButton Text="Regenerate Questions" Color="Color.Secondary" OnClick="RegenerateQuestions" Disabled="@(Survey.AiRetryCount >= 2)" IsBusy="@RegeneratingQuestions" />
             </DemoBorder>
-            <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 11 })" IsButton="true">
+            <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 1 })" IsButton="true">
                 <MudButton Id="AcceptQuestionsBtn" Variant="Variant.Filled" Color="Color.Primary" OnClick="AcceptQuestions">Accept Questions</MudButton>
             </DemoBorder>
         </MudStack>
-        <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 10 })">
-            <MudText Typo="Typo.body2">Click here to regenerate the AI-generated questions.</MudText>
-        </DemoPopup>
-        <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 11 })">
-            <MudText Typo="Typo.body2">Click here to accept the generated questions.</MudText>
+        <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 1 })">
+            <MudText Typo="Typo.body2">Regenerate the AI-generated questions or accept them if you're satisfied.</MudText>
         </DemoPopup>
     </MudAlert>
 }
@@ -50,7 +47,7 @@
     <MudExpansionPanels MultiExpansion="true">
         @if (Survey?.Questions != null && Survey.Questions.Count > 0)
         {
-            <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 0 })">
+            <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 0, 2 })">
                 <MudExpansionPanel Id="QuestionsPanel" Expanded="@QuestionsPanelExpanded" ExpandedChanged="HandleQuestionsPanelExpanded">
                     <TitleContent>
                         <div class="mud-expand-panel-text">Survey Questions (Select a Question to Edit it)</div>
@@ -75,7 +72,7 @@
 
                                             @if (question.QuestionNumber == 1)
                                             {
-                                                <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 2, 4, 6 })">
+                                                <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 0, 4, 6, 8 })">
                                                     <MudListItem Class="ai-style-change-3 ai-style-change-6" Text="@($"{question.QuestionNumber}. {question.Text}")" Value="@question" />
                                                 </DemoBorder>
                                             }
@@ -100,18 +97,21 @@
                 </MudExpansionPanel>
             </DemoBorder>
             <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 0 })">
+                <MudText Typo="Typo.body2">AI can occasionally hallucinate. Review each generated question and its choices. Expand this panel and click question 1 to examine it.</MudText>
+            </DemoPopup>
+            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 2 })">
                 <MudText Typo="Typo.body2">Expand the Survey Questions Accordion by clicking it.</MudText>
             </DemoPopup>
-            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 1 })">
+            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 3 })">
                 <MudText Typo="Typo.body2">The questions can be reordered by dragging and dropping them.</MudText>
-                <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 1 })" IsButton="true">
+                <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 3 })" IsButton="true">
                     <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
                 </DemoBorder>
             </DemoPopup>
-            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 2 })">
+            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 4 })">
                 <MudText Typo="Typo.body2">Click question number 1 to select it. The question text will turn blue when it is selected.</MudText>
             </DemoPopup>
-            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 4 })">
+            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 6 })">
                 <MudText Typo="Typo.body2">Click the selected question to deselect it.</MudText>
             </DemoPopup>
         }
@@ -123,8 +123,8 @@
             <MudExpansionPanel @ref="ManualQuestionPanel" @bind-Expanded="@ManualQuestionPanelExpanded" Text="Create Question Manually">
                 <MudPaper Class="p-2">
                     <MudStack Spacing="1">
-                        @{ bool purpleBorder = ShowDemoStep(3); }
-                        <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 3, 5 })" IsButton="@purpleBorder">
+                        @{ bool purpleBorder = ShowDemoStep(5); }
+                        <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 5, 7 })" IsButton="@purpleBorder">
                             <MudSelect Id="QuestionTypeSelect" Label="Select the Question Type"
                                        Value="@SelectedQuestionType"
                                        ValueChanged="@((string questionType) => HandleSelectedQuestionType(questionType))"
@@ -140,13 +140,13 @@
                             </MudSelect>
                         </DemoBorder>
                         <MudText Typo="Typo.h6" Class="mt-5">Create a @StringHelper.PascalCaseToWords(SelectedQuestionType) Question</MudText>
-                        <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 3, 6 })">
+                        <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 5, 8 })">
                             <MudTextField Id="Text" Label="Question Text" @bind-Value="QuestionText" Variant="Variant.Filled" Lines="1" MaxLines="5" AutoGrow="true" Immediate="true" Counter="500" MaxLength="500" />
                         </DemoBorder>
                     </MudStack>
 
                     <MudStack Row="true">
-                        <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 8 })" IsButton="true">
+                        <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 10 })" IsButton="true">
                             <MudButton Id="SaveQuestionBtn" ButtonType="ButtonType.Button" Variant="Variant.Filled" Color="Color.Primary" OnClick="AddQuestionToSurvey" Disabled="@AddQuestionToSurveyDisabled">Save Question</MudButton>
                         </DemoBorder>
                         <MudCheckBox T="bool" @bind-Value="IsRequired" Label="Is Required?" Color="Color.Primary" Disabled="@AddQuestionToSurveyDisabled" />
