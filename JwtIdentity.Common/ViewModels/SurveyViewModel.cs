@@ -20,6 +20,10 @@
 
         public string AiInstructions { get; set; }
 
+        public int AiRetryCount { get; set; }
+
+        public bool AiQuestionsApproved { get; set; }
+
         public List<QuestionViewModel> Questions { get; set; }
     }
 }

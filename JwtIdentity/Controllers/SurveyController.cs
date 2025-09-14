@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using System.Collections.Generic;
 
 namespace JwtIdentity.Controllers
 {
@@ -255,10 +256,16 @@ namespace JwtIdentity.Controllers
                         return Forbid();
                     }
 
-                    if (existingSurvey.Title != survey.Title || existingSurvey.Description != survey.Description)
+                    if (existingSurvey.Title != survey.Title || existingSurvey.Description != survey.Description ||
+                        existingSurvey.AiInstructions != survey.AiInstructions ||
+                        existingSurvey.AiRetryCount != survey.AiRetryCount ||
+                        existingSurvey.AiQuestionsApproved != survey.AiQuestionsApproved)
                     {
                         existingSurvey.Title = survey.Title;
                         existingSurvey.Description = survey.Description;
+                        existingSurvey.AiInstructions = survey.AiInstructions;
+                        existingSurvey.AiRetryCount = survey.AiRetryCount;
+                        existingSurvey.AiQuestionsApproved = survey.AiQuestionsApproved;
                         _ = _context.Surveys.Update(existingSurvey);
                     }
 
@@ -546,6 +553,103 @@ namespace JwtIdentity.Controllers
             {
                 _logger.LogError(ex, "Error occurred while updating survey {SurveyId}", surveyViewModel?.Id);
                 return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while updating the survey");
+            }
+        }
+
+        [HttpPost("regenerate")]
+        public async Task<ActionResult<SurveyViewModel>> RegenerateQuestions(SurveyViewModel surveyViewModel)
+        {
+            try
+            {
+                int userId = authService.GetUserId(User);
+                if (userId == 0)
+                {
+                    return Unauthorized();
+                }
+
+                var survey = await _context.Surveys
+                    .Include(s => s.Questions)
+                    .FirstOrDefaultAsync(s => s.Id == surveyViewModel.Id);
+
+                if (survey == null)
+                {
+                    return NotFound();
+                }
+
+                if (survey.CreatedById != userId)
+                {
+                    return Forbid();
+                }
+
+                if (survey.AiRetryCount >= 2)
+                {
+                    return BadRequest("Retry limit reached");
+                }
+
+                _context.Questions.RemoveRange(survey.Questions);
+                await _context.SaveChangesAsync();
+
+                survey.AiInstructions = surveyViewModel.AiInstructions;
+                survey.AiRetryCount += 1;
+                survey.AiQuestionsApproved = false;
+                survey.Questions = new List<Question>();
+
+                if (!string.IsNullOrWhiteSpace(survey.Description) && !string.IsNullOrWhiteSpace(survey.AiInstructions))
+                {
+                    var generatedSurvey = await _openAiService.GenerateSurveyAsync(survey.Description, survey.AiInstructions);
+                    if (generatedSurvey?.Questions != null)
+                    {
+                        foreach (var q in generatedSurvey.Questions)
+                        {
+                            var question = _mapper.Map<Question>(q);
+                            question.CreatedById = userId;
+                            question.SurveyId = survey.Id;
+                            survey.Questions.Add(question);
+                        }
+                    }
+                }
+
+                await _context.SaveChangesAsync();
+                return Ok(_mapper.Map<SurveyViewModel>(survey));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error regenerating survey questions for survey {SurveyId}", surveyViewModel?.Id);
+                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while regenerating questions");
+            }
+        }
+
+        [HttpPost("accept")]
+        public async Task<ActionResult<SurveyViewModel>> AcceptAiQuestions(SurveyViewModel surveyViewModel)
+        {
+            try
+            {
+                int userId = authService.GetUserId(User);
+                if (userId == 0)
+                {
+                    return Unauthorized();
+                }
+
+                var survey = await _context.Surveys.FindAsync(surveyViewModel.Id);
+                if (survey == null)
+                {
+                    return NotFound();
+                }
+
+                if (survey.CreatedById != userId)
+                {
+                    return Forbid();
+                }
+
+                survey.AiQuestionsApproved = true;
+                await _context.SaveChangesAsync();
+
+                return Ok(_mapper.Map<SurveyViewModel>(survey));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error accepting AI questions for survey {SurveyId}", surveyViewModel?.Id);
+                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while accepting AI questions");
             }
         }
 
