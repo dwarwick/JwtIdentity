@@ -187,35 +187,42 @@
                         </div>
 
                         <div> @* Charts Button *@
-                            <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 5 })" IsButton="true">
+                            <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 5, 6 })" IsButton="true">
                                 <MudButton Class=@($"survey-action-button charts-button {ShareButtonDisabled(isPublished, false)}")
                                            Variant="Variant.Filled"
                                            OnClick="@(() => ViewCharts(guid, isPublished))">
                                     <MudIcon Icon="@Icons.Material.Filled.BarChart" Class="mr-1" Size="MudBlazor.Size.Small" /> Charts
                                 </MudButton>
                             </DemoBorder>
-                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 5 })" AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft">
-                                <MudText Typo="Typo.body2">Click the Charts button to view charts of survey results. @(isPublished ? "" : "This is disabled until the survey is published.")</MudText>                                
+                            @{
+                                string chartStepText = DemoStep == 5 ? "To make the demo more realistic, we have simulated that 20 other users have taken the survey, so on the charts and later on the grid, you will see fake demo data." :
+                                                        DemoStep == 6 ? "Click the Charts button to view charts of survey results." : "";                                        
+                            }
+                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 5, 6 })" AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft">
+                                <MudText Typo="Typo.body2">@chartStepText</MudText>
+                                @if (DemoStep == 5)
+                                {
+                                    <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 5 })" IsButton="true">
+                                        <MudButton OnClick="@(async () => await NextDemoStep(guid))" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
+                                    </DemoBorder>
+                                }
                             </DemoPopup>
                         </div>
 
                         <div> @* Grid Button *@
-                            <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 6 })" IsButton="true">
+                            <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 7 })" IsButton="true">
                                 <MudButton Class=@($"survey-action-button grid-button {ShareButtonDisabled(isPublished, false)}")
                                            Variant="Variant.Filled"
                                            OnClick="@(() => ViewGrid(guid, isPublished))">
                                     <MudIcon Icon="@Icons.Material.Filled.TableChart" Class="mr-1" Size="MudBlazor.Size.Small" /> Grid
                                 </MudButton>
                             </DemoBorder>
-                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 6 })" AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft">
-                                <MudText Typo="Typo.body2">View individual responses in a grid. @(isPublished ? "" : "It's disabled until the survey is published.")</MudText>
-                                <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 6 })" IsButton="true">
-                                    <MudButton OnClick="@(async () => await NextDemoStep(guid))" Variant="Variant.Filled" Color="Color.Success">Close</MudButton>
-                                </DemoBorder>
+                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 7 })" AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft">
+                                <MudText Typo="Typo.body2">Click the Grid button to view individual responses in a grid. @(isPublished ? "" : "It's disabled until the survey is published.")</MudText>                                
                             </DemoPopup>
                         </div>
 
-                        <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 7 })" AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft">
+                        <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 8 })" AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft">
                             <MudText Typo="Typo.body2">Go ahead and click the Preview button to preview what the survey will look like.</MudText>
                         </DemoPopup>
                     }

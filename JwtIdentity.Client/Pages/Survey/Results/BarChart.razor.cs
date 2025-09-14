@@ -117,7 +117,7 @@ namespace JwtIdentity.Client.Pages.Survey.Results
 
             if (DemoStep == 6)
             {
-                Navigation.NavigateTo("/mysurveys/surveysicreated?DemoStep=6");
+                Navigation.NavigateTo("/mysurveys/surveysicreated?DemoStep=7");
             }
         }
 

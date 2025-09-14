@@ -26,8 +26,7 @@
                     We are currentlty viewing the results for question 1." : 
                     DemoStep == 1 ? @"Go ahead and select All Questions from the dropdown. 
                     All Questions is above question 1." :
-                    DemoStep == 2 ? @"Scroll down to view the results of each question. Click next when you are ready to continue.
-                    Note that the results would be more informative if several people had taken the survey." : "";
+                    DemoStep == 2 ? @"Scroll down to view the results of each question. Click next when you are ready to continue." : "";
                 }
                 <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 0,1,2 })" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopLeft">
                     <MudText Typo="Typo.body2" Style="white-space: pre-line">@demoQuestionText</MudText>

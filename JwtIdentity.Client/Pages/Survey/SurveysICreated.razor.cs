@@ -120,7 +120,7 @@
                 return;
             }
 
-            if (IsDemoUser && DemoStep != 5) return;
+            if (IsDemoUser && DemoStep != 6) return;
 
             NavigationManager.NavigateTo($"/survey/responses/{guid}");
         }
@@ -132,6 +132,8 @@
                 _ = Snackbar.Add("Survey not published. You cannot view the grid if it has not been published.", Severity.Error);
                 return;
             }
+
+            if (IsDemoUser && DemoStep != 7) return;
 
             NavigationManager.NavigateTo($"/survey/filter/{guid}");
         }
