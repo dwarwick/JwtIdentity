@@ -100,6 +100,7 @@ namespace JwtIdentity.Client.Pages.Survey
         protected bool ExistingQuestionPanelExpanded { get; set; } = false;
         protected bool ManualQuestionPanelExpanded { get; set; } = true;
 
+        protected bool RegeneratingQuestions { get; set; }
 
         protected override async Task OnInitializedAsync()
         {
@@ -148,6 +149,8 @@ namespace JwtIdentity.Client.Pages.Survey
                 7 => "PresetChoices",
                 8 => "SaveQuestionBtn",
                 9 => "PublishSurveyBtn",
+                10 => "RegenerateQuestionsBtn",
+                11 => "AcceptQuestionsBtn",
                 _ => null
             };
 
@@ -677,17 +680,27 @@ namespace JwtIdentity.Client.Pages.Survey
         protected async Task RegenerateQuestions()
         {
             if (Survey.AiRetryCount >= 2) return;
+
+            RegeneratingQuestions = true;
+
             var response = await ApiService.PostAsync(ApiEndpoints.Survey + "/regenerate", Survey);
             if (response != null)
             {
                 Survey = response;
                 SelectedQuestion = null;
+                QuestionsPanelExpanded = true;
                 _ = Snackbar.Add("Questions regenerated", MudBlazor.Severity.Success);
+                if (IsDemoUser && DemoStep == 10)
+                {
+                    DemoStep = 11;
+                }
             }
             else
             {
                 _ = Snackbar.Add("Problem regenerating questions", MudBlazor.Severity.Error);
             }
+
+            RegeneratingQuestions = false;
         }
 
         protected async Task AcceptQuestions()
@@ -696,12 +709,19 @@ namespace JwtIdentity.Client.Pages.Survey
             if (response != null)
             {
                 Survey = response;
+                QuestionsPanelExpanded = true;
                 _ = Snackbar.Add("Questions accepted", MudBlazor.Severity.Success);
+                if (IsDemoUser && DemoStep == 11)
+                {
+                    DemoStep = 0;
+                }
             }
             else
             {
                 _ = Snackbar.Add("Problem updating survey", MudBlazor.Severity.Error);
             }
+
+            StateHasChanged();
         }
 
         protected void HandleQuestionsPanelExpanded(bool expanded)
