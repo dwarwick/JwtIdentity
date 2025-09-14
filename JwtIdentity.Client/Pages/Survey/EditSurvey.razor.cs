@@ -148,6 +148,8 @@ namespace JwtIdentity.Client.Pages.Survey
                 7 => "PresetChoices",
                 8 => "SaveQuestionBtn",
                 9 => "PublishSurveyBtn",
+                10 => "RegenerateQuestionsBtn",
+                11 => "AcceptQuestionsBtn",
                 _ => null
             };
 
@@ -682,7 +684,12 @@ namespace JwtIdentity.Client.Pages.Survey
             {
                 Survey = response;
                 SelectedQuestion = null;
+                QuestionsPanelExpanded = true;
                 _ = Snackbar.Add("Questions regenerated", MudBlazor.Severity.Success);
+                if (IsDemoUser && DemoStep == 10)
+                {
+                    DemoStep = 11;
+                }
             }
             else
             {
@@ -696,7 +703,12 @@ namespace JwtIdentity.Client.Pages.Survey
             if (response != null)
             {
                 Survey = response;
+                QuestionsPanelExpanded = true;
                 _ = Snackbar.Add("Questions accepted", MudBlazor.Severity.Success);
+                if (IsDemoUser && DemoStep == 11)
+                {
+                    DemoStep = 0;
+                }
             }
             else
             {

@@ -6,13 +6,13 @@
     <div style="height: 10px; background-color: #007bff; width: 100%;"></div>
 }
 
-<div draggable="true"
+<div draggable="@(!Disabled)"
      @ondragstart="@((e) => OnDragStart(e, Items.IndexOf(Item)))"
      @ondragover="@((e) => OnDragOver(e, Items.IndexOf(Item)))"
      @ondrop="@((e) => OnDrop(e, Items.IndexOf(Item)))"
      @ondragleave="OnDragLeave"
      @ondragover:preventDefault="true"
-     @ondrop:preventDefault="true">     
+     @ondrop:preventDefault="true">
     @ChildContent
 </div>
 

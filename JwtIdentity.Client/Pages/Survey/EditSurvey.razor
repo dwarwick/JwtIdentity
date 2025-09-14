@@ -30,9 +30,19 @@
     <MudAlert Severity="Severity.Warning" Class="mb-2">
         <MudText Typo="Typo.body2">Please review the AI generated questions and answers. You may regenerate up to 2 times.</MudText>
         <MudStack Row="true" Spacing="1" Class="mt-2">
-            <MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="RegenerateQuestions" Disabled="@(Survey.AiRetryCount >= 2)">Regenerate Questions</MudButton>
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AcceptQuestions">Accept Questions</MudButton>
+            <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 10 })" IsButton="true">
+                <MudButton Id="RegenerateQuestionsBtn" Variant="Variant.Filled" Color="Color.Secondary" OnClick="RegenerateQuestions" Disabled="@(Survey.AiRetryCount >= 2)">Regenerate Questions</MudButton>
+            </DemoBorder>
+            <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 11 })" IsButton="true">
+                <MudButton Id="AcceptQuestionsBtn" Variant="Variant.Filled" Color="Color.Primary" OnClick="AcceptQuestions">Accept Questions</MudButton>
+            </DemoBorder>
         </MudStack>
+        <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 10 })">
+            <MudText Typo="Typo.body2">Click here to regenerate the AI-generated questions.</MudText>
+        </DemoPopup>
+        <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 11 })">
+            <MudText Typo="Typo.body2">Click here to accept the generated questions.</MudText>
+        </DemoPopup>
     </MudAlert>
 }
 
@@ -44,7 +54,10 @@
                 <MudExpansionPanel Id="QuestionsPanel" Expanded="@QuestionsPanelExpanded" ExpandedChanged="HandleQuestionsPanelExpanded">
                     <TitleContent>
                         <div class="mud-expand-panel-text">Survey Questions (Select a Question to Edit it)</div>
-                        <MudText Typo="Typo.caption" Align="Align.Center" Class="text-emphasis">Drag and Drop Questions to Reorder them, or click the Delete Icon to Remove a Question</MudText>
+                        @if (CanEditQuestions)
+                        {
+                            <MudText Typo="Typo.caption" Align="Align.Center" Class="text-emphasis">Drag and Drop Questions to Reorder them, or click the Delete Icon to Remove a Question</MudText>
+                        }
                     </TitleContent>
                     <ChildContent>
 
@@ -52,7 +65,7 @@
                             <MudList Id="QuestionList" T="QuestionViewModel" Dense="true" SelectedValue="SelectedQuestion" SelectionMode="MudBlazor.SelectionMode.ToggleSelection" SelectedValueChanged="QuestionSelected">
                                 @foreach (var question in Survey.Questions)
                                 {
-                                    <DragAndDrop TItem="QuestionViewModel" Items="Survey.Questions" Item="question" ItemsChanged="@(CanEditQuestions ? DroppedQuestion : null)">
+                                    <DragAndDrop TItem="QuestionViewModel" Items="Survey.Questions" Item="question" ItemsChanged="DroppedQuestion" Disabled="@(!CanEditQuestions)">
                                         <MudStack Class=".d-flex.flex-row.gap-3.ai-style-change-1" Row="true" AlignItems="AlignItems.Center">
                                             @if (CanEditQuestions)
                                             {
