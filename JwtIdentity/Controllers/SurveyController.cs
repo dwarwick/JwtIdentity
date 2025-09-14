@@ -586,6 +586,19 @@ namespace JwtIdentity.Controllers
                     return BadRequest("Retry limit reached");
                 }
 
+                var questionIds = survey.Questions.Select(q => q.Id).ToList();
+
+                if (questionIds.Any())
+                {
+                    var choiceOptions = await _context.ChoiceOptions
+                        .Where(co =>
+                            (co.MultipleChoiceQuestionId.HasValue && questionIds.Contains(co.MultipleChoiceQuestionId.Value)) ||
+                            (co.SelectAllThatApplyQuestionId.HasValue && questionIds.Contains(co.SelectAllThatApplyQuestionId.Value)))
+                        .ToListAsync();
+
+                    _context.ChoiceOptions.RemoveRange(choiceOptions);
+                }
+
                 _context.Questions.RemoveRange(survey.Questions);
                 await _context.SaveChangesAsync();
 
