@@ -16,11 +16,15 @@ namespace JwtIdentity.Client.Pages.Common
         [Parameter]
         public RenderFragment ChildContent { get; set; }
 
+        [Parameter]
+        public bool Disabled { get; set; }
+
         protected int DragIndex { get; set; } = -1;
 
         protected int DragOverIndex { get; set; } = -1;
         protected async Task OnDragStart(DragEventArgs e, int index)
         {
+            if (Disabled) return;
             DragOverIndex = -1;
 
             if (index == -1)
@@ -37,6 +41,7 @@ namespace JwtIdentity.Client.Pages.Common
 
         protected async Task OnDragOver(DragEventArgs e, int index)
         {
+            if (Disabled) return;
             DragIndex = await LocalStorage.GetItemAsync<int>("DragIndex");
 
             if (DragIndex != -1 && index != -1)
@@ -52,12 +57,14 @@ namespace JwtIdentity.Client.Pages.Common
 
         protected void OnDragLeave(DragEventArgs e)
         {
+            if (Disabled) return;
             // Reset the drag-over index so previous lines disappear
             DragOverIndex = -1;
         }
 
         protected async Task OnDrop(DragEventArgs e, int index)
         {
+            if (Disabled) return;
             DragOverIndex = -1;
 
             DragIndex = await LocalStorage.GetItemAsync<int>("DragIndex");
