@@ -24,6 +24,9 @@ namespace JwtIdentity.Client.Pages.Survey
 
         protected Query RemoteDataQuery { get; set; } = new Query().Take(6);
 
+        protected bool CanEditQuestions => string.IsNullOrWhiteSpace(Survey.AiInstructions) || Survey.AiQuestionsApproved || Survey.AiRetryCount >= 2;
+        protected bool RequiresReview => !CanEditQuestions && !string.IsNullOrWhiteSpace(Survey.AiInstructions);
+
         private QuestionViewModel _selectedQuestion;
         protected QuestionViewModel SelectedQuestion
         {
@@ -83,6 +86,7 @@ namespace JwtIdentity.Client.Pages.Survey
         protected List<(string Key, List<string> Options)> PresetChoices => ChoiceOptionHelper.PresetChoices;
 
         protected bool AddQuestionToSurveyDisabled =>
+            !CanEditQuestions ||
             Survey.Published ||
             string.IsNullOrWhiteSpace(QuestionText) ||
             ((SelectedQuestionType.Replace(" ", "") == Enum.GetName(QuestionType.MultipleChoice) ||
@@ -183,6 +187,7 @@ namespace JwtIdentity.Client.Pages.Survey
 
         protected void AddChoiceOption()
         {
+            if (!CanEditQuestions) return;
             if (SelectedQuestionType.Replace(" ", "") == Enum.GetName(typeof(QuestionType), QuestionType.MultipleChoice) ||
                 SelectedQuestionType.Replace(" ", "") == Enum.GetName(typeof(QuestionType), QuestionType.SelectAllThatApply))
             {
@@ -197,6 +202,7 @@ namespace JwtIdentity.Client.Pages.Survey
 
         protected async Task DeleteQuestion(QuestionViewModel question)
         {
+            if (!CanEditQuestions) return;
             DialogParameters keyValuePairs = new()
                 {
                     { "Message", "Are you sure you want to delete this question?" },
@@ -229,6 +235,7 @@ namespace JwtIdentity.Client.Pages.Survey
 
         protected async Task DeleteChoiceOption(ChoiceOptionViewModel choice)
         {
+            if (!CanEditQuestions) return;
             DialogParameters keyValuePairs = new()
                 {
                     { "Message", "Are you sure you want to delete this choice?" },
@@ -492,6 +499,7 @@ namespace JwtIdentity.Client.Pages.Survey
 
         protected async Task DroppedChoiceOption(List<ChoiceOptionViewModel> choices)
         {
+            if (!CanEditQuestions) return;
             ResetQuestions = false;
 
             // update Order property for each item according to its new order
@@ -519,6 +527,7 @@ namespace JwtIdentity.Client.Pages.Survey
 
         protected async Task DroppedQuestion(List<QuestionViewModel> questions)
         {
+            if (!CanEditQuestions) return;
             // update QuestionNumber property for each item according to its new order
             for (int i = 0; i < questions.Count; i++)
             {
@@ -550,6 +559,9 @@ namespace JwtIdentity.Client.Pages.Survey
                     Published = Survey.Published,
                     CreatedById = Survey.CreatedById,
                     CreatedDate = Survey.CreatedDate,
+                    AiInstructions = Survey.AiInstructions,
+                    AiRetryCount = Survey.AiRetryCount,
+                    AiQuestionsApproved = Survey.AiQuestionsApproved,
                     Questions = Survey.Questions
                 };
 
@@ -646,6 +658,49 @@ namespace JwtIdentity.Client.Pages.Survey
             else
             {
                 _ = Snackbar.Add("Problem Updating Survey", MudBlazor.Severity.Error);
+            }
+        }
+
+        protected async Task UpdateAiInstructions(string value)
+        {
+            Survey.AiInstructions = value;
+            if (await UpdateSurvey())
+            {
+                _ = Snackbar.Add("Update Successful", MudBlazor.Severity.Success);
+            }
+            else
+            {
+                _ = Snackbar.Add("Problem Updating Survey", MudBlazor.Severity.Error);
+            }
+        }
+
+        protected async Task RegenerateQuestions()
+        {
+            if (Survey.AiRetryCount >= 2) return;
+            var response = await ApiService.PostAsync(ApiEndpoints.Survey + "/regenerate", Survey);
+            if (response != null)
+            {
+                Survey = response;
+                SelectedQuestion = null;
+                _ = Snackbar.Add("Questions regenerated", MudBlazor.Severity.Success);
+            }
+            else
+            {
+                _ = Snackbar.Add("Problem regenerating questions", MudBlazor.Severity.Error);
+            }
+        }
+
+        protected async Task AcceptQuestions()
+        {
+            var response = await ApiService.PostAsync(ApiEndpoints.Survey + "/accept", Survey);
+            if (response != null)
+            {
+                Survey = response;
+                _ = Snackbar.Add("Questions accepted", MudBlazor.Severity.Success);
+            }
+            else
+            {
+                _ = Snackbar.Add("Problem updating survey", MudBlazor.Severity.Error);
             }
         }
 
