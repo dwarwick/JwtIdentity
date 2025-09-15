@@ -28,7 +28,7 @@
 @if (RequiresReview)
 {
     <MudAlert Severity="Severity.Warning" Class="mb-2">
-        <MudText Typo="Typo.body2">Please review the AI generated questions and answers. You may regenerate up to 2 times.</MudText>
+        <MudText Typo="Typo.body2">Please review the AI generated questions and answers. Sometimes the AI may halucinate and as a result, the questions and answers may not make sense. You may regenerate the questions up to 2 times. If you are satisfied with the generated questions, click the Accept Questions button.</MudText>
         <MudStack Row="true" Spacing="1" Class="mt-2">
             <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 1 })" IsButton="true">
                 <SpinnerButton Text="Regenerate Questions" Color="Color.Secondary" OnClick="RegenerateQuestions" Disabled="@(Survey.AiRetryCount >= 2)" IsBusy="@RegeneratingQuestions" />
@@ -97,7 +97,9 @@
                 </MudExpansionPanel>
             </DemoBorder>
             <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 0 })" TransformOrigin="Origin.TopLeft">
-                <MudText Typo="Typo.body2" Style="white-space: pre-line">AI can occasionally hallucinate. Review each generated question and its choices. 
+                <MudText Typo="Typo.body2" Style="white-space: pre-line">AI can occasionally hallucinate.
+                    This can cause the generated questions and answers to be incorrect or not make sense.
+                    Review each generated question and its choices. 
                     Expand this panel and click question 1 and scroll down to examine it. 
                     Then do the same for the other questions.</MudText>
             </DemoPopup>
