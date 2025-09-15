@@ -6,7 +6,7 @@
     <div style="height: 10px; background-color: #007bff; width: 100%;"></div>
 }
 
-<div draggable="@(!Disabled)"
+<div draggable="@((!Disabled).ToString().ToLower())"
      @ondragstart="@((e) => OnDragStart(e, Items.IndexOf(Item)))"
      @ondragover="@((e) => OnDragOver(e, Items.IndexOf(Item)))"
      @ondrop="@((e) => OnDrop(e, Items.IndexOf(Item)))"
