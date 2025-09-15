@@ -58,6 +58,9 @@ namespace JwtIdentity.Client.Pages.Survey.Results
         protected void NextDemoStep()
         {
             if (!IsDemoUser) return;
+
+            if (DemoStep == 5) NavigationManager.NavigateTo("/register");
+
             DemoStep++;
             StateHasChanged();
         }

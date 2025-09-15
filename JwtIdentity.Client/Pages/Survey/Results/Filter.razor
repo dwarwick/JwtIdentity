@@ -5,7 +5,7 @@
 
 @if (columnsInitialized)
 {
-    <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 0, 1, 4 })">
+    <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 0 })">
         <SfGrid ID="Grid"
                 @ref="Grid"
                 TValue="ExpandoObject"
@@ -24,19 +24,19 @@
             <GridTemplates>
                 <ToolbarTemplate>
                     <div class="d-flex">
-                        <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 2 })" IsButton="true">
-                            <MudButton id="ColumnChooser_button" Variant="Variant.Filled" Color="Color.Primary" OnClick="OpenColumnChooser">Column Chooser</MudButton>
+                        <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 2 })" IsButton="true" Class="mx-2 my-1">
+                            <MudButton id="ColumnChooser_button" StartIcon="@Icons.Material.Rounded.ViewColumn" Variant="Variant.Filled" Color="Color.Primary" OnClick="OpenColumnChooser">Column Chooser</MudButton>
                         </DemoBorder>
                         <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 3 })" IsButton="true">
-                            <MudButton id="ExportExcel_button" Variant="Variant.Filled" Color="Color.Primary" OnClick="ExportToExcel">Export to Excel</MudButton>
+                            <MudButton id="ExportExcel_button" StartIcon="@Icons.Custom.FileFormats.FileExcel" Variant="Variant.Filled" Color="Color.Success" OnClick="ExportToExcel">Export to Excel</MudButton>
                         </DemoBorder>
                     </div>
                     @{
                         string toolbarStepText = DemoStep == 2
-                            ? "Use the Column Chooser to select which columns are visible. Try it and then click Next to continue."
-                            : DemoStep == 3
-                                ? "Export to Excel lets you download the responses for advanced analysis. Try it if you want and then click Next to continue."
-                                : string.Empty;
+                        ? "Use the Column Chooser to select which columns are visible. Try it and then click Next to continue."
+                        : DemoStep == 3
+                        ? "Export to Excel lets you download the responses for advanced analysis. Try it if you want and then click Next to continue."
+                        : string.Empty;
                     }
                     <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 2, 3 })" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopLeft">
                         <MudText Typo="Typo.body2" Style="white-space: pre-line">@toolbarStepText</MudText>
@@ -54,44 +54,44 @@
 
             <GridColumns>
 
-            @foreach (var q in Survey.Questions)
-            {
-                <GridColumn Field="@_propertyMap[q.Id]" 
-                            HeaderText="@q.Text"
-                            Type="@(q.QuestionType == QuestionType.Rating1To10
-                                    ? ColumnType.Integer
-                                    : q.QuestionType == QuestionType.TrueFalse
-                                    ? ColumnType.Boolean
-                                    : ColumnType.String)"
-                            TextAlign="TextAlign.Left" >
-                    
-                    <HeaderTemplate>
-                        <div title="@q.Text">
-                            @q.Text
-                        </div>
-                    </HeaderTemplate>
-                </GridColumn>
+                @foreach (var q in Survey.Questions)
+                {
+                    <GridColumn Field="@_propertyMap[q.Id]"
+                                HeaderText="@q.Text"
+                                Type="@(q.QuestionType == QuestionType.Rating1To10
+                                                                                                    ? ColumnType.Integer
+                                                                                                    : q.QuestionType == QuestionType.TrueFalse
+                                                                                                    ? ColumnType.Boolean
+                                                                                                    : ColumnType.String)"
+                        TextAlign="TextAlign.Left">
 
-                
-            }
+                        <HeaderTemplate>
+                            <div title="@q.Text">
+                                @q.Text
+                            </div>
+                        </HeaderTemplate>
+
+                    </GridColumn>
+
+
+                        }
 
             </GridColumns>
 
             <GridAggregates>
-            <GridAggregate>
-                <GridAggregateColumns>
-                    
+                <GridAggregate>
+                    <GridAggregateColumns>
+
                         @if (Survey?.Questions?.Count > 0)
                         {
                             foreach (var q in Survey.Questions)
                             {
                                 <GridAggregateColumn Field=@(_propertyMap[q.Id].ToString()) Type="Syncfusion.Blazor.Grids.AggregateType.Count">
                                     <FooterTemplate>
-
                                         @{
                                             double rowCount = TotalRowCount;
 
-        
+
                                             <p>Row Count: @TotalRowCount</p>
 
                                             @* inside your FooterTemplate *@
@@ -147,14 +147,13 @@
 
 
                                         }
-
                                     </FooterTemplate>
                                 </GridAggregateColumn>
                             }
                         }
-                    
-                </GridAggregateColumns>
-            </GridAggregate>
+
+                    </GridAggregateColumns>
+                </GridAggregate>
             </GridAggregates>
         </SfGrid>
     </DemoBorder>
@@ -162,14 +161,14 @@
     string gridStepText = DemoStep switch
     {
         0 => "Each row of the grid represents a response from one user.",
-        1 => "The grid supports sorting and filtering. Try it out and click Next when you're ready.",
-        4 => "The aggregate section summarizes the result percentages for a quick analysis.",
+        1 => "The grid supports sorting and filtering. Use the controls in the colum headers Try it out and click Next when you're ready.",
+        4 => "The aggregate section at the bottom of the grid summarizes the result percentages for a quick analysis. These are updated based on filtering",
         5 => "This concludes the demo. Create an account to start creating your own surveys.",
         _ => string.Empty
     };
     <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 0, 1, 4, 5 })" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopLeft">
         <MudText Typo="Typo.body2" Style="white-space: pre-line">@gridStepText</MudText>
-        @if (DemoStep == 0 || DemoStep == 1 || DemoStep == 4)
+        @if (DemoStep == 0 || DemoStep == 1 || DemoStep == 4 || DemoStep == 5)
         {
             <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 0, 1, 4 })" IsButton="true">
                 <MudButton id="DemoNext_button" OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
