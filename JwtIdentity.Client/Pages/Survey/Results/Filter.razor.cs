@@ -25,7 +25,8 @@ namespace JwtIdentity.Client.Pages.Survey.Results
 
         protected int TotalRowCount { get; set; }
 
-        public string[] ToolbarItems { get; set; } = new string[] { "ColumnChooser", "ExcelExport" };
+        protected bool IsDemoUser { get; set; }
+        protected int DemoStep { get; set; }
 
         protected override async Task OnInitializedAsync()
         {
@@ -33,6 +34,10 @@ namespace JwtIdentity.Client.Pages.Survey.Results
 
             SurveyHubClient.SurveyUpdated += HandleSurveyUpdated;
             await SurveyHubClient.JoinSurveyGroup(SurveyId);
+
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            var userName = authState.User.Identity?.Name ?? string.Empty;
+            IsDemoUser = userName.StartsWith("DemoUser") && userName.EndsWith("@surveyshark.site");
         }
 
         private async void HandleSurveyUpdated(string id)
@@ -50,12 +55,24 @@ namespace JwtIdentity.Client.Pages.Survey.Results
             return ValueTask.CompletedTask;
         }
 
-        protected async Task ToolbarClickHandler(Syncfusion.Blazor.Navigations.ClickEventArgs args)
+        protected void NextDemoStep()
         {
-            if (args.Item.Text == "Export to Excel") //Id is combination of Grid's ID and itemname
-            {
-                await this.Grid.ExportToExcelAsync();
-            }
+            if (!IsDemoUser) return;
+
+            if (DemoStep == 5) NavigationManager.NavigateTo("/register");
+
+            DemoStep++;
+            StateHasChanged();
+        }
+
+        protected async Task ExportToExcel()
+        {
+            await Grid.ExportToExcelAsync();
+        }
+
+        protected async Task OpenColumnChooser()
+        {
+            await Grid.OpenColumnChooserAsync(0, 0);
         }
 
         // 1) Hook DataBound
