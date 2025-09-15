@@ -1,8 +1,5 @@
 ﻿using System.Net;
 using System.Net.Mail;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using System.Net.Mime;
 
 #nullable enable
 
@@ -28,14 +25,14 @@ namespace JwtIdentity.Services
             fromEmail = configuration["EmailSettings:CustomerServiceEmail"] ?? string.Empty;
             header = $"<html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\"<head></head><body><div align=\"center\"></div><h3 style=\"text-align: center;\">{domain}</h3>";
             footer = $"<div style=\"text-align:center;margin-top:20px;\">&#169; {DateTime.Now.Year} {domain}</div></body></html>";
-            
+
             _logger.LogInformation("EmailService initialized with domain: {Domain}", domain);
         }
 
         public bool SendEmailVerificationMessage(string email, string tokenUrl)
         {
             _logger.LogInformation("Sending email verification to: {Email}", email);
-            
+
             try
             {
                 var emailSettings = _configuration.GetSection("EmailSettings");
@@ -75,7 +72,7 @@ namespace JwtIdentity.Services
         public bool SendPasswordResetEmail(string email, string tokenUrl)
         {
             _logger.LogInformation("Sending password reset email to: {Email}", email);
-            
+
             try
             {
                 var emailSettings = _configuration.GetSection("EmailSettings");
@@ -114,8 +111,13 @@ namespace JwtIdentity.Services
 
         public async Task<bool> SendEmailAsync(string toEmail, string subject, string body)
         {
+            if (toEmail.StartsWith("DemoUser_", StringComparison.OrdinalIgnoreCase) || toEmail.StartsWith("anonymous_", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
             _logger.LogInformation("Sending async email to: {Email} with subject: {Subject}", toEmail, subject);
-            
+
             try
             {
                 var emailSettings = _configuration.GetSection("EmailSettings");
@@ -152,7 +154,7 @@ namespace JwtIdentity.Services
         private bool SendEmail(string fromEmail, string password, string server, string toEmail, string subject, string body)
         {
             _logger.LogDebug("Attempting to send email from {FromEmail} to {ToEmail} via {Server}", fromEmail, toEmail, server);
-            
+
             try
             {
                 using (var message = new MailMessage())
@@ -178,7 +180,7 @@ namespace JwtIdentity.Services
             }
             catch (SmtpException ex)
             {
-                _logger.LogError(ex, "SMTP error sending email to {ToEmail}: {StatusCode} - {Message}", 
+                _logger.LogError(ex, "SMTP error sending email to {ToEmail}: {StatusCode} - {Message}",
                     toEmail, ex.StatusCode, ex.Message);
                 return false;
             }

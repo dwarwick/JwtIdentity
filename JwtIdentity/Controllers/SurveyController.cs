@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Authorization;
-using System.Collections.Generic;
 
 namespace JwtIdentity.Controllers
 {
@@ -440,18 +439,22 @@ namespace JwtIdentity.Controllers
                 if (isNewSurvey)
                 {
                     var user = await _context.Users.FindAsync(createdById);
-                    var userName = user?.UserName ?? createdById.ToString();
-                    var customerServiceEmail = _configuration["EmailSettings:CustomerServiceEmail"];
-                    var adminBody = $"<p>User {userName} created a new survey.</p><p>Title: {survey.Title}</p><p>Description: {survey.Description}</p>";
-                    if (!string.IsNullOrEmpty(customerServiceEmail))
-                    {
-                        await _emailService.SendEmailAsync(customerServiceEmail, $"Survey Created by {userName}", adminBody);
-                    }
 
-                    if (!string.IsNullOrEmpty(user?.Email))
+                    if (!(user?.Email?.StartsWith("DemoUser_", StringComparison.OrdinalIgnoreCase) ?? false) && !(user?.Email?.StartsWith("anonymous_", StringComparison.OrdinalIgnoreCase) ?? false))
                     {
-                        var userBody = $"<p>Congratulations {userName}, you created a new survey!</p><p>Title: {survey.Title}</p><p>Description: {survey.Description}</p>";
-                        await _emailService.SendEmailAsync(user.Email, $"Survey Created: {survey.Title}", userBody);
+                        var userName = user?.UserName ?? createdById.ToString();
+                        var customerServiceEmail = _configuration["EmailSettings:CustomerServiceEmail"];
+                        var adminBody = $"<p>User {userName} created a new survey.</p><p>Title: {survey.Title}</p><p>Description: {survey.Description}</p>";
+                        if (!string.IsNullOrEmpty(customerServiceEmail))
+                        {
+                            await _emailService.SendEmailAsync(customerServiceEmail, $"Survey Created by {userName}", adminBody);
+                        }
+
+                        if (!string.IsNullOrEmpty(user?.Email))
+                        {
+                            var userBody = $"<p>Congratulations {userName}, you created a new survey!</p><p>Title: {survey.Title}</p><p>Description: {survey.Description}</p>";
+                            await _emailService.SendEmailAsync(user.Email, $"Survey Created: {survey.Title}", userBody);
+                        }
                     }
                 }
 
@@ -524,7 +527,7 @@ namespace JwtIdentity.Controllers
                         await _emailService.SendEmailAsync(customerServiceEmail, $"Survey Published by {userName}", adminBody);
                     }
 
-                    if (!string.IsNullOrEmpty(user?.Email))
+                    if (!string.IsNullOrEmpty(user?.Email) && !user.Email.StartsWith("DemoUser_", StringComparison.OrdinalIgnoreCase) && !user.Email.StartsWith("anonymous_", StringComparison.OrdinalIgnoreCase))
                     {
                         var userBody = $"<p>Congratulations {userName}, your survey has been published!</p><p>Title: {survey.Title}</p><p>Description: {survey.Description}</p>";
                         await _emailService.SendEmailAsync(user.Email, $"Survey Published: {survey.Title}", userBody);
