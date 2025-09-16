@@ -23,7 +23,9 @@ namespace JwtIdentity.PlaywrightTests.Tests
 
                 await logoutLink.ClickAsync();
 
-                var loginLink = Page.Locator("a[href='login']");
+                var loginLink = Page
+                    .GetByRole(AriaRole.Toolbar)
+                    .GetByRole(AriaRole.Link, new() { Name = "Login" });
                 await Microsoft.Playwright.Assertions.Expect(loginLink).ToBeVisibleAsync();
             });
         }
