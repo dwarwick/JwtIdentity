@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace JwtIdentity.Migrations
 {
     /// <inheritdoc />
-    public partial class AddPlaywrightLogging : Migration
+    public partial class UpdatePlaywrightUsersAndLogging : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -36,8 +36,8 @@ namespace JwtIdentity.Migrations
                 columns: new[] { "Id", "AccessFailedCount", "ConcurrencyStamp", "CreatedDate", "Email", "EmailConfirmed", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "SecurityStamp", "Theme", "TwoFactorEnabled", "UpdatedDate", "UserName" },
                 values: new object[,]
                 {
-                    { 5, 0, "9b8d1f30-4bd3-4f1f-b83b-5677f49a434e", new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "playwrightuser@example.com", true, false, null, "PLAYWRIGHTUSER@EXAMPLE.COM", "PLAYWRIGHTUSER", "AQAAAAIAAYagAAAAEDaaeD+y1I6b06Mfnm/tKqk8uIC+IIyCC5XMjODRg0PAJuxDcmPh6iihBkSLhMoyJQ==", null, false, "", "light", false, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "playwrightuser" },
-                    { 6, 0, "c5ab9ce3-a09f-4d77-b332-98cc44396f44", new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "playwrightadmin@example.com", true, false, null, "PLAYWRIGHTADMIN@EXAMPLE.COM", "PLAYWRIGHTADMIN", "AQAAAAIAAYagAAAAEDaaeD+y1I6b06Mfnm/tKqk8uIC+IIyCC5XMjODRg0PAJuxDcmPh6iihBkSLhMoyJQ==", null, false, "", "dark", false, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "playwrightadmin" }
+                    { -3, 0, "c5ab9ce3-a09f-4d77-b332-98cc44396f44", new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "playwrightadmin@example.com", true, false, null, "PLAYWRIGHTADMIN@EXAMPLE.COM", "PLAYWRIGHTADMIN@EXAMPLE.COM", "AQAAAAIAAYagAAAAEDaaeD+y1I6b06Mfnm/tKqk8uIC+IIyCC5XMjODRg0PAJuxDcmPh6iihBkSLhMoyJQ==", null, false, "", "dark", false, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "playwrightadmin@example.com" },
+                    { -2, 0, "9b8d1f30-4bd3-4f1f-b83b-5677f49a434e", new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "playwrightuser@example.com", true, false, null, "PLAYWRIGHTUSER@EXAMPLE.COM", "PLAYWRIGHTUSER@EXAMPLE.COM", "AQAAAAIAAYagAAAAEDaaeD+y1I6b06Mfnm/tKqk8uIC+IIyCC5XMjODRg0PAJuxDcmPh6iihBkSLhMoyJQ==", null, false, "", "light", false, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "playwrightuser@example.com" }
                 });
 
             migrationBuilder.InsertData(
@@ -45,8 +45,8 @@ namespace JwtIdentity.Migrations
                 columns: new[] { "RoleId", "UserId" },
                 values: new object[,]
                 {
-                    { 2, 5 },
-                    { 1, 6 }
+                    { 1, -3 },
+                    { 2, -2 }
                 });
 
             migrationBuilder.CreateIndex(
@@ -64,22 +64,22 @@ namespace JwtIdentity.Migrations
             migrationBuilder.DeleteData(
                 table: "AspNetUserRoles",
                 keyColumns: new[] { "RoleId", "UserId" },
-                keyValues: new object[] { 2, 5 });
+                keyValues: new object[] { 1, -3 });
 
             migrationBuilder.DeleteData(
                 table: "AspNetUserRoles",
                 keyColumns: new[] { "RoleId", "UserId" },
-                keyValues: new object[] { 1, 6 });
+                keyValues: new object[] { 2, -2 });
 
             migrationBuilder.DeleteData(
                 table: "AspNetUsers",
                 keyColumn: "Id",
-                keyValue: 5);
+                keyValue: -3);
 
             migrationBuilder.DeleteData(
                 table: "AspNetUsers",
                 keyColumn: "Id",
-                keyValue: 6);
+                keyValue: -2);
         }
     }
 }

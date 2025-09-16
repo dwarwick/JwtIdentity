@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace JwtIdentity.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250916002650_AddPlaywrightLogging")]
-    partial class AddPlaywrightLogging
+    [Migration("20250916020042_UpdatePlaywrightUsersAndLogging")]
+    partial class UpdatePlaywrightUsersAndLogging
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -259,7 +259,7 @@ namespace JwtIdentity.Migrations
                         },
                         new
                         {
-                            Id = 5,
+                            Id = -2,
                             AccessFailedCount = 0,
                             ConcurrencyStamp = "9b8d1f30-4bd3-4f1f-b83b-5677f49a434e",
                             CreatedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
@@ -267,18 +267,18 @@ namespace JwtIdentity.Migrations
                             EmailConfirmed = true,
                             LockoutEnabled = false,
                             NormalizedEmail = "PLAYWRIGHTUSER@EXAMPLE.COM",
-                            NormalizedUserName = "PLAYWRIGHTUSER",
+                            NormalizedUserName = "PLAYWRIGHTUSER@EXAMPLE.COM",
                             PasswordHash = "AQAAAAIAAYagAAAAEDaaeD+y1I6b06Mfnm/tKqk8uIC+IIyCC5XMjODRg0PAJuxDcmPh6iihBkSLhMoyJQ==",
                             PhoneNumberConfirmed = false,
                             SecurityStamp = "",
                             Theme = "light",
                             TwoFactorEnabled = false,
                             UpdatedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            UserName = "playwrightuser"
+                            UserName = "playwrightuser@example.com"
                         },
                         new
                         {
-                            Id = 6,
+                            Id = -3,
                             AccessFailedCount = 0,
                             ConcurrencyStamp = "c5ab9ce3-a09f-4d77-b332-98cc44396f44",
                             CreatedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
@@ -286,14 +286,14 @@ namespace JwtIdentity.Migrations
                             EmailConfirmed = true,
                             LockoutEnabled = false,
                             NormalizedEmail = "PLAYWRIGHTADMIN@EXAMPLE.COM",
-                            NormalizedUserName = "PLAYWRIGHTADMIN",
+                            NormalizedUserName = "PLAYWRIGHTADMIN@EXAMPLE.COM",
                             PasswordHash = "AQAAAAIAAYagAAAAEDaaeD+y1I6b06Mfnm/tKqk8uIC+IIyCC5XMjODRg0PAJuxDcmPh6iihBkSLhMoyJQ==",
                             PhoneNumberConfirmed = false,
                             SecurityStamp = "",
                             Theme = "dark",
                             TwoFactorEnabled = false,
                             UpdatedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            UserName = "playwrightadmin"
+                            UserName = "playwrightadmin@example.com"
                         },
                         new
                         {
@@ -757,12 +757,12 @@ namespace JwtIdentity.Migrations
                         },
                         new
                         {
-                            UserId = 5,
+                            UserId = -2,
                             RoleId = 2
                         },
                         new
                         {
-                            UserId = 6,
+                            UserId = -3,
                             RoleId = 1
                         },
                         new

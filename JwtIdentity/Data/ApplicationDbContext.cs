@@ -1,5 +1,4 @@
 using System.Security.Claims;
-using Microsoft.AspNetCore.Http;
 
 namespace JwtIdentity.Data
 {
@@ -101,9 +100,9 @@ namespace JwtIdentity.Data
                 },
                 new ApplicationUser
                 {
-                    Id = 5,
-                    UserName = "playwrightuser",
-                    NormalizedUserName = "PLAYWRIGHTUSER",
+                    Id = -2,
+                    UserName = "playwrightuser@example.com",
+                    NormalizedUserName = "PLAYWRIGHTUSER@EXAMPLE.COM",
                     Email = "playwrightuser@example.com",
                     NormalizedEmail = "PLAYWRIGHTUSER@EXAMPLE.COM",
                     EmailConfirmed = true,
@@ -114,9 +113,9 @@ namespace JwtIdentity.Data
                 },
                 new ApplicationUser
                 {
-                    Id = 6,
-                    UserName = "playwrightadmin",
-                    NormalizedUserName = "PLAYWRIGHTADMIN",
+                    Id = -3,
+                    UserName = "playwrightadmin@example.com",
+                    NormalizedUserName = "PLAYWRIGHTADMIN@EXAMPLE.COM",
                     Email = "playwrightadmin@example.com",
                     NormalizedEmail = "PLAYWRIGHTADMIN@EXAMPLE.COM",
                     EmailConfirmed = true,
@@ -145,8 +144,8 @@ namespace JwtIdentity.Data
                 new IdentityUserRole<int> { UserId = 1, RoleId = 1 }, // Admin
                 new IdentityUserRole<int> { UserId = 2, RoleId = 2 },  // User
                 new IdentityUserRole<int> { UserId = 3, RoleId = 4 },  // AnonymousUser
-                new IdentityUserRole<int> { UserId = 5, RoleId = 2 },  // PlaywrightUser
-                new IdentityUserRole<int> { UserId = 6, RoleId = 1 },  // PlaywrightAdmin
+                new IdentityUserRole<int> { UserId = -2, RoleId = 2 },  // PlaywrightUser
+                new IdentityUserRole<int> { UserId = -3, RoleId = 1 },  // PlaywrightAdmin
                 new IdentityUserRole<int> { UserId = -1, RoleId = 2 }  // DemoUser
             );
 

@@ -13,7 +13,7 @@ namespace JwtIdentity.PlaywrightTests.Tests
 
             await ExecuteWithLoggingAsync(nameof(LoginTest_Succeeds), logoutSelector, async () =>
             {
-                await LoginAsync("playwrightuser");
+                await LoginAsync("playwrightuser@example.com");
 
                 var logoutLink = Page.Locator(logoutSelector);
                 await Microsoft.Playwright.Assertions.Expect(logoutLink).ToBeVisibleAsync();
