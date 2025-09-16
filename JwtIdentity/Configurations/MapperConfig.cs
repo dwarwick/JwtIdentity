@@ -94,6 +94,8 @@
                 .ForMember(dest => dest.NumberOfResponses, opt => opt.Ignore()); // Don't map this property from Survey model
             
             _ = CreateMap<SurveyViewModel, Survey>();
+
+            _ = CreateMap<PlaywrightLog, PlaywrightLogViewModel>().ReverseMap();
         }
     }
 }

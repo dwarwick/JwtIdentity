@@ -1,0 +1,55 @@
+@page "/admin/playwright-logs"
+@attribute [Authorize(Roles = "Admin")]
+@inherits PlaywrightLogsModel
+@using SortDirection = Syncfusion.Blazor.Grids.SortDirection
+
+<PageTitle>Survey Shark - Playwright Test Logs</PageTitle>
+
+<MudText Typo="Typo.h4" Class="mb-4">Playwright Test Logs</MudText>
+
+@if (IsLoading)
+{
+    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+        <MudText>Loading Playwright test results...</MudText>
+    </MudStack>
+}
+else
+{
+    <MudPaper Class="pa-4">
+        <SfGrid TValue="PlaywrightLogViewModel"
+                DataSource="@PlaywrightLogs"
+                AllowPaging="true"
+                AllowSorting="true"
+                AllowFiltering="true"
+                AllowResizing="true"
+                GridLines="@GridSettings.GridLines"
+                TextWrapSettings="@GridSettings.TextWrapSettings">
+            <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel"></GridFilterSettings>
+            <GridSortSettings>
+                <GridSortColumns>
+                    <GridSortColumn Field="ExecutedAt" Direction="SortDirection.Descending"></GridSortColumn>
+                </GridSortColumns>
+            </GridSortSettings>
+            <GridColumns>
+                <GridColumn Field="TestName" HeaderText="Test Name" Width="220" />
+                <GridColumn HeaderText="Status" Width="140">
+                    <Template Context="logContext">
+                        @if (logContext is PlaywrightLogViewModel log)
+                        {
+                            <MudChip T="string"
+                                     Size="MudBlazor.Size.Small"
+                                     Color="@GetStatusColor(log.Status)">
+                                @log.Status
+                            </MudChip>
+                        }
+                    </Template>
+                </GridColumn>
+                <GridColumn Field="ExecutedAt" HeaderText="Executed" Type="ColumnType.DateTime" Format="G" Width="200" />
+                <GridColumn Field="Browser" HeaderText="Browser" Width="120" />
+                <GridColumn Field="FailedElement" HeaderText="Element" Width="220" />
+                <GridColumn Field="ErrorMessage" HeaderText="Error" Width="320" />
+            </GridColumns>
+        </SfGrid>
+    </MudPaper>
+}
