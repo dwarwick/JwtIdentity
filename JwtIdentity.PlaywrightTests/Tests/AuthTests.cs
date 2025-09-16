@@ -1,4 +1,5 @@
 using JwtIdentity.PlaywrightTests.Helpers;
+using Microsoft.Playwright;
 using NUnit.Framework;
 
 namespace JwtIdentity.PlaywrightTests.Tests
@@ -9,13 +10,15 @@ namespace JwtIdentity.PlaywrightTests.Tests
         [Test]
         public async Task LoginTest_Succeeds()
         {
-            const string logoutSelector = "a[href='logout']";
+            const string logoutSelectorDescription = "Toolbar logout link";
 
-            await ExecuteWithLoggingAsync(nameof(LoginTest_Succeeds), logoutSelector, async () =>
+            await ExecuteWithLoggingAsync(nameof(LoginTest_Succeeds), logoutSelectorDescription, async () =>
             {
                 await LoginAsync("playwrightuser@example.com");
 
-                var logoutLink = Page.Locator(logoutSelector);
+                var logoutLink = Page
+                    .GetByRole(AriaRole.Toolbar)
+                    .GetByRole(AriaRole.Link, new() { Name = "Logout" });
                 await Microsoft.Playwright.Assertions.Expect(logoutLink).ToBeVisibleAsync();
 
                 await logoutLink.ClickAsync();
