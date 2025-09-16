@@ -9,6 +9,25 @@ namespace JwtIdentity.PlaywrightTests.Helpers
     public abstract class PlaywrightHelper : PageTest
     {
         private static readonly HttpClient HttpClient = CreateHttpClient();
+        private string? _originalHeadedValue;
+
+        [OneTimeSetUp]
+        public void ConfigurePlaywrightExecutionMode()
+        {
+            _originalHeadedValue = Environment.GetEnvironmentVariable("HEADED");
+
+            var settings = PlaywrightTestConfiguration.Settings;
+            var headedValue = settings.Headless ? "0" : "1";
+            Environment.SetEnvironmentVariable("HEADED", headedValue);
+
+            TestContext.Progress.WriteLine($"Playwright headless mode: {settings.Headless}");
+        }
+
+        [OneTimeTearDown]
+        public void RestorePlaywrightExecutionMode()
+        {
+            Environment.SetEnvironmentVariable("HEADED", _originalHeadedValue);
+        }
 
         protected virtual string BaseUrl => Environment.GetEnvironmentVariable("PLAYWRIGHT_BASE_URL") ?? "https://localhost:5001";
         protected virtual string ApiEndpoint => $"{BaseUrl.TrimEnd('/')}/api/playwrightlog";
