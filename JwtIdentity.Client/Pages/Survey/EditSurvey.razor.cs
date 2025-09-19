@@ -33,11 +33,14 @@ namespace JwtIdentity.Client.Pages.Survey
             get => _selectedQuestion;
             set
             {
-                // If user "re-selects" the same question, unselect
                 if (value == _selectedQuestion)
+                {
                     _selectedQuestion = null;
+                }
                 else
+                {
                     _selectedQuestion = value;
+                }
             }
         }
 
@@ -458,21 +461,11 @@ namespace JwtIdentity.Client.Pages.Survey
 
         protected void QuestionSelected(QuestionViewModel input)
         {
+            var previousSelection = SelectedQuestion;
+
             if (input == null)
             {
-                SelectedQuestion = null;
-                SelectedQuestionType = Enum.GetName(QuestionType.Text) ?? "Text";
-                QuestionText = null;
-                MultipleChoiceQuestion = null;
-                IsRequired = true;
-                ManualQuestionPanelExpanded = true;
-                ExistingQuestionPanelExpanded = false;
-
-                if (IsDemoUser && DemoStep == 5)
-                {
-                    DemoStep = 6;
-                }
-
+                ResetQuestionSelectionState();
                 return;
             }
 
@@ -481,26 +474,31 @@ namespace JwtIdentity.Client.Pages.Survey
                 SelectedQuestion = Survey.Questions.FirstOrDefault(x => x.Id == input.Id);
             }
 
-            if (SelectedQuestion != null)
-            {
-                SelectedQuestionType = Enum.GetName(typeof(QuestionType), SelectedQuestion.QuestionType);
-                QuestionText = !string.IsNullOrWhiteSpace(tempQuestionText) ? tempQuestionText : SelectedQuestion.Text;
-                IsRequired = SelectedQuestion.IsRequired;
+            var deselectingCurrent = previousSelection != null && SelectedQuestion == null && input.Id == previousSelection.Id;
 
-                if (SelectedQuestion.QuestionType == QuestionType.MultipleChoice)
+            if (deselectingCurrent || SelectedQuestion == null)
+            {
+                ResetQuestionSelectionState();
+                return;
+            }
+
+            SelectedQuestionType = Enum.GetName(typeof(QuestionType), SelectedQuestion.QuestionType);
+            QuestionText = !string.IsNullOrWhiteSpace(tempQuestionText) ? tempQuestionText : SelectedQuestion.Text;
+            IsRequired = SelectedQuestion.IsRequired;
+
+            if (SelectedQuestion.QuestionType == QuestionType.MultipleChoice)
+            {
+                MultipleChoiceQuestion = SelectedQuestion as MultipleChoiceQuestionViewModel;
+            }
+            else if (SelectedQuestion.QuestionType == QuestionType.SelectAllThatApply)
+            {
+                // When a SelectAllThatApply question is selected, use its options for the MultipleChoiceQuestion property
+                // so they can be displayed and edited in the UI
+                var selectAllQuestion = SelectedQuestion as SelectAllThatApplyQuestionViewModel;
+                MultipleChoiceQuestion = new MultipleChoiceQuestionViewModel
                 {
-                    MultipleChoiceQuestion = SelectedQuestion as MultipleChoiceQuestionViewModel;
-                }
-                else if (SelectedQuestion.QuestionType == QuestionType.SelectAllThatApply)
-                {
-                    // When a SelectAllThatApply question is selected, use its options for the MultipleChoiceQuestion property
-                    // so they can be displayed and edited in the UI
-                    var selectAllQuestion = SelectedQuestion as SelectAllThatApplyQuestionViewModel;
-                    MultipleChoiceQuestion = new MultipleChoiceQuestionViewModel
-                    {
-                        Options = selectAllQuestion.Options
-                    };
-                }
+                    Options = selectAllQuestion.Options
+                };
             }
 
             ManualQuestionPanelExpanded = true;
@@ -517,6 +515,23 @@ namespace JwtIdentity.Client.Pages.Survey
                 {
                     DemoStep = 4;
                 }
+            }
+        }
+
+        private void ResetQuestionSelectionState()
+        {
+            SelectedQuestion = null;
+            SelectedQuestionType = Enum.GetName(QuestionType.Text) ?? "Text";
+            QuestionText = null;
+            MultipleChoiceQuestion = null;
+            IsRequired = true;
+            ManualQuestionPanelExpanded = true;
+            ExistingQuestionPanelExpanded = false;
+            tempQuestionText = null;
+
+            if (IsDemoUser && DemoStep == 5)
+            {
+                DemoStep = 6;
             }
         }
 

@@ -17,12 +17,12 @@
         <MudText Typo="Typo.body2">Now click the Publish Survey button to publish the survey.</MudText>
     </DemoPopup>
 </MudStack>
-<MudTextField Label="Survey Title" T="string" Value="Survey.Title" ValueChanged="@((e) => UpdateTitleDescription(e, "title"))" Class="my-2" Variant="Variant.Filled" />
-<MudTextField id="SurveyDescription_textbox" Label="Survey Description" T="string" Value="Survey.Description" ValueChanged="@((e) => UpdateTitleDescription(e, "description"))" Class="mb-2" Variant="Variant.Filled" Lines="3" MaxLines="5" AutoGrow="true" Counter="500" MaxLength="500" />
+<MudTextField Label="Survey Title" T="string" Value="Survey.Title" ValueChanged="@((e) => UpdateTitleDescription(e, "title"))" Class="my-2" Variant="Variant.Filled" ReadOnly="@IsDemoUser" />
+<MudTextField id="SurveyDescription_textbox" Label="Survey Description" T="string" Value="Survey.Description" ValueChanged="@((e) => UpdateTitleDescription(e, "description"))" Class="mb-2" Variant="Variant.Filled" Lines="3" MaxLines="5" AutoGrow="true" Counter="500" MaxLength="500" ReadOnly="@IsDemoUser" />
 
 @if (!string.IsNullOrWhiteSpace(Survey.AiInstructions) && !CanEditQuestions)
 {
-    <MudTextField Label="AI Prompt" T="string" Value="Survey.AiInstructions" ValueChanged="@UpdateAiInstructions" Class="mb-2" Variant="Variant.Filled" Lines="3" MaxLines="6" AutoGrow="true" Counter="500" MaxLength="500" />
+    <MudTextField Label="AI Prompt" T="string" Value="Survey.AiInstructions" ValueChanged="@UpdateAiInstructions" Class="mb-2" Variant="Variant.Filled" Lines="3" MaxLines="6" AutoGrow="true" Counter="500" MaxLength="500" ReadOnly="@IsDemoUser" />
 }
 
 @if (RequiresReview)
@@ -145,19 +145,20 @@
                             </DemoPopup>
                         <MudText Typo="Typo.h6" Class="mt-5">Create a @StringHelper.PascalCaseToWords(SelectedQuestionType) Question</MudText>
                         <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 4, 7 })">
-                            <MudTextField Id="Text" Label="Question Text" @bind-Value="QuestionText" Variant="Variant.Filled" Lines="1" MaxLines="5" AutoGrow="true" Immediate="true" Counter="500" MaxLength="500" />
+                            <MudTextField Id="Text" Label="Question Text" @bind-Value="QuestionText" Variant="Variant.Filled" Lines="1" MaxLines="5" AutoGrow="true" Immediate="true" Counter="500" MaxLength="500" ReadOnly="@IsDemoUser" />
                         </DemoBorder>
                             <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 4 })">
                                 <MudText Typo="Typo.body2" Style="white-space: pre-line">
-                                    Scroll down to edit the <span style="color: var(--mud-palette-success);">question text</span>.
-                                    If you selected a <span style="color: var(--mud-palette-primary);">multiple choice</span> question, you will be able to see the multiple choice options down below (scroll down). You can add / delete, or edit these options.
+                                    Scroll down to preview the <span style="color: var(--mud-palette-success);">question text</span> editor.
+                                    During the guided demo the field is read-only, but when you create your own surveys you can type directly here to refine the wording.
+                                    If this is a <span style="color: var(--mud-palette-primary);">multiple choice</span> question, the answer choices appear just below.
                                 </MudText>
                                 <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 4 })" IsButton="true">
                                     <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
                                 </DemoBorder>
                             </DemoPopup>
                             <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 7 })">
-                                <MudText Typo="Typo.body2">We will now create a multiple choice question.</MudText>
+                                <MudText Typo="Typo.body2">We will now create a multiple choice question and, since this field stays read-only in the demo, we'll insert the updated wording for you.</MudText>
                                 <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 7 })" IsButton="true">
                                     <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
                                 </DemoBorder>
@@ -192,7 +193,7 @@
                             <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 8 })">
                                 <MudText Typo="Typo.body2">Now we will pick appropriate choices for this question. Expand the Preset Choices drop-down and select Yes No Partially.</MudText>
                             </DemoPopup>
-                        <MudTextField id="Choice" Label="Choice Text" @bind-Value="NewChoiceOptionText" Variant="Variant.Filled" Lines="1" MaxLines="5" AutoGrow="true" Immediate="true" Counter="50" MaxLength="50" />
+                        <MudTextField id="Choice" Label="Choice Text" @bind-Value="NewChoiceOptionText" Variant="Variant.Filled" Lines="1" MaxLines="5" AutoGrow="true" Immediate="true" Counter="50" MaxLength="50" ReadOnly="@IsDemoUser" />
 
                         <MudButton ButtonType="ButtonType.Button" Variant="Variant.Filled" Color="Color.Primary" OnClick="@AddChoiceOption" Disabled="@(string.IsNullOrWhiteSpace(NewChoiceOptionText))">Add Choice</MudButton>
 
