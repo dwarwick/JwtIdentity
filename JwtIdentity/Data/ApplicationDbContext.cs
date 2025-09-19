@@ -1,5 +1,4 @@
 using System.Security.Claims;
-using Microsoft.AspNetCore.Http;
 
 namespace JwtIdentity.Data
 {
@@ -29,6 +28,7 @@ namespace JwtIdentity.Data
         // You can add a DbSet if you like:
         public DbSet<RoleClaim> RoleClaims { get; set; }
         public DbSet<LogEntry> LogEntries { get; set; }
+        public DbSet<PlaywrightLog> PlaywrightLogs { get; set; }
         public DbSet<Survey> Surveys { get; set; }
         public DbSet<Question> Questions { get; set; }
         public DbSet<Answer> Answers { get; set; }
@@ -100,6 +100,32 @@ namespace JwtIdentity.Data
                 },
                 new ApplicationUser
                 {
+                    Id = -2,
+                    UserName = "playwrightuser@example.com",
+                    NormalizedUserName = "PLAYWRIGHTUSER@EXAMPLE.COM",
+                    Email = "playwrightuser@example.com",
+                    NormalizedEmail = "PLAYWRIGHTUSER@EXAMPLE.COM",
+                    EmailConfirmed = true,
+                    PasswordHash = "AQAAAAIAAYagAAAAEDaaeD+y1I6b06Mfnm/tKqk8uIC+IIyCC5XMjODRg0PAJuxDcmPh6iihBkSLhMoyJQ==",
+                    ConcurrencyStamp = "9b8d1f30-4bd3-4f1f-b83b-5677f49a434e",
+                    SecurityStamp = string.Empty,
+                    Theme = "light"
+                },
+                new ApplicationUser
+                {
+                    Id = -3,
+                    UserName = "playwrightadmin@example.com",
+                    NormalizedUserName = "PLAYWRIGHTADMIN@EXAMPLE.COM",
+                    Email = "playwrightadmin@example.com",
+                    NormalizedEmail = "PLAYWRIGHTADMIN@EXAMPLE.COM",
+                    EmailConfirmed = true,
+                    PasswordHash = "AQAAAAIAAYagAAAAEDaaeD+y1I6b06Mfnm/tKqk8uIC+IIyCC5XMjODRg0PAJuxDcmPh6iihBkSLhMoyJQ==",
+                    ConcurrencyStamp = "c5ab9ce3-a09f-4d77-b332-98cc44396f44",
+                    SecurityStamp = string.Empty,
+                    Theme = "dark"
+                },
+                new ApplicationUser
+                {
                     Id = -1,
                     UserName = "DemoUser@surveyshark.site",
                     NormalizedUserName = "DEMOUSER@SURVEYSHARK.SITE",
@@ -118,8 +144,21 @@ namespace JwtIdentity.Data
                 new IdentityUserRole<int> { UserId = 1, RoleId = 1 }, // Admin
                 new IdentityUserRole<int> { UserId = 2, RoleId = 2 },  // User
                 new IdentityUserRole<int> { UserId = 3, RoleId = 4 },  // AnonymousUser
+                new IdentityUserRole<int> { UserId = -2, RoleId = 2 },  // PlaywrightUser
+                new IdentityUserRole<int> { UserId = -3, RoleId = 1 },  // PlaywrightAdmin
                 new IdentityUserRole<int> { UserId = -1, RoleId = 2 }  // DemoUser
             );
+
+            _ = builder.Entity<PlaywrightLog>()
+                .Property(p => p.TestName)
+                .HasMaxLength(256);
+
+            _ = builder.Entity<PlaywrightLog>()
+                .Property(p => p.Status)
+                .HasMaxLength(64);
+
+            _ = builder.Entity<PlaywrightLog>()
+                .HasIndex(p => p.ExecutedAt);
 
             var type = typeof(Permissions);
             List<string> AllPermissions;

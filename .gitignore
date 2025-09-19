@@ -402,3 +402,5 @@ FodyWeavers.xsd
 /JwtIdentity.Client/wwwroot/appsettings.Development.json
 /SeleniumTests
 # /API.ps1
+
+/JwtIdentity.PlaywrightTests/appsettings.Development.json
