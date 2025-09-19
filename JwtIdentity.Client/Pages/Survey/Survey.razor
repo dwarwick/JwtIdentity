@@ -172,9 +172,10 @@
                     </div>
                     @if (questionNumber == 2)
                     {
-                        string Step0Text = Preview ? "This is what the survey will look like. Feel free to click around. Responses aren't saved in preview mode." : "Go ahead and answer all questions and then submit the survey to continue the demo.";
+                        string Step0Text = Preview ? @"This is what the survey will look like. 
+Feel free to click around. Responses aren't saved in preview mode." : "Go ahead and answer all questions and then submit the survey to continue the demo.";
                         <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 0 })" AnchorOrigin="Origin.TopLeft" TransformOrigin="Origin.TopLeft">
-                            <MudText Typo="Typo.body2">@Step0Text</MudText>
+                            <MudText Typo="Typo.body2" Style="white-space:pre-line">@Step0Text</MudText>
                             <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 0 })" IsButton="true">
                                 <MudButton id="DemoNext_button" OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
                             </DemoBorder>
@@ -198,10 +199,11 @@
                         </MudButton>
                     </DemoBorder>
                     @{
-                        string demoText = DemoStep == 1 ? "The submit survey button is disabled in preview mode. It becomes active once all required questions are answered in a real survey." : DemoStep == 2 ? "Click Next to continue the demo." : "";
+                        string demoText = DemoStep == 1 ? @"The submit survey button is disabled in preview mode. 
+It becomes active once all required questions are answered in a real survey." : DemoStep == 2 ? "Click Next to continue the demo." : "";
                     }
-                    <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(Preview ? new List<int>() { 1, 2 } : new List<int>(){})">
-                        <MudText Typo="Typo.body2">@demoText</MudText>
+                    <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(Preview ? new List<int>() { 1, 2 } : new List<int>() { })" TransformOrigin="Origin.TopLeft" AnchorOrigin="Origin.BottomLeft">
+                        <MudText Typo="Typo.body2" Style="white-space: pre-line;">@demoText</MudText>
                         <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 1, 2 })" IsButton="true">
                             <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
                         </DemoBorder>
