@@ -38,7 +38,8 @@
             </DemoBorder>
         </MudStack>
         <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 1 })">
-            <MudText Typo="Typo.body2">Regenerate the AI-generated questions or accept them if you're satisfied.</MudText>
+            <MudText Typo="Typo.body2" Style="white-space: pre-line">Click each question then scroll down to inspect it.
+                Regenerate the AI-generated questions, or accept them if you're satisfied.</MudText>
         </DemoPopup>
     </MudAlert>
 }
@@ -96,14 +97,14 @@
                     </ChildContent>
                 </MudExpansionPanel>
             </DemoBorder>
-            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 0 })" TransformOrigin="Origin.TopLeft">
+            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 0 })" TransformOrigin="Origin.TopLeft" AnchorOrigin="Origin.BottomLeft">
                 <MudText Typo="Typo.body2" Style="white-space: pre-line">AI can occasionally hallucinate.
                     This can cause the generated questions and answers to be incorrect or not make sense.
                     Review each generated question and its choices. 
                     Expand this panel and click question 1 and scroll down to examine it. 
                     Then do the same for the other questions.</MudText>
             </DemoPopup>
-            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 2 })">
+            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 2 })" TransformOrigin="Origin.TopLeft" AnchorOrigin="Origin.BottomLeft">
                 <MudText Typo="Typo.body2">The questions can be reordered by dragging and dropping them.</MudText>
                 <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 2 })" IsButton="true">
                     <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
@@ -141,7 +142,9 @@
                             </MudSelect>
                         </DemoBorder>
                             <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 6 })">
-                                <MudText Typo="Typo.body2">Currently, the Question Type is set to Text. Select Multiple Choice for the question type.</MudText>
+                                <MudText Style="white-space: pre-line" Typo="Typo.body2">Now we will see how to create a new question.
+                                    Currently, the Question Type is set to Text. Select Multiple Choice for the question type. 
+                                    We will create a new Multiple Choice question.</MudText>
                             </DemoPopup>
                         <MudText Typo="Typo.h6" Class="mt-5">Create a @StringHelper.PascalCaseToWords(SelectedQuestionType) Question</MudText>
                         <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 4, 7 })">
@@ -149,8 +152,8 @@
                         </DemoBorder>
                             <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 4 })">
                                 <MudText Typo="Typo.body2" Style="white-space: pre-line">
-                                    Scroll down to preview the <span style="color: var(--mud-palette-success);">question text</span> editor.
-                                    During the guided demo the field is read-only, but when you create your own surveys you can type directly here to refine the wording.
+                                    Scroll down to preview the <span style="color: var(--mud-palette-success);">Question Text</span> editor.
+                                    During the guided demo the <span style="color: var(--mud-palette-success);">Question Text</span> field is read-only, but when you create your own surveys you can type directly here to refine the wording.
                                     If this is a <span style="color: var(--mud-palette-primary);">multiple choice</span> question, the answer choices appear just below.
                                 </MudText>
                                 <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 4 })" IsButton="true">
@@ -158,7 +161,7 @@
                                 </DemoBorder>
                             </DemoPopup>
                             <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 7 })">
-                                <MudText Typo="Typo.body2">We will now create a multiple choice question and, since this field stays read-only in the demo, we'll insert the updated wording for you.</MudText>
+                                <MudText Typo="Typo.body2">Since this field stays read-only in the demo, we'll insert the question wording for you.</MudText>
                                 <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 7 })" IsButton="true">
                                     <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
                                 </DemoBorder>

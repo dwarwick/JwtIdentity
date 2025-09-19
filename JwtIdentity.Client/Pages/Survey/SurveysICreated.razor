@@ -195,11 +195,12 @@
                                 </MudButton>
                             </DemoBorder>
                             @{
-                                string chartStepText = DemoStep == 5 ? "To make the demo more realistic, we have simulated that 20 other users have taken the survey, so on the charts and later on the grid, you will see fake demo data." :
+                                string chartStepText = DemoStep == 5 ? @"To make the demo more realistic, we have simulated that 20 other users have taken the survey.
+Therefore, on the charts and later on the grid, you will see fake demo data." :
                                                         DemoStep == 6 ? "Click the Charts button to view charts of survey results." : "";                                        
                             }
                             <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 5, 6 })" AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft">
-                                <MudText Typo="Typo.body2">@chartStepText</MudText>
+                                <MudText Typo="Typo.body2" Style="white-space:pre-line;">@chartStepText</MudText>
                                 @if (DemoStep == 5)
                                 {
                                     <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 5 })" IsButton="true">

@@ -56,7 +56,7 @@
                     DemoStep = 4;
                     break;
                 case 4:
-                    DemoStep = -1;
+                    DemoStep = 5;
                     break;
             }
         }

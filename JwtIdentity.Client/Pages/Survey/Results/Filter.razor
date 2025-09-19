@@ -33,9 +33,11 @@
                     </div>
                     @{
                         string toolbarStepText = DemoStep == 2
-                        ? "Use the Column Chooser to select which columns are visible. Try it and then click Next to continue."
+                        ? @"Use the Column Chooser to select which columns are visible. 
+Try it and then click Next to continue."
                         : DemoStep == 3
-                        ? "Export to Excel lets you download the responses for advanced analysis. Try it if you want and then click Next to continue."
+                        ? @"Export to Excel lets you download the responses for advanced analysis. 
+Try it if you want and then click Next to continue."
                         : string.Empty;
                     }
                     <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 2, 3 })" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopLeft">
@@ -161,9 +163,13 @@
     string gridStepText = DemoStep switch
     {
         0 => "Each row of the grid represents a response from one user.",
-        1 => "The grid supports sorting and filtering. Use the controls in the colum headers Try it out and click Next when you're ready.",
-        4 => "The aggregate section at the bottom of the grid summarizes the result percentages for a quick analysis. These are updated based on filtering",
-        5 => "This concludes the demo. Create an account to start creating your own surveys.",
+        1 => @"The grid supports sorting and filtering. 
+Use the controls in the colum headers. 
+Try it out and click Next when you're ready.",
+        4 => @"The aggregate section at the bottom of the grid summarizes the result percentages for a quick analysis. 
+These are updated based on filtering",
+        5 => @"This concludes the demo. 
+Create an account to start creating your own surveys.",
         _ => string.Empty
     };
     <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 0, 1, 4, 5 })" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopLeft">
