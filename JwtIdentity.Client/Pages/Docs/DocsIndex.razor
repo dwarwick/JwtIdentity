@@ -1,0 +1,111 @@
+@page "/documentation"
+@layout _DocsLayout
+@inherits JwtIdentity.Client.Pages.Docs.DocsIndexModel
+@using static Microsoft.AspNetCore.Components.Web.RenderMode
+@rendermode InteractiveWebAssembly
+
+<PageTitle>SurveyShark Documentation</PageTitle>
+<HeadContent>
+    <meta name="description" content="SurveyShark documentation hub with guides, concepts, API details, and how-to articles." />
+</HeadContent>
+
+<section class="docs-hero">
+    <h1>SurveyShark Documentation</h1>
+    <MudText Typo="Typo.subtitle1" Class="mb-4">
+        Discover everything you need to launch, manage, and analyze surveys with SurveyShark. Browse the sections below or use the search box to jump straight to an answer.
+    </MudText>
+</section>
+
+<section id="start-here" class="mb-8">
+    <MudPaper Class="pa-6 docs-highlight">
+        <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center" Class="flex-wrap">
+            <MudIcon Icon="@Icons.Material.Filled.Lightbulb" Color="Color.Warning" Size="MudBlazor.Size.Large" />
+            <div>
+                <MudText Typo="Typo.h5">New to SurveyShark?</MudText>
+                <MudText Typo="Typo.body1">Start with the Getting Started guide to create your account, build your first survey, and invite participants.</MudText>
+            </div>
+            <MudSpacer />
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/docs/getting-started">Start building</MudButton>
+        </MudStack>
+    </MudPaper>
+</section>
+
+<section id="explore-sections" class="mb-10">
+    <MudText Typo="Typo.h2" Class="mb-4">Explore key sections</MudText>
+    <MudGrid Spacing="2">
+        <MudItem xs="12" md="6">
+            <MudPaper Class="docs-card" Elevation="1">
+                <MudText Typo="Typo.h5">Getting Started</MudText>
+                <MudText Typo="Typo.body2">Set up your workspace, invite teammates, and learn the basics of the survey builder.</MudText>
+                <MudButton Variant="Variant.Text" Color="Color.Primary" Href="/docs/getting-started">Read guide</MudButton>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" md="6">
+            <MudPaper Class="docs-card" Elevation="1">
+                <MudText Typo="Typo.h5">Core Concepts</MudText>
+                <MudText Typo="Typo.body2">Understand authentication, permissions, and data ownership so every response stays secure.</MudText>
+                <MudButton Variant="Variant.Text" Color="Color.Primary" Href="/docs/concepts/authorization">Learn concepts</MudButton>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" md="6">
+            <MudPaper Class="docs-card" Elevation="1">
+                <MudText Typo="Typo.h5">Components</MudText>
+                <MudText Typo="Typo.body2">Browse reusable UI widgets like charts and question types to build consistent experiences.</MudText>
+                <MudButton Variant="Variant.Text" Color="Color.Primary" Href="/docs/components/bar-chart">View components</MudButton>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" md="6">
+            <MudPaper Class="docs-card" Elevation="1">
+                <MudText Typo="Typo.h5">API Reference</MudText>
+                <MudText Typo="Typo.body2">Integrate SurveyShark into your stack with secure REST endpoints for surveys, responses, and automation.</MudText>
+                <MudButton Variant="Variant.Text" Color="Color.Primary" Href="/docs/api/surveys">Call the API</MudButton>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" md="6">
+            <MudPaper Class="docs-card" Elevation="1">
+                <MudText Typo="Typo.h5">Guides &amp; How-tos</MudText>
+                <MudText Typo="Typo.body2">Follow step-by-step walkthroughs for exporting results, sharing dashboards, and more.</MudText>
+                <MudButton Variant="Variant.Text" Color="Color.Primary" Href="/docs/how-to/export-results">View guide</MudButton>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" md="6">
+            <MudPaper Class="docs-card" Elevation="1">
+                <MudText Typo="Typo.h5">FAQs</MudText>
+                <MudText Typo="Typo.body2">Find quick answers about billing, privacy, data retention, and troubleshooting.</MudText>
+                <MudButton Variant="Variant.Text" Color="Color.Primary" Href="/docs/faq">See FAQs</MudButton>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+</section>
+
+<section id="latest-updates" class="mb-10">
+    <MudText Typo="Typo.h2" Class="mb-4">Latest updates</MudText>
+    <MudPaper Class="pa-4">
+        <MudStack Spacing="3">
+            <div class="docs-update">
+                <MudIcon Icon="@Icons.Material.Filled.NewReleases" Color="Color.Primary" Class="docs-update-icon" />
+                <div>
+                    <MudText Typo="Typo.caption" Class="docs-update-date">October 2024</MudText>
+                    <MudText Typo="Typo.subtitle2">Live search powered by SQLite FTS</MudText>
+                    <MudText Typo="Typo.body2">Documentation search now surfaces results across guides, API topics, and FAQs with highlighted snippets.</MudText>
+                </div>
+            </div>
+            <div class="docs-update">
+                <MudIcon Icon="@Icons.Material.Filled.Security" Color="Color.Success" Class="docs-update-icon" />
+                <div>
+                    <MudText Typo="Typo.caption" Class="docs-update-date">September 2024</MudText>
+                    <MudText Typo="Typo.subtitle2">Updated authorization model</MudText>
+                    <MudText Typo="Typo.body2">Role-based permissions now include granular survey ownership and data export scopes.</MudText>
+                </div>
+            </div>
+            <div class="docs-update">
+                <MudIcon Icon="@Icons.Material.Filled.Insights" Color="Color.Info" Class="docs-update-icon" />
+                <div>
+                    <MudText Typo="Typo.caption" Class="docs-update-date">August 2024</MudText>
+                    <MudText Typo="Typo.subtitle2">Bar chart improvements</MudText>
+                    <MudText Typo="Typo.body2">Custom tooltips and accessibility enhancements make analytics dashboards clearer for respondents.</MudText>
+                </div>
+            </div>
+        </MudStack>
+    </MudPaper>
+</section>

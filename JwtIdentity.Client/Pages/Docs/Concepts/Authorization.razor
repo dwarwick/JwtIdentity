@@ -1,0 +1,80 @@
+@page "/docs/concepts/authorization"
+@layout _DocsLayout
+@inherits JwtIdentity.Client.Pages.Docs.Concepts.AuthorizationModel
+@using static Microsoft.AspNetCore.Components.Web.RenderMode
+@rendermode InteractiveWebAssembly
+
+<PageTitle>Authorization and Permissions</PageTitle>
+<HeadContent>
+    <meta name="description" content="Understand SurveyShark roles, permissions, and authorization best practices." />
+</HeadContent>
+
+<h1>Authorization and Permissions</h1>
+<MudText Typo="Typo.subtitle1" Class="mb-6">SurveyShark secures every request with role-based access control layered on top of cookie-authenticated sessions.</MudText>
+
+<section id="auth-overview" class="mb-8">
+    <MudText Typo="Typo.h2" Class="mb-3">Authentication flow overview</MudText>
+    <MudPaper Class="pa-4">
+        <MudText Typo="Typo.body1">After signing in, the server issues a secure cookie and a JWT for API calls. The Blazor client stores only an encrypted cookie and renews tokens when needed. Every request includes:</MudText>
+        <MudList T="string" Class="mt-2">
+            <MudListItem T="string" Icon="@Icons.Material.Filled.VerifiedUser">A validated identity from ASP.NET Core Identity.</MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Security">Claims that describe user roles and explicit permissions.</MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.VpnKey">Automatic token refresh via <code>CustomAuthStateProvider</code>.</MudListItem>
+        </MudList>
+    </MudPaper>
+</section>
+
+<section id="role-types" class="mb-8">
+    <MudText Typo="Typo.h2" Class="mb-3">Role hierarchy</MudText>
+    <MudGrid Spacing="2">
+        <MudItem xs="12" md="4">
+            <MudPaper Class="pa-4 h-100">
+                <MudText Typo="Typo.h6">Administrators</MudText>
+                <MudText Typo="Typo.body2">Full system access including managing users, surveys, billing, and background jobs.</MudText>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" md="4">
+            <MudPaper Class="pa-4 h-100">
+                <MudText Typo="Typo.h6">Survey Owners</MudText>
+                <MudText Typo="Typo.body2">Create surveys, analyze results, export data, and invite collaborators within assigned workspaces.</MudText>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" md="4">
+            <MudPaper Class="pa-4 h-100">
+                <MudText Typo="Typo.h6">Contributors</MudText>
+                <MudText Typo="Typo.body2">Collaborate on survey content with limited access to analytics and exports.</MudText>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="mt-4">
+        Custom roles are available for enterprise plans. Map them to built-in permissions for consistent enforcement.
+    </MudAlert>
+</section>
+
+<section id="permission-model" class="mb-8">
+    <MudText Typo="Typo.h2" Class="mb-3">Permission model</MudText>
+    <MudPaper Class="pa-4">
+        <MudTable Hover="true" Items="@PermissionRows" Dense="true">
+            <HeaderContent>
+                <MudTh>Permission</MudTh>
+                <MudTh>Description</MudTh>
+                <MudTh>Typical role</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd>@context.Permission</MudTd>
+                <MudTd>@context.Description</MudTd>
+                <MudTd>@context.Role</MudTd>
+            </RowTemplate>
+        </MudTable>
+    </MudPaper>
+</section>
+
+<section id="best-practices" class="mb-8">
+    <MudText Typo="Typo.h2" Class="mb-3">Best practices</MudText>
+    <MudList T="string">
+        <MudListItem T="string" Icon="@Icons.Material.Filled.FactCheck">Grant the smallest set of permissions required to complete a task.</MudListItem>
+        <MudListItem T="string" Icon="@Icons.Material.Filled.Schedule">Audit access quarterly using the built-in activity logs.</MudListItem>
+        <MudListItem T="string" Icon="@Icons.Material.Filled.VpnLock">Require administrators to enable MFA for their accounts.</MudListItem>
+        <MudListItem T="string" Icon="@Icons.Material.Filled.GppGood">Use guides to document your internal approval process for exporting data.</MudListItem>
+    </MudList>
+</section>

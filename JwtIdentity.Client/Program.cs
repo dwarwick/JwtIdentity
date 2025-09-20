@@ -1,5 +1,6 @@
 using Blazored.LocalStorage;
 using JwtIdentity.Client.Helpers;
+using JwtIdentity.Client.Services;
 using JwtIdentity.Services;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -17,6 +18,7 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.
 
 builder.Services.AddScoped<IApiService, ApiService>();
 builder.Services.AddScoped<SurveyHubClient>();
+builder.Services.AddScoped<DocsSearchApiService>();
 
 builder.Services.AddSyncfusionBlazor();
 builder.Services.AddBlazoredLocalStorage();

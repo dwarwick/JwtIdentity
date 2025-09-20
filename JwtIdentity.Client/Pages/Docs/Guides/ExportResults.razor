@@ -1,0 +1,57 @@
+@page "/docs/how-to/export-results"
+@layout _DocsLayout
+@inherits JwtIdentity.Client.Pages.Docs.Guides.ExportResultsModel
+@using static Microsoft.AspNetCore.Components.Web.RenderMode
+@rendermode InteractiveWebAssembly
+
+<PageTitle>Export Survey Results</PageTitle>
+<HeadContent>
+    <meta name="description" content="Step-by-step instructions for exporting SurveyShark results to CSV or Excel." />
+</HeadContent>
+
+<h1>Export survey results</h1>
+<MudText Typo="Typo.subtitle1" Class="mb-6">Download raw responses and summarized metrics for offline analysis or executive reporting.</MudText>
+
+<section id="prepare-data" class="mb-8">
+    <MudText Typo="Typo.h2" Class="mb-3">Prepare your data</MudText>
+    <MudList T="string">
+        <MudListItem T="string" Icon="@Icons.Material.Filled.FilterList">Apply filters for date range, respondent segments, or question tags.</MudListItem>
+        <MudListItem T="string" Icon="@Icons.Material.Filled.ViewCompact">Choose whether to include partial responses.</MudListItem>
+        <MudListItem T="string" Icon="@Icons.Material.Filled.Label">Add column aliases to keep column names consistent across exports.</MudListItem>
+    </MudList>
+</section>
+
+<section id="start-export" class="mb-8">
+    <MudText Typo="Typo.h2" Class="mb-3">Start the export</MudText>
+    <MudList T="string" Class="docs-steps">
+        <MudListItem Icon="@Icons.Material.Filled.Description">Pick CSV for lightweight datasets or Excel for formatting and pivot tables.</MudListItem>
+        <MudListItem Icon="@Icons.Material.Filled.RuleFolder">Review the filters and question set included in the export.</MudListItem>
+        <MudListItem Icon="@Icons.Material.Filled.ScheduleSend">SurveyShark queues the export and emails you when the file is ready.</MudListItem>
+    </MudList>
+</section>
+
+<section id="download-formats" class="mb-8">
+    <MudText Typo="Typo.h2" Class="mb-3">Download formats</MudText>
+    <MudTable Dense="true" Items="@Formats">
+        <HeaderContent>
+            <MudTh>Format</MudTh>
+            <MudTh>Use cases</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd>@context.Name</MudTd>
+            <MudTd>@context.Description</MudTd>
+        </RowTemplate>
+    </MudTable>
+</section>
+
+<section id="automation-tips" class="mb-8">
+    <MudText Typo="Typo.h2" Class="mb-3">Automation tips</MudText>
+    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="mb-3">
+        Schedule recurring exports via the Surveys API to push results into your BI warehouse.
+    </MudAlert>
+    <MudList T="string">
+        <MudListItem T="string" Icon="@Icons.Material.Filled.CloudUpload">Use the <code>/api/surveys/{id}/export</code> endpoint for scripted exports.</MudListItem>
+        <MudListItem T="string" Icon="@Icons.Material.Filled.History">Retain exports for 30 days before they are automatically purged.</MudListItem>
+        <MudListItem T="string" Icon="@Icons.Material.Filled.Security">Encrypt files at rest using your organization’s storage policies.</MudListItem>
+    </MudList>
+</section>

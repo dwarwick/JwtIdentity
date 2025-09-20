@@ -5,11 +5,13 @@ using JwtIdentity.Client.Helpers;
 using JwtIdentity.Client.Services;
 using JwtIdentity.Hubs;
 using JwtIdentity.Middleware;
+using JwtIdentity.Search;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.OData;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using MudBlazor;
@@ -122,6 +124,16 @@ builder.Services.AddScoped<ISurveyService, SurveyService>();
 builder.Services.AddScoped<ISurveyCompletionNotifier, SurveyCompletionNotifier>();
 builder.Services.AddScoped<JwtIdentity.Services.BackgroundJobs.BackgroundJobService>();
 builder.Services.AddHttpClient<IOpenAi, OpenAiService>();
+builder.Services.AddSingleton<DocsSearchIndexer>();
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddFixedWindowLimiter("search", limiterOptions =>
+    {
+        limiterOptions.PermitLimit = 30;
+        limiterOptions.Window = TimeSpan.FromMinutes(1);
+        limiterOptions.QueueLimit = 10;
+    });
+});
 // Services required for prerendering shared client components
 builder.Services.AddSyncfusionBlazor();
 builder.Services.AddBlazoredLocalStorage();
@@ -296,6 +308,13 @@ builder.Services.AddAntiforgery(options =>
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var indexer = scope.ServiceProvider.GetRequiredService<DocsSearchIndexer>();
+    indexer.EnsureSchema();
+    await indexer.RebuildAsync();
+}
+
 // Configure Serilog to use email sink for errors after services are built
 using (var scope = app.Services.CreateScope())
 {
@@ -335,6 +354,7 @@ app.UseAntiforgery();
 
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseRateLimiter();
 
 // Add the UserNameEnricher middleware after authentication/authorization
 app.UseUserNameEnricher();
@@ -363,6 +383,7 @@ app.UseCors("AllowAll");
 
 // Map controllers
 app.MapControllers();
+app.MapSearchApi();
 
 app.MapHub<SurveyHub>("/surveyHub");
 // Configure Hangfire Dashboard with custom authorization
