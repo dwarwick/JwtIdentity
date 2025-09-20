@@ -1,0 +1,205 @@
+/* Reset basic elements for the docs layout */
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
+}
+
+/* Main app container with flexbox */
+.app-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+    padding-top: 64px;
+}
+
+/* Fixed header - MyNavMenu component has its own height */
+:deep(.mud-appbar) {
+    height: 64px !important;
+    flex-shrink: 0;
+}
+
+/* Main content area with scrolling */
+.main-content {
+    flex-grow: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 0;
+    margin: 0;
+    margin-top: 0;
+    margin-bottom: 40px;
+    clip-path: inset(0px 0px 0px 0px);
+}
+
+/* Add padding to ensure content isn't hidden behind footer */
+.main-content .mud-container {
+    padding-bottom: 20px;
+}
+
+/* Fixed footer */
+.app-footer {
+    min-height: 40px;
+    height: auto;
+    flex-shrink: 0;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--mud-palette-appbar-background);
+    color: var(--mud-palette-appbar-text);
+    border-top: 1px solid var(--mud-palette-divider);
+    z-index: 10;
+    padding: 5px 10px;
+}
+
+/* Footer text styles */
+.footer-text {
+    width: 100%;
+    text-align: center;
+}
+
+/* Responsive footer content */
+.footer-text :deep(.mud-stack) {
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+/* Space out footer elements on small screens */
+@media (max-width: 600px) {
+    .app-footer {
+        padding: 8px 5px;
+    }
+
+    .footer-text :deep(.mud-stack) > * {
+        margin: 2px 4px !important;
+    }
+
+    /* Hide dividers on very small screens */
+    .footer-text :deep(.mud-stack) > span:not(:first-child):not(:last-child) {
+        display: none;
+    }
+}
+
+/* Custom scrollbar styling */
+.main-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.main-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.main-content::-webkit-scrollbar-thumb {
+    background-color: var(--mud-palette-action-default);
+    border-radius: 8px;
+}
+
+#blazor-error-ui {
+    color-scheme: light only;
+    background: lightyellow;
+    bottom: 0;
+    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+    box-sizing: border-box;
+    display: none;
+    left: 0;
+    padding: 0.6rem 1.25rem 0.7rem 1.25rem;
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+}
+
+#blazor-error-ui .dismiss {
+    cursor: pointer;
+    position: absolute;
+    right: 0.75rem;
+    top: 0.5rem;
+}
+
+/* Ensure the footer is always visible */
+.mud-appbar.mud-appbar-fixed-bottom {
+    position: fixed !important;
+    bottom: 0 !important;
+    z-index: 1300 !important;
+}
+
+/* Override MudBlazor's built-in styles for the main content area */
+.mud-layout {
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100vh !important;
+    width: 100% !important;
+}
+
+/* Ensure content is always visible */
+.mud-container:last-child {
+    margin-bottom: 20px !important;
+}
+
+/* Add more specific rule for the scrollbar container */
+body :deep(.mud-appbar.mud-appbar-fixed-top) {
+    z-index: 100;
+}
+
+/* Cookie Banner Styles */
+.cookie-banner {
+    position: fixed;
+    bottom: -100%;
+    left: 0;
+    right: 0;
+    background-color: var(--mud-palette-surface);
+    color: var(--mud-palette-text-primary);
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
+    z-index: 1100;
+    padding: 16px;
+    transition: bottom 0.5s ease;
+    border-top: 1px solid var(--mud-palette-divider);
+}
+
+.cookie-banner.visible {
+    bottom: 40px;
+}
+
+.cookie-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.cookie-actions {
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Responsive adjustments for small screens */
+@media (max-width: 600px) {
+    .cookie-banner.visible {
+        bottom: 40px;
+    }
+
+    .cookie-content {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .cookie-actions {
+        margin-top: 16px;
+        flex-direction: column;
+    }
+
+    .cookie-actions .mud-button {
+        width: 100%;
+        margin: 4px 0 !important;
+    }
+}
