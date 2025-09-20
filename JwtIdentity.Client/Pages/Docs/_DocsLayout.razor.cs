@@ -104,7 +104,7 @@ namespace JwtIdentity.Client.Pages.Docs
             Navigation.NavigateTo(url);
         }
 
-        protected void OnTocSelectionChanged(string value)
+        protected async Task OnTocSelectionChanged(string value)
         {
             SelectedTocId = value ?? string.Empty;
             if (string.IsNullOrWhiteSpace(SelectedTocId))
@@ -112,9 +112,60 @@ namespace JwtIdentity.Client.Pages.Docs
                 return;
             }
 
+            await ScrollToSectionAsync(SelectedTocId, updateSelection: false);
+        }
+
+        protected async Task ScrollToSectionAsync(string id, bool updateSelection = true)
+        {
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                return;
+            }
+
+            if (updateSelection)
+            {
+                SelectedTocId = id;
+            }
+
             var absolute = Navigation.ToAbsoluteUri(Navigation.Uri);
-            var target = absolute.GetLeftPart(UriPartial.Path) + "#" + SelectedTocId;
-            Navigation.NavigateTo(target, forceLoad: false);
+            var targetUri = absolute.GetLeftPart(UriPartial.Path) + "#" + id;
+
+            if (!string.Equals(Navigation.Uri, targetUri, StringComparison.Ordinal))
+            {
+                Navigation.NavigateTo(targetUri, new NavigationOptions { ReplaceHistoryEntry = false });
+            }
+
+            await EnsureModuleAsync();
+
+            if (_module is null)
+            {
+                return;
+            }
+
+            try
+            {
+                await _module.InvokeVoidAsync("scrollToElement", id);
+            }
+            catch (JSDisconnectedException)
+            {
+            }
+        }
+
+        private async Task EnsureModuleAsync()
+        {
+            if (_module != null)
+            {
+                return;
+            }
+
+            try
+            {
+                _module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./js/app.js");
+            }
+            catch (JSException)
+            {
+                _module = null;
+            }
         }
 
         public void ApplyPageConfiguration(PageConfiguration configuration)

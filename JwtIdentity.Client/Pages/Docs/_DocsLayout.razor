@@ -171,7 +171,13 @@
                                     <ul>
                                         @foreach (var item in TocItems)
                                         {
-                                            <li class="@($"level-{item.Level}")"><a href="@($"#{item.Id}")">@item.Text</a></li>
+                                            <li class="@($"level-{item.Level}")">
+                                                <a href="@($"#{item.Id}")"
+                                                   @onclick="async () => await ScrollToSectionAsync(item.Id)"
+                                                   @onclick:preventDefault="true">
+                                                    @item.Text
+                                                </a>
+                                            </li>
                                         }
                                     </ul>
                                 }
