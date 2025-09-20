@@ -1,0 +1,65 @@
+@page "/docs/api/surveys"
+@layout _DocsLayout
+@inherits JwtIdentity.Client.Pages.Docs.Api.SurveysModel
+@using static Microsoft.AspNetCore.Components.Web.RenderMode
+@rendermode InteractiveWebAssembly
+
+<PageTitle>Surveys API Reference</PageTitle>
+<HeadContent>
+    <meta name="description" content="REST API reference for working with SurveyShark surveys." />
+</HeadContent>
+
+<h1>Surveys API</h1>
+<MudText Typo="Typo.subtitle1" Class="mb-6">Use the Surveys API to list, create, and update surveys programmatically from your own applications.</MudText>
+
+<section id="endpoint-summary" class="mb-8">
+    <MudText Typo="Typo.h2" Class="mb-3">Endpoint summary</MudText>
+    <MudTable Dense="true" Items="@Endpoints">
+        <HeaderContent>
+            <MudTh>Method</MudTh>
+            <MudTh>Route</MudTh>
+            <MudTh>Description</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd>@context.Method</MudTd>
+            <MudTd><code>@context.Route</code></MudTd>
+            <MudTd>@context.Description</MudTd>
+        </RowTemplate>
+    </MudTable>
+</section>
+
+<section id="request-example" class="mb-8">
+    <MudText Typo="Typo.h2" Class="mb-3">Create survey request</MudText>
+    <MudText Typo="Typo.body1">Authenticated clients can submit JSON payloads to create a survey with optional AI-generated questions.</MudText>
+    <MudTabs Class="mt-4" Rounded="true">
+        <MudTabPanel Text="Request">
+            <pre class="docs-code">@RequestExample</pre>
+        </MudTabPanel>
+        <MudTabPanel Text="Response">
+            <pre class="docs-code">@ResponseExample</pre>
+        </MudTabPanel>
+    </MudTabs>
+</section>
+
+<section id="response-fields" class="mb-8">
+    <MudText Typo="Typo.h2" Class="mb-3">Important response fields</MudText>
+    <MudList T="string">
+        <MudListItem T="string" Icon="@Icons.Material.Filled.Key"> <code>id</code> — unique identifier for the survey.</MudListItem>
+        <MudListItem T="string" Icon="@Icons.Material.Filled.Schedule"> <code>createdUtc</code> — creation timestamp in UTC.</MudListItem>
+        <MudListItem T="string" Icon="@Icons.Material.Filled.People"> <code>ownerId</code> — user responsible for managing the survey.</MudListItem>
+        <MudListItem T="string" Icon="@Icons.Material.Filled.CheckCircle"> <code>status</code> — indicates draft, published, or closed state.</MudListItem>
+        <MudListItem T="string" Icon="@Icons.Material.Filled.AutoAwesome"> <code>aiSummary</code> — optional insights generated after responses are collected.</MudListItem>
+    </MudList>
+</section>
+
+<section id="error-handling" class="mb-8">
+    <MudText Typo="Typo.h2" Class="mb-3">Error handling</MudText>
+    <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Class="mb-3">
+        Requests require an <code>Authorization</code> header containing the JWT issued during login. Missing or expired tokens return <strong>401 Unauthorized</strong>.
+    </MudAlert>
+    <MudList T="string">
+        <MudListItem T="string" Icon="@Icons.Material.Filled.Rule">400 Bad Request — payload validation failed. Check required fields such as <code>title</code> and <code>questions</code>.</MudListItem>
+        <MudListItem T="string" Icon="@Icons.Material.Filled.Lock">403 Forbidden — the caller lacks the <code>Surveys.Manage</code> permission.</MudListItem>
+        <MudListItem T="string" Icon="@Icons.Material.Filled.CloudOff">500 Internal Server Error — retry later or contact support if the issue persists.</MudListItem>
+    </MudList>
+</section>

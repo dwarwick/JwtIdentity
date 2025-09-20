@@ -1,0 +1,168 @@
+@inherits JwtIdentity.Client.Pages.Docs._DocsLayoutModel
+@using MudBlazor
+
+<MudLayout>
+    <MudAppBar Elevation="0" Class="docs-appbar">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" OnClick="@(EventCallback.Factory.Create(this, OpenSidebar))" Class="md:hidden" />
+        <MudText Typo="Typo.h6">Documentation</MudText>
+        <MudSpacer />
+        <div class="docs-search">
+            <MudTextField Value="@SearchQuery"
+                          ValueChanged="@(EventCallback.Factory.Create<string>(this, OnSearchChanged))"
+                          Placeholder="Search docs…"
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Search"
+                          Class="hidden md:block docs-search-input"
+                          Immediate="true"
+                          Disabled="@IsSearching"
+                          Clearable="true"
+                          OnClearButtonClick="@(EventCallback.Factory.Create(this, CloseSearch))" />
+            @if (ShowSearchResults)
+            {
+                <MudPaper Class="docs-search-popover">
+                    @if (IsSearching)
+                    {
+                        <div class="docs-search-status">Searching…</div>
+                    }
+                    else if (SearchResults.Count == 0)
+                    {
+                        <div class="docs-search-status">No results yet.</div>
+                    }
+                    else
+                    {
+                        @foreach (var hit in SearchResults)
+                        {
+                            <a href="@hit.url" @onclick="() => NavigateToResult(hit.url)" class="docs-search-hit">
+                                <span class="section">@hit.section</span>
+                                <strong>@hit.title</strong>
+                                @if (!string.IsNullOrEmpty(hit.snippet))
+                                {
+                                    <div class="snippet">@((MarkupString)hit.snippet)</div>
+                                }
+                            </a>
+                        }
+                    }
+                </MudPaper>
+            }
+        </div>
+    </MudAppBar>
+
+    <MudDrawer @bind-Open="SidebarOpen"
+               ClipMode="DrawerClipMode.Always"
+               Variant="DrawerVariant.Responsive"
+               Breakpoint="Breakpoint.Md"
+               Elevation="1"
+               Width="300px">
+        <MudNavMenu Dense="true">
+            <MudNavLink Href="/documentation" Match="NavLinkMatch.All">Overview</MudNavLink>
+            <MudNavGroup Title="Getting Started" Expanded="@GettingStartedExpanded">
+                <MudNavLink Href="/docs/getting-started">Installation</MudNavLink>
+            </MudNavGroup>
+            <MudNavGroup Title="Concepts" Expanded="@ConceptsExpanded">
+                <MudNavLink Href="/docs/concepts/authorization">Authorization</MudNavLink>
+            </MudNavGroup>
+            <MudNavGroup Title="Components" Expanded="@ComponentsExpanded">
+                <MudNavLink Href="/docs/components/bar-chart">Bar Chart</MudNavLink>
+            </MudNavGroup>
+            <MudNavGroup Title="API" Expanded="@ApiExpanded">
+                <MudNavLink Href="/docs/api/surveys">Surveys API</MudNavLink>
+            </MudNavGroup>
+            <MudNavLink Href="/docs/how-to/export-results" Match="NavLinkMatch.Prefix">Guides: Export Results</MudNavLink>
+            <MudNavLink Href="/docs/faq" Match="NavLinkMatch.Prefix">FAQ</MudNavLink>
+        </MudNavMenu>
+    </MudDrawer>
+
+    <MudMainContent Class="docs-main px-4 md:px-8">
+        <div class="docs-grid">
+            <CascadingValue Value="this" IsFixed="true">
+                <article>
+                    @if (Breadcrumbs.Count > 0)
+                    {
+                        <nav class="docs-breadcrumbs" aria-label="Breadcrumb">
+                            <ol>
+                                @foreach (var crumb in Breadcrumbs)
+                                {
+                                    var isCurrent = crumb.IsCurrent || string.IsNullOrWhiteSpace(crumb.Href);
+                                    <li class="@(isCurrent ? "current" : string.Empty)">
+                                        @if (isCurrent)
+                                        {
+                                            <span>@crumb.Text</span>
+                                        }
+                                        else
+                                        {
+                                            <a href="@crumb.Href">@crumb.Text</a>
+                                        }
+                                    </li>
+                                }
+                            </ol>
+                        </nav>
+                    }
+
+                    <div class="docs-mobile-search md:hidden">
+                        <MudTextField Value="@SearchQuery"
+                                      ValueChanged="@(EventCallback.Factory.Create<string>(this, OnSearchChanged))"
+                                      Placeholder="Search docs…"
+                                      Adornment="Adornment.Start"
+                                      AdornmentIcon="@Icons.Material.Filled.Search"
+                                      Immediate="true"
+                                      Disabled="@IsSearching"
+                                      Clearable="true"
+                                      OnClearButtonClick="@(EventCallback.Factory.Create(this, CloseSearch))" />
+                    </div>
+
+                    @if (TocItems.Count > 0)
+                    {
+                        <div class="docs-mobile-toc md:hidden">
+                            <MudSelect Value="SelectedTocId"
+                                       ValueChanged="@(EventCallback.Factory.Create<string>(this, OnTocSelectionChanged))"
+                                       Placeholder="Jump to section">
+                                @foreach (var item in TocItems)
+                                {
+                                    <MudSelectItem Value="@item.Id">@item.Text</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </div>
+                    }
+
+                    @Body
+
+                    <div class="docs-pager">
+                        @if (!PreviousLink.IsEmpty)
+                        {
+                            <a href="@PreviousLink.Href" class="prev">← @PreviousLink.Title</a>
+                        }
+                        else
+                        {
+                            <span></span>
+                        }
+                        @if (!NextLink.IsEmpty)
+                        {
+                            <a href="@NextLink.Href" class="next">@NextLink.Title →</a>
+                        }
+                        else
+                        {
+                            <span></span>
+                        }
+                    </div>
+                </article>
+            </CascadingValue>
+
+            <aside class="toc">
+                <h6>On this page</h6>
+                @if (TocItems.Count == 0)
+                {
+                    <div>No subsections</div>
+                }
+                else
+                {
+                    <ul>
+                        @foreach (var item in TocItems)
+                        {
+                            <li class="@($"level-{item.Level}")"><a href="@($"#{item.Id}")">@item.Text</a></li>
+                        }
+                    </ul>
+                }
+            </aside>
+        </div>
+    </MudMainContent>
+</MudLayout>
