@@ -666,3 +666,8 @@ td.e-summarycell.e-templatecell.e-leftalign {
     /* Optional: lock visual height if you want consistent page fill */
     /* #AllChartsPrint .e-chart svg { height: 450px !important; } */
 }
+
+.video-container {
+    width: 100%; 
+    aspect-ratio: 16 / 9;
+}
