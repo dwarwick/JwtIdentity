@@ -22,7 +22,7 @@ namespace JwtIdentity.Client.Pages.Docs
                 "faq",
                 toc,
                 breadcrumbs,
-                Link("/docs/how-to/export-results", "Guide: Export Results"),
+                Link("/docs/feedback", "Feedback"),
                 _DocsLayoutModel.PagerLink.Empty);
         }
     }

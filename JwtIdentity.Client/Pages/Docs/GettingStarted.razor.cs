@@ -23,7 +23,7 @@ namespace JwtIdentity.Client.Pages.Docs
                 toc,
                 breadcrumbs,
                 Link("/documentation", "Documentation"),
-                Link("/docs/concepts/authorization", "Concepts: Authorization"));
+                Link("/docs/creating-surveys", "Creating Surveys"));
         }
     }
 }
