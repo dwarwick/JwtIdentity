@@ -4,6 +4,17 @@ namespace JwtIdentity.Client.Pages.Demo
     {
         protected bool IsStartingDemo { get; set; }
 
+        protected AppSettings AppSettings { get; set; } = new();
+
+        protected bool HasYoutubeEmbed => !string.IsNullOrWhiteSpace(AppSettings.Youtube?.HomePageCode);
+
+        protected string YoutubeEmbedCode => AppSettings.Youtube?.HomePageCode ?? string.Empty;
+
+        protected override async Task OnInitializedAsync()
+        {
+            AppSettings = await ApiService.GetPublicAsync<AppSettings>("/api/appsettings");
+        }
+
         protected async Task BeginDemo()
         {
             if (IsStartingDemo)

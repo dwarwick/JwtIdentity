@@ -108,4 +108,14 @@
             </MudTimelineItem>
         </MudTimeline>
     </MudPaper>
+
+    @if (HasYoutubeEmbed)
+    {
+        <MudPaper Elevation="1" Class="pa-5 mt-6">
+            <MudText Typo="Typo.h5" Class="mb-3">Watch the Survey Shark Demo</MudText>
+            <div class="d-flex justify-center">
+                @((MarkupString)YoutubeEmbedCode)
+            </div>
+        </MudPaper>
+    }
 </MudContainer>
