@@ -1,0 +1,40 @@
+@page "/docs/viewing-results"
+@layout _DocsLayout
+@inherits JwtIdentity.Client.Pages.Docs.ViewingResultsModel
+@using static Microsoft.AspNetCore.Components.Web.RenderMode
+@rendermode InteractiveWebAssembly
+
+<PageTitle>Viewing Survey Results</PageTitle>
+<HeadContent>
+    <meta name="description" content="Analyze SurveyShark results in grids and charts to uncover respondent trends." />
+</HeadContent>
+
+<h1>Viewing Results</h1>
+<MudText Typo="Typo.subtitle1" Class="mb-6">Explore responses in data grids or visual dashboards to understand survey performance.</MudText>
+
+<section id="grid" class="mb-8">
+    <MudText Typo="Typo.h2" Class="mb-3">Review results in a grid</MudText>
+    <MudPaper Class="pa-4">
+        <MudList T="string">
+            <MudListItem T="string" Icon="@Icons.Material.Filled.FormatListBulleted">Open <MudChip T="string" Size="@MudBlazor.Size.Small" Color="Color.Primary">My Surveys</MudChip> and choose a published survey.</MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.GridOn">Select the <MudChip T="string" Size="@MudBlazor.Size.Small" Color="Color.Primary">Grid</MudChip> action to load the response table.</MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.TableView">Browse each response, with one row per participant.</MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.FilterList">Use column filters to narrow down specific cohorts.</MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Sort">Click a header to sort ascending or descending.</MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Search">Search across responses to locate keywords instantly.</MudListItem>
+        </MudList>
+    </MudPaper>
+</section>
+
+<section id="charts" class="mb-8">
+    <MudText Typo="Typo.h2" Class="mb-3">Visualize answers with charts</MudText>
+    <MudPaper Class="pa-4">
+        <MudList T="string">
+            <MudListItem T="string" Icon="@Icons.Material.Filled.BarChart">Choose <MudChip T="string" Size="@MudBlazor.Size.Small" Color="Color.Primary">Charts</MudChip> from the survey actions menu.</MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Insights">Switch between questions using the dropdown selector.</MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.PieChart">Toggle chart types—bar, pie, or other supported options.</MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Print">Print charts directly for stakeholder meetings.</MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Download">Export visualizations as PDF, PNG, JPEG, or SVG for archival.</MudListItem>
+        </MudList>
+    </MudPaper>
+</section>

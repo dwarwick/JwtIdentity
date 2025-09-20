@@ -12,7 +12,7 @@
 
 ## Analytics
 - Dashboards refresh in near real time after each submission.
-- Schedule exports using the Export Results guide or the Surveys API.
+- Use the Viewing Results guide to export CSV or Excel files and hook them into your scheduling tools.
 - Charts include ARIA labels and keyboard navigation to meet accessibility requirements.
 
 ## Support
