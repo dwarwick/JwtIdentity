@@ -37,9 +37,16 @@ namespace JwtIdentity.Services
                 return null;
             }
 
+            var model = _configuration["OpenAi:Model"];
+            if (string.IsNullOrWhiteSpace(model))
+            {
+                _logger.LogWarning("OpenAI model is not configured.");
+                return null;
+            }
+
             var body = new
             {
-                model = "gpt-4o-mini",
+                model = model,
                 messages = new object[]
                 {
                     new { role = "system", content = "You are a helpful assistant for creating surveys." },
