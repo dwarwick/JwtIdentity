@@ -38,30 +38,9 @@
                                           OnClearButtonClick="@(EventCallback.Factory.Create(this, CloseSearch))" />
                             @if (ShowSearchResults)
                             {
-                                <MudPaper Class="docs-search-popover">
-                                    @if (IsSearching)
-                                    {
-                                        <div class="docs-search-status">Searching…</div>
-                                    }
-                                    else if (SearchResults.Count == 0)
-                                    {
-                                        <div class="docs-search-status">No results yet.</div>
-                                    }
-                                    else
-                                    {
-                                        @foreach (var hit in SearchResults)
-                                        {
-                                            <a href="@hit.url" @onclick="() => NavigateToResult(hit.url)" class="docs-search-hit">
-                                                <span class="section">@hit.section</span>
-                                                <strong>@hit.title</strong>
-                                                @if (!string.IsNullOrEmpty(hit.snippet))
-                                                {
-                                                    <div class="snippet">@((MarkupString)hit.snippet)</div>
-                                                }
-                                            </a>
-                                        }
-                                    }
-                                </MudPaper>
+                                <div class="docs-search-results docs-search-results-appbar hidden md:block">
+                                    @RenderSearchResults()
+                                </div>
                             }
                         </div>
                     </MudAppBar>
@@ -122,6 +101,13 @@
                                                       Clearable="true"
                                                       OnClearButtonClick="@(EventCallback.Factory.Create(this, CloseSearch))" />
                                     </div>
+
+                                    @if (ShowSearchResults)
+                                    {
+                                        <div class="docs-search-results docs-search-results-content md:hidden">
+                                            @RenderSearchResults()
+                                        </div>
+                                    }
 
                                     @if (TocItems.Count > 0)
                                     {
