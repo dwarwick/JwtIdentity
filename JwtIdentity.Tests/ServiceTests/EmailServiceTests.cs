@@ -38,15 +38,15 @@ namespace JwtIdentity.Tests.ServiceTests
         [Test]
         public void SendEmailVerificationMessage_MissingConfig_LogsError()
         {
-            _mockConfig.Setup(c => c["EmailSettings:CustomerServiceEmail"]).Returns((string?)null);
+            _mockConfig.Setup(c => c["EmailSettings:CustomerServiceEmail"]).Returns((string)null);
             _service = new EmailService(_mockConfig.Object, _mockLogger.Object);
             _service.SendEmailVerificationMessage("user@domain.com", "http://token.url");
             _mockLogger.Verify(l => l.Log(
                 LogLevel.Error,
                 It.IsAny<EventId>(),
                 It.IsAny<It.IsAnyType>(),
-                It.IsAny<Exception?>(),
-                It.IsAny<Func<It.IsAnyType, Exception?, string>>()), Times.AtLeastOnce);
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception, string>>()), Times.AtLeastOnce);
         }
 
         [Test]
@@ -58,15 +58,15 @@ namespace JwtIdentity.Tests.ServiceTests
         [Test]
         public void SendPasswordResetEmail_MissingConfig_LogsError()
         {
-            _mockConfig.Setup(c => c["EmailSettings:Server"]).Returns((string?)null);
+            _mockConfig.Setup(c => c["EmailSettings:Server"]).Returns((string)null);
             _service = new EmailService(_mockConfig.Object, _mockLogger.Object);
             _service.SendPasswordResetEmail("user@domain.com", "http://token.url");
             _mockLogger.Verify(l => l.Log(
                 LogLevel.Error,
                 It.IsAny<EventId>(),
                 It.IsAny<It.IsAnyType>(),
-                It.IsAny<Exception?>(),
-                It.IsAny<Func<It.IsAnyType, Exception?, string>>()), Times.AtLeastOnce);
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception, string>>()), Times.AtLeastOnce);
         }
 
         [Test]
@@ -78,15 +78,15 @@ namespace JwtIdentity.Tests.ServiceTests
         [Test]
         public async Task SendEmailAsync_MissingConfig_LogsError()
         {
-            _mockConfig.Setup(c => c["EmailSettings:Password"]).Returns((string?)null);
+            _mockConfig.Setup(c => c["EmailSettings:Password"]).Returns((string)null);
             _service = new EmailService(_mockConfig.Object, _mockLogger.Object);
             await _service.SendEmailAsync("user@domain.com", "subject", "body");
             _mockLogger.Verify(l => l.Log(
                 LogLevel.Error,
                 It.IsAny<EventId>(),
                 It.IsAny<It.IsAnyType>(),
-                It.IsAny<Exception?>(),
-                It.IsAny<Func<It.IsAnyType, Exception?, string>>()), Times.AtLeastOnce);
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception, string>>()), Times.AtLeastOnce);
         }
     }
 }

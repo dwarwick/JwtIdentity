@@ -12,7 +12,7 @@
             <div class="col-11"> @* Select Question Dropdown *@
                 <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 0,1 })">
                     <MudSelect T="QuestionViewModel" Label="Select Question" Value="SelectedQuestion" Variant="Variant.Filled" Class="w-100 mb-1" ValueChanged="@((e) => HandleSelectQuestion(e))" ToStringFunc="@QuestionDropdownConverter">
-                        <MudSelectItem Value="@((QuestionViewModel?)null)">All Questions</MudSelectItem>
+                        <MudSelectItem Value="@(default(QuestionViewModel))">All Questions</MudSelectItem>
                         @foreach (var question in SurveyData.OrderBy(x => x.Question.QuestionNumber).Select(x => x.Question))
                         {
                             <MudSelectItem T="QuestionViewModel" Value="@question">@($"{question.QuestionNumber}. {question.Text}")</MudSelectItem>

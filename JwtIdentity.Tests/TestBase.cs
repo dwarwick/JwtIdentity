@@ -24,7 +24,7 @@ namespace JwtIdentity.Tests
     /// <summary>
     /// Base class for test fixtures providing common mocks and setup
     /// </summary>
-    public class TestBase<T> where T : class
+    public abstract class TestBase<T> where T : class
     {
         // Common mocks that will be used across test classes
         protected Mock<UserManager<ApplicationUser>> MockUserManager = null!;

@@ -62,7 +62,7 @@ namespace JwtIdentity.Tests.ServiceTests
         public async Task GenerateJwtToken_ReturnsEmpty_WhenConfigMissing()
         {
             var user = new ApplicationUser { Id = 1, UserName = "testuser", Email = "test@example.com" };
-            _mockConfig.Setup(c => c["Jwt:Key"]).Returns((string?)null);
+            _mockConfig.Setup(c => c["Jwt:Key"]).Returns((string)null);
             var token = await _service.GenerateJwtToken(user);
             Assert.That(token, Is.Empty);
         }

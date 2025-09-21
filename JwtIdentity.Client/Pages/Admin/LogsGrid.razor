@@ -24,9 +24,9 @@
                            AllowFiltering="true" 
                            AllowResizing="true" 
                            FrozenColumns="@FrozenColumns" 
-                           AllowTextWrap="true" 
-                           TextWrapSettings="@GridSettings.TextWrapSettings" 
+                           AllowTextWrap="true"
                            GridLines="@GridSettings.GridLines">
+                        <GridTextWrapSettings WrapMode="WrapMode.Content" />
                            <SfDataManager Url="odata/odatalogentry" CrossDomain="true" Adaptor="Adaptors.ODataV4Adaptor" />
                         <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel"></GridFilterSettings>
                         <GridSortSettings>

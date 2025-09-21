@@ -16,7 +16,7 @@ namespace JwtIdentity.Data
     {
         private readonly IHttpContextAccessor httpContextAccessor;
 
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, IHttpContextAccessor? httpContextAccessor = null)
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, IHttpContextAccessor httpContextAccessor = null)
             : base(options)
         {
             this.httpContextAccessor = httpContextAccessor ?? new HttpContextAccessor();
@@ -25,8 +25,6 @@ namespace JwtIdentity.Data
         public DbSet<ApplicationUser> ApplicationUsers { get; set; }
         public DbSet<ApplicationRole> ApplicationRoles { get; set; }
 
-        // You can add a DbSet if you like:
-        public DbSet<RoleClaim> RoleClaims { get; set; }
         public DbSet<LogEntry> LogEntries { get; set; }
         public DbSet<PlaywrightLog> PlaywrightLogs { get; set; }
         public DbSet<Survey> Surveys { get; set; }

@@ -9,7 +9,7 @@ namespace JwtIdentity.PlaywrightTests.Helpers
     public abstract class PlaywrightHelper : PageTest
     {
         private static readonly HttpClient HttpClient = CreateHttpClient();
-        private string? _originalHeadedValue;
+        private string _originalHeadedValue;
 
         [OneTimeSetUp]
         public void ConfigurePlaywrightExecutionMode()
@@ -43,7 +43,7 @@ namespace JwtIdentity.PlaywrightTests.Helpers
             return options;
         }
 
-        protected async Task LoginAsync(string username, string? password = null)
+        protected async Task LoginAsync(string username, string password = null)
         {
             password ??= PlaywrightPassword;
             await Page.GotoAsync("/login");
@@ -59,7 +59,7 @@ namespace JwtIdentity.PlaywrightTests.Helpers
             await Page.WaitForURLAsync("**/login");
         }
 
-        protected async Task ExecuteWithLoggingAsync(string testName, string? targetSelector, Func<Task> testBody)
+        protected async Task ExecuteWithLoggingAsync(string testName, string targetSelector, Func<Task> testBody)
         {
             try
             {

@@ -28,7 +28,7 @@ namespace JwtIdentity.Client.Pages.Docs
                 AppbarBackground = Colors.Gray.Lighten3,
             },
         };
-        private IJSObjectReference? _module;
+        private IJSObjectReference _module;
         private string _currentDocsPath = string.Empty;
         private bool _scrollToTopPending;
         private bool _locationSubscriptionSet;
@@ -401,7 +401,7 @@ namespace JwtIdentity.Client.Pages.Docs
             StateHasChanged();
         }
 
-        private void HandleLocationChanged(object? sender, LocationChangedEventArgs args)
+        private void HandleLocationChanged(object sender, LocationChangedEventArgs args)
         {
             var (isDocsPage, newPath) = TryGetDocsPath(args.Location);
 

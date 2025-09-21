@@ -8,7 +8,7 @@ namespace JwtIdentity.Client.Pages.Navigation
     {
         private bool _disposed = false;
         // Cache handler to ensure subscriptions don't resolve services after disposal
-        private CustomAuthorizationMessageHandler? _authorizationHandler;
+        private CustomAuthorizationMessageHandler _authorizationHandler;
 
         [Parameter]
         public bool DarkTheme { get; set; }

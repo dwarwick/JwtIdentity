@@ -12,11 +12,11 @@ namespace JwtIdentity.Client.Services
     {
         private readonly JsonSerializerOptions _options;
         private readonly IHttpClientFactory _httpClientFactory;
-        private HttpClient? _httpClient;
-        private HttpClient? _publicHttpClient;
+        private HttpClient _httpClient;
+        private HttpClient _publicHttpClient;
         private readonly NavigationManager navigationManager;
         private readonly IServiceProvider serviceProvider;
-        private readonly IHttpContextAccessor? _httpContextAccessor;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
         private ISnackbar Snackbar => serviceProvider.GetRequiredService<ISnackbar>();
         private HttpClient Client => _httpClient ??= _httpClientFactory.CreateClient("AuthorizedClient");
@@ -30,7 +30,7 @@ namespace JwtIdentity.Client.Services
             }
         }
 
-        public ApiService(IHttpClientFactory httpClientFactory, NavigationManager navigationManager, IServiceProvider serviceProvider, IHttpContextAccessor? httpContextAccessor = null)
+        public ApiService(IHttpClientFactory httpClientFactory, NavigationManager navigationManager, IServiceProvider serviceProvider, IHttpContextAccessor httpContextAccessor = null)
         {
             _options = new JsonSerializerOptions
             {
