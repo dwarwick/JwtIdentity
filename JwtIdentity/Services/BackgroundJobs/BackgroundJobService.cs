@@ -57,7 +57,12 @@ namespace JwtIdentity.Services.BackgroundJobs
                     "demo-cleanup",
                     () => DemoCleanup(),
                     Cron.Daily());
-                    
+
+                RecurringJob.AddOrUpdate(
+                    "playwright-cleanup",
+                    () => PlaywrightCleanup(),
+                    Cron.Daily());
+
                 _logger.LogInformation("Hangfire recurring jobs scheduled successfully");
                 
                 // Add direct database log entry for successful initialization
@@ -261,6 +266,100 @@ namespace JwtIdentity.Services.BackgroundJobs
                 _dbContext.LogEntries.Add(new LogEntry
                 {
                     Message = $"Error during demo cleanup: {ex.Message}",
+                    Level = "Error",
+                    LoggedAt = DateTime.UtcNow
+                });
+                await _dbContext.SaveChangesAsync();
+                throw;
+            }
+        }
+
+        public async Task PlaywrightCleanup()
+        {
+            try
+            {
+                var playwrightUser = await _dbContext.ApplicationUsers
+                    .FirstOrDefaultAsync(u => u.UserName == "playwrightuser@example.com");
+
+                if (playwrightUser == null)
+                {
+                    _logger.LogWarning("Playwright user not found for cleanup");
+                    return;
+                }
+
+                var surveys = await _dbContext.Surveys
+                    .Where(s => s.CreatedById == playwrightUser.Id)
+                    .ToListAsync();
+
+                if (!surveys.Any())
+                {
+                    _dbContext.LogEntries.Add(new LogEntry
+                    {
+                        Message = "PlaywrightCleanup found no surveys to remove",
+                        Level = "Info",
+                        LoggedAt = DateTime.UtcNow
+                    });
+                    await _dbContext.SaveChangesAsync();
+                    return;
+                }
+
+                var surveyIds = surveys.Select(s => s.Id).ToList();
+
+                var questions = await _dbContext.Questions
+                    .Where(q => surveyIds.Contains(q.SurveyId))
+                    .ToListAsync();
+
+                var questionIds = questions.Select(q => q.Id).ToList();
+
+                var answers = questionIds.Any()
+                    ? await _dbContext.Answers
+                        .Where(a => questionIds.Contains(a.QuestionId))
+                        .ToListAsync()
+                    : new List<Answer>();
+
+                var choiceOptions = questionIds.Any()
+                    ? await _dbContext.ChoiceOptions
+                        .Where(option =>
+                            (option.MultipleChoiceQuestionId.HasValue && questionIds.Contains(option.MultipleChoiceQuestionId.Value)) ||
+                            (option.SelectAllThatApplyQuestionId.HasValue && questionIds.Contains(option.SelectAllThatApplyQuestionId.Value)))
+                        .ToListAsync()
+                    : new List<ChoiceOption>();
+
+                if (answers.Any())
+                {
+                    _dbContext.Answers.RemoveRange(answers);
+                }
+
+                if (choiceOptions.Any())
+                {
+                    _dbContext.ChoiceOptions.RemoveRange(choiceOptions);
+                }
+
+                if (questions.Any())
+                {
+                    _dbContext.Questions.RemoveRange(questions);
+                }
+
+                _dbContext.Surveys.RemoveRange(surveys);
+
+                await _dbContext.SaveChangesAsync();
+
+                _dbContext.LogEntries.Add(new LogEntry
+                {
+                    Message = $"PlaywrightCleanup removed {surveys.Count} surveys, {questions.Count} questions, {choiceOptions.Count} options, and {answers.Count} answers for Playwright user",
+                    Level = "Info",
+                    LoggedAt = DateTime.UtcNow
+                });
+
+                await _dbContext.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error during Playwright cleanup");
+
+                _dbContext.LogEntries.Add(new LogEntry
+                {
+                    Message = $"Error during Playwright cleanup: {ex.Message}",
                     Level = "Error",
                     LoggedAt = DateTime.UtcNow
                 });
