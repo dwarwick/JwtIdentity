@@ -9,13 +9,14 @@ using JwtIdentity.Common.Auth;
 using JwtIdentity.Common.ViewModels;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
 using MudBlazor;
 
 namespace JwtIdentity.Client.Pages.Docs
 {
-    public class _DocsLayoutModel : BlazorBase
+    public class _DocsLayoutModel : BlazorBase, IDisposable
     {
         private readonly List<TocItem> _tocItems = new();
         private readonly List<BreadcrumbItem> _breadcrumbs = new();
@@ -28,6 +29,9 @@ namespace JwtIdentity.Client.Pages.Docs
             },
         };
         private IJSObjectReference? _module;
+        private string _currentDocsPath = string.Empty;
+        private bool _scrollToTopPending;
+        private bool _locationSubscriptionSet;
 
         protected bool _isDarkMode;
         protected string _theme = "light";
@@ -101,6 +105,20 @@ namespace JwtIdentity.Client.Pages.Docs
                 builder.CloseElement();
             }
         };
+
+        protected override void OnInitialized()
+        {
+            base.OnInitialized();
+
+            if (!_locationSubscriptionSet)
+            {
+                Navigation.LocationChanged += HandleLocationChanged;
+                _locationSubscriptionSet = true;
+            }
+
+            var (_, initialPath) = TryGetDocsPath(Navigation.Uri);
+            _currentDocsPath = initialPath;
+        }
 
         protected void OpenSidebar()
         {
@@ -235,72 +253,79 @@ namespace JwtIdentity.Client.Pages.Docs
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
-            if (!firstRender || !OperatingSystem.IsBrowser())
+            if (OperatingSystem.IsBrowser())
             {
-                return;
-            }
-
-            try
-            {
-                AppSettings = await ApiService.GetPublicAsync<AppSettings>("/api/appsettings");
-
-                _module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./js/app.js");
-
-                AuthenticationState authState = await AuthStateProvider.GetAuthenticationStateAsync();
-
-                if (authState.User?.Identity?.IsAuthenticated ?? false)
+                if (firstRender)
                 {
-                    var userId = authState.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-
-                    if (!string.IsNullOrWhiteSpace(userId))
+                    try
                     {
-                        var applicationUserViewModel = await ApiService.GetAsync<ApplicationUserViewModel>($"{ApiEndpoints.ApplicationUser}/{userId}");
+                        AppSettings = await ApiService.GetPublicAsync<AppSettings>("/api/appsettings");
 
-                        if (applicationUserViewModel != null)
+                        _module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./js/app.js");
+
+                        AuthenticationState authState = await AuthStateProvider.GetAuthenticationStateAsync();
+
+                        if (authState.User?.Identity?.IsAuthenticated ?? false)
                         {
-                            applicationUserViewModel.Token = await LocalStorage.GetItemAsStringAsync("authToken") ?? string.Empty;
-                            ((CustomAuthStateProvider)AuthStateProvider!).CurrentUser = applicationUserViewModel;
+                            var userId = authState.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+                            if (!string.IsNullOrWhiteSpace(userId))
+                            {
+                                var applicationUserViewModel = await ApiService.GetAsync<ApplicationUserViewModel>($"{ApiEndpoints.ApplicationUser}/{userId}");
+
+                                if (applicationUserViewModel != null)
+                                {
+                                    applicationUserViewModel.Token = await LocalStorage.GetItemAsStringAsync("authToken") ?? string.Empty;
+                                    ((CustomAuthStateProvider)AuthStateProvider!).CurrentUser = applicationUserViewModel;
+                                }
+                            }
                         }
+
+                        _theme = await LocalStorage.GetItemAsStringAsync("theme") ?? string.Empty;
+
+                        if (string.IsNullOrWhiteSpace(_theme))
+                        {
+                            if (((CustomAuthStateProvider)AuthStateProvider!).CurrentUser != null)
+                            {
+                                _theme = ((CustomAuthStateProvider)AuthStateProvider!).CurrentUser?.Theme ?? "light";
+                            }
+                            else
+                            {
+                                _theme = "light";
+                            }
+                        }
+
+                        await SetTheme();
+
+                        var cookiesAccepted = await LocalStorage.GetItemAsync<bool>("cookiesAccepted");
+                        _cookiesAccepted = cookiesAccepted;
+
+                        if (!_cookiesAccepted)
+                        {
+                            await Task.Delay(500);
+                            _showCookieBanner = true;
+                            StateHasChanged();
+                        }
+
+                        bool consentGiven = await JSRuntime.InvokeAsync<bool>("userHasThirdPartyConsent");
+                        if (consentGiven)
+                        {
+                            await JSRuntime.InvokeVoidAsync("loadGoogleAds");
+                        }
+
+                        StateHasChanged();
                     }
-                }
-
-                _theme = await LocalStorage.GetItemAsStringAsync("theme") ?? string.Empty;
-
-                if (string.IsNullOrWhiteSpace(_theme))
-                {
-                    if (((CustomAuthStateProvider)AuthStateProvider!).CurrentUser != null)
+                    catch
                     {
-                        _theme = ((CustomAuthStateProvider)AuthStateProvider!).CurrentUser?.Theme ?? "light";
-                    }
-                    else
-                    {
-                        _theme = "light";
+                        // Intentionally ignored to keep the docs layout resilient to API or JS errors.
                     }
                 }
 
-                await SetTheme();
-
-                var cookiesAccepted = await LocalStorage.GetItemAsync<bool>("cookiesAccepted");
-                _cookiesAccepted = cookiesAccepted;
-
-                if (!_cookiesAccepted)
+                if (_scrollToTopPending)
                 {
-                    await Task.Delay(500);
-                    _showCookieBanner = true;
-                    StateHasChanged();
+                    _scrollToTopPending = false;
+                    await ScrollMainContentToTopAsync();
                 }
-
-                bool consentGiven = await JSRuntime.InvokeAsync<bool>("userHasThirdPartyConsent");
-                if (consentGiven)
-                {
-                    await JSRuntime.InvokeVoidAsync("loadGoogleAds");
-                }
-
-                StateHasChanged();
-            }
-            catch
-            {
-                // Intentionally ignored to keep the docs layout resilient to API or JS errors.
             }
         }
 
@@ -374,6 +399,79 @@ namespace JwtIdentity.Client.Pages.Docs
             await JSRuntime.InvokeVoidAsync("clearCookieConsent");
             _showCookieBanner = true;
             StateHasChanged();
+        }
+
+        private void HandleLocationChanged(object? sender, LocationChangedEventArgs args)
+        {
+            var (isDocsPage, newPath) = TryGetDocsPath(args.Location);
+
+            if (!isDocsPage)
+            {
+                _currentDocsPath = string.Empty;
+                return;
+            }
+
+            if (string.Equals(_currentDocsPath, newPath, StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            _currentDocsPath = newPath;
+            _scrollToTopPending = true;
+            _ = InvokeAsync(StateHasChanged);
+        }
+
+        private (bool IsDocsPage, string Path) TryGetDocsPath(string uri)
+        {
+            if (string.IsNullOrWhiteSpace(uri))
+            {
+                return (false, string.Empty);
+            }
+
+            Uri absoluteUri;
+            if (!Uri.TryCreate(uri, UriKind.Absolute, out absoluteUri))
+            {
+                absoluteUri = Navigation.ToAbsoluteUri(uri);
+            }
+
+            var path = absoluteUri.AbsolutePath;
+
+            if (path.Length > 1 && path.EndsWith("/", StringComparison.Ordinal))
+            {
+                path = path.TrimEnd('/');
+            }
+
+            var isDocsPage = path.Equals("/documentation", StringComparison.OrdinalIgnoreCase)
+                || path.StartsWith("/docs/", StringComparison.OrdinalIgnoreCase);
+
+            return (isDocsPage, path);
+        }
+
+        private async Task ScrollMainContentToTopAsync()
+        {
+            await EnsureModuleAsync();
+
+            if (_module is null)
+            {
+                return;
+            }
+
+            try
+            {
+                await _module.InvokeVoidAsync("scrollToTop");
+            }
+            catch (JSDisconnectedException)
+            {
+            }
+        }
+
+        public void Dispose()
+        {
+            if (_locationSubscriptionSet)
+            {
+                Navigation.LocationChanged -= HandleLocationChanged;
+                _locationSubscriptionSet = false;
+            }
         }
 
         public record TocItem(string Id, string Text, int Level);
