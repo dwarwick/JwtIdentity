@@ -404,4 +404,4 @@ FodyWeavers.xsd
 # /API.ps1
 
 /JwtIdentity.PlaywrightTests/appsettings.Development.json
-/JwtIdentity/App_Data/docs.db
+/Jwt/App_Data/docs.db
