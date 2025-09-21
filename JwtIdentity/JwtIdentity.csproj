@@ -48,6 +48,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Exclude specific database file from publish output -->
+    <Content Remove="App_Data\docs.db" />
+    <None Remove="App_Data\docs.db" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Remove="wwwroot\js\.editorconfig" />
   </ItemGroup>
 
@@ -67,6 +73,7 @@
   <Target Name="ExcludeLogsFolder" AfterTargets="CollectFilesToPublish">
     <ItemGroup>
       <FileToPublish Remove="@(FileToPublish)" Condition="%(FileToPublish.RelativePath.StartsWith('logs\'))" />
+      <FileToPublish Remove="@(FileToPublish)" Condition="%(FileToPublish.RelativePath) == 'App_Data\\docs.db' Or %(FileToPublish.RelativePath) == 'App_Data/docs.db'" />
     </ItemGroup>
   </Target>
 
