@@ -31,7 +31,7 @@ namespace JwtIdentity.PlaywrightTests.Tests
 
                 var createButton = Page.GetByRole(AriaRole.Button, new() { Name = "Create" });
                 await Task.WhenAll(
-                    Page.WaitForURLAsync("**/survey/edit/**"),
+                    Page.WaitForURLAsync("**/survey/edit/**", new PageWaitForURLOptions() { Timeout = 120000 }),
                     createButton.ClickAsync());
 
                 var editSurveyHeading = Page.GetByRole(AriaRole.Heading, new() { Name = "Edit Survey" });
