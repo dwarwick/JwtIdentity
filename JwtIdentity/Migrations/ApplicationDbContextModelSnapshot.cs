@@ -57,7 +57,7 @@ namespace JwtIdentity.Migrations
 
                     b.HasIndex("QuestionId");
 
-                    b.ToTable("Answers");
+                    b.ToTable("Answers", (string)null);
 
                     b.HasDiscriminator<int>("AnswerType");
 
@@ -339,7 +339,7 @@ namespace JwtIdentity.Migrations
 
                     b.HasIndex("SelectAllThatApplyQuestionId");
 
-                    b.ToTable("ChoiceOptions");
+                    b.ToTable("ChoiceOptions", (string)null);
                 });
 
             modelBuilder.Entity("JwtIdentity.Models.Feedback", b =>
@@ -381,7 +381,7 @@ namespace JwtIdentity.Migrations
 
                     b.HasIndex("CreatedById");
 
-                    b.ToTable("Feedbacks");
+                    b.ToTable("Feedbacks", (string)null);
                 });
 
             modelBuilder.Entity("JwtIdentity.Models.LogEntry", b =>
@@ -439,7 +439,7 @@ namespace JwtIdentity.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("LogEntries");
+                    b.ToTable("LogEntries", (string)null);
                 });
 
             modelBuilder.Entity("JwtIdentity.Models.PlaywrightLog", b =>
@@ -474,7 +474,7 @@ namespace JwtIdentity.Migrations
 
                     b.HasIndex("ExecutedAt");
 
-                    b.ToTable("PlaywrightLogs");
+                    b.ToTable("PlaywrightLogs", (string)null);
                 });
 
             modelBuilder.Entity("JwtIdentity.Models.Question", b =>
@@ -515,7 +515,7 @@ namespace JwtIdentity.Migrations
 
                     b.HasIndex("SurveyId");
 
-                    b.ToTable("Questions");
+                    b.ToTable("Questions", (string)null);
 
                     b.HasDiscriminator<int>("QuestionType");
 
@@ -629,7 +629,7 @@ namespace JwtIdentity.Migrations
 
                     b.HasIndex("CreatedById");
 
-                    b.ToTable("Settings");
+                    b.ToTable("Settings", (string)null);
                 });
 
             modelBuilder.Entity("JwtIdentity.Models.Survey", b =>
@@ -674,7 +674,7 @@ namespace JwtIdentity.Migrations
 
                     b.HasIndex("CreatedById");
 
-                    b.ToTable("Surveys");
+                    b.ToTable("Surveys", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<int>", b =>
@@ -805,7 +805,7 @@ namespace JwtIdentity.Migrations
                     b.Property<int>("SelectedOptionId")
                         .HasColumnType("int");
 
-                    b.ToTable("Answers", t =>
+                    b.ToTable("Answers", null, t =>
                         {
                             t.Property("SelectedOptionId")
                                 .HasColumnName("Rating1To10Answer_SelectedOptionId");
@@ -831,7 +831,7 @@ namespace JwtIdentity.Migrations
                     b.Property<int>("SelectedOptionId")
                         .HasColumnType("int");
 
-                    b.ToTable("Answers", t =>
+                    b.ToTable("Answers", null, t =>
                         {
                             t.Property("SelectedOptionId")
                                 .HasColumnName("SingleChoiceAnswer_SelectedOptionId");
