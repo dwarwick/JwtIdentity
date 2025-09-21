@@ -16,10 +16,7 @@
     <MudText Typo="Typo.h2" Class="mb-3">Use AI to jump-start your survey</MudText>
     <MudPaper Class="pa-4">
         <MudText Typo="Typo.body1" Class="mb-2">You can optionally let SurveyShark suggest questions based on your description.</MudText>
-        <MudList T="string">
-            <MudListItem T="string" Icon="@Icons.Material.Filled.SmartToy">
-                Check the <MudChip T="string" Size="@MudBlazor.Size.Small" Color="Color.Secondary">Use AI to Generate Questions</MudChip> box while creating a survey.
-            </MudListItem>
+        <MudList T="string">            
             <MudListItem T="string" Icon="@Icons.Material.Filled.TipsAndUpdates">
                 Add guidance in the <MudChip T="string" Size="@MudBlazor.Size.Small" Color="Color.Primary">Instructions to AI</MudChip> field—mention tone, audience, or topics.
             </MudListItem>
@@ -30,6 +27,9 @@
                 Only the survey description and instructions are shared with the AI service. No personal data is transmitted.
             </MudListItem>
         </MudList>
+        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="mt-4">
+            If you do not want to use AI assistance to generate your questions, simply leave the instructions field blank and proceed to create your survey manually.
+        </MudAlert>
     </MudPaper>
 </section>
 
@@ -50,7 +50,10 @@
     <MudText Typo="Typo.h2" Class="mb-3">Build out your questions</MudText>
     <MudPaper Class="pa-4">
         <MudList T="string">
-            <MudListItem T="string" Icon="@Icons.Material.Filled.QuestionAnswer">Use the builder on the left to add each question.</MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.QuestionAnswer">Use the Question Builder to add or edit each question.</MudListItem>
+            <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+                If you used AI to generate questions, you have to accept or regenerate the questions that were generated with AI before you can add new questions manually.
+            </MudAlert>
             <MudListItem T="string" Icon="@Icons.Material.Filled.Category">
                 Pick a question type from the dropdown:
                 <MudList T="string" Dense="true" Class="ms-6">
@@ -61,7 +64,7 @@
                     <MudListItem T="string" Dense="true">Rating 1 to 10 – capture sentiment on a numeric scale.</MudListItem>
                 </MudList>
             </MudListItem>
-            <MudListItem T="string" Icon="@Icons.Material.Filled.Edit">Type the question prompt in the text field and provide helper text when needed.</MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Edit">Type the question prompt in the text field.</MudListItem>
             <MudListItem T="string" Icon="@Icons.Material.Filled.PlaylistAdd">For choice-based questions, add options and select <MudChip T="string" Size="@MudBlazor.Size.Small" Color="Color.Primary">Add Option</MudChip> for each entry.</MudListItem>
             <MudListItem T="string" Icon="@Icons.Material.Filled.AddTask">Choose <MudChip T="string" Size="@MudBlazor.Size.Small" Color="Color.Primary">Add Question</MudChip> to save it to the survey.</MudListItem>
         </MudList>
