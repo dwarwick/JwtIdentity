@@ -55,3 +55,14 @@ export function scrollToElement(elementId) {
         scrollContainer.scrollTo({ top: destination, behavior: 'smooth' });
     }
 }
+
+export function scrollToTop() {
+    const scrollContainer = document.querySelector('.main-content');
+
+    if (scrollContainer && typeof scrollContainer.scrollTo === 'function') {
+        scrollContainer.scrollTo({ top: 0, behavior: 'auto' });
+        return;
+    }
+
+    window.scrollTo({ top: 0, behavior: 'auto' });
+}
