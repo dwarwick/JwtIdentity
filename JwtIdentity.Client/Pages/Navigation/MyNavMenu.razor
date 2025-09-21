@@ -37,7 +37,7 @@
         }
         @if (IsAuthenticated && CanCreateSurvey)
         {
-            <MudMenu Label="Surveys" Variant="Variant.Text" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Color="Color.Inherit">
+            <MudMenu id="nav-surveys-menu" Label="Surveys" Variant="Variant.Text" EndIcon="@Icons.Material.Filled.KeyboardArrowDown" Color="Color.Inherit">
                 <MudMenuItem Href="/survey/create">Create Survey</MudMenuItem>
                 <MudMenuItem Href="/mysurveys/surveysicreated">Surveys I've Created</MudMenuItem>
                 <MudMenuItem Href="/survey/surveysianswered">Surveys I've Answered</MudMenuItem>
