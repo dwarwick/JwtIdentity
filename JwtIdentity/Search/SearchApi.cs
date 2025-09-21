@@ -1,8 +1,5 @@
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.Sqlite;
+using System.Text.RegularExpressions;
 
 namespace JwtIdentity.Search
 {
@@ -17,7 +14,7 @@ namespace JwtIdentity.Search
             return app;
         }
 
-        private static IResult HandleSearch([FromQuery] string? q, [FromQuery] int take, [FromServices] IWebHostEnvironment env)
+        private static IResult HandleSearch([FromQuery] string q, [FromQuery] int take, [FromServices] IWebHostEnvironment env)
         {
             var query = (q ?? string.Empty).Trim();
             if (query.Length < 2)

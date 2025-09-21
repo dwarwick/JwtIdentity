@@ -15,7 +15,7 @@ namespace JwtIdentity.Middleware
         public async Task InvokeAsync(HttpContext context)
         {
             // Extract the username from the ClaimsPrincipal
-            string? userName = context.User.Identity?.IsAuthenticated == true
+            string userName = context.User.Identity?.IsAuthenticated == true
                 ? context.User.FindFirst(ClaimTypes.Name)?.Value ?? context.User.FindFirst(ClaimTypes.Email)?.Value ?? "anonymous"
                 : "anonymous";
 
