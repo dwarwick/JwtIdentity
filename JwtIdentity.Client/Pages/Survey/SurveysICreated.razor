@@ -95,7 +95,8 @@
 
 <h3>Surveys I've Created</h3>
 
-<SfGrid DataSource="@UserSurveys" AllowPaging="true" AllowSorting="true" AllowFiltering="true" AllowResizing="true" FrozenColumns="@FrozenColumns" AllowTextWrap="true" TextWrapSettings="@GridSettings.TextWrapSettings" GridLines="@GridSettings.GridLines">
+<SfGrid DataSource="@UserSurveys" AllowPaging="true" AllowSorting="true" AllowFiltering="true" AllowResizing="true" FrozenColumns="@FrozenColumns" AllowTextWrap="true" GridLines="@GridSettings.GridLines">
+    <GridTextWrapSettings WrapMode="WrapMode.Content" />
     <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel"></GridFilterSettings>
     <GridColumns>
         <GridColumn HeaderText="Actions" AutoFit="true" AllowResizing="false" AllowReordering="false">

@@ -22,13 +22,12 @@
                 </MudText>
             </MudAlert>
             <MudStack Row="true" Spacing="1" Class="mt-2" Wrap="@Wrap.Wrap">
-                <MudButton Variant="Variant.Filled"
-                           Color="Color.Primary"
-                           OnClick="BeginDemo"
-                           Disabled="@IsStartingDemo"
-                           Loading="@IsStartingDemo">
-                    Start the Demo
-                </MudButton>
+                <SpinnerButton Text="Start the Demo"
+                               OnClick="BeginDemo"
+                               IsBusy="@IsStartingDemo"
+                               Disabled="@IsStartingDemo"
+                               ButtonType="ButtonType.Button"
+                               Color="Color.Primary" />
                 <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Href="/">Return Home</MudButton>
             </MudStack>
         </MudStack>

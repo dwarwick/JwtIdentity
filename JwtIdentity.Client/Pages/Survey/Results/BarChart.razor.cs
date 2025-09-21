@@ -1,7 +1,5 @@
 ﻿using Syncfusion.Blazor.Charts;
 
-#nullable enable
-
 namespace JwtIdentity.Client.Pages.Survey.Results
 {
     public class BarChartModel : BlazorBase, IAsyncDisposable
@@ -14,9 +12,9 @@ namespace JwtIdentity.Client.Pages.Survey.Results
         [Parameter]
         public string SurveyId { get; set; } = string.Empty;
 
-        protected SfChart? chartObj { get; set; }
+        protected SfChart chartObj { get; set; }
 
-        protected SfAccumulationChart? pieChartObj { get; set; }
+        protected SfAccumulationChart pieChartObj { get; set; }
 
         protected List<SfChart> BarCharts { get; set; } = new();
 
@@ -35,7 +33,7 @@ namespace JwtIdentity.Client.Pages.Survey.Results
 
         protected List<List<ChartData>> PieChartDataForPrint { get; set; } = new();
 
-        protected QuestionViewModel? SelectedQuestion { get; set; }
+        protected QuestionViewModel SelectedQuestion { get; set; }
 
         protected Theme CurrentTheme => Theme == "dark" ? Syncfusion.Blazor.Theme.Tailwind3Dark : Syncfusion.Blazor.Theme.Material3;
 

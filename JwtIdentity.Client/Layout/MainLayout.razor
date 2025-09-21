@@ -95,7 +95,6 @@
 </div>
 
 @code {
-    #nullable enable
 
     MudTheme mudTheme = new();
     bool _isDarkMode;
@@ -111,7 +110,7 @@
         }, 
     };
 
-    IJSObjectReference? module;
+    IJSObjectReference module;
 
     protected AppSettings AppSettings { get; set; } = new();
 
@@ -136,7 +135,7 @@
                 // get the Id of the user from the claims
                 var userId = authState.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
 
-                ApplicationUserViewModel? applicationUserViewModel = await ApiService.GetAsync<ApplicationUserViewModel>($"{ApiEndpoints.ApplicationUser}/{userId}");
+                ApplicationUserViewModel applicationUserViewModel = await ApiService.GetAsync<ApplicationUserViewModel>($"{ApiEndpoints.ApplicationUser}/{userId}");
 
                 if (applicationUserViewModel != null)
                 {
@@ -182,7 +181,7 @@
         }
         catch (Exception ex)
         {
-            // Handle exception
+            Console.Error.WriteLine($"Failed to initialize main layout: {ex}");
         }
     }
 

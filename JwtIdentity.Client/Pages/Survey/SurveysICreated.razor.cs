@@ -67,7 +67,7 @@
 
             if (IsDemoUser && DemoStep == 1)
             {
-                NextDemoStep();
+                await NextDemoStep();
             }
         }
 

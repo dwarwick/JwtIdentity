@@ -65,7 +65,7 @@ namespace JwtIdentity.Tests.ControllerTests
                 .Returns<object[]>(ids => {
                     var id = (int)ids[0];
                     var item = _choiceOptions.FirstOrDefault(c => c.Id == id);
-                    return new ValueTask<ChoiceOption?>(item);
+                    return new ValueTask<ChoiceOption>(item);
                 });
 
             // Use the ApplicationDbContext from BaseSetUp, but replace its ChoiceOptions DbSet

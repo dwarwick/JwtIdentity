@@ -7,7 +7,7 @@ namespace JwtIdentity.Client.Services
         private readonly HubConnection _hubConnection;
         private readonly Task _startTask;
 
-        public event Action<string>? SurveyUpdated;
+        public event Action<string> SurveyUpdated;
 
         public SurveyHubClient(NavigationManager navigationManager)
         {
