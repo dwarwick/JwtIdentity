@@ -21,7 +21,9 @@ namespace JwtIdentity.PlaywrightTests.Tests
                     .GetByRole(AriaRole.Link, new() { Name = "Logout" });
                 await Microsoft.Playwright.Assertions.Expect(logoutLink).ToBeVisibleAsync();
 
-                await logoutLink.ClickAsync();
+                await Task.WhenAll(
+                    Page.WaitForURLAsync("**/login**"),
+                    logoutLink.ClickAsync());
 
                 var loginLink = Page
                     .GetByRole(AriaRole.Toolbar)
