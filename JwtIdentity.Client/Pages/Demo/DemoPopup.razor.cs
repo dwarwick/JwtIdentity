@@ -3,7 +3,7 @@
     public class DemoPopupModel : BlazorBase
     {
         [Parameter]
-        public RenderFragment? ChildContent { get; set; }
+        public RenderFragment ChildContent { get; set; }
 
         [Parameter]
         public string Class { get; set; }

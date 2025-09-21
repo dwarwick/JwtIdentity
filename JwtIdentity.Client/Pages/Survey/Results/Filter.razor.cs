@@ -131,7 +131,7 @@ namespace JwtIdentity.Client.Pages.Survey.Results
             foreach (var grp in groups)
             {
                 dynamic expando = new ExpandoObject();
-                var dict = (IDictionary<string, object?>)expando;
+                var dict = (IDictionary<string, object>)expando;
 
                 // initialize *all* properties to null (so grid sees them up front)
                 foreach (var q in questions)
@@ -148,7 +148,7 @@ namespace JwtIdentity.Client.Pages.Survey.Results
             }
         }
 
-        private object? ConvertAnswerValue(AnswerViewModel ans)
+        private object ConvertAnswerValue(AnswerViewModel ans)
         {
             return ans.AnswerType switch
             {
@@ -163,7 +163,7 @@ namespace JwtIdentity.Client.Pages.Survey.Results
             };
         }
 
-        private string? GetOptionText(MultipleChoiceAnswerViewModel? m)
+        private string GetOptionText(MultipleChoiceAnswerViewModel m)
         {
             if (m == null) return null;
 
@@ -178,7 +178,7 @@ namespace JwtIdentity.Client.Pages.Survey.Results
             return option?.OptionText;
         }
 
-        private string? GetSelectAllText(SelectAllThatApplyAnswerViewModel? s)
+        private string GetSelectAllText(SelectAllThatApplyAnswerViewModel s)
         {
             if (s == null || string.IsNullOrEmpty(s.SelectedOptionIds))
                 return null;
@@ -219,7 +219,7 @@ namespace JwtIdentity.Client.Pages.Survey.Results
             // 2) tally
             foreach (var row in rows)
             {
-                var dict = (IDictionary<string, object?>)row;
+                var dict = (IDictionary<string, object>)row;
 
                 // multiple‑choice
                 foreach (var mcq in Survey.Questions.OfType<MultipleChoiceQuestionViewModel>())

@@ -11,7 +11,7 @@ namespace JwtIdentity.Client.Services
         private readonly IApiService _apiService;
         private readonly JwtSecurityTokenHandler jwtSecurityTokenHandler;
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly IHttpContextAccessor? _httpContextAccessor;
+        private readonly IHttpContextAccessor _httpContextAccessor;
         public HttpClient _httpClient { get; set; }
 
         public ApplicationUserViewModel CurrentUser { get; set; }
@@ -23,7 +23,7 @@ namespace JwtIdentity.Client.Services
         {
         }
 
-        public CustomAuthStateProvider(Blazored.LocalStorage.ILocalStorageService localStorage, IHttpClientFactory httpClientFactory, IApiService apiService, IHttpContextAccessor? httpContextAccessor)
+        public CustomAuthStateProvider(Blazored.LocalStorage.ILocalStorageService localStorage, IHttpClientFactory httpClientFactory, IApiService apiService, IHttpContextAccessor httpContextAccessor)
         {
             _localStorage = localStorage;
             jwtSecurityTokenHandler = new JwtSecurityTokenHandler();

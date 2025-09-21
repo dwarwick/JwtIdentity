@@ -44,7 +44,7 @@ namespace JwtIdentity.Client.Pages
         internal ILogger<BlazorBase> Logger { get; set; }
 #pragma warning restore CS8618
 
-        private HttpClient? _client;
+        private HttpClient _client;
         protected HttpClient Client => _client ??= HttpClientFactory.CreateClient("AuthorizedClient");
 
         protected ISnackbar Snackbar => ServiceProvider.GetRequiredService<ISnackbar>();
