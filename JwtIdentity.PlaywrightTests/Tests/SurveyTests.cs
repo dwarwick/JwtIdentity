@@ -44,7 +44,7 @@ namespace JwtIdentity.PlaywrightTests.Tests
 
         private async Task OpenCreateSurveyAsync()
         {
-            var surveysMenu = Page.GetByRole(AriaRole.Button, new() { Name = "Surveys" });
+            var surveysMenu = Page.Locator("#nav-surveys-menu button");
             await surveysMenu.ClickAsync();
 
             var createSurveyMenuItem = Page.GetByRole(AriaRole.Link, new() { Name = "Create Survey" });
