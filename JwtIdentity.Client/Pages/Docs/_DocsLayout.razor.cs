@@ -52,6 +52,56 @@ namespace JwtIdentity.Client.Pages.Docs
 
         protected bool ShowSearchResults => SearchQuery.Trim().Length >= 2;
 
+        protected RenderFragment RenderSearchResults() => builder =>
+        {
+            var sequence = 0;
+
+            if (IsSearching)
+            {
+                builder.OpenElement(sequence++, "div");
+                builder.AddAttribute(sequence++, "class", "docs-search-status");
+                builder.AddContent(sequence++, "Searching…");
+                builder.CloseElement();
+                return;
+            }
+
+            if (SearchResults.Count == 0)
+            {
+                builder.OpenElement(sequence++, "div");
+                builder.AddAttribute(sequence++, "class", "docs-search-status");
+                builder.AddContent(sequence++, "No results yet.");
+                builder.CloseElement();
+                return;
+            }
+
+            foreach (var hit in SearchResults)
+            {
+                builder.OpenElement(sequence++, "a");
+                builder.AddAttribute(sequence++, "href", hit.url);
+                builder.AddAttribute(sequence++, "class", "docs-search-hit");
+                builder.AddAttribute(sequence++, "onclick", EventCallback.Factory.Create(this, () => NavigateToResult(hit.url)));
+
+                builder.OpenElement(sequence++, "span");
+                builder.AddAttribute(sequence++, "class", "section");
+                builder.AddContent(sequence++, hit.section);
+                builder.CloseElement();
+
+                builder.OpenElement(sequence++, "strong");
+                builder.AddContent(sequence++, hit.title);
+                builder.CloseElement();
+
+                if (!string.IsNullOrEmpty(hit.snippet))
+                {
+                    builder.OpenElement(sequence++, "div");
+                    builder.AddAttribute(sequence++, "class", "snippet");
+                    builder.AddMarkupContent(sequence++, hit.snippet);
+                    builder.CloseElement();
+                }
+
+                builder.CloseElement();
+            }
+        };
+
         protected void OpenSidebar()
         {
             SidebarOpen = true;
