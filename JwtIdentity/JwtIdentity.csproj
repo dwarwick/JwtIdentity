@@ -11,7 +11,9 @@
     <PackageReference Include="Hangfire.AspNetCore" Version="1.8.20" />
     <PackageReference Include="Hangfire.Core" Version="1.8.20" />
     <PackageReference Include="Hangfire.SqlServer" Version="1.8.20" />
+    <PackageReference Include="Markdig" Version="0.37.0" />
     <PackageReference Include="Microsoft.AspNetCore.OData" Version="9.3.2" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.0" />
     <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
     <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
     <PackageReference Include="Serilog.Sinks.MSSqlServer" Version="8.2.2" />
@@ -46,6 +48,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Exclude specific database file from publish output -->
+    <Content Remove="App_Data\docs.db" />
+    <None Remove="App_Data\docs.db" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Remove="wwwroot\js\.editorconfig" />
   </ItemGroup>
 
@@ -55,10 +63,17 @@
       <CopyToPublishDirectory>Always</CopyToPublishDirectory>
     </Content>
   </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="DocsContent\**\*.md">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
  
   <Target Name="ExcludeLogsFolder" AfterTargets="CollectFilesToPublish">
     <ItemGroup>
       <FileToPublish Remove="@(FileToPublish)" Condition="%(FileToPublish.RelativePath.StartsWith('logs\'))" />
+      <FileToPublish Remove="@(FileToPublish)" Condition="%(FileToPublish.RelativePath) == 'App_Data\\docs.db' Or %(FileToPublish.RelativePath) == 'App_Data/docs.db'" />
     </ItemGroup>
   </Target>
 

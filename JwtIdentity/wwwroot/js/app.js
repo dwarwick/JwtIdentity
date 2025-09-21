@@ -28,3 +28,41 @@ export function moveOpenGraphMetaTagsToTop() {
             document.head.prepend(meta);
         });
 }
+
+export function scrollToElement(elementId) {
+    if (!elementId) {
+        return;
+    }
+
+    const target = document.getElementById(elementId);
+    if (!target) {
+        return;
+    }
+
+    const scrollContainer = target.closest('.main-content');
+    const fallbackScroll = () => target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    if (!scrollContainer) {
+        fallbackScroll();
+    }
+    else {
+        const containerRect = scrollContainer.getBoundingClientRect();
+        const targetRect = target.getBoundingClientRect();
+        const currentScrollTop = scrollContainer.scrollTop;
+        const offset = 16; // keep content slightly below the header
+
+        const destination = currentScrollTop + (targetRect.top - containerRect.top) - offset;
+        scrollContainer.scrollTo({ top: destination, behavior: 'smooth' });
+    }
+}
+
+export function scrollToTop() {
+    const scrollContainer = document.querySelector('.main-content');
+
+    if (scrollContainer && typeof scrollContainer.scrollTo === 'function') {
+        scrollContainer.scrollTo({ top: 0, behavior: 'auto' });
+        return;
+    }
+
+    window.scrollTo({ top: 0, behavior: 'auto' });
+}

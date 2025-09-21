@@ -1,0 +1,238 @@
+@inherits JwtIdentity.Client.Pages.Docs._DocsLayoutModel
+@using MudBlazor
+@using JwtIdentity.Client.Pages.Navigation
+
+<MudThemeProvider IsDarkMode="@_isDarkMode" />
+
+<MudPopoverProvider />
+
+<MudDialogProvider />
+
+<MudSnackbarProvider />
+
+<CascadingValue Value="_theme" Name="Theme">
+    <div class="app-container">
+        <MyNavMenu AppSettings="@AppSettings"
+                   @bind-DarkTheme="@_isDarkMode"
+                   @bind-DarkTheme:after="HandleThemeChanged" />
+
+        <div class="main-content">
+            <MudContainer Class="mb-20">
+                <MudLayout>
+                    <MudAppBar Elevation="0" Class="docs-appbar">
+                        <MudIconButton Icon="@Icons.Material.Filled.Menu"
+                                       OnClick="@(EventCallback.Factory.Create(this, OpenSidebar))"
+                                       Class="md:hidden" />
+                        <MudText Typo="Typo.h6">Documentation</MudText>
+                        <MudSpacer />
+                        <div class="docs-search">
+                            <MudTextField Value="@SearchQuery"
+                                          ValueChanged="@(EventCallback.Factory.Create<string>(this, OnSearchChanged))"
+                                          Placeholder="Search docs…"
+                                          Adornment="Adornment.Start"
+                                          AdornmentIcon="@Icons.Material.Filled.Search"
+                                          Class="hidden md:block docs-search-input"
+                                          Immediate="true"
+                                          Clearable="true"
+                                          OnClearButtonClick="@(EventCallback.Factory.Create(this, CloseSearch))" />
+                            @if (ShowSearchResults)
+                            {
+                                <div class="docs-search-results docs-search-results-appbar hidden md:block">
+                                    @RenderSearchResults()
+                                </div>
+                            }
+                        </div>
+                    </MudAppBar>
+
+                    <MudDrawer @bind-Open="SidebarOpen"
+                               ClipMode="DrawerClipMode.Always"
+                               Variant="DrawerVariant.Responsive"
+                               Breakpoint="Breakpoint.Md"
+                               Elevation="1"
+                               Width="300px">
+                        <MudNavMenu Dense="true">
+                            <MudNavLink Href="/documentation" Match="NavLinkMatch.All">Overview</MudNavLink>
+                            <MudNavLink Href="/docs/getting-started" Match="NavLinkMatch.All">Getting Started</MudNavLink>
+                            <MudNavLink Href="/docs/creating-surveys" Match="NavLinkMatch.All">Creating Surveys</MudNavLink>
+                            <MudNavLink Href="/docs/managing-content" Match="NavLinkMatch.All">Managing Content</MudNavLink>
+                            <MudNavLink Href="/docs/publishing-and-sharing" Match="NavLinkMatch.All">Publishing &amp; Sharing</MudNavLink>
+                            <MudNavLink Href="/docs/answering-surveys" Match="NavLinkMatch.All">Answering Surveys</MudNavLink>
+                            <MudNavLink Href="/docs/viewing-results" Match="NavLinkMatch.All">Viewing Results</MudNavLink>
+                            <MudNavLink Href="/docs/feedback" Match="NavLinkMatch.All">Feedback</MudNavLink>
+                            <MudNavLink Href="/docs/faq" Match="NavLinkMatch.All">FAQ</MudNavLink>
+                        </MudNavMenu>
+                    </MudDrawer>
+
+                    <MudMainContent Class="docs-main px-4 md:px-8">
+                        <div class="docs-grid">
+                            <CascadingValue Value="this" IsFixed="true">
+                                <article>
+                                    @if (Breadcrumbs.Count > 0)
+                                    {
+                                        <nav class="docs-breadcrumbs" aria-label="Breadcrumb">
+                                            <ol>
+                                                @foreach (var crumb in Breadcrumbs)
+                                                {
+                                                    var isCurrent = crumb.IsCurrent || string.IsNullOrWhiteSpace(crumb.Href);
+                                                    <li class="@(isCurrent ? "current" : string.Empty)">
+                                                        @if (isCurrent)
+                                                        {
+                                                            <span>@crumb.Text</span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <a href="@crumb.Href">@crumb.Text</a>
+                                                        }
+                                                    </li>
+                                                }
+                                            </ol>
+                                        </nav>
+                                    }
+
+                                    <div class="docs-mobile-search md:hidden">
+                                        <MudTextField Value="@SearchQuery"
+                                                      ValueChanged="@(EventCallback.Factory.Create<string>(this, OnSearchChanged))"
+                                                      Placeholder="Search docs…"
+                                                      Adornment="Adornment.Start"
+                                                      AdornmentIcon="@Icons.Material.Filled.Search"
+                                                      Immediate="true"
+                                                      Clearable="true"
+                                                      OnClearButtonClick="@(EventCallback.Factory.Create(this, CloseSearch))" />
+                                    </div>
+
+                                    @if (ShowSearchResults)
+                                    {
+                                        <div class="docs-search-results docs-search-results-content md:hidden">
+                                            @RenderSearchResults()
+                                        </div>
+                                    }
+
+                                    @if (TocItems.Count > 0)
+                                    {
+                                        <div class="docs-mobile-toc md:hidden">
+                                            <MudSelect Value="SelectedTocId"
+                                                       ValueChanged="@(EventCallback.Factory.Create<string>(this, OnTocSelectionChanged))"
+                                                       Placeholder="Jump to section">
+                                                @foreach (var item in TocItems)
+                                                {
+                                                    <MudSelectItem Value="@item.Id">@item.Text</MudSelectItem>
+                                                }
+                                            </MudSelect>
+                                        </div>
+                                    }
+
+                                    @Body
+
+                                    <div class="docs-pager">
+                                        @if (!PreviousLink.IsEmpty)
+                                        {
+                                            <a href="@PreviousLink.Href" class="prev">← @PreviousLink.Title</a>
+                                        }
+                                        else
+                                        {
+                                            <span></span>
+                                        }
+                                        @if (!NextLink.IsEmpty)
+                                        {
+                                            <a href="@NextLink.Href" class="next">@NextLink.Title →</a>
+                                        }
+                                        else
+                                        {
+                                            <span></span>
+                                        }
+                                    </div>
+                                </article>
+                            </CascadingValue>
+
+                            <aside class="toc">
+                                <h6>On this page</h6>
+                                @if (TocItems.Count == 0)
+                                {
+                                    <div>No subsections</div>
+                                }
+                                else
+                                {
+                                    <ul>
+                                        @foreach (var item in TocItems)
+                                        {
+                                            <li class="@($"level-{item.Level}")">
+                                                <a href="@($"#{item.Id}")"
+                                                   @onclick="async () => await ScrollToSectionAsync(item.Id)"
+                                                   @onclick:preventDefault="true">
+                                                    @item.Text
+                                                </a>
+                                            </li>
+                                        }
+                                    </ul>
+                                }
+                            </aside>
+                        </div>
+                    </MudMainContent>
+                </MudLayout>
+            </MudContainer>
+        </div>
+
+        <div class="app-footer">
+            <MudText Class="mx-auto footer-text" Typo="Typo.inherit">
+                <MudStack Row="true" Wrap="Wrap.Wrap" Spacing="2" AlignItems="AlignItems.Center" Class="justify-center">
+                    <MudImage Class="d-none d-md-block" Src="images/sectigo_trust_seal_sm_82x32.png" Alt="Sectigo Trust Seal" />
+                    <span>© @DateTime.Now.Year @Utility.Domain - All Rights Reserved</span>
+                    <span class="d-none d-md-block">|</span>
+
+                    @if (((CustomAuthStateProvider)AuthStateProvider).CurrentUser != null && (((CustomAuthStateProvider)AuthStateProvider!).CurrentUser?.Permissions.Contains(Permissions.LeaveFeedback) ?? false))
+                    {
+                        <MudLink Class="d-none d-md-block" Href="/feedback" Underline="Underline.None" Typo="Typo.inherit">Leave Feedback</MudLink>
+                        <span class="d-none d-md-block">|</span>
+                    }
+
+                    <MudLink Class="d-none d-md-block" Href="/privacy-policy" Underline="Underline.None" Typo="Typo.inherit">Privacy Policy</MudLink>
+                    <span class="d-none d-md-block">|</span>
+                    <MudLink Class="d-none d-md-block" Href="/cookie-policy" Underline="Underline.None" Typo="Typo.inherit">Cookie Policy</MudLink>
+                    <span class="d-none d-md-block">|</span>
+                    <MudLink Class="d-none d-md-block" Href="javascript:void(0)" OnClick="OpenCookieSettings" Underline="Underline.None" Typo="Typo.inherit">Cookie Settings</MudLink>
+                    <span class="d-none d-md-block">|</span>
+                    <MudLink Class="d-none d-md-block" Href="/terms-of-service" Underline="Underline.None" Typo="Typo.inherit">Terms of Service</MudLink>
+
+                    @if (!string.IsNullOrEmpty(AppSettings?.EmailSettings?.CustomerServiceEmail))
+                    {
+                        <span class="d-none d-md-block">|</span>
+                        <MudLink Class="d-none d-md-block" Href="@($"mailto://{AppSettings.EmailSettings.CustomerServiceEmail}")" Underline="Underline.None" Typo="Typo.inherit">Contact Us</MudLink>
+                    }
+                </MudStack>
+            </MudText>
+        </div>
+
+        @if (!_cookiesAccepted)
+        {
+            <div class="cookie-banner @(_showCookieBanner ? "visible" : "")">
+                <div class="cookie-content">
+                    <MudText Typo="Typo.body1">
+                        This site uses cookies to securely authenticate your login session and enhance your browsing experience.
+
+                        You can choose which types of cookies you allow us to use. Read our full <MudLink Href="/cookie-policy" Underline="Underline.Always">Cookie Policy</MudLink> for more information.
+                    </MudText>
+                    <div class="cookie-actions">
+                        <MudButton Variant="Variant.Filled"
+                                  Color="Color.Primary"
+                                  OnClick="AcceptAllCookies"
+                                  Class="mt-2 mx-1">
+                            Accept All Cookies
+                        </MudButton>
+                        <MudButton Variant="Variant.Outlined"
+                                  Color="Color.Error"
+                                  OnClick="RejectThirdPartyCookies"
+                                  Class="mt-2 mx-1">
+                            Essential Cookies Only
+                        </MudButton>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</CascadingValue>
+
+<div id="blazor-error-ui" data-nosnippet>
+    An unhandled error has occurred.
+    <a href="." class="reload">Reload</a>
+    <span class="dismiss">🗙</span>
+</div>

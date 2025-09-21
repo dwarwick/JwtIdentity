@@ -1,0 +1,38 @@
+@page "/docs/answering-surveys"
+@layout _DocsLayout
+@inherits JwtIdentity.Client.Pages.Docs.AnsweringSurveysModel
+@using static Microsoft.AspNetCore.Components.Web.RenderMode
+@rendermode InteractiveWebAssembly
+
+<PageTitle>Answering Surveys</PageTitle>
+<HeadContent>
+    <meta name="description" content="Help respondents understand how to complete SurveyShark surveys from start to finish." />
+</HeadContent>
+
+<h1>Answering Surveys</h1>
+<MudText Typo="Typo.subtitle1" Class="mb-6">Share these tips with participants so they can submit confident, accurate responses.</MudText>
+
+<section id="complete" class="mb-8">
+    <MudText Typo="Typo.h2" Class="mb-3">Complete a SurveyShark questionnaire</MudText>
+    <MudPaper Class="pa-4">
+        <MudList T="string">
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Link">Open the survey link provided by the creator.</MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.VerifiedUser">Pass any CAPTCHA or verification prompts if requested.</MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.ReadMore">Review the title and description to understand the purpose.</MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.QuestionAnswer">
+                Respond to each question:
+                <MudList T="string" Dense="true" Class="ms-6">
+                    <MudListItem T="string" Dense="true">Required questions are marked with a red asterisk (*).</MudListItem>
+                    <MudListItem T="string" Dense="true">Text fields accept free-form answers.</MudListItem>
+                    <MudListItem T="string" Dense="true">Multiple choice questions allow only one selection.</MudListItem>
+                    <MudListItem T="string" Dense="true">Select All That Apply lets you choose multiple options.</MudListItem>
+                    <MudListItem T="string" Dense="true">True/False questions provide a quick binary choice.</MudListItem>
+                    <MudListItem T="string" Dense="true">Rating scales record sentiment on a 1–10 scale.</MudListItem>
+                </MudList>
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.ArrowForward">Scroll through the survey until you reach the end.</MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Send">Select <MudChip T="string" Size="@MudBlazor.Size.Small" Color="Color.Primary">Submit</MudChip> to record your responses.</MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Check">Watch for the confirmation message that verifies your submission.</MudListItem>
+        </MudList>
+    </MudPaper>
+</section>
