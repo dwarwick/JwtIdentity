@@ -105,6 +105,83 @@ namespace JwtIdentity.PlaywrightTests.Helpers
             await targetPage.FillAsync("#password", password);
             await targetPage.ClickAsync("button[type='submit']");
             await targetPage.WaitForLoadStateAsync(LoadState.NetworkIdle);
+
+            await DismissCookieBannerAsync(targetPage);
+        }
+
+        protected async Task DismissCookieBannerAsync(IPage page = null)
+        {
+            var targetPage = page ?? Page ?? throw new InvalidOperationException("Playwright page has not been initialized.");
+
+            await targetPage.WaitForTimeoutAsync(1200);
+
+            var banner = targetPage.Locator(".cookie-banner.visible");
+
+            if (await banner.CountAsync() == 0)
+            {
+                return;
+            }
+
+            var acceptAllButton = targetPage.GetByRole(AriaRole.Button, new() { Name = "Accept All Cookies" });
+            var essentialOnlyButton = targetPage.GetByRole(AriaRole.Button, new() { Name = "Essential Cookies Only" });
+
+            var clickAcceptAll = Random.Shared.Next(0, 2) == 0;
+            var acceptAllAvailable = await acceptAllButton.CountAsync() > 0;
+            var essentialOnlyAvailable = await essentialOnlyButton.CountAsync() > 0;
+
+            ILocator buttonToClick;
+
+            if (clickAcceptAll && acceptAllAvailable)
+            {
+                buttonToClick = acceptAllButton;
+            }
+            else if (!clickAcceptAll && essentialOnlyAvailable)
+            {
+                buttonToClick = essentialOnlyButton;
+            }
+            else if (acceptAllAvailable)
+            {
+                buttonToClick = acceptAllButton;
+            }
+            else if (essentialOnlyAvailable)
+            {
+                buttonToClick = essentialOnlyButton;
+            }
+            else
+            {
+                return;
+            }
+
+            var clickedEssentialOnly = buttonToClick == essentialOnlyButton;
+
+            if (clickedEssentialOnly)
+            {
+                await Task.WhenAll(
+                    targetPage.WaitForLoadStateAsync(LoadState.NetworkIdle),
+                    buttonToClick.ClickAsync());
+            }
+            else
+            {
+                await buttonToClick.ClickAsync();
+                await targetPage.WaitForLoadStateAsync(LoadState.NetworkIdle);
+            }
+
+            try
+            {
+                await banner.WaitForAsync(new LocatorWaitForOptions
+                {
+                    State = WaitForSelectorState.Detached,
+                    Timeout = 5000
+                });
+            }
+            catch (TimeoutException)
+            {
+                // Ignore timeout if the banner disappears during a navigation.
+            }
+            catch (PlaywrightException)
+            {
+                // Ignore Playwright errors caused by the banner being removed during navigation.
+            }
         }
 
         protected async Task EnsureAuthenticatedAsync(IPage page = null)
