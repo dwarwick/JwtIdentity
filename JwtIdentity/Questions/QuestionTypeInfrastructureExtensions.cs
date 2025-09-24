@@ -19,6 +19,7 @@ namespace JwtIdentity.Questions
                 });
             }
 
+
             services.AddSingleton<IQuestionTypeHandlerResolver, QuestionTypeHandlerResolver>();
 
             return services;

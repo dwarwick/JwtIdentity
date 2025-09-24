@@ -1,6 +1,7 @@
 using JwtIdentity.Common.Helpers;
 using JwtIdentity.Models;
 
+
 namespace JwtIdentity.Questions
 {
     public static class QuestionDomainRegistry
@@ -34,6 +35,7 @@ namespace JwtIdentity.Questions
         public static QuestionDomainDefinition GetByAnswer(AnswerType answerType)
         {
             EnsureInitialized();
+
 
             if (_definitionsByAnswer.TryGetValue(answerType, out var definition))
             {
@@ -90,6 +92,7 @@ namespace JwtIdentity.Questions
                 _initialized = true;
             }
         }
+
 
         internal static void Register(QuestionDomainDefinition definition)
         {

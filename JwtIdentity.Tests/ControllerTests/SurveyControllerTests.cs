@@ -24,6 +24,7 @@ namespace JwtIdentity.Tests.ControllerTests
         private List<ApplicationUser> _mockUsers = null!;
         private Mock<IOpenAi> MockOpenAiService = null!;
         private Mock<ISurveyService> MockSurveyService = null!;
+
         private IQuestionTypeHandlerResolver _handlerResolver = null!;
         private ServiceProvider _handlerServiceProvider = null!;
 
@@ -41,8 +42,10 @@ namespace JwtIdentity.Tests.ControllerTests
             MockEmailService.Setup(e => e.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(true);
             MockConfiguration.Setup(c => c["EmailSettings:CustomerServiceEmail"]).Returns("admin@example.com");
             MockSurveyService = new Mock<ISurveyService>();
+
             SetupQuestionTypeHandlers();
             _controller = new SurveyController(MockDbContext, MockMapper.Object, MockApiAuthService.Object, MockLogger.Object, MockOpenAiService.Object, MockEmailService.Object, MockConfiguration.Object, MockSurveyService.Object, _handlerResolver)
+
             {
                 ControllerContext = new ControllerContext { HttpContext = HttpContext }
             };
@@ -145,6 +148,7 @@ namespace JwtIdentity.Tests.ControllerTests
             MockApiAuthService.Setup(a => a.GetUserId(It.IsAny<ClaimsPrincipal>())).Returns(1);
         }
 
+
         private void SetupQuestionTypeHandlers()
         {
             var services = new ServiceCollection();
@@ -153,6 +157,7 @@ namespace JwtIdentity.Tests.ControllerTests
 
             _handlerServiceProvider = services.BuildServiceProvider();
             _handlerResolver = _handlerServiceProvider.GetRequiredService<IQuestionTypeHandlerResolver>();
+
         }
 
 
