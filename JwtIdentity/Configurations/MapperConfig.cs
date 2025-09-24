@@ -30,61 +30,33 @@
             _ = CreateMap<FeedbackViewModel, Feedback>()
                 .ForMember(x => x.CreatedBy, options => options.Ignore());
 
-            _ = CreateMap<Question, QuestionViewModel>().IncludeAllDerived()
-                .Include<MultipleChoiceQuestion, MultipleChoiceQuestionViewModel>();
+            _ = CreateMap<Question, QuestionViewModel>().IncludeAllDerived();
 
             _ = CreateMap<QuestionViewModel, Question>().IncludeAllDerived()
-                .ForMember(x => x.CreatedBy, options => options.Ignore());
-
-            _ = CreateMap<TextQuestion, TextQuestionViewModel>();
-            _ = CreateMap<TextQuestionViewModel, TextQuestion>()
-                .ForMember(x => x.CreatedBy, options => options.Ignore());
-
-            _ = CreateMap<TrueFalseQuestion, TrueFalseQuestionViewModel>();
-            _ = CreateMap<TrueFalseQuestionViewModel, TrueFalseQuestion>()
-                .ForMember(x => x.CreatedBy, options => options.Ignore());
-
-            _ = CreateMap<MultipleChoiceQuestion, MultipleChoiceQuestionViewModel>()
-                .ForMember(dest => dest.Options, opt => opt.MapFrom(src => src.Options));
-            _ = CreateMap<MultipleChoiceQuestionViewModel, MultipleChoiceQuestion>()
-                .ForMember(x => x.CreatedBy, options => options.Ignore());
-
-            _ = CreateMap<Rating1To10Question, Rating1To10QuestionViewModel>();
-            _ = CreateMap<Rating1To10QuestionViewModel, Rating1To10Question>()
-                .ForMember(x => x.CreatedBy, options => options.Ignore());
-
-            _ = CreateMap<SelectAllThatApplyQuestion, SelectAllThatApplyQuestionViewModel>()
-                .ForMember(dest => dest.Options, opt => opt.MapFrom(src => src.Options));
-            _ = CreateMap<SelectAllThatApplyQuestionViewModel, SelectAllThatApplyQuestion>()
-                .ForMember(x => x.CreatedBy, options => options.Ignore());
+                .ForMember(x => x.CreatedBy, options => options.Ignore())
+                .ForMember(x => x.CreatedById, options => options.Ignore());
 
             _ = CreateMap<Answer, AnswerViewModel>().IncludeAllDerived();
             _ = CreateMap<AnswerViewModel, Answer>().IncludeAllDerived()
-                .ForMember(x => x.CreatedBy, options => options.Ignore());
+                .ForMember(x => x.CreatedBy, options => options.Ignore())
+                .ForMember(x => x.CreatedById, options => options.Ignore());
 
-            _ = CreateMap<TextAnswer, TextAnswerViewModel>();
-            _ = CreateMap<TextAnswerViewModel, TextAnswer>()
-                .ForMember(x => x.CreatedBy, options => options.Ignore());
+            foreach (var definition in QuestionDomainRegistry.All)
+            {
+                _ = CreateMap(definition.QuestionEntityType, definition.Definition.QuestionViewModelType);
+                var questionMap = CreateMap(definition.Definition.QuestionViewModelType, definition.QuestionEntityType);
+                questionMap.ForMember(nameof(BaseModel.CreatedBy), opt => opt.Ignore());
+                questionMap.ForMember(nameof(BaseModel.CreatedById), opt => opt.Ignore());
 
-            _ = CreateMap<TrueFalseAnswer, TrueFalseAnswerViewModel>();
-            _ = CreateMap<TrueFalseAnswerViewModel, TrueFalseAnswer>()
-                .ForMember(x => x.CreatedBy, options => options.Ignore());
-
-            _ = CreateMap<MultipleChoiceAnswer, MultipleChoiceAnswerViewModel>();
-            _ = CreateMap<MultipleChoiceAnswerViewModel, MultipleChoiceAnswer>()
-                .ForMember(x => x.CreatedBy, options => options.Ignore());
+                _ = CreateMap(definition.AnswerEntityType, definition.Definition.AnswerViewModelType);
+                var answerMap = CreateMap(definition.Definition.AnswerViewModelType, definition.AnswerEntityType);
+                answerMap.ForMember(nameof(BaseModel.CreatedBy), opt => opt.Ignore());
+                answerMap.ForMember(nameof(BaseModel.CreatedById), opt => opt.Ignore());
+            }
 
             _ = CreateMap<SingleChoiceAnswer, SingleChoiceAnswerViewModel>();
             _ = CreateMap<SingleChoiceAnswerViewModel, SingleChoiceAnswer>()
                 .ForMember(x => x.CreatedById, options => options.Ignore());
-
-            _ = CreateMap<Rating1To10Answer, Rating1To10AnswerViewModel>();
-            _ = CreateMap<Rating1To10AnswerViewModel, Rating1To10Answer>()
-                .ForMember(x => x.CreatedBy, options => options.Ignore());
-
-            _ = CreateMap<SelectAllThatApplyAnswer, SelectAllThatApplyAnswerViewModel>();
-            _ = CreateMap<SelectAllThatApplyAnswerViewModel, SelectAllThatApplyAnswer>()
-                .ForMember(x => x.CreatedBy, options => options.Ignore());
 
             _ = CreateMap<ChoiceOption, ChoiceOptionViewModel>().ReverseMap()
                 .ForMember(dest => dest.MultipleChoiceQuestionId, opt => opt.MapFrom(src => src.MultipleChoiceQuestionId))

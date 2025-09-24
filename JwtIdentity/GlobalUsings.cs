@@ -7,6 +7,7 @@ global using JwtIdentity.Configurations;
 global using JwtIdentity.Data;
 global using JwtIdentity.Filters;
 global using JwtIdentity.Models;
+global using JwtIdentity.Questions;
 global using JwtIdentity.Services;
 global using Microsoft.AspNetCore.Identity;
 // ...existing code...

@@ -14,8 +14,9 @@ namespace JwtIdentity.Controllers
         private readonly IEmailService _emailService;
         private readonly IConfiguration _configuration;
         private readonly ISurveyService _surveyService;
+        private readonly IQuestionTypeHandlerResolver _handlerResolver;
 
-        public SurveyController(ApplicationDbContext context, IMapper mapper, IApiAuthService authService, ILogger<SurveyController> logger, IOpenAi openAiService, IEmailService emailService, IConfiguration configuration, ISurveyService surveyService)
+        public SurveyController(ApplicationDbContext context, IMapper mapper, IApiAuthService authService, ILogger<SurveyController> logger, IOpenAi openAiService, IEmailService emailService, IConfiguration configuration, ISurveyService surveyService, IQuestionTypeHandlerResolver handlerResolver)
         {
             _context = context;
             _mapper = mapper;
@@ -25,6 +26,7 @@ namespace JwtIdentity.Controllers
             _emailService = emailService;
             _configuration = configuration;
             _surveyService = surveyService;
+            _handlerResolver = handlerResolver;
         }
 
         // GET: api/Survey/5
@@ -276,6 +278,9 @@ namespace JwtIdentity.Controllers
                             passedInQuestion.CreatedById = createdById;
                             passedInQuestion.SurveyId = survey.Id;
 
+                            var handler = _handlerResolver.GetHandler(passedInQuestion.QuestionType);
+                            await handler.UpdateQuestionAsync(_context, passedInQuestion);
+
                             _ = _context.Questions.Add(passedInQuestion);
                         }
                         else
@@ -284,152 +289,9 @@ namespace JwtIdentity.Controllers
                                 passedInQuestion.Id, survey.Id);
 
                             // check if question text has changed. If so, update the question
-                            switch (passedInQuestion.QuestionType)
-                            {
-                                case QuestionType.Text:
-                                    var existingTextQuestion = await _context.Questions.OfType<TextQuestion>().FirstOrDefaultAsync(q => q.Id == passedInQuestion.Id);
+                            var handler = _handlerResolver.GetHandler(passedInQuestion.QuestionType);
+                            await handler.UpdateQuestionAsync(_context, passedInQuestion);
 
-                                    if (existingTextQuestion != null && (existingTextQuestion.Text != passedInQuestion.Text
-                                            || passedInQuestion.QuestionNumber != existingTextQuestion.QuestionNumber))
-                                    {
-                                        existingTextQuestion.Text = passedInQuestion.Text;
-                                        existingTextQuestion.QuestionNumber = passedInQuestion.QuestionNumber;
-                                        existingTextQuestion.IsRequired = passedInQuestion.IsRequired;
-
-                                        _ = _context.Questions.Update(existingTextQuestion);
-                                    }
-
-                                    break;
-                                case QuestionType.TrueFalse:
-                                    var existingTrueFalseQuestion = await _context.Questions.OfType<TrueFalseQuestion>().FirstOrDefaultAsync(q => q.Id == passedInQuestion.Id);
-                                    existingTrueFalseQuestion.Text = passedInQuestion.Text;
-                                    existingTrueFalseQuestion.QuestionNumber = passedInQuestion.QuestionNumber;
-                                    existingTrueFalseQuestion.IsRequired = passedInQuestion.IsRequired;
-
-                                    _ = _context.Questions.Update(existingTrueFalseQuestion);
-                                    break;
-                                case QuestionType.Rating1To10:
-                                    var existingRatingQuestion = await _context.Questions.OfType<Rating1To10Question>().FirstOrDefaultAsync(q => q.Id == passedInQuestion.Id);
-                                    existingRatingQuestion.Text = passedInQuestion.Text;
-                                    existingRatingQuestion.QuestionNumber = passedInQuestion.QuestionNumber;
-                                    existingRatingQuestion.IsRequired = passedInQuestion.IsRequired;
-
-                                    _ = _context.Questions.Update(existingRatingQuestion);
-                                    break;
-                                case QuestionType.MultipleChoice:
-                                    var existingMCQuestion = await _context.Questions
-                                        .OfType<MultipleChoiceQuestion>()
-                                        .Include(x => x.Options)
-                                        .FirstOrDefaultAsync(q => q.Id == passedInQuestion.Id);
-
-                                    if (existingMCQuestion != null && (existingMCQuestion.Text != passedInQuestion.Text
-                                            || passedInQuestion.QuestionNumber != existingMCQuestion.QuestionNumber || existingMCQuestion.IsRequired != passedInQuestion.IsRequired))
-                                    {
-                                        existingMCQuestion.Text = passedInQuestion.Text;
-                                        existingMCQuestion.QuestionNumber = passedInQuestion.QuestionNumber;
-                                        existingMCQuestion.IsRequired = passedInQuestion.IsRequired;
-
-                                        _ = _context.Questions.Update(existingMCQuestion);
-                                    }
-
-                                    var newMCQuestion = passedInQuestion as MultipleChoiceQuestion;
-
-                                    if (existingMCQuestion != null && newMCQuestion != null)
-                                    {
-                                        // check if any options have changed
-                                        foreach (var newOption in newMCQuestion.Options ?? new List<ChoiceOption>())
-                                        {
-                                            if (newOption.Id == 0)
-                                            { // new option
-                                                newOption.MultipleChoiceQuestionId = passedInQuestion.Id;
-                                                existingMCQuestion.Options.Add(newOption);
-                                            }
-                                            else
-                                            { // existing option
-                                                var existingOption = existingMCQuestion.Options.FirstOrDefault(o => o.Id == newOption.Id);
-
-                                                if (existingOption != null && (existingOption.OptionText != newOption.OptionText || existingOption.Order != newOption.Order))
-                                                {
-                                                    existingOption.OptionText = newOption.OptionText;
-                                                    existingOption.Order = newOption.Order;
-                                                }
-                                            }
-                                        }
-
-                                        // remove any options that are no longer present
-                                        var newOptionIds = (newMCQuestion.Options ?? new List<ChoiceOption>())
-                                            .Where(o => o.Id != 0)
-                                            .Select(o => o.Id)
-                                            .ToHashSet();
-
-                                        var removedOptions = existingMCQuestion.Options
-                                            .Where(o => o.Id != 0 && !newOptionIds.Contains(o.Id))
-                                            .ToList();
-
-                                        if (removedOptions.Any())
-                                        {
-                                            _context.ChoiceOptions.RemoveRange(removedOptions);
-                                        }
-                                    }
-                                    break;
-
-                                case QuestionType.SelectAllThatApply:
-                                    var existingSAQuestion = await _context.Questions
-                                        .OfType<SelectAllThatApplyQuestion>()
-                                        .Include(x => x.Options)
-                                        .FirstOrDefaultAsync(q => q.Id == passedInQuestion.Id);
-
-                                    if (existingSAQuestion != null && (existingSAQuestion.Text != passedInQuestion.Text
-                                            || passedInQuestion.QuestionNumber != existingSAQuestion.QuestionNumber || existingSAQuestion.IsRequired != passedInQuestion.IsRequired))
-                                    {
-                                        existingSAQuestion.Text = passedInQuestion.Text;
-                                        existingSAQuestion.QuestionNumber = passedInQuestion.QuestionNumber;
-                                        existingSAQuestion.IsRequired = passedInQuestion.IsRequired;
-
-                                        _ = _context.Questions.Update(existingSAQuestion);
-                                    }
-
-                                    var newSAQuestion = passedInQuestion as SelectAllThatApplyQuestion;
-
-                                    if (existingSAQuestion != null && newSAQuestion != null)
-                                    {
-                                        // check if any options have changed
-                                        foreach (var newOption in newSAQuestion.Options ?? new List<ChoiceOption>())
-                                        {
-                                            if (newOption.Id == 0)
-                                            { // new option
-                                                newOption.SelectAllThatApplyQuestionId = passedInQuestion.Id;
-                                                existingSAQuestion.Options.Add(newOption);
-                                            }
-                                            else
-                                            { // existing option
-                                                var existingOption = existingSAQuestion.Options.FirstOrDefault(o => o.Id == newOption.Id);
-
-                                                if (existingOption != null && (existingOption.OptionText != newOption.OptionText || existingOption.Order != newOption.Order))
-                                                {
-                                                    existingOption.OptionText = newOption.OptionText;
-                                                    existingOption.Order = newOption.Order;
-                                                }
-                                            }
-                                        }
-
-                                        // remove any options that are no longer present
-                                        var newOptionIds = (newSAQuestion.Options ?? new List<ChoiceOption>())
-                                            .Where(o => o.Id != 0)
-                                            .Select(o => o.Id)
-                                            .ToHashSet();
-
-                                        var removedOptions = existingSAQuestion.Options
-                                            .Where(o => o.Id != 0 && !newOptionIds.Contains(o.Id))
-                                            .ToList();
-
-                                        if (removedOptions.Any())
-                                        {
-                                            _context.ChoiceOptions.RemoveRange(removedOptions);
-                                        }
-                                    }
-                                    break;
-                            }
                         }
                     }
                 }

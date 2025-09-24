@@ -103,7 +103,6 @@ namespace JwtIdentity.Services
             {
                 PropertyNameCaseInsensitive = true,
             };
-            options.Converters.Add(new QuestionViewModelConverter());
 
             try
             {

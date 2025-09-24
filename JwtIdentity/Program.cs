@@ -242,14 +242,14 @@ builder.Services.AddControllers(options =>
     _ = options.Filters.Add<DatabaseLoggingFilter>();
 }).AddJsonOptions(opts =>
 {
-    opts.JsonSerializerOptions.Converters.Add(new AnswerViewModelConverter());
-    opts.JsonSerializerOptions.Converters.Add(new QuestionViewModelConverter());
     opts.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
 }).AddOData(options =>
 {
     _ = options.Select().Filter().OrderBy().Count().Expand().SetMaxTop(null);
     _ = options.AddRouteComponents("odata", EdmModelBuilder.GetEdmModel());
 });
+
+builder.Services.AddQuestionTypeInfrastructure();
 
 // add an AllowAll Cors policy
 builder.Services.AddCors(options =>

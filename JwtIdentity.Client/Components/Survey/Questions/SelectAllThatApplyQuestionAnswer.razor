@@ -1,0 +1,16 @@
+@inherits SelectAllThatApplyQuestionAnswerModel
+
+<MudPaper Elevation="0" Class="pa-2">
+    <MudStack Spacing="2">
+        @for (int i = 0; i < Options.Count; i++)
+        {
+            var option = Options[i];
+            <MudCheckBox T="bool"
+                         Color="Color.Primary"
+                         Label="@option.OptionText"
+                         Value="Answer.SelectedOptions[i]"
+                         ValueChanged="@(value => OnOptionChanged(i, value, option.Id))"
+                         Disabled="Disabled" />
+        }
+    </MudStack>
+</MudPaper>

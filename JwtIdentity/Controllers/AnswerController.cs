@@ -11,14 +11,16 @@ namespace JwtIdentity.Controllers
         private readonly IApiAuthService apiAuthService;
         private readonly ILogger<AnswerController> _logger;
         private readonly ISurveyCompletionNotifier _surveyNotifier;
+        private readonly IQuestionTypeHandlerResolver _handlerResolver;
 
-        public AnswerController(ApplicationDbContext context, IMapper mapper, IApiAuthService apiAuthService, ILogger<AnswerController> logger, ISurveyCompletionNotifier surveyNotifier)
+        public AnswerController(ApplicationDbContext context, IMapper mapper, IApiAuthService apiAuthService, ILogger<AnswerController> logger, ISurveyCompletionNotifier surveyNotifier, IQuestionTypeHandlerResolver handlerResolver)
         {
             _context = context;
             _mapper = mapper;
             this.apiAuthService = apiAuthService;
             _logger = logger;
             _surveyNotifier = surveyNotifier;
+            _handlerResolver = handlerResolver;
         }
 
         [HttpGet("getanswersforsurveyforloggedinuser/{guid}")]
@@ -82,33 +84,7 @@ namespace JwtIdentity.Controllers
                     return BadRequest("This survey has not been published");
                 }
 
-                // Pull out the IDs of any multiple-choice questions in memory
-                var mcIds = survey.Questions
-                    .OfType<MultipleChoiceQuestion>()
-                    .Select(mc => mc.Id)
-                    .ToList();
-                _logger.LogDebug("Found {Count} multiple choice questions", mcIds.Count);
-
-                // Pull out the IDs of any select-all-that-apply questions in memory
-                var selectAllIds = survey.Questions
-                    .OfType<SelectAllThatApplyQuestion>()
-                    .Select(sa => sa.Id)
-                    .ToList();
-                _logger.LogDebug("Found {Count} select-all-that-apply questions", selectAllIds.Count);
-
-                // Now load each one's Options
-                await _context.Questions
-                    .OfType<MultipleChoiceQuestion>()
-                    .Where(mc => mcIds.Contains(mc.Id))
-                    .Include(mc => mc.Options)
-                    .LoadAsync();
-                    
-                // Now load each select-all-that-apply question's Options
-                await _context.Questions
-                    .OfType<SelectAllThatApplyQuestion>()
-                    .Where(sa => selectAllIds.Contains(sa.Id))
-                    .Include(sa => sa.Options)
-                    .LoadAsync();
+                await _handlerResolver.EnsureDependenciesLoadedAsync(_context, survey.Questions);
 
                 _logger.LogInformation("Successfully retrieved survey {SurveyGuid} with {QuestionCount} questions for user {UserId}", 
                     guid, survey.Questions.Count, userId);
@@ -147,33 +123,7 @@ namespace JwtIdentity.Controllers
                 
                 _logger.LogDebug("Found survey: {SurveyId}, {SurveyTitle}", survey.Id, survey.Title);
 
-                // Pull out the IDs of any multiple-choice questions in memory
-                var mcIds = survey.Questions
-                    .OfType<MultipleChoiceQuestion>()
-                    .Select(mc => mc.Id)
-                    .ToList();
-                _logger.LogDebug("Found {Count} multiple choice questions", mcIds.Count);
-                    
-                // Pull out the IDs of any select-all-that-apply questions in memory
-                var selectAllIds = survey.Questions
-                    .OfType<SelectAllThatApplyQuestion>()
-                    .Select(sa => sa.Id)
-                    .ToList();
-                _logger.LogDebug("Found {Count} select-all-that-apply questions", selectAllIds.Count);
-
-                // Now load each one's Options
-                await _context.Questions
-                    .OfType<MultipleChoiceQuestion>()
-                    .Where(mc => mcIds.Contains(mc.Id))
-                    .Include(mc => mc.Options)
-                    .LoadAsync();
-                    
-                // Now load each select-all-that-apply question's Options
-                await _context.Questions
-                    .OfType<SelectAllThatApplyQuestion>()
-                    .Where(sa => selectAllIds.Contains(sa.Id))
-                    .Include(sa => sa.Options)
-                    .LoadAsync();
+                await _handlerResolver.EnsureDependenciesLoadedAsync(_context, survey.Questions);
 
                 _logger.LogInformation("Successfully retrieved survey results for {SurveyGuid} with {QuestionCount} questions", 
                     guid, survey.Questions.Count);
@@ -196,15 +146,13 @@ namespace JwtIdentity.Controllers
         public async Task<ActionResult<SurveyDataViewModel>> GetAnswersForSurveyForCharts(string guid)
         {
             _logger.LogInformation("Getting chart data for survey {SurveyGuid}", guid);
-            
+
             try
             {
                 int userId = apiAuthService.GetUserId(User);
                 _logger.LogDebug("User ID: {UserId}", userId);
 
-                Survey survey = null;
-
-                survey = await _context.Surveys
+                var survey = await _context.Surveys
                     .Where(s => s.Guid == guid && s.CreatedById == userId)
                     .Include(s => s.Questions).ThenInclude(q => q.Answers)
                     .FirstOrDefaultAsync();
@@ -223,167 +171,34 @@ namespace JwtIdentity.Controllers
                     return BadRequest("This survey has not been published");
                 }
 
-                // Pull out the IDs of any multiple-choice questions in memory
-                var mcIds = survey.Questions
-                    .OfType<MultipleChoiceQuestion>()
-                    .Select(mc => mc.Id)
-                    .ToList();
-                _logger.LogDebug("Found {Count} multiple choice questions", mcIds.Count);
-                    
-                // Pull out the IDs of any select-all-that-apply questions in memory
-                var selectAllIds = survey.Questions
-                    .OfType<SelectAllThatApplyQuestion>()
-                    .Select(sa => sa.Id)
-                    .ToList();
-                _logger.LogDebug("Found {Count} select-all-that-apply questions", selectAllIds.Count);
-
-                // Now load each one's Options
-                await _context.Questions
-                    .OfType<MultipleChoiceQuestion>()
-                    .Where(mc => mcIds.Contains(mc.Id))
-                    .Include(mc => mc.Options)
-                    .LoadAsync();
-                    
-                // Now load each select-all-that-apply question's Options
-                await _context.Questions
-                    .OfType<SelectAllThatApplyQuestion>()
-                    .Where(sa => selectAllIds.Contains(sa.Id))
-                    .Include(sa => sa.Options)
-                    .LoadAsync();
+                await _handlerResolver.EnsureDependenciesLoadedAsync(_context, survey.Questions);
 
                 List<SurveyDataViewModel> surveyData = new List<SurveyDataViewModel>();
 
                 foreach (Question question in survey.Questions.OrderBy(x => x.QuestionNumber))
                 {
                     _logger.LogDebug("Processing question {QuestionId} of type {QuestionType}", question.Id, question.QuestionType);
-                    SurveyDataViewModel surveyDataViewModel = new SurveyDataViewModel() { QuestionType = question.QuestionType, Question = _mapper.Map<QuestionViewModel>(question) };
 
-                    switch (question.QuestionType)
+                    var handler = _handlerResolver.GetHandler(question.QuestionType);
+                    SurveyDataViewModel surveyDataViewModel = new SurveyDataViewModel
                     {
-                        case QuestionType.Text:
-                            surveyDataViewModel.SurveyData = new List<ChartData>() { new ChartData() { X = "Text", Y = question.Answers.Count } };
-                            surveyDataViewModel.TextQuestion = _mapper.Map<TextQuestionViewModel>(question);
-                            break;
-                        case QuestionType.TrueFalse:
-                            // add to the chart series the count of true answers and the number of false answers
-                            // get the question.Answers as TrueFalseAnswer
+                        QuestionType = question.QuestionType,
+                        Question = _mapper.Map<QuestionViewModel>(question)
+                    };
 
-                            var trueFalseAnswers = await _context.Answers.OfType<TrueFalseAnswer>().AsNoTracking().Where(a => a.QuestionId == question.Id).ToListAsync();
-                            _logger.LogDebug("Found {Count} true/false answers for question {QuestionId}", trueFalseAnswers.Count, question.Id);
-
-                            surveyDataViewModel.SurveyData = new List<ChartData>() { new ChartData() { X = "True", Y = trueFalseAnswers.Count(a => a.Value == true) }, new ChartData() { X = "False", Y = trueFalseAnswers.Count(a => a.Value == false) } };
-                            surveyDataViewModel.TrueFalseQuestion = _mapper.Map<TrueFalseQuestionViewModel>(question);
-                            break;
-                        case QuestionType.Rating1To10:
-                            // add to the chart series the count of each rating
-                            // get the question.Answers as Rating1To10Answer
-                            var ratingAnswers = await _context.Answers.OfType<Rating1To10Answer>().AsNoTracking().Where(a => a.QuestionId == question.Id).ToListAsync();
-                            _logger.LogDebug("Found {Count} rating answers for question {QuestionId}", ratingAnswers.Count, question.Id);
-                            
-                            var ratingGroups = ratingAnswers.GroupBy(a => a.SelectedOptionId).ToDictionary(g => g.Key, g => g.Count());
-                            surveyDataViewModel.SurveyData = Enumerable.Range(1, 10).Select(i => new ChartData { X = i.ToString(), Y = ratingGroups.ContainsKey(i) ? ratingGroups[i] : 0 }).ToList();
-                            surveyDataViewModel.Rating1To10Question = _mapper.Map<Rating1To10QuestionViewModel>(question);
-                            break;
-                        case QuestionType.MultipleChoice:
-                            // Retrieve the multiple-choice question with its options
-                            var mcQuestion = await _context.Questions.OfType<MultipleChoiceQuestion>()
-                                .AsNoTracking()
-                                .Where(a => a.Id == question.Id)
-                                .Include(x => x.Options)
-                                .FirstOrDefaultAsync();
-
-                            // Retrieve the answers for the multiple-choice question
-                            var mcAnswers = await _context.Answers.OfType<MultipleChoiceAnswer>()
-                                .AsNoTracking()
-                                .Where(a => a.QuestionId == question.Id)
-                                .ToListAsync();
-                            _logger.LogDebug("Found {Count} multiple choice answers for question {QuestionId}", mcAnswers.Count, question.Id);
-
-                            // Group the answers by the selected option ID
-                            var answerGroups = mcAnswers.GroupBy(a => a.SelectedOptionId)
-                                .ToDictionary(g => g.Key, g => g.Count());
-
-                            // Create a list of ChartData that includes all options, ordered by the Order field
-                            surveyDataViewModel.SurveyData = mcQuestion.Options
-                                .OrderBy(o => o.Order)
-                                .Select(o => new ChartData
-                                {
-                                    X = o.OptionText,
-                                    Y = answerGroups.ContainsKey(o.Id) ? answerGroups[o.Id] : 0
-                                })
-                                .ToList();
-
-                            surveyDataViewModel.MultipleChoiceQuestion = _mapper.Map<MultipleChoiceQuestionViewModel>(mcQuestion);
-                            break;
-                        case QuestionType.SelectAllThatApply:
-                            // Retrieve the select-all-that-apply question with its options
-                            var saQuestion = await _context.Questions.OfType<SelectAllThatApplyQuestion>()
-                                .AsNoTracking()
-                                .Where(a => a.Id == question.Id)
-                                .Include(x => x.Options)
-                                .FirstOrDefaultAsync();
-
-                            // Retrieve all the answers for this question
-                            var saAnswers = await _context.Answers.OfType<SelectAllThatApplyAnswer>()
-                                .AsNoTracking()
-                                .Where(a => a.QuestionId == question.Id)
-                                .ToListAsync();
-                            _logger.LogDebug("Found {Count} select-all-that-apply answers for question {QuestionId}", saAnswers.Count, question.Id);
-
-                            // Initialize a dictionary to count selections for each option
-                            var optionSelectionCounts = saQuestion.Options.ToDictionary(o => o.Id, _ => 0);
-
-                            // Count selections for each option across all answers
-                            foreach (var saAnswer in saAnswers)
-                            {
-                                if (!string.IsNullOrEmpty(saAnswer.SelectedOptionIds))
-                                {
-                                    var selectedIds = saAnswer.SelectedOptionIds.Split(',').Select(int.Parse);
-                                    foreach (var id in selectedIds)
-                                    {
-                                        if (optionSelectionCounts.ContainsKey(id))
-                                        {
-                                            optionSelectionCounts[id]++;
-                                        }
-                                    }
-                                }
-                            }
-
-                            // Create chart data for each option
-                            surveyDataViewModel.SurveyData = saQuestion.Options
-                                .OrderBy(o => o.Order)
-                                .Select(o => new ChartData
-                                {
-                                    X = o.OptionText,
-                                    Y = optionSelectionCounts[o.Id]
-                                })
-                                .ToList();
-
-                            surveyDataViewModel.SelectAllThatApplyQuestion = _mapper.Map<SelectAllThatApplyQuestionViewModel>(saQuestion);
-                            break;
-
-                        default:
-                            _logger.LogWarning("Unknown question type {QuestionType} for question {QuestionId}", question.QuestionType, question.Id);
-                            break;
-                    }
+                    await handler.PopulateSurveyDataAsync(_context, surveyDataViewModel, question);
 
                     surveyData.Add(surveyDataViewModel);
                 }
 
-                _logger.LogInformation("Successfully generated chart data for survey {SurveyGuid} with {QuestionCount} questions for user {UserId}", 
-                    guid, survey.Questions.Count, userId);
-                    
+                _logger.LogInformation("Successfully generated chart data for survey {SurveyGuid}", guid);
+
                 return Ok(surveyData);
             }
             catch (DbUpdateException dbEx)
             {
                 _logger.LogError(dbEx, "Database error occurred while retrieving chart data for survey {SurveyGuid}: {Message}", guid, dbEx.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError, "A database error occurred. Please try again later.");
-            }
-            catch (FormatException fEx)
-            {
-                _logger.LogError(fEx, "Format error while processing select-all-that-apply answers for survey {SurveyGuid}: {Message}", guid, fEx.Message);
-                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred processing the survey data. Please try again later.");
             }
             catch (Exception ex)
             {
@@ -392,7 +207,7 @@ namespace JwtIdentity.Controllers
             }
         }
 
-        // POST: api/Answer
+// POST: api/Answer
         [HttpPost]
         public async Task<ActionResult<AnswerViewModel>> PostAnswer(AnswerViewModel answerViewModel)
         {
@@ -433,60 +248,13 @@ namespace JwtIdentity.Controllers
 
                     answer.CreatedById = answerViewModel.CreatedById;
 
-                    switch (answer.AnswerType)
+                    var handler = _handlerResolver.GetHandler(answer.AnswerType);
+                    if (handler.ShouldUpdateAnswer(answer, existingAnswer))
                     {
-                        case AnswerType.Text:
-                            if (((TextAnswer)answer).Text != ((TextAnswer)existingAnswer).Text || 
-                                ((TextAnswer)answer).Complete != ((TextAnswer)existingAnswer).Complete)
-                            {
-                                _logger.LogDebug("Updating text answer ID {AnswerId}", answer.Id);
-                                _ = _context.Answers.Update(answer);
-                            }
-                            break;
-                        case AnswerType.TrueFalse:
-                            if (((TrueFalseAnswer)answer).Value != ((TrueFalseAnswer)existingAnswer).Value || 
-                                ((TrueFalseAnswer)answer).Complete != ((TrueFalseAnswer)existingAnswer).Complete)
-                            {
-                                _logger.LogDebug("Updating true/false answer ID {AnswerId}", answer.Id);
-                                _ = _context.Answers.Update(answer);
-                            }
-                            break;
-                        case AnswerType.SingleChoice:
-                            if (((SingleChoiceAnswer)answer).SelectedOptionId != ((SingleChoiceAnswer)existingAnswer).SelectedOptionId || 
-                                ((SingleChoiceAnswer)answer).Complete != ((SingleChoiceAnswer)existingAnswer).Complete)
-                            {
-                                _logger.LogDebug("Updating single choice answer ID {AnswerId}", answer.Id);
-                                _ = _context.Answers.Update(answer);
-                            }
-                            break;
-                        case AnswerType.MultipleChoice:
-                            if (((MultipleChoiceAnswer)answer).SelectedOptionId != ((MultipleChoiceAnswer)existingAnswer).SelectedOptionId || 
-                                ((MultipleChoiceAnswer)answer).Complete != ((MultipleChoiceAnswer)existingAnswer).Complete)
-                            {
-                                _logger.LogDebug("Updating multiple choice answer ID {AnswerId}", answer.Id);
-                                _ = _context.Answers.Update(answer);
-                            }
-                            break;
-                        case AnswerType.Rating1To10:
-                            if (((Rating1To10Answer)answer).SelectedOptionId != ((Rating1To10Answer)existingAnswer).SelectedOptionId || 
-                                ((Rating1To10Answer)answer).Complete != ((Rating1To10Answer)existingAnswer).Complete)
-                            {
-                                _logger.LogDebug("Updating rating answer ID {AnswerId}", answer.Id);
-                                _ = _context.Answers.Update(answer);
-                            }
-                            break;
-                        case AnswerType.SelectAllThatApply:
-                            if (((SelectAllThatApplyAnswer)answer).SelectedOptionIds != ((SelectAllThatApplyAnswer)existingAnswer).SelectedOptionIds || 
-                                ((SelectAllThatApplyAnswer)answer).Complete != ((SelectAllThatApplyAnswer)existingAnswer).Complete)
-                            {
-                                _logger.LogDebug("Updating select-all answer ID {AnswerId}", answer.Id);
-                                _ = _context.Answers.Update(answer);
-                            }
-                            break;
-                        default:
-                            _logger.LogWarning("Unknown answer type {AnswerType} for answer ID {AnswerId}", answer.AnswerType, answer.Id);
-                            break;
+                        _logger.LogDebug("Updating answer ID {AnswerId} of type {AnswerType}", answer.Id, answer.AnswerType);
+                        _context.Answers.Update(answer);
                     }
+
                 }
 
                 await _context.SaveChangesAsync();
