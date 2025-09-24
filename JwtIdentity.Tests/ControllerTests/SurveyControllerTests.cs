@@ -7,10 +7,10 @@ using JwtIdentity.Services;
 using JwtIdentity.Data;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using System.Security.Claims;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace JwtIdentity.Tests.ControllerTests
@@ -24,8 +24,9 @@ namespace JwtIdentity.Tests.ControllerTests
         private List<ApplicationUser> _mockUsers = null!;
         private Mock<IOpenAi> MockOpenAiService = null!;
         private Mock<ISurveyService> MockSurveyService = null!;
-        private Mock<IQuestionTypeHandlerResolver> MockHandlerResolver = null!;
-        private Mock<IQuestionTypeHandler> MockHandler = null!;
+
+        private IQuestionTypeHandlerResolver _handlerResolver = null!;
+        private ServiceProvider _handlerServiceProvider = null!;
 
         [SetUp]
         public override void BaseSetUp()
@@ -41,11 +42,20 @@ namespace JwtIdentity.Tests.ControllerTests
             MockEmailService.Setup(e => e.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(true);
             MockConfiguration.Setup(c => c["EmailSettings:CustomerServiceEmail"]).Returns("admin@example.com");
             MockSurveyService = new Mock<ISurveyService>();
-            SetupQuestionTypeHandlerMocks();
-            _controller = new SurveyController(MockDbContext, MockMapper.Object, MockApiAuthService.Object, MockLogger.Object, MockOpenAiService.Object, MockEmailService.Object, MockConfiguration.Object, MockSurveyService.Object, MockHandlerResolver.Object)
+
+            SetupQuestionTypeHandlers();
+            _controller = new SurveyController(MockDbContext, MockMapper.Object, MockApiAuthService.Object, MockLogger.Object, MockOpenAiService.Object, MockEmailService.Object, MockConfiguration.Object, MockSurveyService.Object, _handlerResolver)
+
             {
                 ControllerContext = new ControllerContext { HttpContext = HttpContext }
             };
+        }
+
+        [TearDown]
+        public override void BaseTearDown()
+        {
+            base.BaseTearDown();
+            _handlerServiceProvider?.Dispose();
         }
 
         private void SetupMockData()
@@ -138,31 +148,16 @@ namespace JwtIdentity.Tests.ControllerTests
             MockApiAuthService.Setup(a => a.GetUserId(It.IsAny<ClaimsPrincipal>())).Returns(1);
         }
 
-        private void SetupQuestionTypeHandlerMocks()
-        {
-            MockHandler = new Mock<IQuestionTypeHandler>();
-            var definition = QuestionTypeRegistry.GetDefinition(QuestionType.Text);
-            MockHandler.SetupGet(h => h.Definition).Returns(definition);
-            MockHandler.SetupGet(h => h.QuestionType).Returns(QuestionType.Text);
-            MockHandler.SetupGet(h => h.AnswerType).Returns(AnswerType.Text);
-            MockHandler.SetupGet(h => h.QuestionEntityType).Returns(typeof(TextQuestion));
-            MockHandler.SetupGet(h => h.AnswerEntityType).Returns(typeof(TextAnswer));
-            MockHandler.Setup(h => h.EnsureDependenciesLoadedAsync(It.IsAny<ApplicationDbContext>(), It.IsAny<IReadOnlyCollection<Question>>(), It.IsAny<CancellationToken>()))
-                .Returns(Task.CompletedTask);
-            MockHandler.Setup(h => h.PopulateSurveyDataAsync(It.IsAny<ApplicationDbContext>(), It.IsAny<SurveyDataViewModel>(), It.IsAny<Question>(), It.IsAny<CancellationToken>()))
-                .Returns(Task.CompletedTask);
-            MockHandler.Setup(h => h.CreateDemoAnswer(It.IsAny<Question>(), It.IsAny<ApplicationUser>(), It.IsAny<Random>()))
-                .Returns((Answer)null);
-            MockHandler.Setup(h => h.UpdateQuestionAsync(It.IsAny<ApplicationDbContext>(), It.IsAny<Question>(), It.IsAny<CancellationToken>()))
-                .Returns(Task.CompletedTask);
-            MockHandler.Setup(h => h.ShouldUpdateAnswer(It.IsAny<Answer>(), It.IsAny<Answer>())).Returns(false);
 
-            MockHandlerResolver = new Mock<IQuestionTypeHandlerResolver>();
-            MockHandlerResolver.SetupGet(r => r.Handlers).Returns(new List<IQuestionTypeHandler> { MockHandler.Object });
-            MockHandlerResolver.Setup(r => r.GetHandler(It.IsAny<QuestionType>())).Returns(MockHandler.Object);
-            MockHandlerResolver.Setup(r => r.GetHandler(It.IsAny<AnswerType>())).Returns(MockHandler.Object);
-            MockHandlerResolver.Setup(r => r.EnsureDependenciesLoadedAsync(It.IsAny<ApplicationDbContext>(), It.IsAny<IEnumerable<Question>>(), It.IsAny<CancellationToken>()))
-                .Returns(Task.CompletedTask);
+        private void SetupQuestionTypeHandlers()
+        {
+            var services = new ServiceCollection();
+            services.AddLogging();
+            services.AddQuestionTypeInfrastructure();
+
+            _handlerServiceProvider = services.BuildServiceProvider();
+            _handlerResolver = _handlerServiceProvider.GetRequiredService<IQuestionTypeHandlerResolver>();
+
         }
 
 
