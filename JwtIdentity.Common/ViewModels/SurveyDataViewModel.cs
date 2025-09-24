@@ -1,4 +1,4 @@
-﻿namespace JwtIdentity.Common.ViewModels
+namespace JwtIdentity.Common.ViewModels
 {
     public class SurveyDataViewModel
     {
@@ -8,15 +8,7 @@
 
         public QuestionViewModel Question { get; set; }
 
-        public TextQuestionViewModel TextQuestion { get; set; }
-
-        public TrueFalseQuestionViewModel TrueFalseQuestion { get; set; }
-
-        public MultipleChoiceQuestionViewModel MultipleChoiceQuestion { get; set; }
-
-        public Rating1To10QuestionViewModel Rating1To10Question { get; set; }
-
-        public SelectAllThatApplyQuestionViewModel SelectAllThatApplyQuestion { get; set; }
+        public Dictionary<string, string> Metadata { get; set; } = new Dictionary<string, string>();
     }
 
     public class ChartData

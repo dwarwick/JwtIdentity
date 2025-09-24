@@ -1,10 +1,25 @@
-using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace JwtIdentity.Common.ViewModels
 {
+    [JsonPolymorphic(TypeDiscriminatorPropertyName = "answerType", UnknownDerivedTypeHandling = JsonUnknownDerivedTypeHandling.FailSerialization)]
+    [JsonDerivedType(typeof(TextAnswerViewModel), (int)AnswerType.Text)]
+    [JsonDerivedType(typeof(TrueFalseAnswerViewModel), (int)AnswerType.TrueFalse)]
+    [JsonDerivedType(typeof(SingleChoiceAnswerViewModel), (int)AnswerType.SingleChoice)]
+    [JsonDerivedType(typeof(MultipleChoiceAnswerViewModel), (int)AnswerType.MultipleChoice)]
+    [JsonDerivedType(typeof(Rating1To10AnswerViewModel), (int)AnswerType.Rating1To10)]
+    [JsonDerivedType(typeof(SelectAllThatApplyAnswerViewModel), (int)AnswerType.SelectAllThatApply)]
     public abstract class AnswerViewModel : BaseViewModel
     {
+        protected AnswerViewModel()
+        {
+        }
+
+        protected AnswerViewModel(AnswerType answerType)
+        {
+            AnswerType = answerType;
+        }
+
         public int Id { get; set; }
 
         public int QuestionId { get; set; }
@@ -16,6 +31,9 @@ namespace JwtIdentity.Common.ViewModels
         [JsonPropertyName("answerType")]
         public AnswerType AnswerType { get; set; }
 
+        [JsonIgnore]
+        public QuestionTypeDefinition Definition => QuestionTypeRegistry.GetDefinitionForAnswer(AnswerType);
+
         // For TrueFalse answers, cast
         public bool? TrueFalseValue
             => this is TrueFalseAnswerViewModel tf ? tf.Value : null;
@@ -24,7 +42,7 @@ namespace JwtIdentity.Common.ViewModels
         public string TextValue
             => this is TextAnswerViewModel ta ? ta.Text : null;
 
-        // For multiple/single choice, etc. 
+        // For multiple/single choice, etc.
         public int? SelectedOptionValue
             => this switch
             {
@@ -38,16 +56,28 @@ namespace JwtIdentity.Common.ViewModels
 
     public class TextAnswerViewModel : AnswerViewModel
     {
+        public TextAnswerViewModel() : base(AnswerType.Text)
+        {
+        }
+
         public string Text { get; set; }
     }
 
     public class TrueFalseAnswerViewModel : AnswerViewModel
     {
+        public TrueFalseAnswerViewModel() : base(AnswerType.TrueFalse)
+        {
+        }
+
         public bool? Value { get; set; }
     }
 
     public class MultipleChoiceAnswerViewModel : AnswerViewModel
     {
+        public MultipleChoiceAnswerViewModel() : base(AnswerType.MultipleChoice)
+        {
+        }
+
         public int SelectedOptionId { get; set; }
 
         public List<ChoiceOptionViewModel> Options { get; set; }
@@ -55,16 +85,28 @@ namespace JwtIdentity.Common.ViewModels
 
     public class Rating1To10AnswerViewModel : AnswerViewModel
     {
+        public Rating1To10AnswerViewModel() : base(AnswerType.Rating1To10)
+        {
+        }
+
         public int SelectedOptionId { get; set; }
     }
 
     public class SingleChoiceAnswerViewModel : AnswerViewModel
     {
+        public SingleChoiceAnswerViewModel() : base(AnswerType.SingleChoice)
+        {
+        }
+
         public int SelectedOptionId { get; set; }
     }
 
     public class SelectAllThatApplyAnswerViewModel : AnswerViewModel
     {
+        public SelectAllThatApplyAnswerViewModel() : base(AnswerType.SelectAllThatApply)
+        {
+        }
+
         public string SelectedOptionIds { get; set; }
         public List<bool> SelectedOptions { get; set; } = new List<bool>();
         public List<ChoiceOptionViewModel> Options { get; set; }
@@ -77,33 +119,5 @@ namespace JwtIdentity.Common.ViewModels
 
         // Key = QuestionId, Value = an actual AnswerViewModel (TextAnswer, TrueFalseAnswer, etc.)
         public Dictionary<int, AnswerViewModel> Answers { get; } = new();
-    }
-
-    public class AnswerViewModelConverter : JsonConverter<AnswerViewModel>
-    {
-        public override AnswerViewModel Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-        {
-            using var doc = JsonDocument.ParseValue(ref reader);
-            if (doc.RootElement.TryGetProperty("answerType", out var answerTypeEl))
-            {
-                var answerType = (AnswerType)answerTypeEl.GetInt32();
-                return answerType switch
-                {
-                    AnswerType.Text => JsonSerializer.Deserialize<TextAnswerViewModel>(doc.RootElement.GetRawText(), options),
-                    AnswerType.TrueFalse => JsonSerializer.Deserialize<TrueFalseAnswerViewModel>(doc.RootElement.GetRawText(), options),
-                    AnswerType.MultipleChoice => JsonSerializer.Deserialize<MultipleChoiceAnswerViewModel>(doc.RootElement.GetRawText(), options),
-                    AnswerType.SingleChoice => JsonSerializer.Deserialize<SingleChoiceAnswerViewModel>(doc.RootElement.GetRawText(), options),
-                    AnswerType.Rating1To10 => JsonSerializer.Deserialize<Rating1To10AnswerViewModel>(doc.RootElement.GetRawText(), options),
-                    AnswerType.SelectAllThatApply => JsonSerializer.Deserialize<SelectAllThatApplyAnswerViewModel>(doc.RootElement.GetRawText(), options),
-                    _ => throw new NotSupportedException($"Unsupported AnswerType: {answerType}")
-                };
-            }
-            throw new JsonException("Missing 'answerType' property.");
-        }
-
-        public override void Write(Utf8JsonWriter writer, AnswerViewModel value, JsonSerializerOptions options)
-        {
-            JsonSerializer.Serialize(writer, (object)value, options);
-        }
     }
 }

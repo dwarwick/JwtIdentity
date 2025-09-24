@@ -4,11 +4,13 @@
     {
         private readonly ApplicationDbContext _dbContext;
         private readonly ILogger<SurveyService> _logger;
+        private readonly IQuestionTypeHandlerResolver _handlerResolver;
 
-        public SurveyService(ApplicationDbContext dbContext, ILogger<SurveyService> logger)
+        public SurveyService(ApplicationDbContext dbContext, ILogger<SurveyService> logger, IQuestionTypeHandlerResolver handlerResolver)
         {
             _dbContext = dbContext;
             _logger = logger;
+            _handlerResolver = handlerResolver;
         }
 
         public Survey GetSurvey(string guid)
@@ -65,34 +67,8 @@
                     return;
                 }
 
-                // Load options for multiple choice and select-all questions
-                var mcIds = survey.Questions
-                    .OfType<MultipleChoiceQuestion>()
-                    .Select(q => q.Id)
-                    .ToList();
+                await _handlerResolver.EnsureDependenciesLoadedAsync(_dbContext, survey.Questions);
 
-                if (mcIds.Any())
-                {
-                    await _dbContext.Questions
-                        .OfType<MultipleChoiceQuestion>()
-                        .Where(q => mcIds.Contains(q.Id))
-                        .Include(q => q.Options)
-                        .LoadAsync();
-                }
-
-                var satIds = survey.Questions
-                    .OfType<SelectAllThatApplyQuestion>()
-                    .Select(q => q.Id)
-                    .ToList();
-
-                if (satIds.Any())
-                {
-                    await _dbContext.Questions
-                        .OfType<SelectAllThatApplyQuestion>()
-                        .Where(q => satIds.Contains(q.Id))
-                        .Include(q => q.Options)
-                        .LoadAsync();
-                }
 
                 var random = new Random();
 
@@ -119,60 +95,13 @@
 
                     foreach (var question in survey.Questions)
                     {
-                        Answer answer = question.QuestionType switch
-                        {
-                            QuestionType.Text => new TextAnswer
-                            {
-                                QuestionId = question.Id,
-                                Text = $"Sample answer {random.Next(1, 1000)}",
-                                Complete = true,
-                                CreatedById = anonUser.Id,
-                                IpAddress = "127.0.0.1"
-                            },
-                            QuestionType.TrueFalse => new TrueFalseAnswer
-                            {
-                                QuestionId = question.Id,
-                                Value = random.Next(0, 2) == 0,
-                                Complete = true,
-                                CreatedById = anonUser.Id,
-                                IpAddress = "127.0.0.1"
-                            },
-                            QuestionType.MultipleChoice => new MultipleChoiceAnswer
-                            {
-                                QuestionId = question.Id,
-                                SelectedOptionId = ((MultipleChoiceQuestion)question).Options
-                                    [random.Next(((MultipleChoiceQuestion)question).Options.Count)].Id,
-                                Complete = true,
-                                CreatedById = anonUser.Id,
-                                IpAddress = "127.0.0.1"
-                            },
-                            QuestionType.Rating1To10 => new Rating1To10Answer
-                            {
-                                QuestionId = question.Id,
-                                SelectedOptionId = random.Next(1, 11),
-                                Complete = true,
-                                CreatedById = anonUser.Id,
-                                IpAddress = "127.0.0.1"
-                            },
-                            QuestionType.SelectAllThatApply => new SelectAllThatApplyAnswer
-                            {
-                                QuestionId = question.Id,
-                                SelectedOptionIds = string.Join(",", ((SelectAllThatApplyQuestion)question).Options
-                                    .Where(_ => random.Next(0, 2) == 1)
-                                    .Select(o => o.Id)
-                                    .DefaultIfEmpty(((SelectAllThatApplyQuestion)question).Options
-                                        [random.Next(((SelectAllThatApplyQuestion)question).Options.Count)].Id)),
-                                Complete = true,
-                                CreatedById = anonUser.Id,
-                                IpAddress = "127.0.0.1"
-                            },
-                            _ => null
-                        };
+                    var handler = _handlerResolver.GetHandler(question.QuestionType);
+                    var answer = handler.CreateDemoAnswer(question, anonUser, random);
 
-                        if (answer != null)
-                        {
-                            _dbContext.Answers.Add(answer);
-                        }
+                    if (answer != null)
+                    {
+                        _dbContext.Answers.Add(answer);
+                    }
                     }
 
                     await _dbContext.SaveChangesAsync();

@@ -2,11 +2,16 @@ using JwtIdentity.Common.Helpers;
 using JwtIdentity.Common.ViewModels;
 using JwtIdentity.Controllers;
 using JwtIdentity.Models;
+using JwtIdentity.Questions;
 using JwtIdentity.Services;
+using JwtIdentity.Data;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using System.Security.Claims;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace JwtIdentity.Tests.ControllerTests
 {
@@ -19,6 +24,8 @@ namespace JwtIdentity.Tests.ControllerTests
         private List<ApplicationUser> _mockUsers = null!;
         private Mock<IOpenAi> MockOpenAiService = null!;
         private Mock<ISurveyService> MockSurveyService = null!;
+        private IQuestionTypeHandlerResolver _handlerResolver = null!;
+        private ServiceProvider _handlerServiceProvider = null!;
 
         [SetUp]
         public override void BaseSetUp()
@@ -34,10 +41,18 @@ namespace JwtIdentity.Tests.ControllerTests
             MockEmailService.Setup(e => e.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(true);
             MockConfiguration.Setup(c => c["EmailSettings:CustomerServiceEmail"]).Returns("admin@example.com");
             MockSurveyService = new Mock<ISurveyService>();
-            _controller = new SurveyController(MockDbContext, MockMapper.Object, MockApiAuthService.Object, MockLogger.Object, MockOpenAiService.Object, MockEmailService.Object, MockConfiguration.Object, MockSurveyService.Object)
+            SetupQuestionTypeHandlers();
+            _controller = new SurveyController(MockDbContext, MockMapper.Object, MockApiAuthService.Object, MockLogger.Object, MockOpenAiService.Object, MockEmailService.Object, MockConfiguration.Object, MockSurveyService.Object, _handlerResolver)
             {
                 ControllerContext = new ControllerContext { HttpContext = HttpContext }
             };
+        }
+
+        [TearDown]
+        public override void BaseTearDown()
+        {
+            base.BaseTearDown();
+            _handlerServiceProvider?.Dispose();
         }
 
         private void SetupMockData()
@@ -128,6 +143,16 @@ namespace JwtIdentity.Tests.ControllerTests
         private void SetupMockApiAuthService()
         {
             MockApiAuthService.Setup(a => a.GetUserId(It.IsAny<ClaimsPrincipal>())).Returns(1);
+        }
+
+        private void SetupQuestionTypeHandlers()
+        {
+            var services = new ServiceCollection();
+            services.AddLogging();
+            services.AddQuestionTypeInfrastructure();
+
+            _handlerServiceProvider = services.BuildServiceProvider();
+            _handlerResolver = _handlerServiceProvider.GetRequiredService<IQuestionTypeHandlerResolver>();
         }
 
 
