@@ -1,0 +1,13 @@
+@inherits TrueFalseQuestionAnswerModel
+
+<MudPaper Elevation="0" Class="pa-2">
+    <MudRadioGroup T="bool?"
+                   Value="TrueFalseAnswer.Value"
+                   ValueChanged="OnValueChanged"
+                   Disabled="Disabled">
+        <MudStack Row="true" Spacing="4">
+            <MudRadio Color="Color.Primary" T="bool?" Label="True" Value="@(true as bool?)" />
+            <MudRadio Color="Color.Primary" T="bool?" Label="False" Value="@(false as bool?)" />
+        </MudStack>
+    </MudRadioGroup>
+</MudPaper>

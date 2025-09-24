@@ -1,0 +1,15 @@
+@inherits MultipleChoiceQuestionAnswerModel
+
+<MudPaper Elevation="0" Class="pa-2">
+    <MudRadioGroup T="int"
+                   Value="Answer.SelectedOptionId"
+                   ValueChanged="OnValueChanged"
+                   Disabled="Disabled">
+        <MudStack Spacing="2">
+            @foreach (var option in Options)
+            {
+                <MudRadio Color="Color.Primary" Label="@option.OptionText" Value="@option.Id" />
+            }
+        </MudStack>
+    </MudRadioGroup>
+</MudPaper>

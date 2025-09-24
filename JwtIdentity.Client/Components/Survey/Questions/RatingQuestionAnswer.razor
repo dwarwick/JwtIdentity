@@ -1,0 +1,17 @@
+@inherits RatingQuestionAnswerModel
+
+<MudPaper Elevation="0" Class="pa-2">
+    <MudRadioGroup T="int"
+                   Value="RatingAnswer.SelectedOptionId"
+                   ValueChanged="OnValueChanged"
+                   Disabled="Disabled">
+        <div class="rating-options">
+            @foreach (var value in Enumerable.Range(1, 10))
+            {
+                <MudPaper Class="rating-option" Elevation="0">
+                    <MudRadio Color="Color.Primary" Label="@value.ToString()" Value="@value" LabelPlacement="Placement.Left" />
+                </MudPaper>
+            }
+        </div>
+    </MudRadioGroup>
+</MudPaper>

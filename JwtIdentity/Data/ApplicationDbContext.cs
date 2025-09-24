@@ -174,24 +174,20 @@ namespace JwtIdentity.Data
                 }).ToArray()
             );
 
-            // TPH for Questions
-            _ = builder.Entity<Question>()
-                .HasDiscriminator(q => q.QuestionType)
-                .HasValue<TextQuestion>(QuestionType.Text)
-                .HasValue<TrueFalseQuestion>(QuestionType.TrueFalse)
-                .HasValue<MultipleChoiceQuestion>(QuestionType.MultipleChoice)
-                .HasValue<Rating1To10Question>(QuestionType.Rating1To10)
-                .HasValue<SelectAllThatApplyQuestion>(QuestionType.SelectAllThatApply);
+        // TPH registration driven by question registry
+        var questionDiscriminator = builder.Entity<Question>().HasDiscriminator(q => q.QuestionType);
+        foreach (var definition in QuestionDomainRegistry.All)
+        {
+            questionDiscriminator.HasValue(definition.QuestionEntityType, definition.QuestionType);
+        }
 
-            // TPH for Answers
-            _ = builder.Entity<Answer>()
-                .HasDiscriminator(a => a.AnswerType)
-                .HasValue<TextAnswer>(AnswerType.Text)
-                .HasValue<TrueFalseAnswer>(AnswerType.TrueFalse)
-                .HasValue<SingleChoiceAnswer>(AnswerType.SingleChoice)
-                .HasValue<MultipleChoiceAnswer>(AnswerType.MultipleChoice)
-                .HasValue<Rating1To10Answer>(AnswerType.Rating1To10)
-                .HasValue<SelectAllThatApplyAnswer>(AnswerType.SelectAllThatApply);
+        var answerDiscriminator = builder.Entity<Answer>().HasDiscriminator(a => a.AnswerType);
+        foreach (var definition in QuestionDomainRegistry.All)
+        {
+            answerDiscriminator.HasValue(definition.AnswerEntityType, definition.AnswerType);
+        }
+
+        answerDiscriminator.HasValue(typeof(SingleChoiceAnswer), AnswerType.SingleChoice);
 
             _ = builder.Entity<ChoiceOption>()
             .HasOne(co => co.MultipleChoiceQuestion)

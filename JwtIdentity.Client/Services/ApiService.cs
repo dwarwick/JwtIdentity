@@ -35,12 +35,7 @@ namespace JwtIdentity.Client.Services
             _options = new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true,
-                ReferenceHandler = ReferenceHandler.IgnoreCycles,
-                Converters =
-                {
-                    new AnswerViewModelConverter(),
-                    new QuestionViewModelConverter()
-                }
+                ReferenceHandler = ReferenceHandler.IgnoreCycles
             };
             _httpClientFactory = httpClientFactory;
             this.navigationManager = navigationManager;
