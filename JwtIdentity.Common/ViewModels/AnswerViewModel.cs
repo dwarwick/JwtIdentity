@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace JwtIdentity.Common.ViewModels
 {
-    [JsonPolymorphic(TypeDiscriminatorPropertyName = "answerType", UnknownDerivedTypeHandling = JsonUnknownDerivedTypeHandling.FailSerialization)]
+    [JsonPolymorphic(TypeDiscriminatorPropertyName = "$answerType", UnknownDerivedTypeHandling = JsonUnknownDerivedTypeHandling.FailSerialization)]
     [JsonDerivedType(typeof(TextAnswerViewModel), (int)AnswerType.Text)]
     [JsonDerivedType(typeof(TrueFalseAnswerViewModel), (int)AnswerType.TrueFalse)]
     [JsonDerivedType(typeof(SingleChoiceAnswerViewModel), (int)AnswerType.SingleChoice)]
