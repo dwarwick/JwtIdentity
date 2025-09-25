@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using JwtIdentity.Common.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Http;
 
@@ -37,6 +38,7 @@ namespace JwtIdentity.Client.Services
                 PropertyNameCaseInsensitive = true,
                 ReferenceHandler = ReferenceHandler.IgnoreCycles
             };
+            _options.Converters.Add(new AnswerViewModelJsonConverter());
             _httpClientFactory = httpClientFactory;
             this.navigationManager = navigationManager;
             this.serviceProvider = serviceProvider;
