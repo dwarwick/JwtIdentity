@@ -230,31 +230,10 @@ namespace JwtIdentity.Services
                 _logger.LogError(ex, "Failed to normalize OpenAI JSON: {Json}", json);
             }
 
-            var resolver = new DefaultJsonTypeInfoResolver();
-            resolver.Modifiers.Add(static typeInfo =>
-            {
-                if (typeInfo.Type == typeof(QuestionViewModel))
-                {
-                    typeInfo.PolymorphismOptions = new JsonPolymorphismOptions
-                    {
-                        TypeDiscriminatorPropertyName = "questionType",
-                        UnknownDerivedTypeHandling = JsonUnknownDerivedTypeHandling.FailSerialization,
-                    };
-
-                    var derivedTypes = typeInfo.PolymorphismOptions.DerivedTypes;
-
-                    derivedTypes.Add(new JsonDerivedType(typeof(TextQuestionViewModel), (int)QuestionType.Text));
-                    derivedTypes.Add(new JsonDerivedType(typeof(TrueFalseQuestionViewModel), (int)QuestionType.TrueFalse));
-                    derivedTypes.Add(new JsonDerivedType(typeof(MultipleChoiceQuestionViewModel), (int)QuestionType.MultipleChoice));
-                    derivedTypes.Add(new JsonDerivedType(typeof(Rating1To10QuestionViewModel), (int)QuestionType.Rating1To10));
-                    derivedTypes.Add(new JsonDerivedType(typeof(SelectAllThatApplyQuestionViewModel), (int)QuestionType.SelectAllThatApply));
-                }
-            });
-
             var options = new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true,
-                TypeInfoResolver = resolver,
+                TypeInfoResolver = QuestionViewModelTypeInfoResolver,
             };
 
             try
@@ -267,6 +246,37 @@ namespace JwtIdentity.Services
                 _logger.LogError(ex, "Failed to deserialize OpenAI response: {Json}", json);
                 return null;
             }
+        }
+
+        private static readonly DefaultJsonTypeInfoResolver QuestionViewModelTypeInfoResolver = CreateQuestionViewModelResolver();
+
+        private static DefaultJsonTypeInfoResolver CreateQuestionViewModelResolver()
+        {
+            var resolver = new DefaultJsonTypeInfoResolver();
+            resolver.Modifiers.Add(ConfigureQuestionViewModelPolymorphism);
+            return resolver;
+        }
+
+        private static void ConfigureQuestionViewModelPolymorphism(JsonTypeInfo typeInfo)
+        {
+            if (typeInfo.Type != typeof(QuestionViewModel))
+            {
+                return;
+            }
+
+            typeInfo.PolymorphismOptions = new JsonPolymorphismOptions
+            {
+                TypeDiscriminatorPropertyName = "questionType",
+                UnknownDerivedTypeHandling = JsonUnknownDerivedTypeHandling.FailSerialization,
+            };
+
+            var derivedTypes = typeInfo.PolymorphismOptions.DerivedTypes;
+
+            derivedTypes.Add(new JsonDerivedType(typeof(TextQuestionViewModel), (int)QuestionType.Text));
+            derivedTypes.Add(new JsonDerivedType(typeof(TrueFalseQuestionViewModel), (int)QuestionType.TrueFalse));
+            derivedTypes.Add(new JsonDerivedType(typeof(MultipleChoiceQuestionViewModel), (int)QuestionType.MultipleChoice));
+            derivedTypes.Add(new JsonDerivedType(typeof(Rating1To10QuestionViewModel), (int)QuestionType.Rating1To10));
+            derivedTypes.Add(new JsonDerivedType(typeof(SelectAllThatApplyQuestionViewModel), (int)QuestionType.SelectAllThatApply));
         }
     }
 }
