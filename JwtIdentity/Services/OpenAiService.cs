@@ -4,8 +4,6 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using System.Text.Json.Serialization;
-using System.Text.Json.Serialization.Metadata;
 using System.Text.RegularExpressions;
 
 namespace JwtIdentity.Services
@@ -82,10 +80,11 @@ namespace JwtIdentity.Services
             var json = match.Value;
 
             // Normalize question type property name to match converter expectations
+            JsonObject? normalizedRoot = null;
             try
             {
-                var node = JsonNode.Parse(json);
-                var questions = node?["questions"] as JsonArray ?? node?["Questions"] as JsonArray;
+                normalizedRoot = JsonNode.Parse(json) as JsonObject;
+                var questions = normalizedRoot?["questions"] as JsonArray ?? normalizedRoot?["Questions"] as JsonArray;
                 if (questions is not null)
                 {
                     foreach (var qNode in questions.OfType<JsonObject>())
@@ -94,7 +93,7 @@ namespace JwtIdentity.Services
                     }
                 }
 
-                json = node?.ToJsonString() ?? json;
+                json = normalizedRoot?.ToJsonString() ?? json;
 
                 void NormalizeQuestionObject(JsonObject question)
                 {
@@ -230,53 +229,304 @@ namespace JwtIdentity.Services
                 _logger.LogError(ex, "Failed to normalize OpenAI JSON: {Json}", json);
             }
 
-            var options = new JsonSerializerOptions
+            var survey = ConvertToSurveyViewModel(normalizedRoot, json);
+            if (survey is null)
             {
-                PropertyNameCaseInsensitive = true,
-                TypeInfoResolver = QuestionViewModelTypeInfoResolver,
-            };
+                try
+                {
+                    var rootFromJson = JsonNode.Parse(json) as JsonObject;
+                    survey = ConvertToSurveyViewModel(rootFromJson, json);
+                }
+                catch (Exception parseEx)
+                {
+                    _logger.LogError(parseEx, "Failed to parse OpenAI JSON while creating survey view model: {Json}", json);
+                }
+            }
+
+            return survey;
+        }
+
+        private SurveyViewModel? ConvertToSurveyViewModel(JsonObject? root, string rawJson)
+        {
+            if (root is null)
+            {
+                _logger.LogWarning("OpenAI JSON was not an object: {Json}", rawJson);
+                return null;
+            }
 
             try
             {
-                var survey = JsonSerializer.Deserialize<SurveyViewModel>(json, options);
+                var survey = new SurveyViewModel
+                {
+                    Title = GetString(root, "title") ?? string.Empty,
+                    Description = GetString(root, "description") ?? string.Empty,
+                    Questions = new List<QuestionViewModel>(),
+                };
+
+                var questions = root["questions"] as JsonArray ?? new JsonArray();
+                var questionIndex = 0;
+
+                foreach (var questionNode in questions.OfType<JsonObject>())
+                {
+                    var question = CreateQuestionViewModel(questionNode);
+                    if (question is null)
+                    {
+                        _logger.LogWarning("Skipping question due to invalid questionType: {Question}", questionNode.ToJsonString());
+                        continue;
+                    }
+
+                    questionIndex++;
+                    if (!TryGetInt(questionNode, "questionNumber", out var questionNumber))
+                    {
+                        questionNumber = questionIndex;
+                    }
+
+                    PopulateCommonQuestionFields(questionNode, question, questionNumber);
+                    survey.Questions.Add(question);
+                }
+
                 return survey;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to deserialize OpenAI response: {Json}", json);
+                _logger.LogError(ex, "Failed to convert OpenAI JSON to SurveyViewModel: {Json}", rawJson);
                 return null;
             }
         }
 
-        private static readonly DefaultJsonTypeInfoResolver QuestionViewModelTypeInfoResolver = CreateQuestionViewModelResolver();
-
-        private static DefaultJsonTypeInfoResolver CreateQuestionViewModelResolver()
+        private static void PopulateCommonQuestionFields(JsonObject questionNode, QuestionViewModel question, int questionNumber)
         {
-            var resolver = new DefaultJsonTypeInfoResolver();
-            resolver.Modifiers.Add(ConfigureQuestionViewModelPolymorphism);
-            return resolver;
+            question.Text = GetString(questionNode, "text") ?? string.Empty;
+            question.QuestionNumber = questionNumber;
+
+            if (TryGetBool(questionNode, "isRequired", out var isRequired))
+            {
+                question.IsRequired = isRequired;
+            }
         }
 
-        private static void ConfigureQuestionViewModelPolymorphism(JsonTypeInfo typeInfo)
+        private QuestionViewModel? CreateQuestionViewModel(JsonObject questionNode)
         {
-            if (typeInfo.Type != typeof(QuestionViewModel))
+            if (!TryGetInt(questionNode, "questionType", out var typeValue))
+            {
+                typeValue = (int)QuestionType.Text;
+            }
+
+            var questionType = Enum.IsDefined(typeof(QuestionType), typeValue)
+                ? (QuestionType)typeValue
+                : QuestionType.Text;
+
+            return questionType switch
+            {
+                QuestionType.Text => CreateTextQuestion(questionNode, questionType),
+                QuestionType.TrueFalse => CreateTrueFalseQuestion(questionType),
+                QuestionType.MultipleChoice => CreateMultipleChoiceQuestion(questionNode, questionType),
+                QuestionType.Rating1To10 => CreateRatingQuestion(questionType),
+                QuestionType.SelectAllThatApply => CreateSelectAllThatApplyQuestion(questionNode, questionType),
+                _ => null,
+            };
+        }
+
+        private static QuestionViewModel CreateTextQuestion(JsonObject questionNode, QuestionType questionType)
+        {
+            var question = new TextQuestionViewModel
+            {
+                QuestionType = questionType,
+            };
+
+            if (TryGetInt(questionNode, "maxLength", out var maxLength))
+            {
+                question.MaxLength = maxLength;
+            }
+
+            return question;
+        }
+
+        private static QuestionViewModel CreateTrueFalseQuestion(QuestionType questionType) => new TrueFalseQuestionViewModel
+        {
+            QuestionType = questionType,
+        };
+
+        private static QuestionViewModel CreateRatingQuestion(QuestionType questionType) => new Rating1To10QuestionViewModel
+        {
+            QuestionType = questionType,
+        };
+
+        private static QuestionViewModel CreateMultipleChoiceQuestion(JsonObject questionNode, QuestionType questionType)
+        {
+            var question = new MultipleChoiceQuestionViewModel
+            {
+                QuestionType = questionType,
+            };
+
+            PopulateChoiceOptions(question.Options, questionNode);
+            return question;
+        }
+
+        private static QuestionViewModel CreateSelectAllThatApplyQuestion(JsonObject questionNode, QuestionType questionType)
+        {
+            var question = new SelectAllThatApplyQuestionViewModel
+            {
+                QuestionType = questionType,
+            };
+
+            PopulateChoiceOptions(question.Options, questionNode);
+            return question;
+        }
+
+        private static void PopulateChoiceOptions(List<ChoiceOptionViewModel> target, JsonObject questionNode)
+        {
+            if (!questionNode.TryGetPropertyValue("options", out var optionsNode) || optionsNode is not JsonArray optionsArray)
             {
                 return;
             }
 
-            typeInfo.PolymorphismOptions = new JsonPolymorphismOptions
+            var orderFallback = 0;
+            foreach (var optionNode in optionsArray.OfType<JsonObject>())
             {
-                TypeDiscriminatorPropertyName = "questionType",
-                UnknownDerivedTypeHandling = JsonUnknownDerivedTypeHandling.FailSerialization,
-            };
+                var optionText = GetString(optionNode, "optionText");
+                if (string.IsNullOrWhiteSpace(optionText))
+                {
+                    continue;
+                }
 
-            var derivedTypes = typeInfo.PolymorphismOptions.DerivedTypes;
+                if (!TryGetInt(optionNode, "order", out var order))
+                {
+                    order = ++orderFallback;
+                }
 
-            derivedTypes.Add(new JsonDerivedType(typeof(TextQuestionViewModel), (int)QuestionType.Text));
-            derivedTypes.Add(new JsonDerivedType(typeof(TrueFalseQuestionViewModel), (int)QuestionType.TrueFalse));
-            derivedTypes.Add(new JsonDerivedType(typeof(MultipleChoiceQuestionViewModel), (int)QuestionType.MultipleChoice));
-            derivedTypes.Add(new JsonDerivedType(typeof(Rating1To10QuestionViewModel), (int)QuestionType.Rating1To10));
-            derivedTypes.Add(new JsonDerivedType(typeof(SelectAllThatApplyQuestionViewModel), (int)QuestionType.SelectAllThatApply));
+                target.Add(new ChoiceOptionViewModel
+                {
+                    OptionText = optionText.Trim(),
+                    Order = order,
+                });
+            }
+        }
+
+        private static string? GetString(JsonObject obj, string propertyName)
+        {
+            if (!obj.TryGetPropertyValue(propertyName, out var node))
+            {
+                return null;
+            }
+
+            if (node is JsonValue value)
+            {
+                if (value.TryGetValue<string>(out var stringValue))
+                {
+                    return stringValue?.Trim();
+                }
+
+                if (value.TryGetValue<int>(out var intValue))
+                {
+                    return intValue.ToString(CultureInfo.InvariantCulture);
+                }
+
+                if (value.TryGetValue<double>(out var doubleValue))
+                {
+                    return doubleValue.ToString(CultureInfo.InvariantCulture);
+                }
+            }
+
+            return node?.ToJsonString();
+        }
+
+        private static bool TryGetInt(JsonObject obj, string propertyName, out int value)
+        {
+            value = default;
+
+            if (!obj.TryGetPropertyValue(propertyName, out var node))
+            {
+                return false;
+            }
+
+            return TryConvertToInt(node, out value);
+        }
+
+        private static bool TryConvertToInt(JsonNode? node, out int value)
+        {
+            value = default;
+
+            if (node is null)
+            {
+                return false;
+            }
+
+            if (node is JsonValue valueNode)
+            {
+                if (valueNode.TryGetValue<int>(out var intValue))
+                {
+                    value = intValue;
+                    return true;
+                }
+
+                if (valueNode.TryGetValue<long>(out var longValue))
+                {
+                    value = (int)longValue;
+                    return true;
+                }
+
+                if (valueNode.TryGetValue<double>(out var doubleValue))
+                {
+                    value = (int)Math.Round(doubleValue);
+                    return true;
+                }
+
+                if (valueNode.TryGetValue<string>(out var stringValue)
+                    && int.TryParse(stringValue, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsed))
+                {
+                    value = parsed;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static bool TryGetBool(JsonObject obj, string propertyName, out bool value)
+        {
+            value = default;
+
+            if (!obj.TryGetPropertyValue(propertyName, out var node))
+            {
+                return false;
+            }
+
+            return TryConvertToBool(node, out value);
+        }
+
+        private static bool TryConvertToBool(JsonNode? node, out bool value)
+        {
+            value = default;
+
+            if (node is null)
+            {
+                return false;
+            }
+
+            if (node is JsonValue valueNode)
+            {
+                if (valueNode.TryGetValue<bool>(out var boolValue))
+                {
+                    value = boolValue;
+                    return true;
+                }
+
+                if (valueNode.TryGetValue<string>(out var stringValue)
+                    && bool.TryParse(stringValue, out var parsedBool))
+                {
+                    value = parsedBool;
+                    return true;
+                }
+
+                if (valueNode.TryGetValue<int>(out var intValue))
+                {
+                    value = intValue != 0;
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }
