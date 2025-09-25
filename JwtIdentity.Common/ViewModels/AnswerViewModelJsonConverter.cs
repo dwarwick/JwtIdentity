@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 
 namespace JwtIdentity.Common.ViewModels
@@ -31,17 +32,17 @@ namespace JwtIdentity.Common.ViewModels
 
         public override void Write(Utf8JsonWriter writer, AnswerViewModel value, JsonSerializerOptions options)
         {
-            var element = JsonSerializer.SerializeToElement(value, value.GetType(), options);
+            JsonNode node = JsonSerializer.SerializeToNode(value, value.GetType(), options)
+                ?? throw new JsonException("Unable to serialize AnswerViewModel to JSON node.");
 
-            writer.WriteStartObject();
-            writer.WriteNumber("$answerType", (int)value.AnswerType);
-
-            foreach (var property in element.EnumerateObject())
+            if (node is not JsonObject jsonObject)
             {
-                property.WriteTo(writer);
+                throw new JsonException("Expected AnswerViewModel to serialize to a JSON object.");
             }
 
-            writer.WriteEndObject();
+            jsonObject["$answerType"] = (int)value.AnswerType;
+
+            jsonObject.WriteTo(writer, options);
         }
 
         private static bool TryGetDiscriminator(JsonElement element, out AnswerType answerType)
