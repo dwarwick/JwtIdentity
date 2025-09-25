@@ -81,13 +81,44 @@ namespace JwtIdentity.Services
             try
             {
                 var node = JsonNode.Parse(json);
-                if (node?["Questions"] is JsonArray questions)
+                var questions = node?["questions"] as JsonArray ?? node?["Questions"] as JsonArray;
+                if (questions is not null)
                 {
                     foreach (var qNode in questions)
                     {
-                        if (qNode is JsonObject q && q["QuestionType"] is JsonNode type && q["questionType"] is null)
+                        if (qNode is JsonObject q && q["questionType"] is null && q["QuestionType"] is JsonNode type)
                         {
-                            q["questionType"] = type;
+                            if (type is JsonValue value)
+                            {
+                                if (value.TryGetValue<int>(out var intValue))
+                                {
+                                    q["questionType"] = intValue;
+                                }
+                                else if (value.TryGetValue<string>(out var stringValue))
+                                {
+                                    if (Enum.TryParse<QuestionType>(stringValue, true, out var enumValue))
+                                    {
+                                        q["questionType"] = (int)enumValue;
+                                    }
+                                    else if (int.TryParse(stringValue, out var parsedInt))
+                                    {
+                                        q["questionType"] = parsedInt;
+                                    }
+                                    else
+                                    {
+                                        q["questionType"] = stringValue;
+                                    }
+                                }
+                                else
+                                {
+                                    q["questionType"] = type;
+                                }
+                            }
+                            else
+                            {
+                                q["questionType"] = type;
+                            }
+
                             q.Remove("QuestionType");
                         }
                     }
