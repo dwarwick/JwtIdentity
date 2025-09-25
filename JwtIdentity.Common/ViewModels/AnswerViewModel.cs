@@ -2,13 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace JwtIdentity.Common.ViewModels
 {
-    [JsonPolymorphic(TypeDiscriminatorPropertyName = "$answerType", UnknownDerivedTypeHandling = JsonUnknownDerivedTypeHandling.FailSerialization)]
-    [JsonDerivedType(typeof(TextAnswerViewModel), (int)AnswerType.Text)]
-    [JsonDerivedType(typeof(TrueFalseAnswerViewModel), (int)AnswerType.TrueFalse)]
-    [JsonDerivedType(typeof(SingleChoiceAnswerViewModel), (int)AnswerType.SingleChoice)]
-    [JsonDerivedType(typeof(MultipleChoiceAnswerViewModel), (int)AnswerType.MultipleChoice)]
-    [JsonDerivedType(typeof(Rating1To10AnswerViewModel), (int)AnswerType.Rating1To10)]
-    [JsonDerivedType(typeof(SelectAllThatApplyAnswerViewModel), (int)AnswerType.SelectAllThatApply)]
+    [JsonConverter(typeof(AnswerViewModelJsonConverter))]
     public abstract class AnswerViewModel : BaseViewModel
     {
         protected AnswerViewModel()
