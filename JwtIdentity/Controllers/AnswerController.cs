@@ -221,6 +221,18 @@ namespace JwtIdentity.Controllers
                     return BadRequest("Bad Request: Answer data is required");
                 }
 
+                if (answerViewModel.QuestionId <= 0)
+                {
+                    _logger.LogWarning("Invalid question ID {QuestionId} provided while saving answer", answerViewModel.QuestionId);
+                    return BadRequest("A valid question identifier is required");
+                }
+
+                if (!await _context.Questions.AsNoTracking().AnyAsync(q => q.Id == answerViewModel.QuestionId))
+                {
+                    _logger.LogWarning("Question ID {QuestionId} not found while saving answer", answerViewModel.QuestionId);
+                    return BadRequest("Question does not exist");
+                }
+
                 _logger.LogDebug("Mapping answer view model to domain model. Answer type: {AnswerType}", answerViewModel.AnswerType);
                 var answer = _mapper.Map<Answer>(answerViewModel);
 
