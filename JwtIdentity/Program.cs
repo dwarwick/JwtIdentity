@@ -3,6 +3,7 @@ using Hangfire;
 using Hangfire.SqlServer;
 using JwtIdentity.Client.Helpers;
 using JwtIdentity.Client.Services;
+using JwtIdentity.Common.ViewModels;
 using JwtIdentity.Hubs;
 using JwtIdentity.Middleware;
 using JwtIdentity.Search;
@@ -243,6 +244,7 @@ builder.Services.AddControllers(options =>
 }).AddJsonOptions(opts =>
 {
     opts.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+    opts.JsonSerializerOptions.Converters.Add(new AnswerViewModelJsonConverter());
 }).AddOData(options =>
 {
     _ = options.Select().Filter().OrderBy().Count().Expand().SetMaxTop(null);

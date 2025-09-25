@@ -85,6 +85,11 @@ namespace JwtIdentity.Common.Helpers
                 question.Answers.Add(answer);
             }
 
+            // Always ensure the answer is associated with the current question.
+            // Without this, newly initialized answers may be posted with a QuestionId of 0,
+            // which the API rightfully rejects as invalid.
+            answer.QuestionId = question.Id;
+
             _answerInitializer(question, answer);
 
             return answer;

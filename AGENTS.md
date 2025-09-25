@@ -30,3 +30,4 @@ Playwright end-to-end tests live in the JwtIdentity.PlaywrightTests project and 
 The projects in the solution explicitly disable nullable reference types. Do not enable nullable reference types in any of the projects. If you find nullable reference types enabled in any of the projects, please disable them. If you find that any reference types are marked as nullable, please remove the nullable annotation.
 The MudStack Wrap attribute expects a Wrap enum value. See DemoLanding.razor for an example.
 When you build the solution, check for new warnings and fix them. Do not ignore new warnings. Warnings should be treated as errors and fixed before committing code.
+Do not attempt to run the Playwright tests. Instead, run the Unit test projects individually. Do not attempt to test the entire solution because that would also try to run the playwright tests.
