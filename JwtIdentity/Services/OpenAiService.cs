@@ -1,3 +1,5 @@
+using System.Globalization;
+using System.Linq;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
@@ -84,46 +86,142 @@ namespace JwtIdentity.Services
                 var questions = node?["questions"] as JsonArray ?? node?["Questions"] as JsonArray;
                 if (questions is not null)
                 {
-                    foreach (var qNode in questions)
+                    foreach (var qNode in questions.OfType<JsonObject>())
                     {
-                        if (qNode is JsonObject q && q["questionType"] is null && q["QuestionType"] is JsonNode type)
-                        {
-                            if (type is JsonValue value)
-                            {
-                                if (value.TryGetValue<int>(out var intValue))
-                                {
-                                    q["questionType"] = intValue;
-                                }
-                                else if (value.TryGetValue<string>(out var stringValue))
-                                {
-                                    if (Enum.TryParse<QuestionType>(stringValue, true, out var enumValue))
-                                    {
-                                        q["questionType"] = (int)enumValue;
-                                    }
-                                    else if (int.TryParse(stringValue, out var parsedInt))
-                                    {
-                                        q["questionType"] = parsedInt;
-                                    }
-                                    else
-                                    {
-                                        q["questionType"] = stringValue;
-                                    }
-                                }
-                                else
-                                {
-                                    q["questionType"] = type;
-                                }
-                            }
-                            else
-                            {
-                                q["questionType"] = type;
-                            }
-
-                            q.Remove("QuestionType");
-                        }
+                        NormalizeQuestionObject(qNode);
                     }
                 }
+
                 json = node?.ToJsonString() ?? json;
+
+                void NormalizeQuestionObject(JsonObject question)
+                {
+                    if (!TryGetQuestionTypeNode(question, out var typeNode, out var sourceKey))
+                    {
+                        _logger.LogWarning("Question is missing a questionType discriminator. Defaulting to Text. Question: {Question}", question.ToJsonString());
+                        question["questionType"] = JsonValue.Create((int)QuestionType.Text);
+                        return;
+                    }
+
+                    if (!TryConvertQuestionType(typeNode, out var discriminator))
+                    {
+                        _logger.LogWarning("Question has an unknown questionType value {TypeValue}. Defaulting to Text. Question: {Question}", typeNode?.ToJsonString(), question.ToJsonString());
+                        discriminator = (int)QuestionType.Text;
+                    }
+
+                    question["questionType"] = JsonValue.Create(discriminator);
+
+                    if (!string.Equals(sourceKey, "questionType", StringComparison.Ordinal))
+                    {
+                        question.Remove(sourceKey!);
+                    }
+                }
+
+                bool TryGetQuestionTypeNode(JsonObject question, out JsonNode? typeNode, out string? sourceKey)
+                {
+                    if (question.TryGetPropertyValue("questionType", out var existing))
+                    {
+                        typeNode = existing;
+                        sourceKey = "questionType";
+                        return true;
+                    }
+
+                    foreach (var property in question.ToList())
+                    {
+                        if (IsQuestionTypeProperty(property.Key))
+                        {
+                            typeNode = property.Value;
+                            sourceKey = property.Key;
+                            return true;
+                        }
+                    }
+
+                    typeNode = null;
+                    sourceKey = null;
+                    return false;
+                }
+
+                bool TryConvertQuestionType(JsonNode? typeNode, out int discriminator)
+                {
+                    discriminator = default;
+
+                    if (typeNode is null)
+                    {
+                        return false;
+                    }
+
+                    if (typeNode is JsonValue value)
+                    {
+                        if (value.TryGetValue<int>(out var intValue))
+                        {
+                            discriminator = intValue;
+                            return true;
+                        }
+
+                        if (value.TryGetValue<string>(out var stringValue) && TryConvertQuestionType(stringValue, out discriminator))
+                        {
+                            return true;
+                        }
+                    }
+
+                    if (typeNode is JsonArray array && array.Count == 1)
+                    {
+                        return TryConvertQuestionType(array[0], out discriminator);
+                    }
+
+                    return false;
+                }
+
+                bool TryConvertQuestionType(string? raw, out int discriminator)
+                {
+                    discriminator = default;
+
+                    if (string.IsNullOrWhiteSpace(raw))
+                    {
+                        return false;
+                    }
+
+                    var trimmed = raw.Trim();
+
+                    if (Enum.TryParse<QuestionType>(trimmed, true, out var directMatch))
+                    {
+                        discriminator = (int)directMatch;
+                        return true;
+                    }
+
+                    if (int.TryParse(trimmed, NumberStyles.Integer, CultureInfo.InvariantCulture, out var numericValue))
+                    {
+                        discriminator = numericValue;
+                        return true;
+                    }
+
+                    var sanitized = new string(trimmed.Where(char.IsLetterOrDigit).ToArray());
+
+                    foreach (var questionType in Enum.GetValues<QuestionType>())
+                    {
+                        var enumSanitized = new string(questionType.ToString().Where(char.IsLetterOrDigit).ToArray());
+                        if (enumSanitized.Equals(sanitized, StringComparison.OrdinalIgnoreCase))
+                        {
+                            discriminator = (int)questionType;
+                            return true;
+                        }
+                    }
+
+                    return false;
+                }
+
+                bool IsQuestionTypeProperty(string propertyName)
+                {
+                    if (string.IsNullOrWhiteSpace(propertyName))
+                    {
+                        return false;
+                    }
+
+                    var normalized = new string(propertyName.Where(char.IsLetterOrDigit).ToArray());
+
+                    return normalized.Equals("questiontype", StringComparison.OrdinalIgnoreCase)
+                        || normalized.Equals("type", StringComparison.OrdinalIgnoreCase);
+                }
             }
             catch (Exception ex)
             {
