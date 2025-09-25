@@ -17,22 +17,25 @@ namespace JwtIdentity.Common.ViewModels
             }
 
             var json = root.GetRawText();
+            var sanitizedOptions = CreateInternalSerializerOptions(options);
 
             return discriminator switch
             {
-                AnswerType.Text => JsonSerializer.Deserialize<TextAnswerViewModel>(json, options),
-                AnswerType.TrueFalse => JsonSerializer.Deserialize<TrueFalseAnswerViewModel>(json, options),
-                AnswerType.SingleChoice => JsonSerializer.Deserialize<SingleChoiceAnswerViewModel>(json, options),
-                AnswerType.MultipleChoice => JsonSerializer.Deserialize<MultipleChoiceAnswerViewModel>(json, options),
-                AnswerType.Rating1To10 => JsonSerializer.Deserialize<Rating1To10AnswerViewModel>(json, options),
-                AnswerType.SelectAllThatApply => JsonSerializer.Deserialize<SelectAllThatApplyAnswerViewModel>(json, options),
+                AnswerType.Text => JsonSerializer.Deserialize<TextAnswerViewModel>(json, sanitizedOptions),
+                AnswerType.TrueFalse => JsonSerializer.Deserialize<TrueFalseAnswerViewModel>(json, sanitizedOptions),
+                AnswerType.SingleChoice => JsonSerializer.Deserialize<SingleChoiceAnswerViewModel>(json, sanitizedOptions),
+                AnswerType.MultipleChoice => JsonSerializer.Deserialize<MultipleChoiceAnswerViewModel>(json, sanitizedOptions),
+                AnswerType.Rating1To10 => JsonSerializer.Deserialize<Rating1To10AnswerViewModel>(json, sanitizedOptions),
+                AnswerType.SelectAllThatApply => JsonSerializer.Deserialize<SelectAllThatApplyAnswerViewModel>(json, sanitizedOptions),
                 _ => throw new JsonException($"Unsupported AnswerType discriminator value: {discriminator}.")
             };
         }
 
         public override void Write(Utf8JsonWriter writer, AnswerViewModel value, JsonSerializerOptions options)
         {
-            JsonNode node = JsonSerializer.SerializeToNode(value, value.GetType(), options)
+            var sanitizedOptions = CreateInternalSerializerOptions(options);
+
+            JsonNode node = JsonSerializer.SerializeToNode(value, value.GetType(), sanitizedOptions)
                 ?? throw new JsonException("Unable to serialize AnswerViewModel to JSON node.");
 
             if (node is not JsonObject jsonObject)
@@ -68,6 +71,16 @@ namespace JwtIdentity.Common.ViewModels
 
             value = default;
             return false;
+        }
+
+        private static JsonSerializerOptions CreateInternalSerializerOptions(JsonSerializerOptions options)
+        {
+            var sanitizedOptions = new JsonSerializerOptions(options)
+            {
+                ReferenceHandler = null
+            };
+
+            return sanitizedOptions;
         }
     }
 }
