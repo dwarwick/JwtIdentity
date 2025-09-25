@@ -158,7 +158,7 @@ namespace JwtIdentity.Services
                             return true;
                         }
 
-                        if (value.TryGetValue<string>(out var stringValue) && TryConvertQuestionType(stringValue, out discriminator))
+                        if (value.TryGetValue<string>(out var stringValue) && TryConvertQuestionTypeFromString(stringValue, out discriminator))
                         {
                             return true;
                         }
@@ -172,7 +172,7 @@ namespace JwtIdentity.Services
                     return false;
                 }
 
-                bool TryConvertQuestionType(string? raw, out int discriminator)
+                bool TryConvertQuestionTypeFromString(string? raw, out int discriminator)
                 {
                     discriminator = default;
 
