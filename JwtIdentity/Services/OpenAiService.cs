@@ -4,6 +4,8 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using System.Text.RegularExpressions;
 
 namespace JwtIdentity.Services
@@ -228,9 +230,31 @@ namespace JwtIdentity.Services
                 _logger.LogError(ex, "Failed to normalize OpenAI JSON: {Json}", json);
             }
 
+            var resolver = new DefaultJsonTypeInfoResolver();
+            resolver.Modifiers.Add(static typeInfo =>
+            {
+                if (typeInfo.Type == typeof(QuestionViewModel))
+                {
+                    typeInfo.PolymorphismOptions = new JsonPolymorphismOptions
+                    {
+                        TypeDiscriminatorPropertyName = "questionType",
+                        UnknownDerivedTypeHandling = JsonUnknownDerivedTypeHandling.FailSerialization,
+                    };
+
+                    var derivedTypes = typeInfo.PolymorphismOptions.DerivedTypes;
+
+                    derivedTypes.Add(new JsonDerivedType(typeof(TextQuestionViewModel), (int)QuestionType.Text));
+                    derivedTypes.Add(new JsonDerivedType(typeof(TrueFalseQuestionViewModel), (int)QuestionType.TrueFalse));
+                    derivedTypes.Add(new JsonDerivedType(typeof(MultipleChoiceQuestionViewModel), (int)QuestionType.MultipleChoice));
+                    derivedTypes.Add(new JsonDerivedType(typeof(Rating1To10QuestionViewModel), (int)QuestionType.Rating1To10));
+                    derivedTypes.Add(new JsonDerivedType(typeof(SelectAllThatApplyQuestionViewModel), (int)QuestionType.SelectAllThatApply));
+                }
+            });
+
             var options = new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true,
+                TypeInfoResolver = resolver,
             };
 
             try
