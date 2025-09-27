@@ -1,7 +1,9 @@
 using System;
 using System.Linq;
+using JwtIdentity.Interfaces;
 using JwtIdentity.Models;
 using JwtIdentity.Services;
+using Moq;
 using NUnit.Framework;
 
 namespace JwtIdentity.Tests.ServiceTests
@@ -15,7 +17,8 @@ namespace JwtIdentity.Tests.ServiceTests
         public override void BaseSetUp()
         {
             base.BaseSetUp();
-            _service = new SurveyService(MockDbContext, MockLogger.Object);
+            var mockQuestionHandlerFactory = new Mock<IQuestionHandlerFactory>();
+            _service = new SurveyService(MockDbContext, MockLogger.Object, mockQuestionHandlerFactory.Object);
         }
 
         [Test]

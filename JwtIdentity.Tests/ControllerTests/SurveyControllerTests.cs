@@ -1,6 +1,7 @@
 using JwtIdentity.Common.Helpers;
 using JwtIdentity.Common.ViewModels;
 using JwtIdentity.Controllers;
+using JwtIdentity.Interfaces;
 using JwtIdentity.Models;
 using JwtIdentity.Services;
 using Microsoft.AspNetCore.Http;
@@ -34,7 +35,8 @@ namespace JwtIdentity.Tests.ControllerTests
             MockEmailService.Setup(e => e.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(true);
             MockConfiguration.Setup(c => c["EmailSettings:CustomerServiceEmail"]).Returns("admin@example.com");
             MockSurveyService = new Mock<ISurveyService>();
-            _controller = new SurveyController(MockDbContext, MockMapper.Object, MockApiAuthService.Object, MockLogger.Object, MockOpenAiService.Object, MockEmailService.Object, MockConfiguration.Object, MockSurveyService.Object)
+            var mockQuestionHandlerFactory = new Mock<IQuestionHandlerFactory>();
+            _controller = new SurveyController(MockDbContext, MockMapper.Object, MockApiAuthService.Object, MockLogger.Object, MockOpenAiService.Object, MockEmailService.Object, MockConfiguration.Object, MockSurveyService.Object, mockQuestionHandlerFactory.Object)
             {
                 ControllerContext = new ControllerContext { HttpContext = HttpContext }
             };

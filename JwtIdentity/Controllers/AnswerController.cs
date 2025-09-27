@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using JwtIdentity.Interfaces;
 
 namespace JwtIdentity.Controllers
 {
@@ -11,14 +12,16 @@ namespace JwtIdentity.Controllers
         private readonly IApiAuthService apiAuthService;
         private readonly ILogger<AnswerController> _logger;
         private readonly ISurveyCompletionNotifier _surveyNotifier;
+        private readonly IAnswerHandlerFactory _answerHandlerFactory;
 
-        public AnswerController(ApplicationDbContext context, IMapper mapper, IApiAuthService apiAuthService, ILogger<AnswerController> logger, ISurveyCompletionNotifier surveyNotifier)
+        public AnswerController(ApplicationDbContext context, IMapper mapper, IApiAuthService apiAuthService, ILogger<AnswerController> logger, ISurveyCompletionNotifier surveyNotifier, IAnswerHandlerFactory answerHandlerFactory)
         {
             _context = context;
             _mapper = mapper;
             this.apiAuthService = apiAuthService;
             _logger = logger;
             _surveyNotifier = surveyNotifier;
+            _answerHandlerFactory = answerHandlerFactory;
         }
 
         [HttpGet("getanswersforsurveyforloggedinuser/{guid}")]
@@ -433,59 +436,12 @@ namespace JwtIdentity.Controllers
 
                     answer.CreatedById = answerViewModel.CreatedById;
 
-                    switch (answer.AnswerType)
+                    // Use the appropriate handler to check if the answer has changed
+                    var handler = _answerHandlerFactory.GetHandler(answer.AnswerType);
+                    if (handler.HasChanged(answer, existingAnswer))
                     {
-                        case AnswerType.Text:
-                            if (((TextAnswer)answer).Text != ((TextAnswer)existingAnswer).Text || 
-                                ((TextAnswer)answer).Complete != ((TextAnswer)existingAnswer).Complete)
-                            {
-                                _logger.LogDebug("Updating text answer ID {AnswerId}", answer.Id);
-                                _ = _context.Answers.Update(answer);
-                            }
-                            break;
-                        case AnswerType.TrueFalse:
-                            if (((TrueFalseAnswer)answer).Value != ((TrueFalseAnswer)existingAnswer).Value || 
-                                ((TrueFalseAnswer)answer).Complete != ((TrueFalseAnswer)existingAnswer).Complete)
-                            {
-                                _logger.LogDebug("Updating true/false answer ID {AnswerId}", answer.Id);
-                                _ = _context.Answers.Update(answer);
-                            }
-                            break;
-                        case AnswerType.SingleChoice:
-                            if (((SingleChoiceAnswer)answer).SelectedOptionId != ((SingleChoiceAnswer)existingAnswer).SelectedOptionId || 
-                                ((SingleChoiceAnswer)answer).Complete != ((SingleChoiceAnswer)existingAnswer).Complete)
-                            {
-                                _logger.LogDebug("Updating single choice answer ID {AnswerId}", answer.Id);
-                                _ = _context.Answers.Update(answer);
-                            }
-                            break;
-                        case AnswerType.MultipleChoice:
-                            if (((MultipleChoiceAnswer)answer).SelectedOptionId != ((MultipleChoiceAnswer)existingAnswer).SelectedOptionId || 
-                                ((MultipleChoiceAnswer)answer).Complete != ((MultipleChoiceAnswer)existingAnswer).Complete)
-                            {
-                                _logger.LogDebug("Updating multiple choice answer ID {AnswerId}", answer.Id);
-                                _ = _context.Answers.Update(answer);
-                            }
-                            break;
-                        case AnswerType.Rating1To10:
-                            if (((Rating1To10Answer)answer).SelectedOptionId != ((Rating1To10Answer)existingAnswer).SelectedOptionId || 
-                                ((Rating1To10Answer)answer).Complete != ((Rating1To10Answer)existingAnswer).Complete)
-                            {
-                                _logger.LogDebug("Updating rating answer ID {AnswerId}", answer.Id);
-                                _ = _context.Answers.Update(answer);
-                            }
-                            break;
-                        case AnswerType.SelectAllThatApply:
-                            if (((SelectAllThatApplyAnswer)answer).SelectedOptionIds != ((SelectAllThatApplyAnswer)existingAnswer).SelectedOptionIds || 
-                                ((SelectAllThatApplyAnswer)answer).Complete != ((SelectAllThatApplyAnswer)existingAnswer).Complete)
-                            {
-                                _logger.LogDebug("Updating select-all answer ID {AnswerId}", answer.Id);
-                                _ = _context.Answers.Update(answer);
-                            }
-                            break;
-                        default:
-                            _logger.LogWarning("Unknown answer type {AnswerType} for answer ID {AnswerId}", answer.AnswerType, answer.Id);
-                            break;
+                        _logger.LogDebug("Updating {AnswerType} answer ID {AnswerId}", answer.AnswerType, answer.Id);
+                        _ = _context.Answers.Update(answer);
                     }
                 }
 
