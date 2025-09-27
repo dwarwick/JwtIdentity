@@ -133,6 +133,14 @@ builder.Services.AddScoped<IAnswerHandler, JwtIdentity.Services.AnswerHandlers.M
 builder.Services.AddScoped<IAnswerHandler, JwtIdentity.Services.AnswerHandlers.Rating1To10AnswerHandler>();
 builder.Services.AddScoped<IAnswerHandler, JwtIdentity.Services.AnswerHandlers.SelectAllThatApplyAnswerHandler>();
 builder.Services.AddScoped<IAnswerHandlerFactory, JwtIdentity.Services.AnswerHandlers.AnswerHandlerFactory>();
+
+// Register question handlers
+builder.Services.AddScoped<IQuestionHandler, JwtIdentity.Services.QuestionHandlers.TextQuestionHandler>();
+builder.Services.AddScoped<IQuestionHandler, JwtIdentity.Services.QuestionHandlers.TrueFalseQuestionHandler>();
+builder.Services.AddScoped<IQuestionHandler, JwtIdentity.Services.QuestionHandlers.MultipleChoiceQuestionHandler>();
+builder.Services.AddScoped<IQuestionHandler, JwtIdentity.Services.QuestionHandlers.Rating1To10QuestionHandler>();
+builder.Services.AddScoped<IQuestionHandler, JwtIdentity.Services.QuestionHandlers.SelectAllThatApplyQuestionHandler>();
+builder.Services.AddScoped<IQuestionHandlerFactory, JwtIdentity.Services.QuestionHandlers.QuestionHandlerFactory>();
 builder.Services.AddHttpClient<IOpenAi, OpenAiService>();
 builder.Services.AddSingleton<DocsSearchIndexer>();
 builder.Services.AddRateLimiter(options =>
