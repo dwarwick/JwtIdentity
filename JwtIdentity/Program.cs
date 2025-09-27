@@ -3,6 +3,7 @@ using Hangfire;
 using Hangfire.SqlServer;
 using JwtIdentity.Client.Helpers;
 using JwtIdentity.Client.Services;
+using JwtIdentity.Interfaces;
 using JwtIdentity.Hubs;
 using JwtIdentity.Middleware;
 using JwtIdentity.Search;
@@ -123,6 +124,15 @@ builder.Services.AddScoped<IApiAuthService, ApiAuthService>();
 builder.Services.AddScoped<ISurveyService, SurveyService>();
 builder.Services.AddScoped<ISurveyCompletionNotifier, SurveyCompletionNotifier>();
 builder.Services.AddScoped<JwtIdentity.Services.BackgroundJobs.BackgroundJobService>();
+
+// Register answer handlers
+builder.Services.AddScoped<IAnswerHandler, JwtIdentity.Services.AnswerHandlers.TextAnswerHandler>();
+builder.Services.AddScoped<IAnswerHandler, JwtIdentity.Services.AnswerHandlers.TrueFalseAnswerHandler>();
+builder.Services.AddScoped<IAnswerHandler, JwtIdentity.Services.AnswerHandlers.SingleChoiceAnswerHandler>();
+builder.Services.AddScoped<IAnswerHandler, JwtIdentity.Services.AnswerHandlers.MultipleChoiceAnswerHandler>();
+builder.Services.AddScoped<IAnswerHandler, JwtIdentity.Services.AnswerHandlers.Rating1To10AnswerHandler>();
+builder.Services.AddScoped<IAnswerHandler, JwtIdentity.Services.AnswerHandlers.SelectAllThatApplyAnswerHandler>();
+builder.Services.AddScoped<IAnswerHandlerFactory, JwtIdentity.Services.AnswerHandlers.AnswerHandlerFactory>();
 builder.Services.AddHttpClient<IOpenAi, OpenAiService>();
 builder.Services.AddSingleton<DocsSearchIndexer>();
 builder.Services.AddRateLimiter(options =>
