@@ -33,7 +33,9 @@ namespace JwtIdentity.PlaywrightTests.Helpers
 
             var launchOptions = new BrowserTypeLaunchOptions
             {
-                Headless = settings.Headless
+                Headless = settings.Headless,
+                ExecutablePath = "/usr/bin/chromium-browser",
+                Args = settings.Headless ? new[] { "--headless=new" } : null
             };
 
             _browser = await browserType.LaunchAsync(launchOptions);
