@@ -81,7 +81,7 @@ namespace JwtIdentity.Services
             try
             {
                 var node = JsonNode.Parse(json);
-                if (node?["Questions"] is JsonArray questions)
+                if (node?["questions"] is JsonArray questions)
                 {
                     foreach (var qNode in questions)
                     {
