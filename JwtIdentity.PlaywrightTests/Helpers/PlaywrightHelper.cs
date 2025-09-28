@@ -34,7 +34,10 @@ namespace JwtIdentity.PlaywrightTests.Helpers
             var launchOptions = new BrowserTypeLaunchOptions
             {
                 Headless = settings.Headless,
+#if !DEBUG
                 ExecutablePath = "/usr/bin/chromium-browser",
+#endif
+
                 Args = settings.Headless ? new[] { "--headless=new" } : null
             };
 
