@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using JwtIdentity.Interfaces;
 
 namespace JwtIdentity.Controllers
 {
@@ -14,8 +15,9 @@ namespace JwtIdentity.Controllers
         private readonly IEmailService _emailService;
         private readonly IConfiguration _configuration;
         private readonly ISurveyService _surveyService;
+        private readonly IQuestionHandlerFactory _questionHandlerFactory;
 
-        public SurveyController(ApplicationDbContext context, IMapper mapper, IApiAuthService authService, ILogger<SurveyController> logger, IOpenAi openAiService, IEmailService emailService, IConfiguration configuration, ISurveyService surveyService)
+        public SurveyController(ApplicationDbContext context, IMapper mapper, IApiAuthService authService, ILogger<SurveyController> logger, IOpenAi openAiService, IEmailService emailService, IConfiguration configuration, ISurveyService surveyService, IQuestionHandlerFactory questionHandlerFactory)
         {
             _context = context;
             _mapper = mapper;
@@ -25,6 +27,7 @@ namespace JwtIdentity.Controllers
             _emailService = emailService;
             _configuration = configuration;
             _surveyService = surveyService;
+            _questionHandlerFactory = questionHandlerFactory;
         }
 
         // GET: api/Survey/5
@@ -43,30 +46,28 @@ namespace JwtIdentity.Controllers
                     return NotFound();
                 }
 
-                // Pull out the IDs of any multiple-choice questions in memory
+                // Use handlers to load related data for question types that need it
                 var mcIds = survey.Questions
                     .OfType<MultipleChoiceQuestion>()
                     .Select(mc => mc.Id)
                     .ToList();
 
-                // Now load each one's Options
-                await _context.Questions
-                    .OfType<MultipleChoiceQuestion>()
-                    .Where(mc => mcIds.Contains(mc.Id))
-                    .Include(mc => mc.Options.OrderBy(o => o.Order))
-                    .LoadAsync();
+                if (mcIds.Any())
+                {
+                    var mcHandler = _questionHandlerFactory.GetHandler(QuestionType.MultipleChoice);
+                    await mcHandler.LoadRelatedDataAsync(mcIds, _context);
+                }
 
                 var allIds = survey.Questions
                     .OfType<SelectAllThatApplyQuestion>()
                     .Select(mc => mc.Id)
                     .ToList();
 
-                // Now load each one's Options
-                await _context.Questions
-                    .OfType<SelectAllThatApplyQuestion>()
-                    .Where(mc => allIds.Contains(mc.Id))
-                    .Include(mc => mc.Options.OrderBy(o => o.Order))
-                    .LoadAsync();
+                if (allIds.Any())
+                {
+                    var satHandler = _questionHandlerFactory.GetHandler(QuestionType.SelectAllThatApply);
+                    await satHandler.LoadRelatedDataAsync(allIds, _context);
+                }
 
                 _logger.LogInformation("Successfully retrieved survey with GUID {Guid}, title: {Title}", guid, survey.Title);
                 return Ok(_mapper.Map<SurveyViewModel>(survey));

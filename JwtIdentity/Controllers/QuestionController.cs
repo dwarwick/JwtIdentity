@@ -1,3 +1,5 @@
+using JwtIdentity.Interfaces;
+
 namespace JwtIdentity.Controllers
 {
     [Route("api/[controller]")]
@@ -7,12 +9,14 @@ namespace JwtIdentity.Controllers
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
         private readonly ILogger<QuestionController> _logger;
+        private readonly IQuestionHandlerFactory _questionHandlerFactory;
 
-        public QuestionController(ApplicationDbContext context, IMapper mapper, ILogger<QuestionController> logger)
+        public QuestionController(ApplicationDbContext context, IMapper mapper, ILogger<QuestionController> logger, IQuestionHandlerFactory questionHandlerFactory)
         {
             _context = context;
             _mapper = mapper;
             _logger = logger;
+            _questionHandlerFactory = questionHandlerFactory;
         }
 
         // GET: api/Question
@@ -33,30 +37,14 @@ namespace JwtIdentity.Controllers
 
                 _logger.LogDebug("Found question of type {QuestionType}", question.QuestionType);
                 
-                if (question.QuestionType == QuestionType.MultipleChoice)
-                {
-                    var mcQuestion = await _context.Questions.OfType<MultipleChoiceQuestion>()
-                        .Include(x => x.Options)
-                        .FirstOrDefaultAsync(x => x.Id == id);
-                        
-                    _logger.LogDebug("Returning multiple choice question with {OptionCount} options", 
-                        mcQuestion?.Options?.Count ?? 0);
-                        
-                    return Ok(_mapper.Map<QuestionViewModel>(mcQuestion));
-                }
-                else if (question.QuestionType == QuestionType.SelectAllThatApply)
-                {
-                    var selectAllQuestion = await _context.Questions.OfType<SelectAllThatApplyQuestion>()
-                        .Include(x => x.Options)
-                        .FirstOrDefaultAsync(x => x.Id == id);
-                        
-                    _logger.LogDebug("Returning select-all question with {OptionCount} options", 
-                        selectAllQuestion?.Options?.Count ?? 0);
-                        
-                    return Ok(_mapper.Map<QuestionViewModel>(selectAllQuestion));
-                }
-
-                _logger.LogDebug("Returning basic question");
+                // Use handler to load any related data for this question type
+                var handler = _questionHandlerFactory.GetHandler(question.QuestionType);
+                await handler.LoadRelatedDataAsync(new List<int> { id }, _context);
+                
+                // Re-fetch the question to get any related data that was loaded
+                question = await _context.Questions.FirstOrDefaultAsync(x => x.Id == id);
+                
+                _logger.LogDebug("Returning question with handler-loaded related data");
                 return Ok(_mapper.Map<QuestionViewModel>(question));
             }
             catch (Exception ex)
@@ -89,39 +77,11 @@ namespace JwtIdentity.Controllers
                 // Clear tracking of the initially loaded entity to avoid conflicts
                 _context.Entry(question).State = EntityState.Detached;
 
-                // delete all choiceoptions for multiple choice questions
-                if (question.QuestionType == QuestionType.MultipleChoice)
-                {
-                    _logger.LogDebug("Deleting options for multiple choice question {QuestionId}", id);
-                    
-                    // Load the question with its options in a single query
-                    var mcQuestion = await _context.Questions.OfType<MultipleChoiceQuestion>()
-                        .Include(x => x.Options)
-                        .FirstOrDefaultAsync(q => q.Id == id);
-                        
-                    if (mcQuestion?.Options != null)
-                    {
-                        _context.ChoiceOptions.RemoveRange(mcQuestion.Options);
-                        _logger.LogDebug("Removed {OptionCount} options for multiple choice question", 
-                            mcQuestion.Options.Count);
-                    }
-                }
-                else if (question.QuestionType == QuestionType.SelectAllThatApply)
-                {
-                    _logger.LogDebug("Deleting options for select-all question {QuestionId}", id);
-                    
-                    // Load the question with its options in a single query
-                    var selectAllQuestion = await _context.Questions.OfType<SelectAllThatApplyQuestion>()
-                        .Include(x => x.Options)
-                        .FirstOrDefaultAsync(q => q.Id == id);
-                        
-                    if (selectAllQuestion?.Options != null)
-                    {
-                        _context.ChoiceOptions.RemoveRange(selectAllQuestion.Options);
-                        _logger.LogDebug("Removed {OptionCount} options for select-all question", 
-                            selectAllQuestion.Options.Count);
-                    }
-                }
+                // Use handler to perform question-type-specific deletion logic
+                var handler = _questionHandlerFactory.GetHandler(question.QuestionType);
+                await handler.HandleDeletionAsync(id, _context);
+
+                _logger.LogDebug("Handler completed deletion logic for question {QuestionId}", id);
 
                 // Reload the question to delete it
                 question = await _context.Questions.FindAsync(id);

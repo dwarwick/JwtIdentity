@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using JwtIdentity.Controllers;
 using JwtIdentity.Common.ViewModels;
+using JwtIdentity.Interfaces;
 using JwtIdentity.Models;
 using JwtIdentity.Data;
 using Microsoft.AspNetCore.Http;
@@ -52,7 +53,13 @@ namespace JwtIdentity.Tests.ControllerTests
                     SurveyId = vm.SurveyId,
                     QuestionNumber = vm.QuestionNumber
                 });
-            _controller = new QuestionController(MockDbContext, MockMapper.Object, MockLogger.Object)
+            var mockQuestionHandlerFactory = new Mock<IQuestionHandlerFactory>();
+            var mockQuestionHandler = new Mock<IQuestionHandler>();
+            mockQuestionHandler.Setup(h => h.LoadRelatedDataAsync(It.IsAny<List<int>>(), It.IsAny<ApplicationDbContext>()))
+                .Returns(Task.CompletedTask);
+            mockQuestionHandlerFactory.Setup(f => f.GetHandler(It.IsAny<QuestionType>()))
+                .Returns(mockQuestionHandler.Object);
+            _controller = new QuestionController(MockDbContext, MockMapper.Object, MockLogger.Object, mockQuestionHandlerFactory.Object)
             {
                 // Set the controller context to use the mock HttpContext
                 ControllerContext = new ControllerContext { HttpContext = HttpContext }
