@@ -54,6 +54,11 @@ namespace JwtIdentity.Tests.ControllerTests
                     QuestionNumber = vm.QuestionNumber
                 });
             var mockQuestionHandlerFactory = new Mock<IQuestionHandlerFactory>();
+            var mockQuestionHandler = new Mock<IQuestionHandler>();
+            mockQuestionHandler.Setup(h => h.LoadRelatedDataAsync(It.IsAny<List<int>>(), It.IsAny<ApplicationDbContext>()))
+                .Returns(Task.CompletedTask);
+            mockQuestionHandlerFactory.Setup(f => f.GetHandler(It.IsAny<QuestionType>()))
+                .Returns(mockQuestionHandler.Object);
             _controller = new QuestionController(MockDbContext, MockMapper.Object, MockLogger.Object, mockQuestionHandlerFactory.Object)
             {
                 // Set the controller context to use the mock HttpContext
