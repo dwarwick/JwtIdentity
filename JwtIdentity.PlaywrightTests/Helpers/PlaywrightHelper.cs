@@ -8,9 +8,12 @@ namespace JwtIdentity.PlaywrightTests.Helpers
     public abstract class PlaywrightHelper
     {
         private static readonly HttpClient HttpClient = CreateHttpClient();
+        private static readonly object BrowserLock = new();
+        private static IPlaywright _sharedPlaywright;
+        private static IBrowser _sharedBrowser;
+        private static int _instanceCount = 0;
+        
         private string _originalHeadedValue;
-        private IPlaywright _playwright;
-        private IBrowser _browser;
         private string _currentBrowserName = "chromium";
 
         protected IBrowserContext Context { get; private set; }
@@ -20,29 +23,50 @@ namespace JwtIdentity.PlaywrightTests.Helpers
         protected virtual string AutoLoginUsername => "playwrightuser@example.com";
 
         [OneTimeSetUp]
-        public async Task GlobalSetUpAsync()
+        public void GlobalSetUp()
         {
-            ConfigurePlaywrightExecutionMode();
-
-            var settings = PlaywrightTestConfiguration.Settings;
-
-            _playwright = await Microsoft.Playwright.Playwright.CreateAsync();
-
-            var browserType = _playwright.Chromium;
-            _currentBrowserName = browserType.Name;
-
-            var launchOptions = new BrowserTypeLaunchOptions
+            lock (BrowserLock)
             {
-                Headless = settings.Headless,
+                if (_instanceCount == 0)
+                {
+                    ConfigurePlaywrightExecutionMode();
+                }
+                _instanceCount++;
+            }
+
+            // Initialize shared browser if not already done
+            if (_sharedPlaywright == null)
+            {
+                lock (BrowserLock)
+                {
+                    if (_sharedPlaywright == null)
+                    {
+                        _sharedPlaywright = Microsoft.Playwright.Playwright.CreateAsync().GetAwaiter().GetResult();
+                        
+                        var settings = PlaywrightTestConfiguration.Settings;
+                        var browserType = _sharedPlaywright.Chromium;
+                        _currentBrowserName = browserType.Name;
+
+                        var launchOptions = new BrowserTypeLaunchOptions
+                        {
+                            Headless = settings.Headless,
 #if !DEBUG
-                ExecutablePath = "/usr/bin/chromium-browser",
+                            ExecutablePath = "/usr/bin/chromium-browser",
 #endif
+                            Args = settings.Headless ? new[] { "--headless=new" } : null
+                        };
 
-                Args = settings.Headless ? new[] { "--headless=new" } : null
-            };
+                        _sharedBrowser = browserType.LaunchAsync(launchOptions).GetAwaiter().GetResult();
+                    }
+                }
+            }
+        }
 
-            _browser = await browserType.LaunchAsync(launchOptions);
-            Context = await _browser.NewContextAsync(ContextOptions());
+        [SetUp]
+        public async Task SetUpAsync()
+        {
+            // Create a new context and page for each test
+            Context = await _sharedBrowser.NewContextAsync(ContextOptions());
             Page = await Context.NewPageAsync();
 
             if (AutoLogin)
@@ -56,31 +80,48 @@ namespace JwtIdentity.PlaywrightTests.Helpers
 
         protected virtual Task OnAfterSetupAsync() => Task.CompletedTask;
 
-        [OneTimeTearDown]
-        public async Task GlobalTearDownAsync()
+        [TearDown]
+        public async Task TearDownAsync()
         {
-            try
+            // Close page and context after each test
+            if (Page is not null)
             {
-                if (Page is not null)
-                {
-                    await Page.CloseAsync();
-                }
-
-                if (Context is not null)
-                {
-                    await Context.CloseAsync();
-                }
-
-                if (_browser is not null)
-                {
-                    await _browser.CloseAsync();
-                }
-
-                _playwright?.Dispose();
+                await Page.CloseAsync();
             }
-            finally
+
+            if (Context is not null)
             {
-                RestorePlaywrightExecutionMode();
+                await Context.CloseAsync();
+            }
+        }
+
+        [OneTimeTearDown]
+        public void GlobalTearDown()
+        {
+            lock (BrowserLock)
+            {
+                _instanceCount--;
+                if (_instanceCount == 0)
+                {
+                    try
+                    {
+                        if (_sharedBrowser is not null)
+                        {
+                            _sharedBrowser.CloseAsync().GetAwaiter().GetResult();
+                            _sharedBrowser = null;
+                        }
+
+                        if (_sharedPlaywright is not null)
+                        {
+                            _sharedPlaywright.Dispose();
+                            _sharedPlaywright = null;
+                        }
+                    }
+                    finally
+                    {
+                        RestorePlaywrightExecutionMode();
+                    }
+                }
             }
         }
 
