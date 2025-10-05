@@ -149,7 +149,13 @@ namespace JwtIdentity.PlaywrightTests.Helpers
             await targetPage.WaitForLoadStateAsync(LoadState.NetworkIdle);
             await targetPage.FillAsync("#username", username);
             await targetPage.FillAsync("#password", password);
-            await targetPage.ClickAsync("button[type='submit']");
+            
+            // Wait for navigation to complete after login
+            await Task.WhenAll(
+                targetPage.WaitForURLAsync(url => !url.Contains("/login"), new() { Timeout = 30000 }),
+                targetPage.ClickAsync("button[type='submit']")
+            );
+            
             await targetPage.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
             await DismissCookieBannerAsync(targetPage);
@@ -268,7 +274,8 @@ namespace JwtIdentity.PlaywrightTests.Helpers
                 .GetByRole(AriaRole.Toolbar)
                 .GetByRole(AriaRole.Link, new() { Name = "Logout" });
 
-            await Microsoft.Playwright.Assertions.Expect(logoutLink).ToBeVisibleAsync();
+            // Increase timeout for parallel execution scenarios
+            await Microsoft.Playwright.Assertions.Expect(logoutLink).ToBeVisibleAsync(new() { Timeout = 30000 });
         }
 
         protected async Task LogoutAsync(IPage page = null)
