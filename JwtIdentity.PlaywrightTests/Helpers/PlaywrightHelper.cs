@@ -159,11 +159,19 @@ namespace JwtIdentity.PlaywrightTests.Helpers
 
             var clickedEssentialOnly = buttonToClick == essentialOnlyButton;
 
+            // Ensure antiforgery cookie exists before any action that could rely on it later
+            await EnsureAntiforgeryCookieAsync(targetPage);
+
             if (clickedEssentialOnly)
             {
-                await Task.WhenAll(
-                    targetPage.WaitForLoadStateAsync(LoadState.NetworkIdle),
-                    buttonToClick.ClickAsync());
+                // Use response wait to bind to the consent API request and avoid races
+                await targetPage.RunAndWaitForResponseAsync(
+                    async () => await buttonToClick.ClickAsync(),
+                    r => r.Url.Contains("/api/cookie/consent", StringComparison.OrdinalIgnoreCase)
+                );
+
+                // No full navigation expected; wait for network to settle briefly
+                await targetPage.WaitForLoadStateAsync(LoadState.NetworkIdle);
             }
             else
             {
@@ -186,6 +194,28 @@ namespace JwtIdentity.PlaywrightTests.Helpers
             catch (PlaywrightException)
             {
                 // Ignore Playwright errors caused by the banner being removed during navigation.
+            }
+        }
+
+        private static async Task EnsureAntiforgeryCookieAsync(IPage targetPage)
+        {
+            try
+            {
+                // If cookie already exists, do nothing
+                var cookies = await targetPage.Context.CookiesAsync();
+                if (cookies.Any(c => c.Name.Equals("RequestVerificationToken", StringComparison.OrdinalIgnoreCase) ||
+                                     c.Name.StartsWith(".AspNetCore.Antiforgery", StringComparison.OrdinalIgnoreCase)))
+                {
+                    return;
+                }
+
+                // Touch a GET page to allow app.UseAntiforgery() to issue the token cookie
+                await targetPage.GotoAsync("/");
+                await targetPage.WaitForLoadStateAsync(LoadState.NetworkIdle);
+            }
+            catch
+            {
+                // Best-effort only
             }
         }
 
@@ -277,6 +307,21 @@ namespace JwtIdentity.PlaywrightTests.Helpers
             {
                 Timeout = TimeSpan.FromSeconds(30)
             };
+        }
+
+        protected async Task ScrollToElementAsync(string elementId, IPage pageElement)
+        {
+            await pageElement.WaitForFunctionAsync("() => !!window.scrollToElement || typeof scrollToElement === 'function'");
+            await pageElement.EvaluateAsync(@"id => {
+                const fn = window.scrollToElement || (typeof scrollToElement === 'function' ? scrollToElement : null);
+                if (fn) {
+                    const r = fn(id, { behavior: 'auto', block: 'start', headerOffset: 0 });
+                    if (r && typeof r.then === 'function') return r;
+                } else {
+                    const el = document.getElementById(id);
+                    if (el) el.scrollIntoView({behavior:'auto', block:'start'});
+                }
+            }", elementId);
         }
     }
 }

@@ -45,6 +45,8 @@ namespace JwtIdentity.Client.Pages.Survey
             var userName = authState.User.Identity?.Name ?? string.Empty;
             IsDemoUser = userName.StartsWith("DemoUser") && userName.EndsWith("@surveyshark.site");
 
+            isCaptchaVerified = IsDemoUser;
+
             var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
             var queryParams = QueryHelpers.ParseQuery(uri.Query);
 

@@ -177,7 +177,7 @@ Feel free to click around. Responses aren't saved in preview mode." : "Go ahead 
                         <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 0 })" AnchorOrigin="Origin.TopLeft" TransformOrigin="Origin.TopLeft">
                             <MudText Typo="Typo.body2" Style="white-space:pre-line">@Step0Text</MudText>
                             <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 0 })" IsButton="true">
-                                <MudButton id="DemoNext_button" OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
+                                <MudButton id="DemoNext_button" OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success" aria-role="button">Next</MudButton>
                             </DemoBorder>
                         </DemoPopup>
                     }

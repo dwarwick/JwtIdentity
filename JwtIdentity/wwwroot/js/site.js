@@ -149,6 +149,12 @@ function rejectThirdPartyCookies(successCallback) {
 function deleteCookie(name) {
     console.log(`Attempting to delete cookie: ${name}`);
     
+    // Never delete essential cookies
+    if (isEssentialCookie(name)) {
+        console.log(`Preserving essential cookie: ${name}`);
+        return;
+    }
+    
     // Try deleting with various path and domain combinations
     const paths = ['/', '', '/api', '.', null];
     const domains = [window.location.hostname, '.' + window.location.hostname, null];
@@ -192,6 +198,21 @@ function deleteCookie(name) {
     }
 }
 
+function isEssentialCookie(name) {
+    // Preserve auth and antiforgery cookies; names may vary
+    if (!name) return false;
+    const essentials = [
+        'authToken',
+        'ThirdPartyCookieConsent',
+        '.AspNetCore.Cookies',
+        'RequestVerificationToken',
+        '__RequestVerificationToken'
+    ];
+    if (essentials.some(e => e.toLowerCase() === name.toLowerCase())) return true;
+    if (name.startsWith('.AspNetCore.Antiforgery')) return true;
+    return false;
+}
+
 // Function to identify and delete common third-party cookies
 function deleteThirdPartyCookies() {
     console.log('Deleting third-party cookies...');
@@ -221,13 +242,14 @@ function deleteThirdPartyCookies() {
     }
     
     // Track essential cookies that should be preserved
-    const essentialCookies = ['authToken', 'ThirdPartyCookieConsent'];
+    const essentialCookies = ['authToken', 'ThirdPartyCookieConsent', '.AspNetCore.Cookies', 'RequestVerificationToken', '__RequestVerificationToken'];
     
     // Counter for deleted cookies
     let deletedCount = 0;
     
     // First approach: Delete known third-party cookies by name
     thirdPartyCookieNames.forEach(cookieName => {
+        if (isEssentialCookie(cookieName)) return;
         deleteCookie(cookieName);
         deletedCount++;
     });
@@ -240,33 +262,18 @@ function deleteThirdPartyCookies() {
         const cookieName = cookieParts[0].trim();
         
         // Skip essential cookies
-        if (essentialCookies.includes(cookieName)) {
+        if (isEssentialCookie(cookieName)) {
             console.log(`Preserving essential cookie: ${cookieName}`);
             return;
         }
         
-        // If it's not in our essential list, delete it to be safe
-        if (!essentialCookies.includes(cookieName)) {
+        // If it's not in our essential list, and looks like third-party, delete it
+        const looksThirdParty = thirdPartyCookieNames.some(name => cookieName.startsWith(name));
+        if (looksThirdParty) {
             console.log(`Deleting cookie: ${cookieName}`);
             deleteCookie(cookieName);
             deletedCount++;
         }
-    });
-    
-    // Third approach: Use a more aggressive approach to clear all cookies except essential ones
-    document.cookie.split(';').forEach(cookie => {
-        const cookieParts = cookie.trim().split('=');
-        if (cookieParts.length < 1) return;
-        
-        const cookieName = cookieParts[0].trim();
-        
-        // Skip essential cookies
-        if (essentialCookies.includes(cookieName)) {
-            return;
-        }
-        
-        // Delete everything else
-        deleteCookie(cookieName);
     });
     
     // Clean up all third-party elements from the DOM
@@ -417,7 +424,7 @@ function clearCookieConsent() {
     // Delete the consent cookie itself
     deleteCookie('ThirdPartyCookieConsent');
     
-    // Perform complete cleanup of third-party services
+    // Perform complete third-party services cleanup
     clearThirdPartyServicesCompletely();
     
     console.log('Cookie consent cleared and third-party services disabled');
