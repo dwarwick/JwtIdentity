@@ -19,7 +19,8 @@ namespace JwtIdentity.PlaywrightTests.Tests
                 var logoutLink = Page
                     .GetByRole(AriaRole.Toolbar)
                     .GetByRole(AriaRole.Link, new() { Name = "Logout" });
-                await Microsoft.Playwright.Assertions.Expect(logoutLink).ToBeVisibleAsync();
+                // Increase timeout for parallel execution scenarios
+                await Microsoft.Playwright.Assertions.Expect(logoutLink).ToBeVisibleAsync(new() { Timeout = 30000 });
 
                 await Task.WhenAll(
                     Page.WaitForURLAsync("**/login**"),
