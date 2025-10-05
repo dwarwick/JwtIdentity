@@ -59,82 +59,82 @@ namespace JwtIdentity.Controllers
                 _logger.LogDebug("Found {Count} cookies in the request", cookies.Count);
                 
                 // List of essential cookies that should be preserved
-                var essentialCookies = new[] { "authToken" };
+                // Preserve auth and consent, and antiforgery cookies to avoid CSRF validation failures
+                var essentialCookies = new[] 
+                { 
+                    "authToken",
+                    "ThirdPartyCookieConsent",
+                    ".AspNetCore.Cookies", // cookie-auth ticket
+                    "RequestVerificationToken", // SPA antiforgery cookie name in .NET 8/9
+                    "__RequestVerificationToken" // legacy name
+                };
+                
+                bool IsEssential(string name) =>
+                    essentialCookies.Contains(name, StringComparer.OrdinalIgnoreCase) ||
+                    name.StartsWith(".AspNetCore.Antiforgery", StringComparison.OrdinalIgnoreCase);
                 
                 // Known third-party cookie prefixes
                 var thirdPartyCookiePrefixes = new[] 
                 { 
-                    "_ga", "_gid", "_gat", "AMP_TOKEN", "_gac", 
-                    "IDE", "DSID", "NID", "ANID", "CONSENT",
-                    "_fbp", "fr", 
+                    // Google Analytics
+                    "_ga", "_gid", "_gat", "AMP_TOKEN", "_gac",
+                    // Google Ads and DoubleClick
+                    "IDE", "DSID", "NID", "ANID", "CONSENT", "DV", "1P_JAR",
+                    // Facebook
+                    "_fbp", "fr",
+                    // Hotjar/Hubspot/etc
                     "_hj", "__hstc", "hubspotutk"
                 };
                 
                 // Track deleted cookies for logging
                 var deletedCookies = new List<string>();
                 
-                // Delete each cookie that is not in the essential list
+                // Delete only third-party cookies; preserve essentials and site/session cookies
                 foreach (var cookie in cookies)
                 {
                     var name = cookie.Key;
                     
-                    // Skip essential cookies
-                    if (essentialCookies.Contains(name))
+                    if (IsEssential(name))
                     {
-                        _logger.LogDebug("Skipping essential cookie: {CookieName}", name);
+                        _logger.LogDebug("Preserving essential cookie: {CookieName}", name);
                         continue;
                     }
                     
-                    // Check if it's a third-party cookie
                     bool isThirdPartyCookie = thirdPartyCookiePrefixes.Any(prefix => 
                         name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
                     
-                    // Delete the cookie by setting expiration to past
-                    if (isThirdPartyCookie || name != "ThirdPartyCookieConsent")
+                    if (!isThirdPartyCookie)
                     {
-                        _logger.LogDebug("Deleting cookie: {CookieName}", name);
-                        
-                        try
-                        {
-                            // Try to delete with different path combinations
-                            Response.Cookies.Delete(name);
-                            Response.Cookies.Delete(name, new CookieOptions { Path = "/" });
-                            Response.Cookies.Delete(name, new CookieOptions { Path = "", SameSite = SameSiteMode.None, Secure = true });
-                            
-                            // Also try setting the cookie value to empty with an expired date
-                            Response.Cookies.Append(name, "", new CookieOptions
-                            {
-                                Expires = DateTimeOffset.UtcNow.AddYears(-1),
-                                Path = "/"
-                            });
-                            
-                            deletedCookies.Add(name);
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogWarning(ex, "Error deleting cookie {CookieName}: {Message}", name, ex.Message);
-                            // Continue with other cookies even if one fails
-                        }
+                        // Not a known third-party cookie: skip deletion to avoid breaking app/session
+                        _logger.LogDebug("Skipping non-third-party cookie: {CookieName}", name);
+                        continue;
                     }
-                }
-                
-                // Also explicitly delete common Google cookies that might not be in the request
-                foreach (var prefix in thirdPartyCookiePrefixes)
-                {
+
+                    _logger.LogDebug("Deleting cookie: {CookieName}", name);
                     try
                     {
-                        _logger.LogDebug("Explicitly deleting potential cookie with prefix: {Prefix}", prefix);
-                        Response.Cookies.Delete(prefix);
-                        Response.Cookies.Delete(prefix, new CookieOptions { Path = "/" });
+                        // Try to delete with different path combinations
+                        Response.Cookies.Delete(name);
+                        Response.Cookies.Delete(name, new CookieOptions { Path = "/" });
+                        Response.Cookies.Delete(name, new CookieOptions { Path = "", SameSite = SameSiteMode.None, Secure = true });
+                        
+                        // Also try setting the cookie value to empty with an expired date
+                        Response.Cookies.Append(name, string.Empty, new CookieOptions
+                        {
+                            Expires = DateTimeOffset.UtcNow.AddYears(-1),
+                            Path = "/"
+                        });
+                        
+                        deletedCookies.Add(name);
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogWarning(ex, "Error deleting cookie with prefix {Prefix}: {Message}", prefix, ex.Message);
-                        // Continue with other prefixes even if one fails
+                        _logger.LogWarning(ex, "Error deleting cookie {CookieName}: {Message}", name, ex.Message);
+                        // Continue with other cookies even if one fails
                     }
                 }
                 
-                _logger.LogInformation("Successfully deleted {Count} cookies", deletedCookies.Count);
+                _logger.LogInformation("Successfully deleted {Count} third-party cookies", deletedCookies.Count);
                 return Ok(new { success = true, message = $"Deleted {deletedCookies.Count} cookies", cookies = deletedCookies });
             }
             catch (Exception ex)
