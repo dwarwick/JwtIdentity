@@ -22,9 +22,11 @@ namespace JwtIdentity.PlaywrightTests.Tests
                 // Increase timeout for parallel execution scenarios
                 await Microsoft.Playwright.Assertions.Expect(logoutLink).ToBeVisibleAsync(new() { Timeout = 30000 });
 
+                var before = await GetPageReadyIdAsync(Page);
                 await Task.WhenAll(
                     Page.WaitForURLAsync("**/login**"),
                     logoutLink.ClickAsync());
+                await WaitForBlazorInteractiveAsync(before, Page);
 
                 var loginLink = Page
                     .GetByRole(AriaRole.Toolbar)

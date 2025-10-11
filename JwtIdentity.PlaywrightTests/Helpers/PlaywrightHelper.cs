@@ -74,6 +74,19 @@ namespace JwtIdentity.PlaywrightTests.Helpers
             Context = await _sharedBrowser.NewContextAsync(ContextOptions());
             Page = await Context.NewPageAsync();
 
+            // Always start from the home page and handle the cookie banner before anything else
+            var initialReadyId = await GetPageReadyIdAsync(Page);
+            await Page.GotoAsync("/");
+            await WaitForBlazorInteractiveAsync(initialReadyId, Page);
+
+            // Wait briefly for the cookie banner to appear, then dismiss if present
+            try
+            {
+                await Page.WaitForSelectorAsync(".cookie-banner.visible", new() { State = WaitForSelectorState.Attached, Timeout = 8000 });
+            }
+            catch { /* banner may not appear depending on prior state; continue */ }
+            await DismissCookieBannerAsync(Page);
+
             if (AutoLogin)
             {
                 await LoginAsync(AutoLoginUsername);
@@ -154,8 +167,9 @@ namespace JwtIdentity.PlaywrightTests.Helpers
             password ??= PlaywrightPassword;
 
             // Navigate to login and wait for DOM to be ready (NetworkIdle can be unstable with SignalR/long polling)
+            var before = await GetPageReadyIdAsync(targetPage);
             await targetPage.GotoAsync("/login");
-            await targetPage.WaitForLoadStateAsync(LoadState.DOMContentLoaded);
+            await WaitForBlazorInteractiveAsync(before, targetPage);
 
             // Dismiss cookie banner before interacting with inputs to avoid overlay/focus traps
             await DismissCookieBannerAsync(targetPage);
@@ -170,14 +184,116 @@ namespace JwtIdentity.PlaywrightTests.Helpers
             await FillReliableAsync(passwordInput, password);
             
             // Wait for navigation to complete after login
+            var beforeSubmit = await GetPageReadyIdAsync(targetPage);
             await Task.WhenAll(
                 targetPage.WaitForURLAsync(url => !url.Contains("/login"), new() { Timeout = 30000 }),
                 targetPage.ClickAsync("button[type='submit']")
             );
             
             // Avoid strict NetworkIdle since app may keep connections open; give a short settle time instead
-            await targetPage.WaitForLoadStateAsync(LoadState.DOMContentLoaded);
-            await targetPage.WaitForTimeoutAsync(250);
+            await WaitForBlazorInteractiveAsync(beforeSubmit, targetPage);
+            await targetPage.WaitForTimeoutAsync(150);
+        }
+
+        protected async Task<int> GetPageReadyIdAsync(IPage page = null)
+        {
+            var p = page ?? Page ?? throw new InvalidOperationException("Playwright page has not been initialized.");
+            try
+            {
+                return await p.EvaluateAsync<int>(
+                    "() => {\n" +
+                    "  try {\n" +
+                    "    if (window.pageReady && typeof window.pageReady.current === 'function') {\n" +
+                    "      const v = Number(window.pageReady.current() || 0) || 0;\n" +
+                    "      if (v) return v;\n" +
+                    "    }\n" +
+                    "  } catch {}\n" +
+                    "  const n = Number(document?.body?.dataset?.pageReadyId || 0) || 0;\n" +
+                    "  if (n) return n;\n" +
+                    "  try { return Number(sessionStorage.getItem('pageReadyId') || 0) || 0; } catch { return 0; }\n" +
+                    "}"
+                );
+            }
+            catch
+            {
+                return 0;
+            }
+        }
+
+        protected Task WaitForBlazorInteractiveAsync(int? previousId = null, IPage page = null)
+        {
+            var p = page ?? Page ?? throw new InvalidOperationException("Playwright page has not been initialized.");
+            // Be resilient to full navigations and delayed dataset assignment by consulting window.pageReady as well.
+            return WaitWithDiagnosticsAsync(async () => await p.WaitForFunctionAsync(
+                    @"prev => {
+                        const getCurrent = () => {
+                            try {
+                                if (window.pageReady && typeof window.pageReady.current === 'function') {
+                                    const v = Number(window.pageReady.current() || 0) || 0;
+                                    if (v) return v;
+                                }
+                            } catch {}
+                            const v2 = Number(document?.body?.dataset?.pageReadyId || 0) || 0;
+                            if (v2) return v2;
+                            try {
+                                const persisted = Number(sessionStorage.getItem('pageReadyId') || 0) || 0;
+                                return persisted;
+                            } catch { return 0; }
+                        };
+
+                        const n = getCurrent();
+                        // Accept same id across navigations in case layout reused without increment
+                        return n && (prev == null || n >= prev);
+                    }",
+                    previousId,
+                    new() { Timeout = 30000, PollingInterval = 50 }
+                ),
+                "WaitForBlazorInteractiveAsync",
+                previousId,
+                p);
+        }
+
+        // Small helper to add diagnostics on timeouts during readiness waits
+        private async Task WaitWithDiagnosticsAsync(Func<Task> action, string context, int? previousId, IPage page)
+        {
+            try
+            {
+                await action();
+            }
+            catch (TimeoutException)
+            {
+                await LogReadinessDiagnosticsAsync(context + " timeout", page, previousId);
+                throw;
+            }
+            catch (PlaywrightException ex) when (ex.Message.Contains("Timeout", StringComparison.OrdinalIgnoreCase))
+            {
+                await LogReadinessDiagnosticsAsync(context + " timeout", page, previousId);
+                throw;
+            }
+        }
+
+        protected async Task LogReadinessDiagnosticsAsync(string context, IPage page, int? previousId)
+        {
+            try
+            {
+                var url = page?.Url ?? "<no page>";
+                var currentId = 0;
+                try { currentId = await GetPageReadyIdAsync(page); } catch {}
+
+                // Also fetch raw sources to help spot mismatches
+                var raw = await page.EvaluateAsync<(int ds, int persisted, bool hasApi)>(@"() => {
+                    const ds = Number(document?.body?.dataset?.pageReadyId || 0) || 0;
+                    let persisted = 0; try { persisted = Number(sessionStorage.getItem('pageReadyId') || 0) || 0; } catch {}
+                    const hasApi = !!(window.pageReady && typeof window.pageReady.current === 'function');
+                    return { ds, persisted, hasApi };
+                }");
+
+                TestContext.Error.WriteLine($"[Playwright] {context}: url={url}, prevId={(previousId?.ToString() ?? "<null>")}, currentId={currentId}, dataset={raw.ds}, session={raw.persisted}, hasApi={raw.hasApi}");
+            }
+            catch (Exception ex)
+            {
+                TestContext.Error.WriteLine($"[Playwright] Failed to log readiness diagnostics: {ex.Message}");
+            }
         }
 
         private static async Task FillReliableAsync(ILocator locator, string value, int attempts = 3)

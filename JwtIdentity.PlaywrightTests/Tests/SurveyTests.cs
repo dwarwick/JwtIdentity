@@ -17,8 +17,9 @@ namespace JwtIdentity.PlaywrightTests.Tests
 
             await ExecuteWithLoggingAsync(testName, targetSelectorDescription, async () =>
             {
+                var beforeHome = await GetPageReadyIdAsync(Page);
                 await Page.GotoAsync("/");
-                await Page.WaitForLoadStateAsync(LoadState.DOMContentLoaded);
+                await WaitForBlazorInteractiveAsync(beforeHome, Page);
                 await DismissCookieBannerAsync(Page);
 
                 await OpenCreateSurveyAsync();
@@ -31,9 +32,11 @@ namespace JwtIdentity.PlaywrightTests.Tests
                 await Page.FillAsync("#AiInstructions", "Create 10 questions. The last question should be a free text question so the user can provide any additional feedback.");
 
                 var createButton = Page.GetByRole(AriaRole.Button, new() { Name = "Create" });
+                var beforeCreate = await GetPageReadyIdAsync(Page);
                 await Task.WhenAll(
                     Page.WaitForURLAsync("**/survey/edit/**", new PageWaitForURLOptions() { Timeout = 120000 }),
                     createButton.ClickAsync());
+                await WaitForBlazorInteractiveAsync(beforeCreate, Page);
 
                 var editSurveyHeading = Page.GetByRole(AriaRole.Heading, new() { Name = "Edit Survey" });
                 await Microsoft.Playwright.Assertions.Expect(editSurveyHeading).ToBeVisibleAsync();

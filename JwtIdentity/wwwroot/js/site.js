@@ -8,6 +8,54 @@ function onCaptchaSuccess(token) {
     }
 }
 
+// Simple global page readiness marker used by Playwright tests to
+// detect when Blazor has finished rendering/hydrating for the current view.
+// It increments a counter on each notify and mirrors it into a data-* attribute
+// for easy access from CSS/DOM and Playwright.
+window.pageReady = window.pageReady || {
+    notify: function (id) {
+        try {
+            // Persist across navigations within the same tab so Playwright can compare ids reliably
+            var persisted = Number(sessionStorage.getItem('pageReadyId') || 0) || 0;
+            var current = Number(window.__pageReadyId || persisted || 0) || 0;
+            var next = (typeof id === 'number' && id > 0) ? id : (current + 1);
+
+            window.__pageReadyId = next;
+            try { sessionStorage.setItem('pageReadyId', String(next)); } catch {}
+
+            if (document && document.body && document.body.dataset) {
+                document.body.dataset.pageReadyId = String(next);
+            }
+        } catch (e) {
+            // best-effort only
+        }
+    },
+    current: function () {
+        try {
+            var v = document && document.body && document.body.dataset ? document.body.dataset.pageReadyId : 0;
+            var n = Number(v || 0);
+            if (!n) {
+                // Fallback to persisted value if dataset not yet updated
+                n = Number(sessionStorage.getItem('pageReadyId') || 0) || 0;
+            }
+            return isNaN(n) ? 0 : n;
+        } catch { return 0; }
+    }
+};
+
+// Safety net: ensure an initial id exists after load if nothing has signaled yet
+try {
+    document.addEventListener('DOMContentLoaded', function () {
+        try {
+            var ds = Number(document?.body?.dataset?.pageReadyId || 0) || 0;
+            var persisted = Number(sessionStorage.getItem('pageReadyId') || 0) || 0;
+            if (!ds && !persisted) {
+                window.pageReady.notify();
+            }
+        } catch {}
+    });
+} catch {}
+
 function renderReCaptcha(containerId, siteKey) {
     var container = document.getElementById(containerId);
     if (!container) {

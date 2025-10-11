@@ -32,8 +32,9 @@ namespace JwtIdentity.PlaywrightTests.Tests
 
         private async Task StartDemoAsync()
         {
+            var beforeDemo = await GetPageReadyIdAsync(Page);
             await Page.GotoAsync("/demo");
-            await Page.WaitForLoadStateAsync(LoadState.DOMContentLoaded);
+            await WaitForBlazorInteractiveAsync(beforeDemo, Page);
             await DismissCookieBannerAsync(Page);
 
             var demoHeading = Page.GetByRole(AriaRole.Heading, new() { Name = "Explore the Survey Shark Interactive Demo" });
@@ -43,15 +44,18 @@ namespace JwtIdentity.PlaywrightTests.Tests
             await startDemoButton.ClickAsync();
             try
             {
+                var beforeCreate = await GetPageReadyIdAsync(Page);
                 await Page.WaitForURLAsync("**/survey/create", new() { Timeout = 60000 });
+                await WaitForBlazorInteractiveAsync(beforeCreate, Page);
             }
             catch (TimeoutException)
             {
                 // Fallback: navigate directly if SPA router did not update URL in time
+                var beforeGoto = await GetPageReadyIdAsync(Page);
                 await Page.GotoAsync("/survey/create");
+                await WaitForBlazorInteractiveAsync(beforeGoto, Page);
             }
 
-            await Page.WaitForLoadStateAsync(LoadState.DOMContentLoaded);
             var createSurveyHeading = Page.GetByRole(AriaRole.Heading, new() { Name = "Create Survey" });
             await Microsoft.Playwright.Assertions.Expect(createSurveyHeading).ToBeVisibleAsync();
         }
@@ -77,7 +81,9 @@ namespace JwtIdentity.PlaywrightTests.Tests
             }
 
             var createButton = Page.GetByRole(AriaRole.Button, new() { Name = "Create" });
+            var beforeEdit = await GetPageReadyIdAsync(Page);
             await Task.WhenAll(Page.WaitForURLAsync("**/survey/edit/**", new() { Timeout = 120000 }), createButton.ClickAsync());
+            await WaitForBlazorInteractiveAsync(beforeEdit, Page);
 
             var editSurveyHeading = Page.GetByRole(AriaRole.Heading, new() { Name = "Edit Survey" });
             await Microsoft.Playwright.Assertions.Expect(editSurveyHeading).ToBeVisibleAsync();
@@ -117,7 +123,8 @@ namespace JwtIdentity.PlaywrightTests.Tests
                 await Page.WaitForTimeoutAsync(1000);
             }
 
-            await Page.WaitForLoadStateAsync(LoadState.DOMContentLoaded);
+            var beforeAfterAccept = await GetPageReadyIdAsync(Page);
+            await WaitForBlazorInteractiveAsync(beforeAfterAccept, Page);
         }
 
         private async Task AddCustomQuestionAsync()
@@ -220,14 +227,15 @@ namespace JwtIdentity.PlaywrightTests.Tests
             try
             {
                 surveyPage = await Page.RunAndWaitForPopupAsync(async () => { await previewButton.ClickAsync(); });
-                await surveyPage.WaitForLoadStateAsync(LoadState.DOMContentLoaded);
+                var beforePopup = await GetPageReadyIdAsync(surveyPage);
+                await WaitForBlazorInteractiveAsync(beforePopup, surveyPage);
             }
             catch (TimeoutException)
             {
                 await previewButton.ClickAsync();
             }
 
-            try { await surveyPage.WaitForURLAsync("**/survey**", new() { Timeout = 8000 }); } catch (TimeoutException) { }
+            try { var beforeUrl = await GetPageReadyIdAsync(surveyPage); await surveyPage.WaitForURLAsync("**/survey**", new() { Timeout = 8000 }); await WaitForBlazorInteractiveAsync(beforeUrl, surveyPage); } catch (TimeoutException) { }
 
             var nextButton = surveyPage.GetByRole(AriaRole.Button, new() { Name = "Next" });
             await nextButton.WaitForAsync(new() { Timeout = 10000 });
@@ -237,7 +245,8 @@ namespace JwtIdentity.PlaywrightTests.Tests
             await nextButton.ClickAsync();
             await nextButton.ClickAsync();
 
-            await surveyPage.WaitForLoadStateAsync(LoadState.DOMContentLoaded);
+            var beforeCopy = await GetPageReadyIdAsync(surveyPage);
+            await WaitForBlazorInteractiveAsync(beforeCopy, surveyPage);
             var button = surveyPage.GetByTitle("Copy Survey Link").First;
             await button.ClickAsync(new() { Force = true });
 
@@ -246,8 +255,9 @@ namespace JwtIdentity.PlaywrightTests.Tests
 
         private async Task AnswerSurveyAsync(IPage page)
         {
+            var beforeAnswer = await GetPageReadyIdAsync(page);
             await page.WaitForURLAsync("**/survey/**", new() { Timeout = 10000 });
-            await page.WaitForLoadStateAsync(LoadState.DOMContentLoaded);
+            await WaitForBlazorInteractiveAsync(beforeAnswer, page);
 
             var surveyTitle = page.Locator(".survey-title");
             await Microsoft.Playwright.Assertions.Expect(surveyTitle).ToBeVisibleAsync();
@@ -330,13 +340,17 @@ namespace JwtIdentity.PlaywrightTests.Tests
             await nextButton.ClickAsync();
 
             await page.Locator(".charts-button").First.ClickAsync();
+            var beforeResponses = await GetPageReadyIdAsync(page);
             await page.WaitForURLAsync("**/survey/responses/**", new() { Timeout = 15000 });
-            await page.WaitForLoadStateAsync(LoadState.DOMContentLoaded);
+            await WaitForBlazorInteractiveAsync(beforeResponses, page);
+
+            var demoNextButton = page.Locator("#DemoNext_button");
+            await demoNextButton.ClickAsync();
 
             var questionSelect = page.Locator(".mud-select").First;
             await Microsoft.Playwright.Assertions.Expect(questionSelect).ToBeVisibleAsync();
 
-            var demoNextButton = page.Locator("#DemoNext_button");
+
             await TryClickIfExistsAsync(demoNextButton, page, 1, 500);
 
             var select = page.Locator("div.mud-select:has(label:has-text('Select Question')) div[tabindex='0']");
@@ -363,13 +377,16 @@ namespace JwtIdentity.PlaywrightTests.Tests
             await page.Keyboard.PressAsync("Enter");
 
             await TryClickIfExistsAsync(demoNextButton, page, 2, 300);
+            await page.WaitForTimeoutAsync(500);
+            await demoNextButton.ClickAsync();
         }
 
         private async Task ViewGridResultsAsync(IPage page)
         {
             await page.Locator(".grid-button").ClickAsync();
+            var beforeGrid = await GetPageReadyIdAsync(page);
             await page.WaitForURLAsync("**/survey/filter/**", new() { Timeout = 15000 });
-            await page.WaitForLoadStateAsync(LoadState.DOMContentLoaded);
+            await WaitForBlazorInteractiveAsync(beforeGrid, page);
 
             var gridHeading = page.GetByRole(AriaRole.Heading, new() { Name = "Filter" });
             await Microsoft.Playwright.Assertions.Expect(gridHeading).ToBeVisibleAsync();
