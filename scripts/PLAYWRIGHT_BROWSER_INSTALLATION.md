@@ -16,6 +16,25 @@ To install Playwright browsers (Chromium), run one of the following commands fro
 pwsh ./scripts/install-playwright-browsers.ps1
 ```
 
+## Verification
+
+After installation, you can verify that browsers are working correctly:
+
+### Using Bash
+```bash
+./scripts/verify-playwright-installation.sh
+```
+
+### Using PowerShell
+```powershell
+pwsh ./scripts/verify-playwright-installation.ps1
+```
+
+The verification script will launch a headless Chromium browser and test basic functionality. You should see:
+```
+✓ SUCCESS: Playwright browsers are installed and working correctly!
+```
+
 ## What the Script Does
 
 The installation script performs the following steps:
