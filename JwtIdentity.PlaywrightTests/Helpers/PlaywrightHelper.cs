@@ -2,6 +2,7 @@ using JwtIdentity.Common.ViewModels;
 using Microsoft.Playwright;
 using NUnit.Framework;
 using System.Net.Http.Json;
+using System.Diagnostics;
 
 namespace JwtIdentity.PlaywrightTests.Helpers
 {
@@ -9,9 +10,12 @@ namespace JwtIdentity.PlaywrightTests.Helpers
     {
         private static readonly HttpClient HttpClient = CreateHttpClient();
         private static readonly object BrowserLock = new();
+        private static readonly object ServerLock = new();
         private static IPlaywright _sharedPlaywright;
         private static IBrowser _sharedBrowser;
         private static int _instanceCount = 0;
+        private static Process _serverProcess;
+        private static bool _serverReady;
         
         private string _originalHeadedValue;
         private string _currentBrowserName = "chromium";
@@ -34,6 +38,9 @@ namespace JwtIdentity.PlaywrightTests.Helpers
                 _instanceCount++;
             }
 
+            // Ensure server is running before browser initialization (once per session)
+            EnsureServerRunning();
+
             // Initialize shared browser if not already done
             if (_sharedPlaywright == null)
             {
@@ -50,9 +57,7 @@ namespace JwtIdentity.PlaywrightTests.Helpers
                         var launchOptions = new BrowserTypeLaunchOptions
                         {
                             Headless = settings.Headless,
-#if !DEBUG
-                            ExecutablePath = "/usr/bin/chromium-browser",
-#endif
+                            // Do not hardcode ExecutablePath; let Playwright manage browser binaries cross-platform
                             Args = settings.Headless ? new[] { "--headless=new" } : null
                         };
 
@@ -116,6 +121,9 @@ namespace JwtIdentity.PlaywrightTests.Helpers
                             _sharedPlaywright.Dispose();
                             _sharedPlaywright = null;
                         }
+
+                        // Stop the server if we started it
+                        StopServerIfStarted();
                     }
                     finally
                     {
@@ -145,10 +153,21 @@ namespace JwtIdentity.PlaywrightTests.Helpers
             var targetPage = page ?? Page ?? throw new InvalidOperationException("Playwright page has not been initialized.");
             password ??= PlaywrightPassword;
 
+            // Navigate to login and wait for DOM to be ready (NetworkIdle can be unstable with SignalR/long polling)
             await targetPage.GotoAsync("/login");
-            await targetPage.WaitForLoadStateAsync(LoadState.NetworkIdle);
-            await targetPage.FillAsync("#username", username);
-            await targetPage.FillAsync("#password", password);
+            await targetPage.WaitForLoadStateAsync(LoadState.DOMContentLoaded);
+
+            // Dismiss cookie banner before interacting with inputs to avoid overlay/focus traps
+            await DismissCookieBannerAsync(targetPage);
+
+            // Ensure the inputs are present and visible before filling (stabilizes parallel runs)
+            var usernameInput = targetPage.Locator("#username");
+            var passwordInput = targetPage.Locator("#password");
+            await usernameInput.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Visible, Timeout = 15000 });
+            await passwordInput.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Visible, Timeout = 15000 });
+
+            await FillReliableAsync(usernameInput, username);
+            await FillReliableAsync(passwordInput, password);
             
             // Wait for navigation to complete after login
             await Task.WhenAll(
@@ -156,9 +175,30 @@ namespace JwtIdentity.PlaywrightTests.Helpers
                 targetPage.ClickAsync("button[type='submit']")
             );
             
-            await targetPage.WaitForLoadStateAsync(LoadState.NetworkIdle);
+            // Avoid strict NetworkIdle since app may keep connections open; give a short settle time instead
+            await targetPage.WaitForLoadStateAsync(LoadState.DOMContentLoaded);
+            await targetPage.WaitForTimeoutAsync(250);
+        }
 
-            await DismissCookieBannerAsync(targetPage);
+        private static async Task FillReliableAsync(ILocator locator, string value, int attempts = 3)
+        {
+            for (var i = 0; i < attempts; i++)
+            {
+                await locator.FillAsync(value);
+                try
+                {
+                    await Microsoft.Playwright.Assertions.Expect(locator).ToHaveValueAsync(value, new() { Timeout = 2000 });
+                    return;
+                }
+                catch
+                {
+                    // Element may have been re-rendered (Blazor hydration). Retry.
+                    await locator.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Attached, Timeout = 2000 });
+                }
+            }
+
+            // Final assert to surface readable error when it still fails
+            await Microsoft.Playwright.Assertions.Expect(locator).ToHaveValueAsync(value, new() { Timeout = 2000 });
         }
 
         protected async Task DismissCookieBannerAsync(IPage page = null)
@@ -216,14 +256,14 @@ namespace JwtIdentity.PlaywrightTests.Helpers
                     async () => await buttonToClick.ClickAsync(),
                     r => r.Url.Contains("/api/cookie/consent", StringComparison.OrdinalIgnoreCase)
                 );
-
-                // No full navigation expected; wait for network to settle briefly
-                await targetPage.WaitForLoadStateAsync(LoadState.NetworkIdle);
+                // No full navigation expected; give a small settle time only
+                await targetPage.WaitForTimeoutAsync(150);
             }
             else
             {
                 await buttonToClick.ClickAsync();
-                await targetPage.WaitForLoadStateAsync(LoadState.NetworkIdle);
+                // Rely on banner detachment wait below; add small delay for animations
+                await targetPage.WaitForTimeoutAsync(150);
             }
 
             try
@@ -329,6 +369,137 @@ namespace JwtIdentity.PlaywrightTests.Helpers
         private void RestorePlaywrightExecutionMode()
         {
             Environment.SetEnvironmentVariable("HEADED", _originalHeadedValue);
+        }
+
+        private void EnsureServerRunning()
+        {
+            if (_serverReady)
+                return;
+
+            lock (ServerLock)
+            {
+                if (_serverReady)
+                    return;
+
+                try
+                {
+                    // Quick probe
+                    if (IsServerRespondingAsync(BaseUrl).GetAwaiter().GetResult())
+                    {
+                        _serverReady = true;
+                        return;
+                    }
+
+                    var projectPath = ResolveServerProjectPath();
+                    if (string.IsNullOrEmpty(projectPath) || !File.Exists(projectPath))
+                    {
+                        TestContext.Error.WriteLine($"Could not resolve server project path. Skipping auto-start.");
+                        return;
+                    }
+
+                    var projectDir = Path.GetDirectoryName(projectPath)!;
+                    var psi = new ProcessStartInfo
+                    {
+                        FileName = "dotnet",
+                        Arguments = $"run --project \"{projectPath}\" --urls {BaseUrl}",
+                        WorkingDirectory = projectDir,
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true,
+                        UseShellExecute = false,
+                        CreateNoWindow = true
+                    };
+
+                    psi.Environment["ASPNETCORE_ENVIRONMENT"] = "Development";
+
+                    _serverProcess = Process.Start(psi)!;
+
+                    // Asynchronously read output to avoid buffer blocking
+                    _ = Task.Run(() =>
+                    {
+                        try
+                        {
+                            while (!_serverProcess.HasExited)
+                            {
+                                var line = _serverProcess.StandardOutput.ReadLine();
+                                if (line == null) break;
+                                if (line.Contains("Now listening") || line.Contains("Application started"))
+                                {
+                                    // hint it's starting up
+                                }
+                            }
+                        }
+                        catch { }
+                    });
+
+                    // Poll for readiness
+                    var started = WaitForServerAsync(BaseUrl, TimeSpan.FromSeconds(45)).GetAwaiter().GetResult();
+                    _serverReady = started;
+                    if (!started)
+                    {
+                        TestContext.Error.WriteLine("Server did not become ready in time for Playwright tests.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    TestContext.Error.WriteLine($"Failed to ensure server running: {ex}");
+                }
+            }
+        }
+
+        private static async Task<bool> IsServerRespondingAsync(string baseUrl)
+        {
+            try
+            {
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(3));
+                var resp = await HttpClient.GetAsync(baseUrl, cts.Token);
+                return resp.IsSuccessStatusCode || (int)resp.StatusCode < 500; // consider 3xx/4xx as alive
+            }
+            catch { return false; }
+        }
+
+        private static async Task<bool> WaitForServerAsync(string baseUrl, TimeSpan timeout)
+        {
+            var start = DateTime.UtcNow;
+            while (DateTime.UtcNow - start < timeout)
+            {
+                if (await IsServerRespondingAsync(baseUrl)) return true;
+                await Task.Delay(500);
+            }
+            return false;
+        }
+
+        private static string ResolveServerProjectPath()
+        {
+            // Try common relative locations from the test assembly directory upwards
+            var dir = new DirectoryInfo(AppContext.BaseDirectory);
+            for (int i = 0; i < 6 && dir != null; i++)
+            {
+                var candidate = Path.Combine(dir.FullName, "..", "..", "..", "..", "JwtIdentity", "JwtIdentity.csproj");
+                candidate = Path.GetFullPath(candidate);
+                if (File.Exists(candidate)) return candidate;
+                dir = dir.Parent;
+            }
+            // Fallback to solution-root relative path (if tests run from root)
+            var fallback = Path.GetFullPath(Path.Combine("JwtIdentity", "JwtIdentity.csproj"));
+            return fallback;
+        }
+
+        private static void StopServerIfStarted()
+        {
+            try
+            {
+                if (_serverProcess != null && !_serverProcess.HasExited)
+                {
+                    _serverProcess.Kill(true);
+                    _serverProcess.Dispose();
+                }
+            }
+            catch { }
+            finally
+            {
+                _serverProcess = null;
+                _serverReady = false;
+            }
         }
 
         private async Task LogAsync(PlaywrightLogViewModel log)

@@ -18,7 +18,8 @@ namespace JwtIdentity.PlaywrightTests.Tests
             await ExecuteWithLoggingAsync(testName, targetSelectorDescription, async () =>
             {
                 await Page.GotoAsync("/");
-                await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+                await Page.WaitForLoadStateAsync(LoadState.DOMContentLoaded);
+                await DismissCookieBannerAsync(Page);
 
                 await OpenCreateSurveyAsync();
 
