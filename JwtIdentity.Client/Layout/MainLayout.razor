@@ -1,5 +1,6 @@
 ﻿@inherits LayoutComponentBase
 @using System.Security.Claims
+@using JwtIdentity.Client.Shared
 @inject AuthenticationStateProvider AuthStateProvider
 @inject IJSRuntime JSRuntime
 @inject ILocalStorageService LocalStorage
@@ -25,6 +26,7 @@
         <div class="main-content">
             <MudContainer Class="mb-20">
                 @Body
+                <PageReady />
             </MudContainer>
         </div>
         
