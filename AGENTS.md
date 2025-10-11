@@ -26,7 +26,7 @@ When creating a new Razor component, always create a code behind file with the s
 app-dark.css is used for dark mode. It should only contain dark mode styles. Do not add any other styles to this file.
 app-light.css is used for light mode. It should only contain light mode styles. Do not add any other styles to this file.
 app.css is used for styles that are common to both dark mode and light mode. Do not add any dark mode or light mode specific styles to this file.
-Playwright end-to-end tests live in the JwtIdentity.PlaywrightTests project and use NUnit. Install browsers with `pwsh bin/Debug/net9.0/playwright.ps1 install` after the first build, and run the suite with `dotnet test JwtIdentity.PlaywrightTests`.
+Playwright end-to-end tests live in the JwtIdentity.PlaywrightTests project and use NUnit. Install browsers using the provided script `./scripts/install-playwright-browsers.sh` (or `.ps1` for PowerShell), which handles installation even in environments where the standard Playwright CLI fails. See `scripts/PLAYWRIGHT_BROWSER_INSTALLATION.md` for details. Run the test suite with `dotnet test JwtIdentity.PlaywrightTests`.
 The projects in the solution explicitly disable nullable reference types. Do not enable nullable reference types in any of the projects. If you find nullable reference types enabled in any of the projects, please disable them. If you find that any reference types are marked as nullable, please remove the nullable annotation.
 The MudStack Wrap attribute expects a Wrap enum value. See DemoLanding.razor for an example.
 When you build the solution, check for new warnings and fix them. Do not ignore new warnings. Warnings should be treated as errors and fixed before committing code.
