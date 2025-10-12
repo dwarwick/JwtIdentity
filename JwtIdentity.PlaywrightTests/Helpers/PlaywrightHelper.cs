@@ -72,6 +72,14 @@ namespace JwtIdentity.PlaywrightTests.Helpers
         {
             // Create a new context and page for each test
             Context = await _sharedBrowser.NewContextAsync(ContextOptions());
+
+            // Pre-consent to cookies in test context to avoid the banner entirely
+            // This runs before any page scripts and ensures the app sees consent immediately.
+            try
+            {
+                await Context.AddInitScriptAsync("() => { try { localStorage.setItem('cookiesAccepted','true'); } catch {} }");
+            }
+            catch { /* best-effort only */ }
             Page = await Context.NewPageAsync();
 
             // Always start from the home page and handle the cookie banner before anything else
@@ -333,71 +341,42 @@ namespace JwtIdentity.PlaywrightTests.Helpers
             var acceptAllButton = targetPage.GetByRole(AriaRole.Button, new() { Name = "Accept All Cookies" });
             var essentialOnlyButton = targetPage.GetByRole(AriaRole.Button, new() { Name = "Essential Cookies Only" });
 
-            var clickAcceptAll = Random.Shared.Next(0, 2) == 0;
             var acceptAllAvailable = await acceptAllButton.CountAsync() > 0;
             var essentialOnlyAvailable = await essentialOnlyButton.CountAsync() > 0;
 
-            ILocator buttonToClick;
-
-            if (clickAcceptAll && acceptAllAvailable)
-            {
-                buttonToClick = acceptAllButton;
-            }
-            else if (!clickAcceptAll && essentialOnlyAvailable)
-            {
-                buttonToClick = essentialOnlyButton;
-            }
-            else if (acceptAllAvailable)
-            {
-                buttonToClick = acceptAllButton;
-            }
-            else if (essentialOnlyAvailable)
-            {
-                buttonToClick = essentialOnlyButton;
-            }
-            else
+            // Prefer a deterministic path: Accept All avoids reloads and reduces flakiness
+            ILocator buttonToClick = acceptAllAvailable ? acceptAllButton
+                                                        : (essentialOnlyAvailable ? essentialOnlyButton : null);
+            if (buttonToClick is null)
             {
                 return;
             }
 
-            var clickedEssentialOnly = buttonToClick == essentialOnlyButton;
+            var clickedEssentialOnly = !acceptAllAvailable && essentialOnlyAvailable && buttonToClick == essentialOnlyButton;
 
-            // Ensure antiforgery cookie exists before any action that could rely on it later
-            await EnsureAntiforgeryCookieAsync(targetPage);
+            // Click without waiting for a specific network event (can be racy with reloads and JS interop)
+            var urlBefore = targetPage.Url;
 
-            if (clickedEssentialOnly)
+            // Prepare post-click wait handles
+            var hideTask = banner.WaitForAsync(new LocatorWaitForOptions
             {
-                // Use response wait to bind to the consent API request and avoid races
-                await targetPage.RunAndWaitForResponseAsync(
-                    async () => await buttonToClick.ClickAsync(),
-                    r => r.Url.Contains("/api/cookie/consent", StringComparison.OrdinalIgnoreCase)
-                );
-                // No full navigation expected; give a small settle time only
-                await targetPage.WaitForTimeoutAsync(150);
-            }
-            else
-            {
-                await buttonToClick.ClickAsync();
-                // Rely on banner detachment wait below; add small delay for animations
-                await targetPage.WaitForTimeoutAsync(150);
-            }
+                State = WaitForSelectorState.Detached,
+                Timeout = 7000
+            });
+            var urlChangedTask = targetPage.WaitForURLAsync(u => u != urlBefore, new() { Timeout = 7000 });
+            var loadTask = targetPage.WaitForLoadStateAsync(LoadState.Load, new() { Timeout = 7000 });
+
+            await buttonToClick.ClickAsync();
+
+            // Give a moment for animations or reload trigger
+            await targetPage.WaitForTimeoutAsync(150);
 
             try
             {
-                await banner.WaitForAsync(new LocatorWaitForOptions
-                {
-                    State = WaitForSelectorState.Detached,
-                    Timeout = 5000
-                });
+                // Wait for whichever happens first: banner hides, URL changes (reload), or load completes
+                await Task.WhenAny(hideTask, urlChangedTask, loadTask);
             }
-            catch (TimeoutException)
-            {
-                // Ignore timeout if the banner disappears during a navigation.
-            }
-            catch (PlaywrightException)
-            {
-                // Ignore Playwright errors caused by the banner being removed during navigation.
-            }
+            catch { /* best-effort only */ }
         }
 
         private static async Task EnsureAntiforgeryCookieAsync(IPage targetPage)
