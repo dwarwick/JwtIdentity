@@ -2,7 +2,7 @@ namespace JwtIdentity.Client.Pages.Docs
 {
     public class FaqModel : DocsPageModel
     {
-        protected override _DocsLayoutModel.PageConfiguration GetPageConfiguration()
+        protected override DocsLayoutModel.PageConfiguration GetPageConfiguration()
         {
             var toc = new[]
             {
@@ -23,7 +23,7 @@ namespace JwtIdentity.Client.Pages.Docs
                 toc,
                 breadcrumbs,
                 Link("/docs/feedback", "Feedback"),
-                _DocsLayoutModel.PagerLink.Empty);
+                DocsLayoutModel.PagerLink.Empty);
         }
     }
 }
