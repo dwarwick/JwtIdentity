@@ -17,14 +17,17 @@ namespace JwtIdentity.Search
             Directory.CreateDirectory(appData);
             _dbPath = Path.Combine(appData, "docs.db");
 
-            // Point to the Client project's Docs folder instead of DocsContent
-            var contentRoot = environment.ContentRootPath;
-            _docsDir = Path.Combine(contentRoot, "..", "JwtIdentity.Client", "Pages", "Docs");
+            // Look for .razor files copied from the Client project during build
+            var razorDocsDir = Path.Combine(environment.ContentRootPath, "DocsContent", "RazorPages");
             
-            if (!Directory.Exists(_docsDir))
+            if (Directory.Exists(razorDocsDir) && Directory.GetFiles(razorDocsDir, "*.razor").Any())
             {
-                // Fallback to old location if Client folder doesn't exist
-                _docsDir = Path.Combine(contentRoot, "DocsContent");
+                _docsDir = razorDocsDir;
+            }
+            else
+            {
+                // Fallback to markdown files
+                _docsDir = Path.Combine(environment.ContentRootPath, "DocsContent");
                 Directory.CreateDirectory(_docsDir);
             }
         }
