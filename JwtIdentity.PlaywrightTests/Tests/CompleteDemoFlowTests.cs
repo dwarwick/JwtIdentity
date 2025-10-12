@@ -136,11 +136,11 @@ namespace JwtIdentity.PlaywrightTests.Tests
                 await Page.WaitForTimeoutAsync(500);
             }
 
+            var questionTypeSelect = Page.Locator("#QuestionTypeSelect");
             while (await nextButton.IsVisibleAsync())
             {
                 await nextButton.ClickAsync();
                 await Page.WaitForTimeoutAsync(500);
-                var questionTypeSelect = Page.Locator("#QuestionTypeSelect");
                 if (await questionTypeSelect.IsVisibleAsync())
                 {
                     break;
@@ -154,11 +154,11 @@ namespace JwtIdentity.PlaywrightTests.Tests
                 await Page.WaitForTimeoutAsync(500);
             }
 
-            var questionTypeSelectElement = Page.Locator("#QuestionTypeSelect");
-            if (await questionTypeSelectElement.IsVisibleAsync())
+            if (await questionTypeSelect.IsVisibleAsync())
             {
-                await questionTypeSelectElement.ClickAsync();
-                await Page.Locator("div.mud-list-item-text").Locator("p").Filter(new() { HasTextString = "Multiple Choice" }).ClickAsync();
+                await questionTypeSelect.ClickAsync();
+                var multipleChoiceOption = Page.Locator("div.mud-list-item-text").Locator("p").Filter(new() { HasTextString = "Multiple Choice" });
+                await multipleChoiceOption.ClickAsync();
                 await Page.WaitForTimeoutAsync(500);
             }
 
@@ -172,7 +172,8 @@ namespace JwtIdentity.PlaywrightTests.Tests
             if (await presetChoicesSelect.IsVisibleAsync())
             {
                 await presetChoicesSelect.ClickAsync();
-                await Page.Locator("div.mud-list-item-text").Locator("p").Filter(new() { HasTextString = "Yes No Partially" }).ClickAsync();
+                var yesNoPartiallyOption = Page.Locator("div.mud-list-item-text").Locator("p").Filter(new() { HasTextString = "Yes No Partially" });
+                await yesNoPartiallyOption.ClickAsync();
                 await Page.WaitForTimeoutAsync(500);
             }
 
@@ -249,8 +250,8 @@ namespace JwtIdentity.PlaywrightTests.Tests
 
             var beforeCopy = await GetPageReadyIdAsync(Page);
             await WaitForBlazorInteractiveAsync(beforeCopy, Page);
-            var button = Page.GetByTitle("Copy Survey Link").First;
-            await button.ClickAsync(new() { Force = true });
+            var copySurveyLinkButton = Page.GetByTitle("Copy Survey Link").First;
+            await copySurveyLinkButton.ClickAsync(new() { Force = true });
 
             // Open the survey in a new tab and replace the Page reference
             await WaitForPopupAndReplacePageAsync(async () => await nextButton.ClickAsync());
@@ -341,7 +342,8 @@ namespace JwtIdentity.PlaywrightTests.Tests
             await nextButton.ClickAsync();
             await nextButton.ClickAsync();
 
-            await Page.Locator(".charts-button").First.ClickAsync();
+            var chartsButton = Page.Locator(".charts-button").First;
+            await chartsButton.ClickAsync();
             var beforeResponses = await GetPageReadyIdAsync(Page);
             await Page.WaitForURLAsync("**/survey/responses/**", new() { Timeout = 15000 });
             await WaitForBlazorInteractiveAsync(beforeResponses, Page);
@@ -353,13 +355,13 @@ namespace JwtIdentity.PlaywrightTests.Tests
 
             await TryClickDemoNextButtonAsync();
 
-            var select = Page.Locator("div.mud-select:has(label:has-text('Select Question')) div[tabindex='0']");
-            await select.ScrollIntoViewIfNeededAsync();
-            await select.ClickAsync();
-            var listItem = Page.Locator("div.mud-list-item-text").Locator("p").Filter(new() { HasTextString = "All Questions" });
-            await listItem.WaitForAsync();
-            await listItem.ScrollIntoViewIfNeededAsync();
-            await listItem.GetByText("All Questions").ClickAsync();
+            var questionSelectDropdown = Page.Locator("div.mud-select:has(label:has-text('Select Question')) div[tabindex='0']");
+            await questionSelectDropdown.ScrollIntoViewIfNeededAsync();
+            await questionSelectDropdown.ClickAsync();
+            var allQuestionsOption = Page.Locator("div.mud-list-item-text").Locator("p").Filter(new() { HasTextString = "All Questions" });
+            await allQuestionsOption.WaitForAsync();
+            await allQuestionsOption.ScrollIntoViewIfNeededAsync();
+            await allQuestionsOption.GetByText("All Questions").ClickAsync();
             await Page.WaitForTimeoutAsync(1000);
 
             await ClickAllVisibleDemoNextButtonsAsync();
@@ -367,7 +369,8 @@ namespace JwtIdentity.PlaywrightTests.Tests
             var chartContainer = Page.Locator(".e-chart, .e-accumulationchart");
             await Microsoft.Playwright.Assertions.Expect(chartContainer.First).ToBeVisibleAsync(new() { Timeout = 10000 });
 
-            await Page.Locator("div.mud-select:has(label:has-text('Select Chart Type')) div[tabindex='0']").ClickAsync();
+            var chartTypeSelectDropdown = Page.Locator("div.mud-select:has(label:has-text('Select Chart Type')) div[tabindex='0']");
+            await chartTypeSelectDropdown.ClickAsync();
             var menu = Page.Locator("div.mud-popover:has(.mud-list)");
             await menu.WaitForAsync();
             await Page.Keyboard.PressAsync("ArrowDown");
@@ -380,7 +383,8 @@ namespace JwtIdentity.PlaywrightTests.Tests
 
         private async Task ViewGridResultsAsync()
         {
-            await Page.Locator(".grid-button").ClickAsync();
+            var gridButton = Page.Locator(".grid-button");
+            await gridButton.ClickAsync();
             var beforeGrid = await GetPageReadyIdAsync(Page);
             await Page.WaitForURLAsync("**/survey/filter/**", new() { Timeout = 15000 });
             await WaitForBlazorInteractiveAsync(beforeGrid, Page);
