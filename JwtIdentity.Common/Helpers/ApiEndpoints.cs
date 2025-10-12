@@ -11,6 +11,7 @@
         public const string Question = "api/question";
         public const string Settings = "api/settings";
         public const string Survey = "api/survey";
+        public const string SurveyAnalysis = "api/surveyanalysis";
         
        
         

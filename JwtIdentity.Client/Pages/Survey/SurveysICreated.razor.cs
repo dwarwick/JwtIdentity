@@ -138,6 +138,39 @@
             NavigationManager.NavigateTo($"/survey/filter/{guid}");
         }
 
+        protected async Task GenerateAnalysis(int surveyId, bool published)
+        {
+            if (!published)
+            {
+                _ = Snackbar.Add("Survey not published. You cannot generate analysis if it has not been published.", Severity.Error);
+                return;
+            }
+
+            try
+            {
+                var result = await ApiService.PostAsync<SurveyAnalysisViewModel>($"{ApiEndpoints.SurveyAnalysis}/generate/{surveyId}", null);
+                if (result != null)
+                {
+                    _ = Snackbar.Add("Analysis generated successfully!", Severity.Success);
+                }
+            }
+            catch (Exception ex)
+            {
+                _ = Snackbar.Add($"Error generating analysis: {ex.Message}", Severity.Error);
+            }
+        }
+
+        protected void ViewAnalysis(int surveyId, bool published)
+        {
+            if (!published)
+            {
+                _ = Snackbar.Add("Survey not published. You cannot view analysis if it has not been published.", Severity.Error);
+                return;
+            }
+
+            NavigationManager.NavigateTo($"/survey/analysis/{surveyId}");
+        }
+
         Task IBrowserViewportObserver.NotifyBrowserViewportChangeAsync(BrowserViewportEventArgs browserViewportEventArgs)
         {
             Breakpoint breakpoint = browserViewportEventArgs.Breakpoint;
