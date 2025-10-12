@@ -38,3 +38,20 @@
         </MudList>
     </MudPaper>
 </section>
+
+<section id="ai-analysis" class="mb-8">
+    <MudText Typo="Typo.h2" Class="mb-3">AI Survey Analysis</MudText>
+    <MudPaper Class="pa-4">
+        <MudText Typo="Typo.body1" Class="mb-2">Survey Shark can automatically analyze your survey responses using AI to provide insights and identify patterns.</MudText>
+        <MudList T="string">
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Psychology">Click <MudChip T="string" Size="@MudBlazor.Size.Small" Color="Color.Primary">Generate Analysis</MudChip> from the survey actions menu to create an AI-powered analysis.</MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.HourglassBottom">Analysis generation may take up to a minute depending on the number of responses.</MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Analytics">Click <MudChip T="string" Size="@MudBlazor.Size.Small" Color="Color.Info">View Analysis</MudChip> to see the AI-generated insights.</MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.History">Multiple analyses can be generated over time as new responses arrive, and you can view any previous analysis.</MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Lightbulb">The AI identifies trends, patterns, and key takeaways from your survey data automatically.</MudListItem>
+        </MudList>
+        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="mt-4">
+            Only the survey responses are analyzed by AI. No personal information is transmitted to the AI service.
+        </MudAlert>
+    </MudPaper>
+</section>

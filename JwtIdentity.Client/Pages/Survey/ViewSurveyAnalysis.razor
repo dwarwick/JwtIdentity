@@ -44,22 +44,32 @@
 
                 @if (SelectedAnalysis != null)
                 {
-                    <MudPaper Class="pa-4">
-                        <MudStack Spacing="3">
-                            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-                                <MudText Typo="Typo.h6">Analysis Generated</MudText>
-                                <MudChip T="string" Color="Color.Info" Size="MudBlazor.Size.Small">
-                                    @FormatDateTime(SelectedAnalysis.CreatedDate)
-                                </MudChip>
+                    <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 0 })">
+                        <MudPaper Class="pa-4">
+                            <MudStack Spacing="3">
+                                <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                                    <MudText Typo="Typo.h6">Analysis Generated</MudText>
+                                    <MudChip T="string" Color="Color.Info" Size="MudBlazor.Size.Small">
+                                        @FormatDateTime(SelectedAnalysis.CreatedDate)
+                                    </MudChip>
+                                </MudStack>
+                                
+                                <MudDivider />
+                                
+                                <div style="white-space: pre-wrap; font-family: 'Roboto', sans-serif; line-height: 1.6;">
+                                    @SelectedAnalysis.Analysis
+                                </div>
                             </MudStack>
-                            
-                            <MudDivider />
-                            
-                            <div style="white-space: pre-wrap; font-family: 'Roboto', sans-serif; line-height: 1.6;">
-                                @SelectedAnalysis.Analysis
-                            </div>
-                        </MudStack>
-                    </MudPaper>
+                        </MudPaper>
+                    </DemoBorder>
+                    <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 0 })" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopLeft">
+                        <MudText Typo="Typo.body2" Style="white-space: pre-line;">This is the AI-generated analysis of your survey responses. The AI analyzes patterns in the data and provides insights about the results. This can help you understand what your respondents are saying without manually reviewing every response.
+
+This concludes the demo. Create an account to start creating your own surveys with AI-powered analysis!</MudText>
+                        <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 0 })" IsButton="true">
+                            <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
+                        </DemoBorder>
+                    </DemoPopup>
                 }
             }
             else
