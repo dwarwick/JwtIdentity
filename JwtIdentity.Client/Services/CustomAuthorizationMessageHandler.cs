@@ -1,6 +1,7 @@
 using System.Net.Http.Headers;
 using Blazored.LocalStorage;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.JSInterop;
 
 namespace JwtIdentity.Client.Services
 {
@@ -29,6 +30,21 @@ namespace JwtIdentity.Client.Services
                 if (!string.IsNullOrWhiteSpace(token) && request.Headers.Authorization is null)
                 {
                     request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                }
+
+                // Pass the user's timezone offset in minutes (client local time) to the server
+                try
+                {
+                    var js = serviceProvider.GetRequiredService<IJSRuntime>();
+                    int offsetMinutes = await js.InvokeAsync<int>("eval", "new Date().getTimezoneOffset()");
+                    if (!request.Headers.Contains("X-Timezone-Offset"))
+                    {
+                        request.Headers.Add("X-Timezone-Offset", offsetMinutes.ToString());
+                    }
+                }
+                catch
+                {
+                    // Best-effort only; ignore if JS not available
                 }
             }
 

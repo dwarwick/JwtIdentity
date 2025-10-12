@@ -229,28 +229,34 @@ Therefore, on the charts and later on the grid, you will see fake demo data." :
                                 var surveyId = (context as SurveyViewModel).Id;
                                 var isGenerating = IsGenerating(surveyId);
                             }
-                            <MudButton Class=@($"survey-action-button {ShareButtonDisabled(isPublished, false)}")
-                                       Variant="Variant.Filled"
-                                       Color="Color.Primary"
-                                       Disabled="@(isGenerating || !isPublished)"
-                                       Loading="@isGenerating"
-                                       OnClick="@(async () => await GenerateAnalysis(surveyId, isPublished))">
-                                <MudIcon Icon="@Icons.Material.Filled.Psychology" Class="mr-1" Size="MudBlazor.Size.Small" /> @(!isGenerating ? "Generate Analysis" : "Generating...")
-                            </MudButton>
+                            <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 8 })" IsButton="true">
+                                <MudButton Class=@($"survey-action-button {ShareButtonDisabled(isPublished, false)}")
+                                           Variant="Variant.Filled"
+                                           Color="Color.Primary"
+                                           Disabled="@(isGenerating || !isPublished)"
+                                           Loading="@isGenerating"
+                                           OnClick="@(async () => await GenerateAnalysis(surveyId, isPublished))">
+                                    <MudIcon Icon="@Icons.Material.Filled.Psychology" Class="mr-1" Size="MudBlazor.Size.Small" /> @(!isGenerating ? "Generate Analysis" : "Generating...")
+                                </MudButton>
+                            </DemoBorder>
+                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 8 })" AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft">
+                                <MudText Typo="Typo.body2">Survey Shark can use AI to analyze survey responses and provide insights. Click the Generate Analysis button to create an AI-powered analysis of the survey results.</MudText>
+                            </DemoPopup>
                         </div>
 
                         <div> @* View Analysis Button *@
-                            <MudButton Class=@($"survey-action-button {ShareButtonDisabled(isPublished, false)}")
-                                       Variant="Variant.Filled"
-                                       Color="Color.Info"
-                                       OnClick="@(() => ViewAnalysis((context as SurveyViewModel).Id, isPublished))">
-                                <MudIcon Icon="@Icons.Material.Filled.Analytics" Class="mr-1" Size="MudBlazor.Size.Small" /> View Analysis
-                            </MudButton>
+                            <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 9 })" IsButton="true">
+                                <MudButton Class=@($"survey-action-button {ShareButtonDisabled(isPublished, false)}")
+                                           Variant="Variant.Filled"
+                                           Color="Color.Info"
+                                           OnClick="@(() => ViewAnalysis((context as SurveyViewModel).Id, isPublished))">
+                                    <MudIcon Icon="@Icons.Material.Filled.Analytics" Class="mr-1" Size="MudBlazor.Size.Small" /> View Analysis
+                                </MudButton>
+                            </DemoBorder>
+                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 9 })" AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft">
+                                <MudText Typo="Typo.body2">Click the View Analysis button to see the AI-generated insights about your survey responses.</MudText>
+                            </DemoPopup>
                         </div>
-
-                        <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 8 })" AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft">
-                            <MudText Typo="Typo.body2">Go ahead and click the Preview button to preview what the survey will look like.</MudText>
-                        </DemoPopup>
                     }
                 </div>
             </Template>

@@ -5,14 +5,28 @@ namespace JwtIdentity.Client.Pages.Survey
         [Parameter]
         public int SurveyId { get; set; }
 
+        [SupplyParameterFromQuery]
+        public int DemoStep { get; set; }
+
         protected List<SurveyAnalysisViewModel> Analyses { get; set; } = new();
         protected SurveyAnalysisViewModel SelectedAnalysis { get; set; }
         protected SurveyViewModel Survey { get; set; }
         protected bool IsLoading { get; set; } = true;
+        protected bool IsDemoUser { get; set; }
 
         protected override async Task OnInitializedAsync()
         {
             await LoadAnalysesAsync();
+
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            var userName = authState.User.Identity?.Name ?? string.Empty;
+            IsDemoUser = userName.StartsWith("DemoUser") && userName.EndsWith("@surveyshark.site");
+        }
+
+        protected void NextDemoStep()
+        {
+            if (!IsDemoUser) return;
+            NavigationManager.NavigateTo("/register");
         }
 
         protected async Task LoadAnalysesAsync()

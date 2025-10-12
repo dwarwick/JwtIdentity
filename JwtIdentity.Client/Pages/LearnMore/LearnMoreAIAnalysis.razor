@@ -1,0 +1,117 @@
+@page "/learn-more/ai-analysis"
+@inherits JwtIdentity.Client.Pages.LearnMore.LearnMoreAIAnalysisModel
+@using static Microsoft.AspNetCore.Components.Web.RenderMode
+@rendermode InteractiveWebAssembly
+
+<PageTitle>AI Analysis of Survey Results - Survey Shark</PageTitle>
+<HeadContent>
+    <meta name="description" content="Discover how Survey Shark uses AI to analyze survey results: trends, themes, sentiment, segments, and actionable insights." />
+</HeadContent>
+
+<MudContainer Class="mt-6 mb-10">
+    <!-- Hero -->
+    <MudPaper Elevation="2" Class="pa-6 mb-8 text-center">
+        <MudText Typo="Typo.h1" Class="mb-2">AI Analysis of Survey Results</MudText>
+        <MudText Typo="Typo.subtitle1" Class="mb-4">
+            Turn raw responses into clear, actionable insights. Instantly.
+        </MudText>
+        <MudButton Href="/survey/create" Variant="Variant.Filled" Color="Color.Primary" Class="mx-2">Try It Now</MudButton>
+        <MudButton Href="/docs/viewing-results" Variant="Variant.Outlined" Color="Color.Primary" Class="mx-2">See How Results Work</MudButton>
+    </MudPaper>
+
+    <!-- Executive Summary (Sample) -->
+    <MudPaper Elevation="2" Class="pa-6 mb-8">
+        <MudStack Spacing="2">
+            <MudText Typo="Typo.h5">Executive Summary (Sample)</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">
+                This is a static example of the AI analysis output so you can preview the style and depth of insight.
+            </MudText>
+            <MudDivider />
+            <div style="white-space: pre-wrap; font-family: 'Roboto', sans-serif; line-height: 1.6;">
+                @SampleFullAnalysis
+            </div>
+        </MudStack>
+    </MudPaper>
+
+    <!-- Key Benefits -->
+    <MudGrid Spacing="2" Class="mb-8">
+        @foreach (var f in Features)
+        {
+            <MudItem xs="12" md="6" lg="4">
+                <MudCard Elevation="1" Class="h-100">
+                    <MudCardHeader>
+                        <MudIcon Icon="@f.Icon" Color="Color.Primary" Size="MudBlazor.Size.Large" Class="mr-2" />
+                        <MudText Typo="Typo.h6">@f.Title</MudText>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudText Typo="Typo.body2" Class="mb-2">@f.Description</MudText>
+                        <MudList T="string" Dense="true">
+                            @foreach (var b in f.Bullets)
+                            {
+                                <MudListItem T="string">@b</MudListItem>
+                            }
+                        </MudList>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        }
+    </MudGrid>
+
+    <!-- How it works -->
+    <MudPaper Elevation="1" Class="pa-6 mb-8">
+        <MudText Typo="Typo.h5" Class="mb-3">How it works</MudText>
+        <MudList T="string" Dense="true">
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Create" IconColor="Color.Primary">
+                Create your survey with multiple choice, scales, and free-text questions.
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.AutoAwesome" IconColor="Color.Primary">
+                Our AI examines sentiment, themes, trends, and anomalies in seconds.
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Insights" IconColor="Color.Primary">
+                Get a concise summary and drill into segments, filters, and cross-tabs.
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Share" IconColor="Color.Primary">
+                Share highlights with your team or export the raw data anytime.
+            </MudListItem>
+        </MudList>
+    </MudPaper>
+
+    <!-- What you get in every analysis -->
+    <MudPaper Elevation="1" Class="pa-6 mb-8">
+        <MudText Typo="Typo.h5" Class="mb-3">What you get in every analysis</MudText>
+        <MudList T="string" Dense="true">
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Article" IconColor="Color.Primary">
+                Overall analysis: sentiment tilt, strengths, gaps, and prioritized recommendations.
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Assessment" IconColor="Color.Primary">
+                Question-by-question breakdown: counts and percentages for each option with interpretation.
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.DeviceHub" IconColor="Color.Primary">
+                Channel usage insights: which channels dominate (chat, self-service, email, phone, in-person) and why it matters.
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.SupportAgent" IconColor="Color.Primary">
+                Resolution metrics: full vs. partial resolution, staff helpfulness polarity, and variability by team or channel.
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.RateReview" IconColor="Color.Primary">
+                Data quality notes: flags placeholder/low?information text and suggests better prompts/validation.
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Flag" IconColor="Color.Primary">
+                Next steps: 3 prioritized actions with suggested owners and impact.
+            </MudListItem>
+        </MudList>
+        <MudText Typo="Typo.caption" Class="mt-2 d-block">
+            Powered by your configured OpenAI model on the server side. We do not claim or require a specific vendor model; results depend on your configuration and the quality of responses collected.
+        </MudText>
+    </MudPaper>
+
+    <!-- Why it matters -->
+    <MudPaper Elevation="0" Class="pa-6 text-center">
+        <MudText Typo="Typo.h5" Class="mb-2">From data to decisions - fast</MudText>
+        <MudText Typo="Typo.body1" Class="mb-4">
+            Whether you're running product research, employee engagement, or customer feedback, AI surfaces the
+            patterns that matter so you can act with confidence.
+        </MudText>
+        <MudButton Href="/demo" Variant="Variant.Filled" Color="Color.Primary" Class="mx-2">Watch the Demo</MudButton>
+        <MudButton Href="/" Variant="Variant.Outlined" Color="Color.Primary" Class="mx-2">Back to Home</MudButton>
+    </MudPaper>
+</MudContainer>

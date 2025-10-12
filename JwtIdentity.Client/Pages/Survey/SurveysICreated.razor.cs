@@ -150,6 +150,8 @@
                 return;
             }
 
+            if (IsDemoUser && DemoStep != 8) return;
+
             try
             {
                 // Prevent duplicate clicks and inform the user this may take a while
@@ -159,12 +161,18 @@
                     StateHasChanged();
                 }
 
-                _ = Snackbar.Add("Generating analysis. This may take up to a minute...", Severity.Info);
+                _ = Snackbar.Add("Generating analysis. This may take up to a few minutes...", Severity.Info);
 
                 var result = await ApiService.PostAsync<SurveyAnalysisViewModel>($"{ApiEndpoints.SurveyAnalysis}/generate/{surveyId}", null);
                 if (result != null)
                 {
                     _ = Snackbar.Add("Analysis generated successfully!", Severity.Success);
+
+                    // Advance demo step when analysis is complete
+                    if (IsDemoUser && DemoStep == 8)
+                    {
+                        await NextDemoStep();
+                    }
                 }
             }
             catch (Exception ex)
@@ -189,7 +197,9 @@
                 return;
             }
 
-            NavigationManager.NavigateTo($"/survey/analysis/{surveyId}");
+            if (IsDemoUser && DemoStep != 9) return;
+
+            NavigationManager.NavigateTo($"/survey/analysis/{surveyId}?DemoStep=0");
         }
 
         Task IBrowserViewportObserver.NotifyBrowserViewportChangeAsync(BrowserViewportEventArgs browserViewportEventArgs)
