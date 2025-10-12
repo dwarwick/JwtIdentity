@@ -16,7 +16,7 @@ using MudBlazor;
 
 namespace JwtIdentity.Client.Pages.Docs
 {
-    public class _DocsLayoutModel : BlazorBase, IDisposable
+    public class DocsLayoutModel : BlazorBase, IDisposable
     {
         private readonly List<TocItem> _tocItems = new();
         private readonly List<BreadcrumbItem> _breadcrumbs = new();

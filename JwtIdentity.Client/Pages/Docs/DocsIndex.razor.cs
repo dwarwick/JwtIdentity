@@ -2,7 +2,7 @@ namespace JwtIdentity.Client.Pages.Docs
 {
     public class DocsIndexModel : DocsPageModel
     {
-        protected override _DocsLayoutModel.PageConfiguration GetPageConfiguration()
+        protected override DocsLayoutModel.PageConfiguration GetPageConfiguration()
         {
             var toc = new[]
             {
@@ -20,7 +20,7 @@ namespace JwtIdentity.Client.Pages.Docs
                 "overview",
                 toc,
                 breadcrumbs,
-                _DocsLayoutModel.PagerLink.Empty,
+                DocsLayoutModel.PagerLink.Empty,
                 Link("/docs/getting-started", "Getting Started"));
         }
     }
