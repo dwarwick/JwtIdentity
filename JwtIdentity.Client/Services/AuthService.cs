@@ -22,10 +22,7 @@ namespace JwtIdentity.Client.Services
         public async Task<Response<ApplicationUserViewModel>> Login(ApplicationUserViewModel input)
         {
             Response<ApplicationUserViewModel> response;
-            _ = new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            };
+            // Removed unused JsonSerializerOptions
 
             try
             {
@@ -39,9 +36,11 @@ namespace JwtIdentity.Client.Services
                         Success = true,
                     };
 
-                    await LocalStorage.SetItemAsync("authToken", response.Data.Token);
+                    if (OperatingSystem.IsBrowser())
+                    {
+                        await LocalStorage.SetItemAsync("authToken", response.Data.Token);
+                    }
                     await ((CustomAuthStateProvider)_customAuthStateProvider).LoggedIn();
-                    ((CustomAuthStateProvider)_customAuthStateProvider)._httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", response.Data.Token);
 
                     return response;
                 }
@@ -77,9 +76,11 @@ namespace JwtIdentity.Client.Services
                         Success = true,
                     };
 
-                    await LocalStorage.SetItemAsync("authToken", response.Data.Token);
+                    if (OperatingSystem.IsBrowser())
+                    {
+                        await LocalStorage.SetItemAsync("authToken", response.Data.Token);
+                    }
                     await ((CustomAuthStateProvider)_customAuthStateProvider).LoggedIn();
-                    ((CustomAuthStateProvider)_customAuthStateProvider)._httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", response.Data.Token);
 
                     return response;
                 }
@@ -105,8 +106,6 @@ namespace JwtIdentity.Client.Services
             await ((CustomAuthStateProvider)this._customAuthStateProvider).LoggedOut();
 
             ((CustomAuthStateProvider)_customAuthStateProvider).CurrentUser = null;
-
-            _ = await _apiService.PostAsync<object>("api/auth/logout", null); // Call backend logout
         }
 
 
@@ -122,9 +121,12 @@ namespace JwtIdentity.Client.Services
             }
 
             var user = authState.User;
-            int UserId = int.Parse(user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value);
-
-            return UserId;
+            var idValue = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            if (int.TryParse(idValue, out var userId))
+            {
+                return userId;
+            }
+            return 0;
         }
     }
 }

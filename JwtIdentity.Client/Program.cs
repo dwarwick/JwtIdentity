@@ -22,7 +22,6 @@ builder.Services.AddScoped<DocsSearchApiService>();
 
 builder.Services.AddSyncfusionBlazor();
 builder.Services.AddBlazoredLocalStorage();
-builder.Services.AddAuthorizationCore();
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>(); // if using a custom provider
 builder.Services.AddScoped<CustomAuthStateProvider>();
 builder.Services.AddScoped<IUtility, Utility>();
