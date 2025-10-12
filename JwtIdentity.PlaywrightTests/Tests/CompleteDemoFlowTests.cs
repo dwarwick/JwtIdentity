@@ -23,10 +23,10 @@ namespace JwtIdentity.PlaywrightTests.Tests
                 await AddCustomQuestionAsync();
                 await PublishSurveyAsync();
                 await NavigateToMySurveysAsync();
-                var tab3 = await CopySurveyLinkAsync();
-                await AnswerSurveyAsync(tab3);
-                await ViewBarChartResultsAsync(tab3);
-                await ViewGridResultsAsync(tab3);
+                await CopySurveyLinkAsync();
+                await AnswerSurveyAsync();
+                await ViewBarChartResultsAsync();
+                await ViewGridResultsAsync();
             });
         }
 
@@ -218,55 +218,59 @@ namespace JwtIdentity.PlaywrightTests.Tests
             await Microsoft.Playwright.Assertions.Expect(mySurveysHeading).ToBeVisibleAsync();
         }
 
-        private async Task<IPage> CopySurveyLinkAsync()
+        private async Task CopySurveyLinkAsync()
         {
             var previewButton = Page.Locator(".preview-button").First;
             await previewButton.WaitForAsync();
-            var surveyPage = Page;
 
             try
             {
-                surveyPage = await Page.RunAndWaitForPopupAsync(async () => { await previewButton.ClickAsync(); });
-                var beforePopup = await GetPageReadyIdAsync(surveyPage);
-                await WaitForBlazorInteractiveAsync(beforePopup, surveyPage);
+                await WaitForPopupAndReplacePageAsync(async () => await previewButton.ClickAsync());
             }
             catch (TimeoutException)
             {
                 await previewButton.ClickAsync();
             }
 
-            try { var beforeUrl = await GetPageReadyIdAsync(surveyPage); await surveyPage.WaitForURLAsync("**/survey**", new() { Timeout = 8000 }); await WaitForBlazorInteractiveAsync(beforeUrl, surveyPage); } catch (TimeoutException) { }
+            try
+            {
+                var beforeUrl = await GetPageReadyIdAsync(Page);
+                await Page.WaitForURLAsync("**/survey**", new() { Timeout = 8000 });
+                await WaitForBlazorInteractiveAsync(beforeUrl, Page);
+            }
+            catch (TimeoutException) { }
 
-            var nextButton = surveyPage.GetByRole(AriaRole.Button, new() { Name = "Next" });
+            var nextButton = Page.GetByRole(AriaRole.Button, new() { Name = "Next" });
             await nextButton.WaitForAsync(new() { Timeout = 10000 });
 
-            await ScrollToElementAsync("1", surveyPage);
+            await ScrollToElementAsync("1", Page);
             await nextButton.ClickAsync();
             await nextButton.ClickAsync();
             await nextButton.ClickAsync();
 
-            var beforeCopy = await GetPageReadyIdAsync(surveyPage);
-            await WaitForBlazorInteractiveAsync(beforeCopy, surveyPage);
-            var button = surveyPage.GetByTitle("Copy Survey Link").First;
+            var beforeCopy = await GetPageReadyIdAsync(Page);
+            await WaitForBlazorInteractiveAsync(beforeCopy, Page);
+            var button = Page.GetByTitle("Copy Survey Link").First;
             await button.ClickAsync(new() { Force = true });
 
-            return await surveyPage.RunAndWaitForPopupAsync(async () => { await nextButton.ClickAsync(); });
+            // Open the survey in a new tab and replace the Page reference
+            await WaitForPopupAndReplacePageAsync(async () => await nextButton.ClickAsync());
         }
 
-        private async Task AnswerSurveyAsync(IPage page)
+        private async Task AnswerSurveyAsync()
         {
-            var beforeAnswer = await GetPageReadyIdAsync(page);
-            await page.WaitForURLAsync("**/survey/**", new() { Timeout = 10000 });
-            await WaitForBlazorInteractiveAsync(beforeAnswer, page);
+            var beforeAnswer = await GetPageReadyIdAsync(Page);
+            await Page.WaitForURLAsync("**/survey/**", new() { Timeout = 10000 });
+            await WaitForBlazorInteractiveAsync(beforeAnswer, Page);
 
-            var surveyTitle = page.Locator(".survey-title");
+            var surveyTitle = Page.Locator(".survey-title");
             await Microsoft.Playwright.Assertions.Expect(surveyTitle).ToBeVisibleAsync();
-            await ScrollToElementAsync("1", page);
+            await ScrollToElementAsync("1", Page);
 
-            var demoNextButton = page.Locator("#DemoNext_button");
-            await TryClickIfExistsAsync(demoNextButton, page, 1, 500);
+            var demoNextButton = Page.Locator("#DemoNext_button");
+            await TryClickIfExistsAsync(demoNextButton, Page, 1, 500);
 
-            var radioButtons = page.Locator("input[type='radio']");
+            var radioButtons = Page.Locator("input[type='radio']");
             var radioCount = await radioButtons.CountAsync();
             for (int i = 0; i < radioCount; i++)
             {
@@ -274,11 +278,11 @@ namespace JwtIdentity.PlaywrightTests.Tests
                 if (await radio.IsVisibleAsync() && await radio.IsEnabledAsync())
                 {
                     await radio.ClickAsync();
-                    await page.WaitForTimeoutAsync(200);
+                    await Page.WaitForTimeoutAsync(200);
                 }
             }
 
-            var checkboxes = page.Locator(".survey-container input[type='checkbox']");
+            var checkboxes = Page.Locator(".survey-container input[type='checkbox']");
             var checkboxCount = await checkboxes.CountAsync();
             for (int i = 0; i < checkboxCount; i++)
             {
@@ -288,7 +292,7 @@ namespace JwtIdentity.PlaywrightTests.Tests
                     try
                     {
                         await checkbox.CheckAsync();
-                        await page.WaitForTimeoutAsync(150);
+                        await Page.WaitForTimeoutAsync(150);
                     }
                     catch
                     {
@@ -296,13 +300,13 @@ namespace JwtIdentity.PlaywrightTests.Tests
                         if (await parentLabel.CountAsync() > 0)
                         {
                             await parentLabel.ClickAsync();
-                            await page.WaitForTimeoutAsync(150);
+                            await Page.WaitForTimeoutAsync(150);
                         }
                     }
                 }
             }
 
-            var textFields = page.Locator("textarea, input[type='text']").Filter(new LocatorFilterOptions { HasNotText = "DemoUser" });
+            var textFields = Page.Locator("textarea, input[type='text']").Filter(new LocatorFilterOptions { HasNotText = "DemoUser" });
             var textCount = await textFields.CountAsync();
             for (int i = 0; i < textCount; i++)
             {
@@ -310,97 +314,98 @@ namespace JwtIdentity.PlaywrightTests.Tests
                 if (await textField.IsVisibleAsync() && await textField.IsEnabledAsync())
                 {
                     await textField.FillAsync("Great service, very satisfied!");
-                    await page.WaitForTimeoutAsync(200);
+                    await Page.WaitForTimeoutAsync(200);
                 }
             }
 
-            var nextButton = page.GetByRole(AriaRole.Button, new() { Name = "Next" });
+            var nextButton = Page.GetByRole(AriaRole.Button, new() { Name = "Next" });
             if (await nextButton.IsVisibleAsync())
             {
                 await nextButton.ClickAsync();
-                await page.WaitForTimeoutAsync(500);
+                await Page.WaitForTimeoutAsync(500);
             }
 
-            var submitButton = page.Locator("#survey-submit-btn");
+            var submitButton = Page.Locator("#survey-submit-btn");
             if (await submitButton.IsVisibleAsync())
             {
                 await submitButton.ClickAsync();
-                await page.WaitForTimeoutAsync(2000);
+                await Page.WaitForTimeoutAsync(2000);
             }
 
-            var successMessage = page.Locator(".mud-alert-filled-success, .mud-snackbar").Filter(new() { HasTextString = "submitted" });
+            var successMessage = Page.Locator(".mud-alert-filled-success, .mud-snackbar").Filter(new() { HasTextString = "submitted" });
             await Microsoft.Playwright.Assertions.Expect(successMessage).ToBeVisibleAsync(new() { Timeout = 10000 });
         }
 
-        private async Task ViewBarChartResultsAsync(IPage page)
+        private async Task ViewBarChartResultsAsync()
         {
-            var nextButton = page.GetByRole(AriaRole.Button, new() { Name = "Next" });
+            var nextButton = Page.GetByRole(AriaRole.Button, new() { Name = "Next" });
             await nextButton.ClickAsync();
             await nextButton.ClickAsync();
             await nextButton.ClickAsync();
 
-            await page.Locator(".charts-button").First.ClickAsync();
-            var beforeResponses = await GetPageReadyIdAsync(page);
-            await page.WaitForURLAsync("**/survey/responses/**", new() { Timeout = 15000 });
-            await WaitForBlazorInteractiveAsync(beforeResponses, page);
+            await Page.Locator(".charts-button").First.ClickAsync();
+            var beforeResponses = await GetPageReadyIdAsync(Page);
+            await Page.WaitForURLAsync("**/survey/responses/**", new() { Timeout = 15000 });
+            await WaitForBlazorInteractiveAsync(beforeResponses, Page);
 
-            var demoNextButton = page.Locator("#DemoNext_button");
+            var demoNextButton = Page.Locator("#DemoNext_button");
             await demoNextButton.ClickAsync();
 
-            var questionSelect = page.Locator(".mud-select").First;
+            var questionSelect = Page.Locator(".mud-select").First;
             await Microsoft.Playwright.Assertions.Expect(questionSelect).ToBeVisibleAsync();
 
 
-            await TryClickIfExistsAsync(demoNextButton, page, 1, 500);
+            await TryClickIfExistsAsync(demoNextButton, Page, 1, 500);
 
-            var select = page.Locator("div.mud-select:has(label:has-text('Select Question')) div[tabindex='0']");
+            var select = Page.Locator("div.mud-select:has(label:has-text('Select Question')) div[tabindex='0']");
             await select.ScrollIntoViewIfNeededAsync();
             await select.ClickAsync();
-            var listItem = page.Locator("div.mud-list-item-text").Locator("p").Filter(new() { HasTextString = "All Questions" });
+            var listItem = Page.Locator("div.mud-list-item-text").Locator("p").Filter(new() { HasTextString = "All Questions" });
+            await listItem.WaitForAsync();
             await listItem.ScrollIntoViewIfNeededAsync();
             await listItem.GetByText("All Questions").ClickAsync();
-            await page.WaitForTimeoutAsync(1000);
+            await Page.WaitForTimeoutAsync(1000);
 
             while (await demoNextButton.IsVisibleAsync())
             {
                 await demoNextButton.ClickAsync();
-                await page.WaitForTimeoutAsync(500);
+                await Page.WaitForTimeoutAsync(500);
             }
 
-            var chartContainer = page.Locator(".e-chart, .e-accumulationchart");
+            var chartContainer = Page.Locator(".e-chart, .e-accumulationchart");
             await Microsoft.Playwright.Assertions.Expect(chartContainer.First).ToBeVisibleAsync(new() { Timeout = 10000 });
 
-            await page.Locator("div.mud-select:has(label:has-text('Select Chart Type')) div[tabindex='0']").ClickAsync();
-            var menu = page.Locator("div.mud-popover:has(.mud-list)");
+            await Page.Locator("div.mud-select:has(label:has-text('Select Chart Type')) div[tabindex='0']").ClickAsync();
+            var menu = Page.Locator("div.mud-popover:has(.mud-list)");
             await menu.WaitForAsync();
-            await page.Keyboard.PressAsync("ArrowDown");
-            await page.Keyboard.PressAsync("Enter");
+            await Page.Keyboard.PressAsync("ArrowDown");
+            await Page.Keyboard.PressAsync("Enter");
 
-            await TryClickIfExistsAsync(demoNextButton, page, 2, 300);
-            await page.WaitForTimeoutAsync(500);
+            await TryClickIfExistsAsync(demoNextButton, Page, 2, 300);
+            await Page.WaitForTimeoutAsync(500);
             await demoNextButton.ClickAsync();
         }
 
-        private async Task ViewGridResultsAsync(IPage page)
+        private async Task ViewGridResultsAsync()
         {
-            await page.Locator(".grid-button").ClickAsync();
-            var beforeGrid = await GetPageReadyIdAsync(page);
-            await page.WaitForURLAsync("**/survey/filter/**", new() { Timeout = 15000 });
-            await WaitForBlazorInteractiveAsync(beforeGrid, page);
+            await Page.Locator(".grid-button").ClickAsync();
+            var beforeGrid = await GetPageReadyIdAsync(Page);
+            await Page.WaitForURLAsync("**/survey/filter/**", new() { Timeout = 15000 });
+            await WaitForBlazorInteractiveAsync(beforeGrid, Page);
 
-            var gridHeading = page.GetByRole(AriaRole.Heading, new() { Name = "Filter" });
+            var gridHeading = Page.GetByRole(AriaRole.Heading, new() { Name = "Filter" });
             await Microsoft.Playwright.Assertions.Expect(gridHeading).ToBeVisibleAsync();
 
-            var gridTable = page.Locator(".e-grid");
+            var gridTable = Page.Locator(".e-grid");
             await Microsoft.Playwright.Assertions.Expect(gridTable).ToBeVisibleAsync();
-            var gridRows = page.Locator(".e-grid .e-row");
+            var gridRows = Page.Locator(".e-grid .e-row");
             await Microsoft.Playwright.Assertions.Expect(gridRows.First).ToBeVisibleAsync();
 
-            var demoNextButton = page.Locator("#DemoNext_button");
+            var demoNextButton = Page.Locator("#DemoNext_button");
             while (await demoNextButton.IsVisibleAsync())
             {
                 await demoNextButton.ClickAsync();
-                await page.WaitForTimeoutAsync(500);
+                await Page.WaitForTimeoutAsync(500);
             }
         }
 

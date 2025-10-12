@@ -658,5 +658,40 @@ namespace JwtIdentity.PlaywrightTests.Helpers
                 }
             }", elementId);
         }
+
+        /// <summary>
+        /// Handles opening a new browser tab/popup and updates the Page reference to point to the new tab.
+        /// This allows tests to continue using the same Page property without managing multiple IPage references.
+        /// The old Page is closed and replaced with the popup.
+        /// </summary>
+        /// <param name="action">The action that triggers the popup (e.g., clicking a button)</param>
+        /// <param name="waitForBlazor">Whether to wait for Blazor to become interactive on the new page (default: true)</param>
+        protected async Task WaitForPopupAndReplacePageAsync(Func<Task> action, bool waitForBlazor = true)
+        {
+            var oldPage = Page;
+            
+            // Wait for the popup to open while executing the action
+            var newPage = await Page.RunAndWaitForPopupAsync(action);
+            
+            // Wait for Blazor to be interactive on the new page if requested
+            if (waitForBlazor)
+            {
+                var beforePopup = await GetPageReadyIdAsync(newPage);
+                await WaitForBlazorInteractiveAsync(beforePopup, newPage);
+            }
+            
+            // Replace the Page reference with the new popup
+            Page = newPage;
+            
+            // Close the old page to clean up
+            try
+            {
+                await oldPage.CloseAsync();
+            }
+            catch
+            {
+                // Best-effort close; ignore errors if page already closed
+            }
+        }
     }
 }
