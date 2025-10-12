@@ -1,6 +1,7 @@
 using Hangfire;
 using JwtIdentity.Data;
 using JwtIdentity.Models;
+using JwtIdentity.Search;
 using Microsoft.EntityFrameworkCore;
 
 namespace JwtIdentity.Services.BackgroundJobs
@@ -14,20 +15,23 @@ namespace JwtIdentity.Services.BackgroundJobs
         private readonly ApplicationDbContext _dbContext;
         private readonly IEmailService _emailService;
         private readonly IConfiguration _configuration;
-        private readonly ISettingsService _settingsService;  
+        private readonly ISettingsService _settingsService;
+        private readonly DocsSearchIndexer _docsSearchIndexer;
 
         public BackgroundJobService(
             ILogger<BackgroundJobService> logger,
             ApplicationDbContext dbContext,
             IEmailService emailService,
             IConfiguration configuration,
-            ISettingsService settingsService)
+            ISettingsService settingsService,
+            DocsSearchIndexer docsSearchIndexer)
         {
             _logger = logger;
             _dbContext = dbContext;
             _emailService = emailService;
             _configuration = configuration;
             _settingsService = settingsService;
+            _docsSearchIndexer = docsSearchIndexer;
         }
 
         /// <summary>
@@ -62,6 +66,11 @@ namespace JwtIdentity.Services.BackgroundJobs
                     "playwright-cleanup",
                     () => PlaywrightCleanup(),
                     Cron.Daily());
+
+                RecurringJob.AddOrUpdate(
+                    "docs-search-sync",
+                    () => SyncDocumentationSearchDatabase(),
+                    Cron.Daily(2, 0)); // Run at 2:00 AM every day
 
                 _logger.LogInformation("Hangfire recurring jobs scheduled successfully");
                 
@@ -364,6 +373,43 @@ namespace JwtIdentity.Services.BackgroundJobs
                     LoggedAt = DateTime.UtcNow
                 });
                 await _dbContext.SaveChangesAsync();
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Syncs the documentation search database by rebuilding the index from markdown files
+        /// </summary>
+        public async Task SyncDocumentationSearchDatabase()
+        {
+            try
+            {
+                _logger.LogInformation("Starting documentation search database sync");
+
+                await _docsSearchIndexer.RebuildAsync();
+
+                _dbContext.LogEntries.Add(new LogEntry
+                {
+                    Message = "Documentation search database synced successfully",
+                    Level = "Info",
+                    LoggedAt = DateTime.UtcNow
+                });
+                await _dbContext.SaveChangesAsync();
+
+                _logger.LogInformation("Documentation search database sync completed successfully");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error syncing documentation search database");
+
+                _dbContext.LogEntries.Add(new LogEntry
+                {
+                    Message = $"Error syncing documentation search database: {ex.Message}",
+                    Level = "Error",
+                    LoggedAt = DateTime.UtcNow
+                });
+                await _dbContext.SaveChangesAsync();
+
                 throw;
             }
         }
