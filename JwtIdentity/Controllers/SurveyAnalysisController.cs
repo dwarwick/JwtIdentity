@@ -79,10 +79,12 @@ namespace JwtIdentity.Controllers
                     var newResponsesSinceAnalysis = await _context.Answers
                         .AnyAsync(a => questionIds.Contains(a.QuestionId) && a.Complete && a.CreatedDate > latestAnalysisDate);
 
+#if !DEBUG
                     if (!newResponsesSinceAnalysis)
                     {
                         return BadRequest("An analysis was already generated today with no new responses since then. Please try again tomorrow or wait for new responses.");
                     }
+#endif
                 }
 
                 // Generate the analysis using OpenAI
@@ -193,7 +195,7 @@ namespace JwtIdentity.Controllers
         private string FormatAnalysisForStorage(SurveyAnalysisResponse response)
         {
             var sb = new System.Text.StringBuilder();
-            
+
             sb.AppendLine("=== OVERALL ANALYSIS ===");
             sb.AppendLine();
             sb.AppendLine(response.OverallAnalysis);

@@ -12,7 +12,7 @@ namespace JwtIdentity.Client.Services
         private readonly JwtSecurityTokenHandler jwtSecurityTokenHandler;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        public HttpClient _httpClient { get; set; }
+        private HttpClient _httpClient;
 
         public ApplicationUserViewModel CurrentUser { get; set; }
 
@@ -115,13 +115,14 @@ namespace JwtIdentity.Client.Services
             var user = new ClaimsPrincipal(new ClaimsIdentity(claims, "jwt"));
             var authState = Task.FromResult(new AuthenticationState(user));
             this.NotifyAuthenticationStateChanged(authState);
-
-            await GetAuthenticationStateAsync();
         }
 
         public async Task LoggedOut()
         {
-            await this._localStorage.RemoveItemAsync("authToken");
+            if (OperatingSystem.IsBrowser())
+            {
+                await this._localStorage.RemoveItemAsync("authToken");
+            }
 
             if (_httpClient != null && _httpClient.DefaultRequestHeaders?.Authorization != null)
             {
@@ -154,15 +155,7 @@ namespace JwtIdentity.Client.Services
             return claims;
         }
 
-        private static byte[] ParseBase64WithoutPadding(string base64)
-        {
-            switch (base64.Length % 4)
-            {
-                case 2: base64 += "=="; break;
-                case 3: base64 += "="; break;
-            }
-            return Convert.FromBase64String(base64);
-        }
+        // Removed unused ParseBase64WithoutPadding method
     }
 }
 

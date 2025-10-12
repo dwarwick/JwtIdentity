@@ -179,6 +179,10 @@ namespace JwtIdentity.Services
                 .Replace("{AI_INSTRUCTIONS}", survey.AiInstructions ?? "")
                 .Replace("{SURVEY_DATA}", surveyDataJson);
 
+#if DEBUG
+            Console.WriteLine($"Final OpenAI analysis prompt: {finalPrompt}");
+#endif
+
             var body = new
             {
                 model = model,
@@ -194,6 +198,10 @@ namespace JwtIdentity.Services
             response.EnsureSuccessStatusCode();
 
             var responseString = await response.Content.ReadAsStringAsync();
+
+#if DEBUG
+            Console.WriteLine($"OpenAI analysis response: {responseString}");
+#endif
 
             using var doc = JsonDocument.Parse(responseString);
             var message = doc.RootElement.GetProperty("choices")[0].GetProperty("message").GetProperty("content").GetString();
@@ -237,7 +245,7 @@ namespace JwtIdentity.Services
             foreach (var question in questions)
             {
                 var questionAnswers = answers.Where(a => a.QuestionId == question.Id).ToList();
-                
+
                 object questionObj = question.QuestionType switch
                 {
                     QuestionType.Text => BuildTextQuestionData(question, questionAnswers),
