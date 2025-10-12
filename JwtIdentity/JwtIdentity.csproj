@@ -69,6 +69,23 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+
+  <!-- Copy razor documentation files from Client project to server for indexing -->
+  <Target Name="CopyRazorDocsToServer" BeforeTargets="Build">
+    <ItemGroup>
+      <RazorDocsFiles Include="..\JwtIdentity.Client\Pages\Docs\*.razor" Exclude="..\JwtIdentity.Client\Pages\Docs\_*.razor" />
+    </ItemGroup>
+    <Copy SourceFiles="@(RazorDocsFiles)" DestinationFolder="DocsContent\RazorPages" SkipUnchangedFiles="true" />
+  </Target>
+
+  <ItemGroup>
+    <!-- Include the copied razor files as None (not Content) to prevent compilation and include in output -->
+    <None Include="DocsContent\RazorPages\*.razor">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <!-- Explicitly exclude from Razor compilation -->
+    <Content Remove="DocsContent\RazorPages\*.razor" />
+  </ItemGroup>
  
   <Target Name="ExcludeLogsFolder" AfterTargets="CollectFilesToPublish">
     <ItemGroup>
