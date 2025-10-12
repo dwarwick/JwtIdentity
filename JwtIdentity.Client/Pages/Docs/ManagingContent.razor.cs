@@ -2,7 +2,7 @@ namespace JwtIdentity.Client.Pages.Docs
 {
     public class ManagingContentModel : DocsPageModel
     {
-        protected override _DocsLayoutModel.PageConfiguration GetPageConfiguration()
+        protected override DocsLayoutModel.PageConfiguration GetPageConfiguration()
         {
             var toc = new[]
             {
