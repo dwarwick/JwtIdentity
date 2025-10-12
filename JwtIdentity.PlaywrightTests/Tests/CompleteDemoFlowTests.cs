@@ -27,6 +27,8 @@ namespace JwtIdentity.PlaywrightTests.Tests
                 await AnswerSurveyAsync();
                 await ViewBarChartResultsAsync();
                 await ViewGridResultsAsync();
+                await GenerateAnalysisAsync();
+                await ViewAnalysisAsync();
             });
         }
 
@@ -398,6 +400,60 @@ namespace JwtIdentity.PlaywrightTests.Tests
             await Microsoft.Playwright.Assertions.Expect(gridRows.First).ToBeVisibleAsync();
 
             await ClickAllVisibleDemoNextButtonsAsync();
+        }
+
+        private async Task GenerateAnalysisAsync()
+        {
+            // Should be back on Surveys I Created page at step 8
+            await Page.WaitForURLAsync("**/mysurveys/surveysicreated**", new() { Timeout = 10000 });
+            var beforeAnalysis = await GetPageReadyIdAsync(Page);
+            await WaitForBlazorInteractiveAsync(beforeAnalysis, Page);
+
+            var mySurveysHeading = Page.GetByRole(AriaRole.Heading, new() { Name = "Surveys I've Created" });
+            await Microsoft.Playwright.Assertions.Expect(mySurveysHeading).ToBeVisibleAsync();
+
+            // Click Generate Analysis button
+            var generateAnalysisButton = Page.GetByRole(AriaRole.Button, new() { Name = "Generate Analysis" });
+            await generateAnalysisButton.ClickAsync();
+
+            // Wait for the "Generating analysis" snackbar
+            var generatingToast = Page.Locator(".mud-snackbar").Filter(new() { HasTextString = "Generating analysis" });
+            await Microsoft.Playwright.Assertions.Expect(generatingToast).ToBeVisibleAsync(new() { Timeout = 5000 });
+
+            // Wait for the "Analysis generated successfully!" snackbar
+            var successToast = Page.Locator(".mud-snackbar").Filter(new() { HasTextString = "Analysis generated successfully!" });
+            await Microsoft.Playwright.Assertions.Expect(successToast).ToBeVisibleAsync(new() { Timeout = 120000 });
+
+            // The demo should auto-advance to step 9 when analysis completes
+            await Page.WaitForTimeoutAsync(1000);
+        }
+
+        private async Task ViewAnalysisAsync()
+        {
+            // Click View Analysis button
+            var viewAnalysisButton = Page.GetByRole(AriaRole.Button, new() { Name = "View Analysis" });
+            await viewAnalysisButton.ClickAsync();
+            
+            var beforeAnalysisPage = await GetPageReadyIdAsync(Page);
+            await Page.WaitForURLAsync("**/survey/analysis/**", new() { Timeout = 15000 });
+            await WaitForBlazorInteractiveAsync(beforeAnalysisPage, Page);
+
+            var analysisHeading = Page.GetByRole(AriaRole.Heading, new() { Name = "Survey Analysis" });
+            await Microsoft.Playwright.Assertions.Expect(analysisHeading).ToBeVisibleAsync();
+
+            // Wait for demo popup to appear
+            await Page.WaitForTimeoutAsync(1000);
+
+            // Click Next to go to register page
+            var nextButton = Page.GetByRole(AriaRole.Button, new() { Name = "Next" });
+            await nextButton.ClickAsync();
+            
+            var beforeRegister = await GetPageReadyIdAsync(Page);
+            await Page.WaitForURLAsync("**/register", new() { Timeout = 10000 });
+            await WaitForBlazorInteractiveAsync(beforeRegister, Page);
+
+            var registerHeading = Page.GetByRole(AriaRole.Heading, new() { Name = "Register" });
+            await Microsoft.Playwright.Assertions.Expect(registerHeading).ToBeVisibleAsync();
         }
 
         /// <summary>

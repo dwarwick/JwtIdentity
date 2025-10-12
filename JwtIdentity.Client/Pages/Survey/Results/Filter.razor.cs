@@ -59,7 +59,12 @@ namespace JwtIdentity.Client.Pages.Survey.Results
         {
             if (!IsDemoUser) return;
 
-            if (DemoStep == 5) NavigationManager.NavigateTo("/register");
+            if (DemoStep == 5)
+            {
+                // Navigate back to Surveys I Created page to continue demo with AI Analysis
+                NavigationManager.NavigateTo("/mysurveys/surveysicreated?DemoStep=8");
+                return;
+            }
 
             DemoStep++;
             StateHasChanged();
