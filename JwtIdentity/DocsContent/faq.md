@@ -15,5 +15,10 @@
 - Use the Viewing Results guide to export CSV or Excel files and hook them into your scheduling tools.
 - Charts include ARIA labels and keyboard navigation to meet accessibility requirements.
 
+## Documentation search
+- The documentation search database automatically syncs daily at 2:00 AM to reflect the latest documentation changes.
+- This ensures that search results always return the most up-to-date information from the documentation pages.
+- The sync process runs as a background job and does not impact system performance.
+
 ## Support
 Contact support@surveyshark.com, join the community forum, or review release notes for feature announcements.
