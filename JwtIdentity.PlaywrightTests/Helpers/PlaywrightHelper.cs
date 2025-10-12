@@ -72,14 +72,6 @@ namespace JwtIdentity.PlaywrightTests.Helpers
         {
             // Create a new context and page for each test
             Context = await _sharedBrowser.NewContextAsync(ContextOptions());
-
-            // Pre-consent to cookies in test context to avoid the banner entirely
-            // This runs before any page scripts and ensures the app sees consent immediately.
-            try
-            {
-                await Context.AddInitScriptAsync("() => { try { localStorage.setItem('cookiesAccepted','true'); } catch {} }");
-            }
-            catch { /* best-effort only */ }
             Page = await Context.NewPageAsync();
 
             // Always start from the home page and handle the cookie banner before anything else
@@ -311,7 +303,15 @@ namespace JwtIdentity.PlaywrightTests.Helpers
                 await locator.FillAsync(value);
                 try
                 {
+                    // Validate immediately after fill
                     await Microsoft.Playwright.Assertions.Expect(locator).ToHaveValueAsync(value, new() { Timeout = 2000 });
+
+                    // Blur to force binding/validation and survive re-render
+                    try { await locator.BlurAsync(); } catch { }
+
+                    // Ensure value persists a moment after potential re-render/hydration
+                    await Task.Delay(150);
+                    await Microsoft.Playwright.Assertions.Expect(locator).ToHaveValueAsync(value, new() { Timeout = 1500 });
                     return;
                 }
                 catch
