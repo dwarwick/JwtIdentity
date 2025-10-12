@@ -4,12 +4,12 @@
 @using static Microsoft.AspNetCore.Components.Web.RenderMode
 @rendermode InteractiveWebAssembly
 
-<PageTitle>Viewing Survey Results</PageTitle>
+<PageTitle>Viewing / Analyzing Survey Results</PageTitle>
 <HeadContent>
     <meta name="description" content="Analyze SurveyShark results in grids and charts to uncover respondent trends." />
 </HeadContent>
 
-<h1>Viewing Results</h1>
+<h1>Viewing / Analyzing Results</h1>
 <MudText Typo="Typo.subtitle1" Class="mb-6">Explore responses in data grids or visual dashboards to understand survey performance.</MudText>
 
 <section id="grid" class="mb-8">
@@ -44,8 +44,8 @@
     <MudPaper Class="pa-4">
         <MudText Typo="Typo.body1" Class="mb-2">Survey Shark can automatically analyze your survey responses using AI to provide insights and identify patterns.</MudText>
         <MudList T="string">
-            <MudListItem T="string" Icon="@Icons.Material.Filled.Psychology">Click <MudChip T="string" Size="@MudBlazor.Size.Small" Color="Color.Primary">Generate Analysis</MudChip> from the survey actions menu to create an AI-powered analysis.</MudListItem>
-            <MudListItem T="string" Icon="@Icons.Material.Filled.HourglassBottom">Analysis generation may take up to a minute depending on the number of responses.</MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Psychology">Click <MudChip T="string" Size="@MudBlazor.Size.Small" Color="Color.Primary">Generate Analysis</MudChip> from the survey menu > Surveys I Created to create an AI-powered analysis.</MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.HourglassBottom">Analysis generation may take up to a few minutes depending on the number of responses.</MudListItem>
             <MudListItem T="string" Icon="@Icons.Material.Filled.Analytics">Click <MudChip T="string" Size="@MudBlazor.Size.Small" Color="Color.Info">View Analysis</MudChip> to see the AI-generated insights.</MudListItem>
             <MudListItem T="string" Icon="@Icons.Material.Filled.History">Multiple analyses can be generated over time as new responses arrive, and you can view any previous analysis.</MudListItem>
             <MudListItem T="string" Icon="@Icons.Material.Filled.Lightbulb">The AI identifies trends, patterns, and key takeaways from your survey data automatically.</MudListItem>

@@ -7,13 +7,14 @@ namespace JwtIdentity.Client.Pages.Docs
             var toc = new[]
             {
                 Toc("grid", "Review results in a grid"),
-                Toc("charts", "Visualize answers with charts")
+                Toc("charts", "Visualize answers with charts"),
+                Toc("ai-analysis", "AI Survey Analysis")
             };
 
             var breadcrumbs = new[]
             {
                 Crumb("Documentation", "/documentation"),
-                Crumb("Viewing Results", "/docs/viewing-results", true)
+                Crumb("Viewing / Analyzing Results", "/docs/viewing-results", true)
             };
 
             return PageConfig(

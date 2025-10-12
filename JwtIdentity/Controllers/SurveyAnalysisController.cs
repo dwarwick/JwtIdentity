@@ -65,24 +65,49 @@ namespace JwtIdentity.Controllers
                     return BadRequest("Cannot generate analysis. Survey has no responses yet.");
                 }
 
-                // Check for daily limit - only allow one analysis per day if there are new responses since last analysis
-                var today = DateTime.UtcNow.Date;
+                // Determine user's local date range (today) using client-provided timezone offset
+                int offsetMinutes = 0;
+                if (Request.Headers.TryGetValue("X-Timezone-Offset", out var headerValues)
+                    && int.TryParse(headerValues.FirstOrDefault(), out var parsed))
+                {
+                    offsetMinutes = parsed;
+                }
+
+                var offset = TimeSpan.FromMinutes(offsetMinutes);
+                var userNow = DateTime.UtcNow + offset;
+                var userTodayLocal = userNow.Date; // start of day in user's local time
+                var dayStartUtc = userTodayLocal - offset;
+                var dayEndUtc = userTodayLocal.AddDays(1) - offset;
+
+                // Enforce: only one analysis per (user local) day
                 var existingAnalysisToday = await _context.SurveyAnalyses
-                    .Where(sa => sa.SurveyId == surveyId && sa.CreatedDate >= today)
+                    .Where(sa => sa.SurveyId == surveyId && sa.CreatedDate >= dayStartUtc && sa.CreatedDate < dayEndUtc)
                     .OrderByDescending(sa => sa.CreatedDate)
                     .FirstOrDefaultAsync();
 
+#if !DEBUG
                 if (existingAnalysisToday != null)
                 {
-                    // Check if there are new responses since the last analysis
-                    var latestAnalysisDate = existingAnalysisToday.CreatedDate;
+                    return BadRequest("You can only generate one analysis per day. Please try again tomorrow (based on your local time).");
+                }
+#endif
+
+                // Additionally: require new responses since the last time an analysis was generated (if any)
+                var latestAnalysis = await _context.SurveyAnalyses
+                    .Where(sa => sa.SurveyId == surveyId)
+                    .OrderByDescending(sa => sa.CreatedDate)
+                    .FirstOrDefaultAsync();
+
+                if (latestAnalysis != null)
+                {
+                    var latestAnalysisDate = latestAnalysis.CreatedDate;
                     var newResponsesSinceAnalysis = await _context.Answers
                         .AnyAsync(a => questionIds.Contains(a.QuestionId) && a.Complete && a.CreatedDate > latestAnalysisDate);
 
 #if !DEBUG
                     if (!newResponsesSinceAnalysis)
                     {
-                        return BadRequest("An analysis was already generated today with no new responses since then. Please try again tomorrow or wait for new responses.");
+                        return BadRequest("No new responses since the last analysis. Please collect new responses before generating another analysis.");
                     }
 #endif
                 }
