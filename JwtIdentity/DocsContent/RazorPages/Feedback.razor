@@ -1,0 +1,36 @@
+@page "/docs/feedback"
+@layout _DocsLayout
+@inherits JwtIdentity.Client.Pages.Docs.FeedbackModel
+@using static Microsoft.AspNetCore.Components.Web.RenderMode
+@rendermode InteractiveWebAssembly
+
+<PageTitle>Leaving Feedback</PageTitle>
+<HeadContent>
+    <meta name="description" content="Collect thoughtful input by guiding users through the SurveyShark feedback form." />
+</HeadContent>
+
+<h1>Feedback</h1>
+<MudText Typo="Typo.subtitle1" Class="mb-6">Encourage teammates and customers to share detailed feedback so the product can continue to improve.</MudText>
+
+<section id="submit-feedback" class="mb-8">
+    <MudText Typo="Typo.h2" Class="mb-3">Submit product feedback</MudText>
+    <MudPaper Class="pa-4">
+        <MudList T="string">
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Login">Confirm you are signed in.</MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Feedback">Select <MudChip T="string" Size="@MudBlazor.Size.Small" Color="Color.Primary">Leave Feedback</MudChip> from the site footer or the navigation menu.</MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Title">Provide a clear, concise title for the feedback.</MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Category">
+                Choose the feedback type:
+                <MudList T="string" Dense="true" Class="ms-6">
+                    <MudListItem T="string" Dense="true">Problem/Complaint – report bugs or confusing experiences.</MudListItem>
+                    <MudListItem T="string" Dense="true">Feature Request – propose new capabilities.</MudListItem>
+                    <MudListItem T="string" Dense="true">General Feedback – share praise or suggestions.</MudListItem>
+                </MudList>
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Description">Describe the details so the team can triage quickly.</MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Email">Include a contact email if you would like a follow-up.</MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Send">Select <MudChip T="string" Size="@MudBlazor.Size.Small" Color="Color.Primary">Submit</MudChip> to send your feedback.</MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Check">Wait for the confirmation toast to verify receipt.</MudListItem>
+        </MudList>
+    </MudPaper>
+</section>
