@@ -194,7 +194,8 @@ CREATE VIRTUAL TABLE IF NOT EXISTS docs USING fts5
         private string ExtractTextContent(string razorContent)
         {
             // Remove Razor directives (@page, @layout, @inherits, @using, @rendermode, etc.)
-            var content = Regex.Replace(razorContent, @"@\w+[^\r\n]*", " ");
+            // Only match at the beginning of lines to avoid matching @Icons.Material.Filled.Something in attributes
+            var content = Regex.Replace(razorContent, @"(?m)^\s*@\w+[^\r\n]*", " ");
             
             // Remove <PageTitle>, <HeadContent>, and other metadata
             content = Regex.Replace(content, @"<PageTitle>.*?</PageTitle>", " ", RegexOptions.Singleline);
@@ -203,6 +204,10 @@ CREATE VIRTUAL TABLE IF NOT EXISTS docs USING fts5
             // Remove comments
             content = Regex.Replace(content, @"@\*.*?\*@", " ", RegexOptions.Singleline);
             content = Regex.Replace(content, @"<!--.*?-->", " ", RegexOptions.Singleline);
+            
+            // Remove Razor expressions in attributes (like @Icons.Material.Filled.Something)
+            // This handles expressions within HTML tags
+            content = Regex.Replace(content, @"@[\w.]+", " ");
             
             // Remove all HTML/component tags but keep their content
             content = Regex.Replace(content, @"<[^>]+>", " ");
