@@ -405,3 +405,5 @@ FodyWeavers.xsd
 
 /JwtIdentity.PlaywrightTests/appsettings.Development.json
 /JwtIdentity/App_Data/docs.db
+# Generated documentation files (copied from Client project during build)
+JwtIdentity/DocsContent/RazorPages/
