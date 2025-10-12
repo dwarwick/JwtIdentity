@@ -19,74 +19,16 @@
         <MudButton Href="/docs/viewing-results" Variant="Variant.Outlined" Color="Color.Primary" Class="mx-2">See How Results Work</MudButton>
     </MudPaper>
 
-    <!-- Executive Summary (AI) Preview -->
+    <!-- Executive Summary (Sample) -->
     <MudPaper Elevation="2" Class="pa-6 mb-8">
-        <MudStack Spacing="3">
-            <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
-                <MudText Typo="Typo.h5">Executive Summary (AI)</MudText>
-                @if (HasLiveSummary)
-                {
-                    <MudChip T="string" Color="Color.Info" Size="MudBlazor.Size.Small">
-                        Generated @FormatDateTime(LastAnalysis?.CreatedDate ?? DateTime.UtcNow)
-                    </MudChip>
-                }
-            </MudStack>
-
-            @if (!IsAuthenticated)
-            {
-                <MudAlert Severity="Severity.Info">
-                    See a live AI summary with your own data. <MudLink Href="/login">Sign in</MudLink> to try it.
-                </MudAlert>
-            }
-            else if ((MySurveys?.Count ?? 0) == 0)
-            {
-                <MudAlert Severity="Severity.Info">
-                    You need at least one survey with responses to preview a live summary.
-                    <MudLink Href="/survey/create" Class="ml-1">Create a survey</MudLink> or share an existing one to collect responses.
-                </MudAlert>
-            }
-            else
-            {
-                <MudStack Row="true" Spacing="2" AlignItems="AlignItems.End">
-                    <MudSelect T="int"
-                               Label="Choose a survey"
-                               Variant="Variant.Outlined"
-                               Value="@SelectedSurveyId"
-                               ValueChanged="@OnSurveySelected"
-                               Dense="true"
-                               Class="mr-2"
-                               Adornment="Adornment.Start"
-                               AdornmentIcon="@Icons.Material.Filled.Assessment">
-                        @foreach (var s in MySurveys)
-                        {
-                            <MudSelectItem Value="@s.Id">@s.Title (@s.NumberOfResponses responses)</MudSelectItem>
-                        }
-                    </MudSelect>
-
-                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(SelectedSurveyId == 0 || IsGenerating)" Loading="@IsGenerating" OnClick="GenerateLiveSummary">
-                        <MudIcon Icon="@Icons.Material.Filled.Psychology" Class="mr-1" Size="MudBlazor.Size.Small" /> @(IsGenerating ? "Generating..." : "Generate AI Summary")
-                    </MudButton>
-
-                    @if (SelectedSurveyId != 0 && HasLiveSummary)
-                    {
-                        <MudButton Variant="Variant.Outlined" Color="Color.Info" Href="@($"/survey/analysis/{SelectedSurveyId}")">
-                            <MudIcon Icon="@Icons.Material.Filled.Analytics" Class="mr-1" Size="MudBlazor.Size.Small" /> View full analysis
-                        </MudButton>
-                    }
-                </MudStack>
-            }
-
+        <MudStack Spacing="2">
+            <MudText Typo="Typo.h5">Executive Summary (Sample)</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">
+                This is a static example of the AI analysis output so you can preview the style and depth of insight.
+            </MudText>
             <MudDivider />
-
             <div style="white-space: pre-wrap; font-family: 'Roboto', sans-serif; line-height: 1.6;">
-                @if (HasLiveSummary)
-                {
-                    @LiveOverallText
-                }
-                else
-                {
-                    @SampleExecutiveSummary
-                }
+                @SampleFullAnalysis
             </div>
         </MudStack>
     </MudPaper>
