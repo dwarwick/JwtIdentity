@@ -1,0 +1,85 @@
+@page "/survey/analysis/{SurveyId:int}"
+@namespace JwtIdentity.Client.Pages.Survey
+@inherits ViewSurveyAnalysisModel
+@attribute [Authorize(Policy = Permissions.CreateSurvey)]
+
+<PageTitle>Survey Shark - Survey Analysis</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    @if (IsLoading)
+    {
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+        <MudText Typo="Typo.body1">Loading analysis...</MudText>
+    }
+    else if (Survey != null)
+    {
+        <MudStack Spacing="4">
+            <MudPaper Class="pa-4">
+                <MudStack Spacing="2">
+                    <MudText Typo="Typo.h4">Survey Analysis</MudText>
+                    <MudText Typo="Typo.h6">@Survey.Title</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">@Survey.Description</MudText>
+                </MudStack>
+            </MudPaper>
+
+            @if (Analyses != null && Analyses.Any())
+            {
+                <MudPaper Class="pa-4">
+                    <MudStack Spacing="3">
+                        <MudText Typo="Typo.h6">Select Analysis Date</MudText>
+                        <MudSelect T="int" 
+                                   Label="Analysis Date" 
+                                   Variant="Variant.Outlined" 
+                                   ValueChanged="@OnAnalysisSelected"
+                                   Value="@(SelectedAnalysis?.Id ?? 0)">
+                            @foreach (var analysis in Analyses)
+                            {
+                                <MudSelectItem Value="@analysis.Id">
+                                    @FormatDateTime(analysis.CreatedDate)
+                                </MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudStack>
+                </MudPaper>
+
+                @if (SelectedAnalysis != null)
+                {
+                    <MudPaper Class="pa-4">
+                        <MudStack Spacing="3">
+                            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                                <MudText Typo="Typo.h6">Analysis Generated</MudText>
+                                <MudChip T="string" Color="Color.Info" Size="MudBlazor.Size.Small">
+                                    @FormatDateTime(SelectedAnalysis.CreatedDate)
+                                </MudChip>
+                            </MudStack>
+                            
+                            <MudDivider />
+                            
+                            <div style="white-space: pre-wrap; font-family: 'Roboto', sans-serif; line-height: 1.6;">
+                                @SelectedAnalysis.Analysis
+                            </div>
+                        </MudStack>
+                    </MudPaper>
+                }
+            }
+            else
+            {
+                <MudPaper Class="pa-4">
+                    <MudAlert Severity="Severity.Info">
+                        No analyses have been generated for this survey yet. 
+                        Go back to "Surveys I Created" and click "Generate Analysis" to create one.
+                    </MudAlert>
+                </MudPaper>
+            }
+
+            <MudStack Row="true" Spacing="2">
+                <MudButton Variant="Variant.Filled" 
+                           Color="Color.Primary" 
+                           OnClick="@(() => NavigationManager.NavigateTo("/mysurveys/surveysicreated"))">
+                    <MudIcon Icon="@Icons.Material.Filled.ArrowBack" Class="mr-2" />
+                    Back to Surveys
+                </MudButton>
+            </MudStack>
+        </MudStack>
+    }
+</MudContainer>

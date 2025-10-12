@@ -224,6 +224,24 @@ Therefore, on the charts and later on the grid, you will see fake demo data." :
                             </DemoPopup>
                         </div>
 
+                        <div> @* Generate Analysis Button *@
+                            <MudButton Class=@($"survey-action-button {ShareButtonDisabled(isPublished, false)}")
+                                       Variant="Variant.Filled"
+                                       Color="Color.Primary"
+                                       OnClick="@(async () => await GenerateAnalysis((context as SurveyViewModel).Id, isPublished))">
+                                <MudIcon Icon="@Icons.Material.Filled.Psychology" Class="mr-1" Size="MudBlazor.Size.Small" /> Generate Analysis
+                            </MudButton>
+                        </div>
+
+                        <div> @* View Analysis Button *@
+                            <MudButton Class=@($"survey-action-button {ShareButtonDisabled(isPublished, false)}")
+                                       Variant="Variant.Filled"
+                                       Color="Color.Info"
+                                       OnClick="@(() => ViewAnalysis((context as SurveyViewModel).Id, isPublished))">
+                                <MudIcon Icon="@Icons.Material.Filled.Analytics" Class="mr-1" Size="MudBlazor.Size.Small" /> View Analysis
+                            </MudButton>
+                        </div>
+
                         <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 8 })" AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft">
                             <MudText Typo="Typo.body2">Go ahead and click the Preview button to preview what the survey will look like.</MudText>
                         </DemoPopup>
