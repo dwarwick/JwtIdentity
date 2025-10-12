@@ -422,7 +422,7 @@ namespace JwtIdentity.PlaywrightTests.Tests
 
             // Wait for the "Analysis generated successfully!" snackbar
             var successToast = Page.Locator(".mud-snackbar").Filter(new() { HasTextString = "Analysis generated successfully!" });
-            await Microsoft.Playwright.Assertions.Expect(successToast).ToBeVisibleAsync(new() { Timeout = 120000 });
+            await Microsoft.Playwright.Assertions.Expect(successToast).ToBeVisibleAsync(new() { Timeout = 180000 });
 
             // The demo should auto-advance to step 9 when analysis completes
             await Page.WaitForTimeoutAsync(1000);
@@ -433,7 +433,7 @@ namespace JwtIdentity.PlaywrightTests.Tests
             // Click View Analysis button
             var viewAnalysisButton = Page.GetByRole(AriaRole.Button, new() { Name = "View Analysis" });
             await viewAnalysisButton.ClickAsync();
-            
+
             var beforeAnalysisPage = await GetPageReadyIdAsync(Page);
             await Page.WaitForURLAsync("**/survey/analysis/**", new() { Timeout = 15000 });
             await WaitForBlazorInteractiveAsync(beforeAnalysisPage, Page);
@@ -447,7 +447,7 @@ namespace JwtIdentity.PlaywrightTests.Tests
             // Click Next to go to register page
             var nextButton = Page.GetByRole(AriaRole.Button, new() { Name = "Next" });
             await nextButton.ClickAsync();
-            
+
             var beforeRegister = await GetPageReadyIdAsync(Page);
             await Page.WaitForURLAsync("**/register", new() { Timeout = 10000 });
             await WaitForBlazorInteractiveAsync(beforeRegister, Page);

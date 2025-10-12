@@ -23,6 +23,7 @@ namespace JwtIdentity.Services
 
         public async Task<SurveyViewModel> GenerateSurveyAsync(string description, string aiInstructions = "")
         {
+            _httpClient.Timeout = TimeSpan.FromSeconds(180);
             var apiKey = _configuration["OpenAI:ApiKey"];
             if (string.IsNullOrWhiteSpace(apiKey))
             {
@@ -279,7 +280,7 @@ namespace JwtIdentity.Services
             var tfAnswers = answers.OfType<TrueFalseAnswer>().ToList();
             var trueCount = tfAnswers.Count(a => a.Value.HasValue && a.Value.Value);
             var falseCount = tfAnswers.Count(a => a.Value.HasValue && !a.Value.Value);
-            
+
             return new
             {
                 questionNumber = question.QuestionNumber,
@@ -305,17 +306,17 @@ namespace JwtIdentity.Services
             var multipleChoiceAnswers = answers.OfType<MultipleChoiceAnswer>().Select(a => a.SelectedOptionId).ToList();
             var singleChoiceAnswers = answers.OfType<SingleChoiceAnswer>().Select(a => a.SelectedOptionId).ToList();
             var selectedOptionIds = multipleChoiceAnswers.Concat(singleChoiceAnswers).ToList();
-            
+
             // Group by option and count
             var optionCounts = selectedOptionIds
                 .GroupBy(id => id)
                 .ToDictionary(g => g.Key, g => g.Count());
-            
+
             // Build responses dictionary with option text and count
             var responses = mcQuestion?.Options?
                 .OrderBy(o => o.Order)
                 .ToDictionary(
-                    o => o.OptionText, 
+                    o => o.OptionText,
                     o => optionCounts.ContainsKey(o.Id) ? optionCounts[o.Id] : 0
                 ) ?? new Dictionary<string, int>();
 
@@ -334,16 +335,16 @@ namespace JwtIdentity.Services
             var ratingAnswers = answers.OfType<Rating1To10Answer>()
                 .Where(a => a.SelectedOptionId >= 1 && a.SelectedOptionId <= 10)
                 .ToList();
-            
+
             // Group by rating value and count
             var ratingCounts = ratingAnswers
                 .GroupBy(a => a.SelectedOptionId)
                 .ToDictionary(g => g.Key.ToString(), g => g.Count());
-            
+
             // Ensure all ratings 1-10 are represented
             var responses = Enumerable.Range(1, 10)
                 .ToDictionary(
-                    i => i.ToString(), 
+                    i => i.ToString(),
                     i => ratingCounts.ContainsKey(i.ToString()) ? ratingCounts[i.ToString()] : 0
                 );
 
@@ -367,7 +368,7 @@ namespace JwtIdentity.Services
 
             // Count how many times each option was selected
             var optionCounts = new Dictionary<int, int>();
-            
+
             foreach (var answer in answers.OfType<SelectAllThatApplyAnswer>())
             {
                 if (!string.IsNullOrEmpty(answer.SelectedOptionIds))
@@ -376,7 +377,7 @@ namespace JwtIdentity.Services
                         .Select(id => int.TryParse(id, out var val) ? val : 0)
                         .Where(id => id > 0)
                         .ToList();
-                    
+
                     foreach (var optionId in optionIds)
                     {
                         if (optionCounts.ContainsKey(optionId))
@@ -386,7 +387,7 @@ namespace JwtIdentity.Services
                     }
                 }
             }
-            
+
             // Build responses dictionary with option text and count
             var responses = satQuestion?.Options?
                 .OrderBy(o => o.Order)
