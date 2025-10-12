@@ -225,11 +225,17 @@ Therefore, on the charts and later on the grid, you will see fake demo data." :
                         </div>
 
                         <div> @* Generate Analysis Button *@
+                            @{
+                                var surveyId = (context as SurveyViewModel).Id;
+                                var isGenerating = IsGenerating(surveyId);
+                            }
                             <MudButton Class=@($"survey-action-button {ShareButtonDisabled(isPublished, false)}")
                                        Variant="Variant.Filled"
                                        Color="Color.Primary"
-                                       OnClick="@(async () => await GenerateAnalysis((context as SurveyViewModel).Id, isPublished))">
-                                <MudIcon Icon="@Icons.Material.Filled.Psychology" Class="mr-1" Size="MudBlazor.Size.Small" /> Generate Analysis
+                                       Disabled="@(isGenerating || !isPublished)"
+                                       Loading="@isGenerating"
+                                       OnClick="@(async () => await GenerateAnalysis(surveyId, isPublished))">
+                                <MudIcon Icon="@Icons.Material.Filled.Psychology" Class="mr-1" Size="MudBlazor.Size.Small" /> @(!isGenerating ? "Generate Analysis" : "Generating...")
                             </MudButton>
                         </div>
 

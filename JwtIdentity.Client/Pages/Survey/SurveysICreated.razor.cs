@@ -16,6 +16,10 @@
 
         protected bool IsDemoUser { get; set; }
 
+        // Track which survey analyses are currently being generated
+        private readonly HashSet<int> _generatingAnalyses = new();
+        protected bool IsGenerating(int surveyId) => _generatingAnalyses.Contains(surveyId);
+
 
         protected bool ShowDemoStep(int step) => IsDemoUser && DemoStep == step;
 
@@ -148,6 +152,15 @@
 
             try
             {
+                // Prevent duplicate clicks and inform the user this may take a while
+                if (!_generatingAnalyses.Contains(surveyId))
+                {
+                    _generatingAnalyses.Add(surveyId);
+                    StateHasChanged();
+                }
+
+                _ = Snackbar.Add("Generating analysis. This may take up to a minute...", Severity.Info);
+
                 var result = await ApiService.PostAsync<SurveyAnalysisViewModel>($"{ApiEndpoints.SurveyAnalysis}/generate/{surveyId}", null);
                 if (result != null)
                 {
@@ -157,6 +170,14 @@
             catch (Exception ex)
             {
                 _ = Snackbar.Add($"Error generating analysis: {ex.Message}", Severity.Error);
+            }
+            finally
+            {
+                if (_generatingAnalyses.Contains(surveyId))
+                {
+                    _generatingAnalyses.Remove(surveyId);
+                    StateHasChanged();
+                }
             }
         }
 
