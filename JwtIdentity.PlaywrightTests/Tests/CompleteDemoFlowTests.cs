@@ -232,12 +232,12 @@ namespace JwtIdentity.PlaywrightTests.Tests
                 await previewButton.ClickAsync();
             }
 
-            try 
-            { 
-                var beforeUrl = await GetPageReadyIdAsync(Page); 
-                await Page.WaitForURLAsync("**/survey**", new() { Timeout = 8000 }); 
-                await WaitForBlazorInteractiveAsync(beforeUrl, Page); 
-            } 
+            try
+            {
+                var beforeUrl = await GetPageReadyIdAsync(Page);
+                await Page.WaitForURLAsync("**/survey**", new() { Timeout = 8000 });
+                await WaitForBlazorInteractiveAsync(beforeUrl, Page);
+            }
             catch (TimeoutException) { }
 
             var nextButton = Page.GetByRole(AriaRole.Button, new() { Name = "Next" });
@@ -361,6 +361,7 @@ namespace JwtIdentity.PlaywrightTests.Tests
             await select.ScrollIntoViewIfNeededAsync();
             await select.ClickAsync();
             var listItem = Page.Locator("div.mud-list-item-text").Locator("p").Filter(new() { HasTextString = "All Questions" });
+            await listItem.WaitForAsync();
             await listItem.ScrollIntoViewIfNeededAsync();
             await listItem.GetByText("All Questions").ClickAsync();
             await Page.WaitForTimeoutAsync(1000);
