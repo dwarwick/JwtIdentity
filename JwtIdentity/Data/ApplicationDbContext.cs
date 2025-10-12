@@ -33,6 +33,7 @@ namespace JwtIdentity.Data
         public DbSet<ChoiceOption> ChoiceOptions { get; set; }
         public DbSet<Feedback> Feedbacks { get; set; }
         public DbSet<Setting> Settings { get; set; }
+        public DbSet<SurveyAnalysis> SurveyAnalyses { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
