@@ -47,6 +47,11 @@ namespace JwtIdentity.Client.Pages.Survey
         protected bool IsLastQuestion => CurrentQuestionIndex >= QuestionsToShow.Count - 1;
         protected bool IsFirstQuestion => CurrentQuestionIndex == 0;
         protected int TotalQuestionsShown => CurrentQuestionIndex + 1;
+        
+        // Track which groups need to be visited based on branching logic
+        private HashSet<int> _groupsToVisit = new();
+        private HashSet<int> _visitedGroups = new();
+        private int _currentGroupId = 0;
 
         protected override async Task OnInitializedAsync()
         {
@@ -281,6 +286,8 @@ namespace JwtIdentity.Client.Pages.Survey
                     }
                 }
 
+                // Process branching logic after answer is saved
+                await OnQuestionAnswered();
             }
         }
 
@@ -533,30 +540,54 @@ namespace JwtIdentity.Client.Pages.Survey
             else
             {
                 // Start with group 0 questions
-                QuestionsToShow = Survey.Questions
-                    .Where(q => q.GroupId == 0)
-                    .OrderBy(q => q.QuestionNumber)
-                    .ToList();
+                _currentGroupId = 0;
+                _groupsToVisit.Clear();
+                _groupsToVisit.Add(0); // Always start with group 0
+                _visitedGroups.Clear();
+                
+                LoadQuestionsForCurrentGroup();
             }
             CurrentQuestionIndex = 0;
         }
 
+        private void LoadQuestionsForCurrentGroup()
+        {
+            var groupQuestions = Survey.Questions
+                .Where(q => q.GroupId == _currentGroupId)
+                .OrderBy(q => q.QuestionNumber)
+                .ToList();
+                
+            QuestionsToShow.AddRange(groupQuestions);
+            _visitedGroups.Add(_currentGroupId);
+        }
+
         protected void GoToNextQuestion()
         {
-            if (HasBranching)
+            if (!HasBranching)
             {
-                // In branching mode, check if current question/group triggers a branch
-                // For now, just go to next question in sequence
-                // Full branching logic would be implemented here
+                // Simple linear progression
                 if (CurrentQuestionIndex < QuestionsToShow.Count - 1)
                 {
                     CurrentQuestionIndex++;
                 }
+                StateHasChanged();
+                return;
+            }
+
+            // Branching mode - check if we need to add more groups
+            if (CurrentQuestionIndex < QuestionsToShow.Count - 1)
+            {
+                // Still questions in current list
+                CurrentQuestionIndex++;
             }
             else
             {
-                if (CurrentQuestionIndex < QuestionsToShow.Count - 1)
+                // Check if we need to load more groups
+                var nextGroup = GetNextGroupToVisit();
+                if (nextGroup.HasValue)
                 {
+                    _currentGroupId = nextGroup.Value;
+                    LoadQuestionsForCurrentGroup();
                     CurrentQuestionIndex++;
                 }
             }
@@ -570,6 +601,54 @@ namespace JwtIdentity.Client.Pages.Survey
                 CurrentQuestionIndex--;
                 StateHasChanged();
             }
+        }
+
+        private int? GetNextGroupToVisit()
+        {
+            // Find groups that should be visited but haven't been yet
+            var unvisitedGroups = _groupsToVisit.Except(_visitedGroups).OrderBy(g => g).ToList();
+            return unvisitedGroups.FirstOrDefault() as int?;
+        }
+
+        private void ProcessBranchingForCurrentQuestion()
+        {
+            if (!HasBranching || CurrentQuestion == null) return;
+
+            var answer = CurrentQuestion.Answers.FirstOrDefault();
+            if (answer == null) return;
+
+            // Check for branching based on answer type
+            if (CurrentQuestion.QuestionType == QuestionType.MultipleChoice)
+            {
+                var mcAnswer = (MultipleChoiceAnswerViewModel)answer;
+                if (mcAnswer.SelectedOptionId > 0)
+                {
+                    var mcQuestion = CurrentQuestion as MultipleChoiceQuestionViewModel;
+                    var selectedOption = mcQuestion?.Options.FirstOrDefault(o => o.Id == mcAnswer.SelectedOptionId);
+                    if (selectedOption?.BranchToGroupId.HasValue == true)
+                    {
+                        _groupsToVisit.Add(selectedOption.BranchToGroupId.Value);
+                    }
+                }
+            }
+            else if (CurrentQuestion.QuestionType == QuestionType.SelectAllThatApply)
+            {
+                var saAnswer = (SelectAllThatApplyAnswerViewModel)answer;
+                var saQuestion = CurrentQuestion as SelectAllThatApplyQuestionViewModel;
+                if (saQuestion != null && !string.IsNullOrEmpty(saAnswer.SelectedOptionIds))
+                {
+                    var selectedIds = saAnswer.SelectedOptionIds.Split(',').Select(int.Parse).ToList();
+                    foreach (var optionId in selectedIds)
+                    {
+                        var option = saQuestion.Options.FirstOrDefault(o => o.Id == optionId);
+                        if (option?.BranchToGroupId.HasValue == true)
+                        {
+                            _groupsToVisit.Add(option.BranchToGroupId.Value);
+                        }
+                    }
+                }
+            }
+            // Note: True/False branching would be implemented here when persistence is added
         }
 
         protected bool IsCurrentQuestionAnswered()
@@ -593,6 +672,14 @@ namespace JwtIdentity.Client.Pages.Survey
                 default:
                     return false;
             }
+        }
+
+        protected Task OnQuestionAnswered()
+        {
+            // Process branching logic when a question is answered
+            ProcessBranchingForCurrentQuestion();
+            StateHasChanged();
+            return Task.CompletedTask;
         }
     }
 }
