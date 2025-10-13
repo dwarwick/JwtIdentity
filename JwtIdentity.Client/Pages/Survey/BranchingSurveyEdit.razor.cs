@@ -33,23 +33,25 @@ namespace JwtIdentity.Client.Pages.Survey
                     // Load or initialize question groups
                     var groups = await ApiService.GetAsync<List<QuestionGroupViewModel>>($"{ApiEndpoints.QuestionGroup}/Survey/{Survey.Id}");
 
+                    // Always ensure Group 0 exists (it's implicit and may not be in the database)
+                    QuestionGroups = new List<QuestionGroupViewModel>();
+                    
+                    // Add Group 0 if it doesn't exist in the loaded groups
+                    if (groups == null || !groups.Any(g => g.GroupNumber == 0))
+                    {
+                        QuestionGroups.Add(new QuestionGroupViewModel
+                        {
+                            SurveyId = Survey.Id,
+                            GroupNumber = 0,
+                            GroupName = "Default Group",
+                            SubmitAfterGroup = false // Default to false so it can flow to other groups
+                        });
+                    }
+                    
+                    // Add all other groups from the database
                     if (groups != null && groups.Any())
                     {
-                        QuestionGroups = groups;
-                    }
-                    else
-                    {
-                        // Initialize with default group 0
-                        QuestionGroups = new List<QuestionGroupViewModel>
-                        {
-                            new QuestionGroupViewModel
-                            {
-                                SurveyId = Survey.Id,
-                                GroupNumber = 0,
-                                GroupName = "Default Group",
-                                SubmitAfterGroup = true
-                            }
-                        };
+                        QuestionGroups.AddRange(groups);
                     }
 
                     // Load all questions with their options for branching configuration
