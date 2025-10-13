@@ -12,6 +12,7 @@ namespace JwtIdentity.Common.ViewModels
         public bool IsRequired { get; set; } = true; // Indicates if the question is mandatory
         [JsonPropertyName("questionType")]
         public QuestionType QuestionType { get; set; }
+        public int GroupId { get; set; } = 0;
         public List<AnswerViewModel> Answers { get; set; }
     }
 

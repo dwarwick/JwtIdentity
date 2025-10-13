@@ -29,6 +29,7 @@ namespace JwtIdentity.Data
         public DbSet<PlaywrightLog> PlaywrightLogs { get; set; }
         public DbSet<Survey> Surveys { get; set; }
         public DbSet<Question> Questions { get; set; }
+        public DbSet<QuestionGroup> QuestionGroups { get; set; }
         public DbSet<Answer> Answers { get; set; }
         public DbSet<ChoiceOption> ChoiceOptions { get; set; }
         public DbSet<Feedback> Feedbacks { get; set; }
