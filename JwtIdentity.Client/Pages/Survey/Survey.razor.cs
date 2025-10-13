@@ -39,6 +39,15 @@ namespace JwtIdentity.Client.Pages.Survey
 
         protected bool ShowDemoStep(int step) => IsDemoUser && DemoStep == step;
 
+        // Branching-related properties
+        protected bool HasBranching => Survey?.QuestionGroups?.Any(g => g.GroupNumber > 0) ?? false;
+        protected int CurrentQuestionIndex { get; set; } = 0;
+        protected List<QuestionViewModel> QuestionsToShow { get; set; } = new();
+        protected QuestionViewModel CurrentQuestion => QuestionsToShow.ElementAtOrDefault(CurrentQuestionIndex);
+        protected bool IsLastQuestion => CurrentQuestionIndex >= QuestionsToShow.Count - 1;
+        protected bool IsFirstQuestion => CurrentQuestionIndex == 0;
+        protected int TotalQuestionsShown => CurrentQuestionIndex + 1;
+
         protected override async Task OnInitializedAsync()
         {
             var authState = await AuthStateProvider.GetAuthenticationStateAsync();
@@ -219,6 +228,9 @@ namespace JwtIdentity.Client.Pages.Survey
                         }
                     }
                 }
+
+                // Initialize branching questions after loading survey data
+                InitializeBranchingQuestions();
             }
             else
             {
@@ -507,6 +519,79 @@ namespace JwtIdentity.Client.Pages.Survey
 
                 // Ensure any demo popover tied to the element renders after the scroll
                 StateHasChanged();
+            }
+        }
+
+        // Branching navigation methods
+        protected void InitializeBranchingQuestions()
+        {
+            if (!HasBranching)
+            {
+                // No branching - show all questions
+                QuestionsToShow = Survey.Questions.OrderBy(q => q.QuestionNumber).ToList();
+            }
+            else
+            {
+                // Start with group 0 questions
+                QuestionsToShow = Survey.Questions
+                    .Where(q => q.GroupId == 0)
+                    .OrderBy(q => q.QuestionNumber)
+                    .ToList();
+            }
+            CurrentQuestionIndex = 0;
+        }
+
+        protected void GoToNextQuestion()
+        {
+            if (HasBranching)
+            {
+                // In branching mode, check if current question/group triggers a branch
+                // For now, just go to next question in sequence
+                // Full branching logic would be implemented here
+                if (CurrentQuestionIndex < QuestionsToShow.Count - 1)
+                {
+                    CurrentQuestionIndex++;
+                }
+            }
+            else
+            {
+                if (CurrentQuestionIndex < QuestionsToShow.Count - 1)
+                {
+                    CurrentQuestionIndex++;
+                }
+            }
+            StateHasChanged();
+        }
+
+        protected void GoToPreviousQuestion()
+        {
+            if (CurrentQuestionIndex > 0)
+            {
+                CurrentQuestionIndex--;
+                StateHasChanged();
+            }
+        }
+
+        protected bool IsCurrentQuestionAnswered()
+        {
+            if (CurrentQuestion == null) return false;
+
+            switch (CurrentQuestion.QuestionType)
+            {
+                case QuestionType.Text:
+                    return !string.IsNullOrEmpty(((TextAnswerViewModel)CurrentQuestion.Answers[0]).Text);
+                case QuestionType.TrueFalse:
+                    return ((TrueFalseAnswerViewModel)CurrentQuestion.Answers[0]).Value != null;
+                case QuestionType.Rating1To10:
+                    return ((Rating1To10AnswerViewModel)CurrentQuestion.Answers[0]).SelectedOptionId != 0;
+                case QuestionType.MultipleChoice:
+                    return ((MultipleChoiceAnswerViewModel)CurrentQuestion.Answers[0]).SelectedOptionId != 0;
+                case QuestionType.SelectAllThatApply:
+                    var selectAllAnswer = (SelectAllThatApplyAnswerViewModel)CurrentQuestion.Answers[0];
+                    return !string.IsNullOrEmpty(selectAllAnswer.SelectedOptionIds) &&
+                           selectAllAnswer.SelectedOptions.Any(opt => opt);
+                default:
+                    return false;
             }
         }
     }
