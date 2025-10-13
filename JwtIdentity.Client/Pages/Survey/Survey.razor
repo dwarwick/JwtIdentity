@@ -138,8 +138,8 @@
                                             {
                                                 var index = i;
                                                 var option = saQuestion.Options[index];
-                                                <MudCheckBox @key="option" T="bool" Checked="@answer.SelectedOptions[index]"
-                                                            CheckedChanged="@((bool isChecked) => HandleSelectAllThatApplyOption(answer, index, isChecked, option.Id))"
+                                                <MudCheckBox @key="option" T="bool" Value="@answer.SelectedOptions[index]"
+                                                            ValueChanged="@((bool isChecked) => HandleSelectAllThatApplyOption(answer, index, isChecked, option.Id))"
                                                             Label="@option.OptionText" Color="Color.Primary" Disabled="@(Preview || (IsAnonymousUser && !AgreedToTerms))" />
                                             }
                                         </MudStack>

@@ -47,7 +47,7 @@ namespace JwtIdentity.Client.Pages.Survey
         protected bool IsLastQuestion => CurrentQuestionIndex >= QuestionsToShow.Count - 1;
         protected bool IsFirstQuestion => CurrentQuestionIndex == 0;
         protected int TotalQuestionsShown => CurrentQuestionIndex + 1;
-        
+
         // Track which groups need to be visited based on branching logic
         private HashSet<int> _groupsToVisit = new();
         private HashSet<int> _visitedGroups = new();
@@ -544,7 +544,7 @@ namespace JwtIdentity.Client.Pages.Survey
                 _groupsToVisit.Clear();
                 _groupsToVisit.Add(0); // Always start with group 0
                 _visitedGroups.Clear();
-                
+
                 LoadQuestionsForCurrentGroup();
             }
             CurrentQuestionIndex = 0;
@@ -556,7 +556,7 @@ namespace JwtIdentity.Client.Pages.Survey
                 .Where(q => q.GroupId == _currentGroupId)
                 .OrderBy(q => q.QuestionNumber)
                 .ToList();
-                
+
             QuestionsToShow.AddRange(groupQuestions);
             _visitedGroups.Add(_currentGroupId);
         }
