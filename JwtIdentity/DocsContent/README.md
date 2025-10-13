@@ -17,6 +17,8 @@ As of the recent update, the documentation search system now indexes content dir
 
 This ensures the `.razor` files are available even when deployed, as they're part of the server project's output.
 
+**Note**: The `RazorPages/` folder is in `.gitignore` because these files are generated during build and should not be committed to source control. The source of truth is the `.razor` files in the `JwtIdentity.Client/Pages/Docs/` folder.
+
 ## Migration
 
 The markdown files in this folder are kept for backward compatibility during the transition but are no longer actively maintained. They may be removed in a future update.
