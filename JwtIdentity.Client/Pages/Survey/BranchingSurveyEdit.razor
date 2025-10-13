@@ -160,30 +160,10 @@ else
 
                                 <MudDivider />
 
-                                <MudText Typo="Typo.subtitle1" Class="font-weight-bold">After completing this group:</MudText>
-                                
-                                <MudRadioGroup Value="@group.SubmitAfterGroup" ValueChanged="@((bool value) => { group.SubmitAfterGroup = value; UpdateQuestionGroup(group); })">
-                                    <MudRadio Value="true" Color="Color.Primary">Submit Survey</MudRadio>
-                                    <MudRadio Value="false" Color="Color.Primary">
-                                        Branch to another group
-                                    </MudRadio>
-                                </MudRadioGroup>
-
-                                @if (!group.SubmitAfterGroup)
-                                {
-                                    <MudSelect T="int?" Label="Next Group" Value="@group.NextGroupId" 
-                                              Variant="Variant.Outlined"
-                                              HelperText="Select which group to show next"
-                                              ValueChanged="@((int? value) => { group.NextGroupId = value; UpdateQuestionGroup(group); })">
-                                        <MudSelectItem Value="@((int?)null)">None (Submit)</MudSelectItem>
-                                        @foreach (var g in QuestionGroups.Where(qg => qg.GroupNumber != group.GroupNumber))
-                                        {
-                                            <MudSelectItem Value="@((int?)g.Id)">
-                                                Group @g.GroupNumber @(string.IsNullOrWhiteSpace(g.GroupName) ? "" : $"- {g.GroupName}")
-                                            </MudSelectItem>
-                                        }
-                                    </MudSelect>
-                                }
+                                <MudAlert Severity="Severity.Info" Dense="true" Class="mt-2">
+                                    Flow between groups is automatically determined by your branching configuration. 
+                                    The survey will submit when all relevant questions have been answered.
+                                </MudAlert>
                             </MudStack>
                         </ChildContent>
                     </MudExpansionPanel>
