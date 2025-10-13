@@ -128,5 +128,43 @@ namespace JwtIdentity.Controllers
                     "An unexpected error occurred while deleting the question. Please try again later.");
             }
         }
+
+        // PUT: api/Question/UpdateGroup
+        [HttpPut("UpdateGroup")]
+        public async Task<IActionResult> UpdateQuestionGroup([FromBody] UpdateQuestionGroupRequest request)
+        {
+            try
+            {
+                _logger.LogInformation("Updating group for question {QuestionId} to group {GroupId}", 
+                    request.QuestionId, request.GroupId);
+
+                var question = await _context.Questions.FindAsync(request.QuestionId);
+                if (question == null)
+                {
+                    _logger.LogWarning("Question {QuestionId} not found", request.QuestionId);
+                    return NotFound($"Question with ID {request.QuestionId} not found");
+                }
+
+                question.GroupId = request.GroupId;
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation("Successfully updated question {QuestionId} to group {GroupId}", 
+                    request.QuestionId, request.GroupId);
+                return Ok(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating question group for question {QuestionId}", 
+                    request?.QuestionId);
+                return StatusCode(StatusCodes.Status500InternalServerError, 
+                    "An error occurred while updating the question group");
+            }
+        }
+    }
+
+    public class UpdateQuestionGroupRequest
+    {
+        public int QuestionId { get; set; }
+        public int GroupId { get; set; }
     }
 }
