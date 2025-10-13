@@ -215,10 +215,11 @@ namespace JwtIdentity.Client.Pages.Survey
         {
             try
             {
+                var oldGroupId = question.GroupId;
                 question.GroupId = targetGroupId;
 
-                // Update question via API
-                var response = await ApiService.UpdateAsync($"{ApiEndpoints.Question}/UpdateGroup", new
+                // Update question via API - use PostAsync with proper typing
+                var response = await ApiService.PostAsync<object, object>($"{ApiEndpoints.Question}/UpdateGroup", new
                 {
                     QuestionId = question.Id,
                     GroupId = targetGroupId
@@ -233,13 +234,15 @@ namespace JwtIdentity.Client.Pages.Survey
                 {
                     _ = Snackbar.Add("Error moving question", Severity.Error);
                     // Revert on error
-                    await LoadData();
+                    question.GroupId = oldGroupId;
+                    StateHasChanged();
                 }
             }
             catch (Exception ex)
             {
                 Logger?.LogError(ex, "Error moving question to group");
                 _ = Snackbar.Add("Error moving question", Severity.Error);
+                // Reload data to ensure consistency
                 await LoadData();
             }
         }
