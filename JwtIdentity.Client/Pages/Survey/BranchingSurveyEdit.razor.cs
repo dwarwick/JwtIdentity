@@ -53,7 +53,9 @@ namespace JwtIdentity.Client.Pages.Survey
                     }
 
                     // Load all questions with their options for branching configuration
-                    foreach (var question in Survey.Questions)
+                    // Create a copy of the list to avoid "Collection was modified" exception
+                    var questionsToLoad = Survey.Questions.ToList();
+                    foreach (var question in questionsToLoad)
                     {
                         if (question.QuestionType == QuestionType.MultipleChoice)
                         {
