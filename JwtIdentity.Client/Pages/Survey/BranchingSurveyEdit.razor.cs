@@ -83,6 +83,18 @@ namespace JwtIdentity.Client.Pages.Survey
                                 }
                             }
                         }
+                        else if (question.QuestionType == QuestionType.TrueFalse)
+                        {
+                            // Initialize True/False branching dictionaries to prevent KeyNotFoundException
+                            if (!TrueBranch.ContainsKey(question.Id))
+                            {
+                                TrueBranch[question.Id] = null;
+                            }
+                            if (!FalseBranch.ContainsKey(question.Id))
+                            {
+                                FalseBranch[question.Id] = null;
+                            }
+                        }
                     }
                 }
                 else
