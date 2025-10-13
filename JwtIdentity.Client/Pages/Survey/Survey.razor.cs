@@ -479,21 +479,26 @@ namespace JwtIdentity.Client.Pages.Survey
                 if (response != null)
                 {
                     // Update the answer in the Survey.Questions
-                    //foreach (var question in Survey.Questions)
-                    //{
-                    //    if (question.Id == answer.QuestionId)
-                    //    {
-                    //        for (int i = 0; i < question.Answers.Count; i++)
-                    //        {
-                    //            if (question.Answers[i].Id == answer.Id)
-                    //            {
-                    //                question.Answers[i] = response;
-                    //            }
-                    //        }
-                    //    }
-                    //}
+                    foreach (var question in Survey.Questions)
+                    {
+                        if (question.Id == answer.QuestionId)
+                        {
+                            for (int i = 0; i < question.Answers.Count; i++)
+                            {
+                                if (question.Answers[i].Id == answer.Id)
+                                {
+                                    question.Answers[i] = response;
+                                }
+                            }
+                        }
+                    }
 
-                    await LoadData(); // Reload the data to reflect the changes
+                    // Only reload data for non-branching surveys
+                    // For branching surveys, we handle this in navigation
+                    if (!HasBranching)
+                    {
+                        await LoadData();
+                    }
                 }
             }
 
