@@ -466,12 +466,13 @@ namespace JwtIdentity.Client.Pages.Survey
 
             // Update the SelectedOptionIds string (comma-separated values)
             var selectedIds = new List<int>();
-            for (int i = 0; i < answer.SelectedOptions.Count; i++)
+            var question = (SelectAllThatApplyQuestionViewModel)Survey.Questions.First(q => q.Id == answer.QuestionId);
+            
+            for (int i = 0; i < answer.SelectedOptions.Count && i < question.Options.Count; i++)
             {
                 if (answer.SelectedOptions[i])
                 {
-                    var option = ((SelectAllThatApplyQuestionViewModel)Survey.Questions.First(q => q.Id == answer.QuestionId)).Options[i];
-                    selectedIds.Add(option.Id);
+                    selectedIds.Add(question.Options[i].Id);
                 }
             }
 
