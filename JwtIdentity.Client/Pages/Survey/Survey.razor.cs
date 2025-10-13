@@ -223,7 +223,12 @@ namespace JwtIdentity.Client.Pages.Survey
                                         answer.SelectedOptions.Add(false);
                                     }
 
-                                    var selectedOptionIds = answer.SelectedOptionIds?.Split(',').Select(int.Parse).ToList() ?? new List<int>();
+                                    var selectedOptionIds = new List<int>();
+                                    if (!string.IsNullOrWhiteSpace(answer.SelectedOptionIds))
+                                    {
+                                        selectedOptionIds = answer.SelectedOptionIds.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                                            .Select(int.Parse).ToList();
+                                    }
                                     for (int i = 0; i < saQuestion.Options.Count; i++)
                                     {
                                         answer.SelectedOptions[i] = selectedOptionIds.Contains(saQuestion.Options[i].Id);
