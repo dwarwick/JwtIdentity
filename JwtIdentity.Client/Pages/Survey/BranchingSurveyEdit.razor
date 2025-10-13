@@ -56,7 +56,7 @@ else
                                 <MudTextField Label="Group Name" Value="@group.GroupName" 
                                              Variant="Variant.Outlined" 
                                              HelperText="Optional: Give this group a descriptive name"
-                                             ValueChanged="@((string value) => { group.GroupName = value; UpdateQuestionGroup(group); })" />
+                                             ValueChanged="@(async (string value)  => { group.GroupName = value; await UpdateQuestionGroup(group); })" />
 
                                 <MudDivider />
 
@@ -77,7 +77,7 @@ else
                                         {
                                             <MudListItem T="string">
                                                 <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
-                                                    <MudText>Q@question.QuestionNumber: @question.Text</MudText>
+                                                    <MudText>@question.QuestionNumber: @question.Text</MudText>
                                                     <MudSpacer />
                                                     <MudButton Size="MudBlazor.Size.Small" Variant="Variant.Text" Color="Color.Primary"
                                                                OnClick="@(() => MoveQuestionToGroup(question, 0))">
@@ -96,7 +96,7 @@ else
                                     {
                                         <MudDivider Class="my-2" />
                                         <MudText Typo="Typo.subtitle2" Class="font-weight-bold">
-                                            Branching for Q@question.QuestionNumber: @question.Text
+                                            Branching for @question.QuestionNumber: @question.Text
                                         </MudText>
 
                                         @if (question.QuestionType == QuestionType.TrueFalse)
@@ -210,7 +210,7 @@ else
                 {
                     <MudListItem T="string">
                         <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
-                            <MudText Style="flex: 1;">Q@question.QuestionNumber: @question.Text</MudText>
+                            <MudText Style="flex: 1;">@question.QuestionNumber: @question.Text</MudText>
                             <MudSelect T="int" Label="Assign to Group" Value="question.GroupId" 
                                       ValueChanged="@(value => MoveQuestionToGroup(question, value))"
                                       Variant="Variant.Outlined" Dense="true" Style="width: 200px;">
