@@ -32,7 +32,7 @@ namespace JwtIdentity.Client.Pages.Survey
                 {
                     // Load or initialize question groups
                     var groups = await ApiService.GetAsync<List<QuestionGroupViewModel>>($"{ApiEndpoints.QuestionGroup}/Survey/{Survey.Id}");
-                    
+
                     if (groups != null && groups.Any())
                     {
                         QuestionGroups = groups;
@@ -161,7 +161,7 @@ namespace JwtIdentity.Client.Pages.Survey
                     if (response)
                     {
                         QuestionGroups.Remove(group);
-                        
+
                         // Move questions back to group 0
                         foreach (var question in Survey.Questions.Where(q => q.GroupId == group.GroupNumber))
                         {
@@ -216,9 +216,9 @@ namespace JwtIdentity.Client.Pages.Survey
             try
             {
                 question.GroupId = targetGroupId;
-                
+
                 // Update question via API
-                var response = await ApiService.PostAsync($"{ApiEndpoints.Question}/UpdateGroup", new
+                var response = await ApiService.UpdateAsync($"{ApiEndpoints.Question}/UpdateGroup", new
                 {
                     QuestionId = question.Id,
                     GroupId = targetGroupId
