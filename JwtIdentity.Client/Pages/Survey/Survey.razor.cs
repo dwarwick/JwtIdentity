@@ -53,6 +53,19 @@ namespace JwtIdentity.Client.Pages.Survey
         private HashSet<int> _visitedGroups = new();
         private int _currentGroupId = 0;
 
+        // Calculate total question count based on groups to visit
+        protected int CalculateTotalQuestions()
+        {
+            if (!HasBranching)
+            {
+                return Survey?.Questions?.Count ?? 0;
+            }
+
+            // Count questions from all groups that will be visited
+            var allGroupsToConsider = _visitedGroups.Union(_groupsToVisit).ToHashSet();
+            return Survey?.Questions?.Count(q => allGroupsToConsider.Contains(q.GroupId)) ?? 0;
+        }
+
         protected override async Task OnInitializedAsync()
         {
             var authState = await AuthStateProvider.GetAuthenticationStateAsync();
@@ -652,59 +665,86 @@ namespace JwtIdentity.Client.Pages.Survey
 
         private void ProcessBranchingForCurrentQuestion()
         {
-            if (!HasBranching || CurrentQuestion == null) return;
+            if (!HasBranching) return;
 
-            var answer = CurrentQuestion.Answers.FirstOrDefault();
-            if (answer == null) return;
+            // Recalculate all groups to visit from scratch based on all answered questions
+            // This handles the case where a user goes back and changes an answer
+            RecalculateGroupsToVisit();
+        }
 
-            // Check for branching based on answer type
-            if (CurrentQuestion.QuestionType == QuestionType.MultipleChoice)
+        private void RecalculateGroupsToVisit()
+        {
+            if (!HasBranching) return;
+
+            // Start fresh - only keep visited groups (we can't unvisit them)
+            // but recalculate which groups we need to visit based on current answers
+            var newGroupsToVisit = new HashSet<int>();
+
+            // Always start with group 0 if it has questions
+            var group0Questions = Survey.Questions.Where(q => q.GroupId == 0).ToList();
+            if (group0Questions.Any())
             {
-                var mcAnswer = (MultipleChoiceAnswerViewModel)answer;
-                if (mcAnswer.SelectedOptionId > 0)
+                newGroupsToVisit.Add(0);
+            }
+
+            // Go through all questions that have been shown and check their branching
+            foreach (var question in QuestionsToShow)
+            {
+                var answer = question.Answers.FirstOrDefault();
+                if (answer == null) continue;
+
+                // Check for branching based on answer type
+                if (question.QuestionType == QuestionType.MultipleChoice)
                 {
-                    var mcQuestion = CurrentQuestion as MultipleChoiceQuestionViewModel;
-                    var selectedOption = mcQuestion?.Options.FirstOrDefault(o => o.Id == mcAnswer.SelectedOptionId);
-                    if (selectedOption?.BranchToGroupId.HasValue == true)
+                    var mcAnswer = answer as MultipleChoiceAnswerViewModel;
+                    if (mcAnswer?.SelectedOptionId > 0)
                     {
-                        _groupsToVisit.Add(selectedOption.BranchToGroupId.Value);
+                        var mcQuestion = question as MultipleChoiceQuestionViewModel;
+                        var selectedOption = mcQuestion?.Options.FirstOrDefault(o => o.Id == mcAnswer.SelectedOptionId);
+                        if (selectedOption?.BranchToGroupId.HasValue == true)
+                        {
+                            newGroupsToVisit.Add(selectedOption.BranchToGroupId.Value);
+                        }
                     }
                 }
-            }
-            else if (CurrentQuestion.QuestionType == QuestionType.SelectAllThatApply)
-            {
-                var saAnswer = (SelectAllThatApplyAnswerViewModel)answer;
-                var saQuestion = CurrentQuestion as SelectAllThatApplyQuestionViewModel;
-                if (saQuestion != null && !string.IsNullOrEmpty(saAnswer.SelectedOptionIds))
+                else if (question.QuestionType == QuestionType.SelectAllThatApply)
                 {
-                    var selectedIds = saAnswer.SelectedOptionIds.Split(',').Select(int.Parse).ToList();
-                    foreach (var optionId in selectedIds)
+                    var saAnswer = answer as SelectAllThatApplyAnswerViewModel;
+                    var saQuestion = question as SelectAllThatApplyQuestionViewModel;
+                    if (saQuestion != null && !string.IsNullOrEmpty(saAnswer?.SelectedOptionIds))
                     {
-                        var option = saQuestion.Options.FirstOrDefault(o => o.Id == optionId);
-                        if (option?.BranchToGroupId.HasValue == true)
+                        var selectedIds = saAnswer.SelectedOptionIds.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(int.Parse).ToList();
+                        foreach (var optionId in selectedIds)
                         {
-                            _groupsToVisit.Add(option.BranchToGroupId.Value);
+                            var option = saQuestion.Options.FirstOrDefault(o => o.Id == optionId);
+                            if (option?.BranchToGroupId.HasValue == true)
+                            {
+                                newGroupsToVisit.Add(option.BranchToGroupId.Value);
+                            }
+                        }
+                    }
+                }
+                else if (question.QuestionType == QuestionType.TrueFalse)
+                {
+                    var tfAnswer = answer as TrueFalseAnswerViewModel;
+                    var tfQuestion = question as TrueFalseQuestionViewModel;
+                    if (tfQuestion != null && tfAnswer?.Value.HasValue == true)
+                    {
+                        // Check if there's branching configured for this True/False answer
+                        if (tfAnswer.Value.Value == true && tfQuestion.BranchToGroupIdOnTrue.HasValue)
+                        {
+                            newGroupsToVisit.Add(tfQuestion.BranchToGroupIdOnTrue.Value);
+                        }
+                        else if (tfAnswer.Value.Value == false && tfQuestion.BranchToGroupIdOnFalse.HasValue)
+                        {
+                            newGroupsToVisit.Add(tfQuestion.BranchToGroupIdOnFalse.Value);
                         }
                     }
                 }
             }
-            else if (CurrentQuestion.QuestionType == QuestionType.TrueFalse)
-            {
-                var tfAnswer = (TrueFalseAnswerViewModel)answer;
-                var tfQuestion = CurrentQuestion as TrueFalseQuestionViewModel;
-                if (tfQuestion != null && tfAnswer.Value.HasValue)
-                {
-                    // Check if there's branching configured for this True/False answer
-                    if (tfAnswer.Value.Value == true && tfQuestion.BranchToGroupIdOnTrue.HasValue)
-                    {
-                        _groupsToVisit.Add(tfQuestion.BranchToGroupIdOnTrue.Value);
-                    }
-                    else if (tfAnswer.Value.Value == false && tfQuestion.BranchToGroupIdOnFalse.HasValue)
-                    {
-                        _groupsToVisit.Add(tfQuestion.BranchToGroupIdOnFalse.Value);
-                    }
-                }
-            }
+
+            // Update the groups to visit with the recalculated set
+            _groupsToVisit = newGroupsToVisit;
         }
 
         protected bool IsCurrentQuestionAnswered()
