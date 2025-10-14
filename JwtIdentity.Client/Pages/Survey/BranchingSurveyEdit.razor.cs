@@ -87,14 +87,20 @@ namespace JwtIdentity.Client.Pages.Survey
                         }
                         else if (question.QuestionType == QuestionType.TrueFalse)
                         {
-                            // Initialize True/False branching dictionaries to prevent KeyNotFoundException
-                            if (!TrueBranch.ContainsKey(question.Id))
+                            // Load True/False question with branching data
+                            var tfQuestion = await ApiService.GetAsync<TrueFalseQuestionViewModel>(
+                                $"{ApiEndpoints.Question}/QuestionAndOptions/{question.Id}");
+                            if (tfQuestion != null)
                             {
-                                TrueBranch[question.Id] = null;
-                            }
-                            if (!FalseBranch.ContainsKey(question.Id))
-                            {
-                                FalseBranch[question.Id] = null;
+                                var index = Survey.Questions.FindIndex(q => q.Id == question.Id);
+                                if (index >= 0)
+                                {
+                                    Survey.Questions[index] = tfQuestion;
+                                }
+
+                                // Initialize True/False branching dictionaries with values from database
+                                TrueBranch[tfQuestion.Id] = tfQuestion.BranchToGroupIdOnTrue;
+                                FalseBranch[tfQuestion.Id] = tfQuestion.BranchToGroupIdOnFalse;
                             }
                         }
                     }
@@ -266,6 +272,44 @@ namespace JwtIdentity.Client.Pages.Survey
             catch (Exception ex)
             {
                 Logger?.LogError(ex, "Error updating choice option branch");
+                _ = Snackbar.Add("Error updating branching", Severity.Error);
+            }
+        }
+
+        protected async Task UpdateTrueFalseBranch(TrueFalseQuestionViewModel question, int? branchToGroupId, bool isTrue)
+        {
+            try
+            {
+                // Update the question's branching properties
+                if (isTrue)
+                {
+                    question.BranchToGroupIdOnTrue = branchToGroupId;
+                }
+                else
+                {
+                    question.BranchToGroupIdOnFalse = branchToGroupId;
+                }
+
+                // Call the API to persist the changes
+                var response = await ApiService.PostAsync<object, object>($"{ApiEndpoints.Question}/UpdateTrueFalseBranching", new
+                {
+                    QuestionId = question.Id,
+                    BranchToGroupIdOnTrue = question.BranchToGroupIdOnTrue,
+                    BranchToGroupIdOnFalse = question.BranchToGroupIdOnFalse
+                });
+
+                if (response != null)
+                {
+                    _ = Snackbar.Add("Branching updated", Severity.Success);
+                }
+                else
+                {
+                    _ = Snackbar.Add("Error updating branching", Severity.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger?.LogError(ex, "Error updating True/False branching");
                 _ = Snackbar.Add("Error updating branching", Severity.Error);
             }
         }

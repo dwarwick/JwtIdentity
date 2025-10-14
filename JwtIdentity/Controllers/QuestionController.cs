@@ -160,11 +160,48 @@ namespace JwtIdentity.Controllers
                     "An error occurred while updating the question group");
             }
         }
+
+        // POST: api/Question/UpdateTrueFalseBranching
+        [HttpPost("UpdateTrueFalseBranching")]
+        public async Task<IActionResult> UpdateTrueFalseBranching([FromBody] UpdateTrueFalseBranchingRequest request)
+        {
+            try
+            {
+                _logger.LogInformation("Updating True/False branching for question {QuestionId}", request.QuestionId);
+
+                var question = await _context.Questions.OfType<TrueFalseQuestion>().FirstOrDefaultAsync(q => q.Id == request.QuestionId);
+                if (question == null)
+                {
+                    _logger.LogWarning("True/False question {QuestionId} not found", request.QuestionId);
+                    return NotFound($"True/False question with ID {request.QuestionId} not found");
+                }
+
+                question.BranchToGroupIdOnTrue = request.BranchToGroupIdOnTrue;
+                question.BranchToGroupIdOnFalse = request.BranchToGroupIdOnFalse;
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation("Successfully updated True/False branching for question {QuestionId}", request.QuestionId);
+                return Ok(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating True/False branching for question {QuestionId}", request?.QuestionId);
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    "An error occurred while updating the True/False branching");
+            }
+        }
     }
 
     public class UpdateQuestionGroupRequest
     {
         public int QuestionId { get; set; }
         public int GroupId { get; set; }
+    }
+
+    public class UpdateTrueFalseBranchingRequest
+    {
+        public int QuestionId { get; set; }
+        public int? BranchToGroupIdOnTrue { get; set; }
+        public int? BranchToGroupIdOnFalse { get; set; }
     }
 }

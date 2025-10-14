@@ -104,7 +104,8 @@ else
                                             <MudStack Spacing="2" Class="ml-4">
                                                 <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
                                                     <MudText>If True, go to:</MudText>
-                                                    <MudSelect T="int?" Label="Group" @bind-Value="TrueBranch[question.Id]" 
+                                                    <MudSelect T="int?" Label="Group" Value="@TrueBranch[question.Id]" 
+                                                              ValueChanged="@(async (int? value) => { TrueBranch[question.Id] = value; await UpdateTrueFalseBranch((TrueFalseQuestionViewModel)question, value, true); })"
                                                               Variant="Variant.Outlined" Dense="true" Style="width: 200px;">
                                                         <MudSelectItem Value="@((int?)null)">Continue in sequence</MudSelectItem>
                                                         @foreach (var g in QuestionGroups.Where(qg => qg.GroupNumber != group.GroupNumber))
@@ -117,7 +118,8 @@ else
                                                 </MudStack>
                                                 <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
                                                     <MudText>If False, go to:</MudText>
-                                                    <MudSelect T="int?" Label="Group" @bind-Value="FalseBranch[question.Id]" 
+                                                    <MudSelect T="int?" Label="Group" Value="@FalseBranch[question.Id]" 
+                                                              ValueChanged="@(async (int? value) => { FalseBranch[question.Id] = value; await UpdateTrueFalseBranch((TrueFalseQuestionViewModel)question, value, false); })"
                                                               Variant="Variant.Outlined" Dense="true" Style="width: 200px;">
                                                         <MudSelectItem Value="@((int?)null)">Continue in sequence</MudSelectItem>
                                                         @foreach (var g in QuestionGroups.Where(qg => qg.GroupNumber != group.GroupNumber))

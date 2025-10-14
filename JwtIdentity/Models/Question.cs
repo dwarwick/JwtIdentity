@@ -24,7 +24,9 @@ namespace JwtIdentity.Models
 
     public class TrueFalseQuestion : Question
     {
-        // Possibly no extra fields, but you might store a “default” or “explanation”
+        // Branching logic for True/False questions
+        public int? BranchToGroupIdOnTrue { get; set; }
+        public int? BranchToGroupIdOnFalse { get; set; }
     }
 
     public class Rating1To10Question : Question

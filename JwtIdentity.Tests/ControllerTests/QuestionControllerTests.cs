@@ -121,5 +121,93 @@ namespace JwtIdentity.Tests.ControllerTests
             var result = await _controller.DeleteQuestion(999);
             Assert.That(result, Is.InstanceOf<NotFoundObjectResult>());
         }
+
+        [Test]
+        public async Task UpdateTrueFalseBranching_UpdatesSuccessfully()
+        {
+            // Arrange
+            var tfQuestion = new TrueFalseQuestion 
+            { 
+                Id = 50, 
+                Text = "TF?", 
+                SurveyId = 1, 
+                QuestionType = QuestionType.TrueFalse, 
+                QuestionNumber = 1,
+                BranchToGroupIdOnTrue = null,
+                BranchToGroupIdOnFalse = null
+            };
+            MockDbContext.Questions.Add(tfQuestion);
+            await MockDbContext.SaveChangesAsync();
+
+            var request = new UpdateTrueFalseBranchingRequest
+            {
+                QuestionId = 50,
+                BranchToGroupIdOnTrue = 2,
+                BranchToGroupIdOnFalse = 3
+            };
+
+            // Act
+            var result = await _controller.UpdateTrueFalseBranching(request);
+
+            // Assert
+            Assert.That(result, Is.InstanceOf<OkObjectResult>());
+            var updatedQuestion = await MockDbContext.Questions.OfType<TrueFalseQuestion>().FirstOrDefaultAsync(q => q.Id == 50);
+            Assert.That(updatedQuestion, Is.Not.Null);
+            Assert.That(updatedQuestion!.BranchToGroupIdOnTrue, Is.EqualTo(2));
+            Assert.That(updatedQuestion.BranchToGroupIdOnFalse, Is.EqualTo(3));
+        }
+
+        [Test]
+        public async Task UpdateTrueFalseBranching_QuestionNotFound()
+        {
+            // Arrange
+            var request = new UpdateTrueFalseBranchingRequest
+            {
+                QuestionId = 999,
+                BranchToGroupIdOnTrue = 2,
+                BranchToGroupIdOnFalse = 3
+            };
+
+            // Act
+            var result = await _controller.UpdateTrueFalseBranching(request);
+
+            // Assert
+            Assert.That(result, Is.InstanceOf<NotFoundObjectResult>());
+        }
+
+        [Test]
+        public async Task UpdateTrueFalseBranching_ClearsExistingBranching()
+        {
+            // Arrange
+            var tfQuestion = new TrueFalseQuestion 
+            { 
+                Id = 51, 
+                Text = "TF2?", 
+                SurveyId = 1, 
+                QuestionType = QuestionType.TrueFalse, 
+                QuestionNumber = 1,
+                BranchToGroupIdOnTrue = 5,
+                BranchToGroupIdOnFalse = 6
+            };
+            MockDbContext.Questions.Add(tfQuestion);
+            await MockDbContext.SaveChangesAsync();
+
+            var request = new UpdateTrueFalseBranchingRequest
+            {
+                QuestionId = 51,
+                BranchToGroupIdOnTrue = null,
+                BranchToGroupIdOnFalse = null
+            };
+
+            // Act
+            var result = await _controller.UpdateTrueFalseBranching(request);
+
+            // Assert
+            Assert.That(result, Is.InstanceOf<OkObjectResult>());
+            var updatedQuestion = await MockDbContext.Questions.OfType<TrueFalseQuestion>().FirstOrDefaultAsync(q => q.Id == 51);
+            Assert.That(updatedQuestion, Is.Not.Null);
+            Assert.That(updatedQuestion!.BranchToGroupIdOnTrue, Is.Null);
+            Assert.That(updatedQuestion.BranchToGroupIdOnFalse, Is.Null);
+        }
     }
 }
