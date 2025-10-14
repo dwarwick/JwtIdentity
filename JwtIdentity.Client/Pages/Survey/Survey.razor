@@ -120,10 +120,10 @@
                                 {
                                     var answer = CurrentQuestion.Answers.FirstOrDefault() as TrueFalseAnswerViewModel;
                                     <MudPaper Elevation="0" Class="pa-2">
-                                        <MudRadioGroup @key="CurrentQuestion" T="bool?" Value="answer.Value" ValueChanged="@((v) => HandleAnswerQuestion(answer, v))" Disabled="@(Preview || (IsAnonymousUser && !AgreedToTerms))">
+                                        <MudRadioGroup @key="CurrentQuestion" T="bool?" Value="@answer.Value" ValueChanged="@((v) => HandleAnswerQuestion(answer, v))" Disabled="@(Preview || (IsAnonymousUser && !AgreedToTerms))">
                                             <MudStack Spacing="2">
-                                                <MudRadio Color="Color.Primary" Label="True" Value="@true" />
-                                                <MudRadio Color="Color.Primary" Label="False" Value="@false" />
+                                                <MudRadio T="bool?" Color="Color.Primary" Label="True" Value="@((bool?)true)" />
+                                                <MudRadio T="bool?" Color="Color.Primary" Label="False" Value="@((bool?)false)" />
                                             </MudStack>
                                         </MudRadioGroup>
                                     </MudPaper>
