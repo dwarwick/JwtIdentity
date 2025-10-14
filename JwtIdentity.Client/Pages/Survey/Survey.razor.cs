@@ -548,22 +548,8 @@ namespace JwtIdentity.Client.Pages.Survey
                     _groupsToVisit.Add(0); // Start with group 0 if it has questions
                     LoadQuestionsForCurrentGroup();
                 }
-                else
-                {
-                    // No group 0 questions - start with first non-zero group
-                    var firstGroup = Survey.Questions
-                        .Where(q => q.GroupId > 0)
-                        .OrderBy(q => q.GroupId)
-                        .Select(q => q.GroupId)
-                        .FirstOrDefault();
-                    
-                    if (firstGroup > 0)
-                    {
-                        _currentGroupId = firstGroup;
-                        _groupsToVisit.Add(firstGroup);
-                        LoadQuestionsForCurrentGroup();
-                    }
-                }
+                // If there are no Group 0 questions, the survey can't start
+                // This shouldn't happen in a properly configured survey
             }
             CurrentQuestionIndex = 0;
         }
