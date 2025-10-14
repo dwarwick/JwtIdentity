@@ -553,6 +553,42 @@ namespace JwtIdentity.Client.Pages.Survey
                 .OrderBy(q => q.QuestionNumber)
                 .ToList();
 
+            // Initialize SelectedOptions for SelectAllThatApply questions in this group
+            foreach (var question in groupQuestions)
+            {
+                if (question.QuestionType == QuestionType.SelectAllThatApply)
+                {
+                    var saQuestion = question as SelectAllThatApplyQuestionViewModel;
+                    var answer = question.Answers.FirstOrDefault() as SelectAllThatApplyAnswerViewModel;
+                    
+                    if (answer != null && saQuestion != null)
+                    {
+                        // Ensure SelectedOptions list is properly sized
+                        if (answer.SelectedOptions == null)
+                        {
+                            answer.SelectedOptions = new List<bool>();
+                        }
+                        
+                        while (answer.SelectedOptions.Count < saQuestion.Options.Count)
+                        {
+                            answer.SelectedOptions.Add(false);
+                        }
+                        
+                        // Populate based on saved SelectedOptionIds
+                        if (!string.IsNullOrWhiteSpace(answer.SelectedOptionIds))
+                        {
+                            var selectedOptionIds = answer.SelectedOptionIds.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                                .Select(int.Parse).ToList();
+                            
+                            for (int i = 0; i < saQuestion.Options.Count && i < answer.SelectedOptions.Count; i++)
+                            {
+                                answer.SelectedOptions[i] = selectedOptionIds.Contains(saQuestion.Options[i].Id);
+                            }
+                        }
+                    }
+                }
+            }
+
             QuestionsToShow.AddRange(groupQuestions);
             _visitedGroups.Add(_currentGroupId);
         }
