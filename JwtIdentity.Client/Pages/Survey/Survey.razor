@@ -84,7 +84,7 @@
                                 {
                                     var answer = CurrentQuestion.Answers.FirstOrDefault() as MultipleChoiceAnswerViewModel;
                                     <MudPaper Elevation="0" Class="pa-2">
-                                        <MudRadioGroup @key="CurrentQuestion" T="int?" Value="@(answer.SelectedOptionId == 0 ? null : (int?)answer.SelectedOptionId)" ValueChanged="@((v) => HandleAnswerQuestion(answer, v ?? 0))" Disabled="@(Preview || (IsAnonymousUser && !AgreedToTerms))">
+                                        <MudRadioGroup @key="CurrentQuestion" T="int" Value="answer.SelectedOptionId" ValueChanged="@((v) => HandleAnswerQuestion(answer, v))" Disabled="@(Preview || (IsAnonymousUser && !AgreedToTerms))">
                                             <MudStack Spacing="2">
                                                 @foreach (var option in ((MultipleChoiceQuestionViewModel)CurrentQuestion).Options.OrderBy(o => o.Order))
                                                 {
@@ -98,7 +98,7 @@
                                 {
                                     var answer = CurrentQuestion.Answers.FirstOrDefault() as Rating1To10AnswerViewModel;
                                     <MudPaper Elevation="0" Class="pa-2">
-                                        <MudRadioGroup @key="CurrentQuestion" T="int?" Value="@(answer.SelectedOptionId == 0 ? null : (int?)answer.SelectedOptionId)" ValueChanged="@((v) => HandleAnswerQuestion(answer, v ?? 0))" Disabled="@(Preview || (IsAnonymousUser && !AgreedToTerms))">
+                                        <MudRadioGroup @key="CurrentQuestion" T="int" Value="answer.SelectedOptionId" ValueChanged="@((v) => HandleAnswerQuestion(answer, v))" Disabled="@(Preview || (IsAnonymousUser && !AgreedToTerms))">
                                             <div class="rating-options">
                                                 <MudPaper Class="rating-option" Elevation="0">
                                                     @for (int i = 1; i <= 10; i++)
@@ -196,7 +196,7 @@
                                     MultipleChoiceAnswerViewModel answer = question.Answers.FirstOrDefault() as MultipleChoiceAnswerViewModel;
 
                                     <MudPaper Elevation="0" Class="pa-2">
-                                    <MudRadioGroup @key="question" T="int?" Value="@(answer.SelectedOptionId == 0 ? null : (int?)answer.SelectedOptionId)" ValueChanged="@((v) => HandleAnswerQuestion(answer, v ?? 0))" Disabled="@(ViewAnswers || (IsAnonymousUser && !AgreedToTerms))" >
+                                            <MudRadioGroup @key="question" T="int" Value="answer.SelectedOptionId" ValueChanged="@((v) => HandleAnswerQuestion(answer, v))" Disabled="@(ViewAnswers || (IsAnonymousUser && !AgreedToTerms))">
                                             <MudStack Spacing="2">
                                                 @foreach (var option in ((MultipleChoiceQuestionViewModel)question).Options.OrderBy(o => o.Order))
                                                 {
@@ -211,7 +211,7 @@
                                     Rating1To10AnswerViewModel answer = question.Answers.FirstOrDefault() as Rating1To10AnswerViewModel;
 
                                     <MudPaper Elevation="0" Class="pa-2">
-                                        <MudRadioGroup @key="question" T="int?" Value="@(answer.SelectedOptionId == 0 ? null : (int?)answer.SelectedOptionId)" ValueChanged="@((v) => HandleAnswerQuestion(answer, v ?? 0))" Disabled="@(ViewAnswers || (IsAnonymousUser && !AgreedToTerms))">
+                                            <MudRadioGroup @key="question" T="int" Value="answer.SelectedOptionId" ValueChanged="@((v) => HandleAnswerQuestion(answer, v))" Disabled="@(ViewAnswers || (IsAnonymousUser && !AgreedToTerms))">
                                             <div class="rating-options">
                                                 <MudPaper Class="rating-option" Elevation="0">
                                                     <MudRadio Color="Color.Primary" Label="1" Value="1" LabelPlacement="Placement.Left" />
