@@ -7,5 +7,6 @@ namespace JwtIdentity.Common.ViewModels
         public int? SelectAllThatApplyQuestionId { get; set; }
         public string OptionText { get; set; }
         public int Order { get; set; }
+        public int? BranchToGroupId { get; set; }
     }
 }

@@ -12,6 +12,7 @@ namespace JwtIdentity.Models
         public int QuestionNumber { get; set; }        
         public bool IsRequired { get; set; } = true; // Indicates if the question is mandatory
         public QuestionType QuestionType { get; set; } // E.g. Text, TrueFalse, MultipleChoice
+        public int GroupId { get; set; } = 0; // Question group, default is 0
         public List<Answer> Answers { get; set; }
     }
 
@@ -23,7 +24,9 @@ namespace JwtIdentity.Models
 
     public class TrueFalseQuestion : Question
     {
-        // Possibly no extra fields, but you might store a “default” or “explanation”
+        // Branching logic for True/False questions
+        public int? BranchToGroupIdOnTrue { get; set; }
+        public int? BranchToGroupIdOnFalse { get; set; }
     }
 
     public class Rating1To10Question : Question

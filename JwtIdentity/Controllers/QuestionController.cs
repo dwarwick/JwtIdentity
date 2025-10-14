@@ -26,9 +26,9 @@ namespace JwtIdentity.Controllers
             try
             {
                 _logger.LogInformation("Fetching question with ID {QuestionId}", id);
-                
+
                 Question question = await _context.Questions.FirstOrDefaultAsync(x => x.Id == id);
-                
+
                 if (question == null)
                 {
                     _logger.LogWarning("Question with ID {QuestionId} not found", id);
@@ -36,21 +36,21 @@ namespace JwtIdentity.Controllers
                 }
 
                 _logger.LogDebug("Found question of type {QuestionType}", question.QuestionType);
-                
+
                 // Use handler to load any related data for this question type
                 var handler = _questionHandlerFactory.GetHandler(question.QuestionType);
                 await handler.LoadRelatedDataAsync(new List<int> { id }, _context);
-                
+
                 // Re-fetch the question to get any related data that was loaded
                 question = await _context.Questions.FirstOrDefaultAsync(x => x.Id == id);
-                
+
                 _logger.LogDebug("Returning question with handler-loaded related data");
                 return Ok(_mapper.Map<QuestionViewModel>(question));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error retrieving question with ID {QuestionId}", id);
-                return StatusCode(StatusCodes.Status500InternalServerError, 
+                return StatusCode(StatusCodes.Status500InternalServerError,
                     "An error occurred while retrieving the question. Please try again later.");
             }
         }
@@ -62,7 +62,7 @@ namespace JwtIdentity.Controllers
             try
             {
                 _logger.LogInformation("Attempting to delete question with ID {QuestionId}", id);
-                
+
                 // Load the question first to check if it exists
                 var question = await _context.Questions.FindAsync(id);
                 if (question == null)
@@ -112,21 +112,96 @@ namespace JwtIdentity.Controllers
             catch (DbUpdateConcurrencyException ex)
             {
                 _logger.LogError(ex, "Concurrency conflict when deleting question {QuestionId}", id);
-                return StatusCode(StatusCodes.Status409Conflict, 
+                return StatusCode(StatusCodes.Status409Conflict,
                     "The question was modified by another user. Please refresh and try again.");
             }
             catch (DbUpdateException dbEx)
             {
                 _logger.LogError(dbEx, "Database error when deleting question {QuestionId}", id);
-                return StatusCode(StatusCodes.Status500InternalServerError, 
+                return StatusCode(StatusCodes.Status500InternalServerError,
                     "A database error occurred while deleting the question. Please try again later.");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Unexpected error when deleting question {QuestionId}", id);
-                return StatusCode(StatusCodes.Status500InternalServerError, 
+                return StatusCode(StatusCodes.Status500InternalServerError,
                     "An unexpected error occurred while deleting the question. Please try again later.");
             }
         }
+
+        // PUT: api/Question/UpdateGroup
+        [HttpPost("UpdateGroup")]
+        public async Task<IActionResult> UpdateQuestionGroup([FromBody] UpdateQuestionGroupRequest request)
+        {
+            try
+            {
+                _logger.LogInformation("Updating group for question {QuestionId} to group {GroupId}",
+                    request.QuestionId, request.GroupId);
+
+                var question = await _context.Questions.FindAsync(request.QuestionId);
+                if (question == null)
+                {
+                    _logger.LogWarning("Question {QuestionId} not found", request.QuestionId);
+                    return NotFound($"Question with ID {request.QuestionId} not found");
+                }
+
+                question.GroupId = request.GroupId;
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation("Successfully updated question {QuestionId} to group {GroupId}",
+                    request.QuestionId, request.GroupId);
+                return Ok(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating question group for question {QuestionId}",
+                    request?.QuestionId);
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    "An error occurred while updating the question group");
+            }
+        }
+
+        // POST: api/Question/UpdateTrueFalseBranching
+        [HttpPost("UpdateTrueFalseBranching")]
+        public async Task<IActionResult> UpdateTrueFalseBranching([FromBody] UpdateTrueFalseBranchingRequest request)
+        {
+            try
+            {
+                _logger.LogInformation("Updating True/False branching for question {QuestionId}", request.QuestionId);
+
+                var question = await _context.Questions.OfType<TrueFalseQuestion>().FirstOrDefaultAsync(q => q.Id == request.QuestionId);
+                if (question == null)
+                {
+                    _logger.LogWarning("True/False question {QuestionId} not found", request.QuestionId);
+                    return NotFound($"True/False question with ID {request.QuestionId} not found");
+                }
+
+                question.BranchToGroupIdOnTrue = request.BranchToGroupIdOnTrue;
+                question.BranchToGroupIdOnFalse = request.BranchToGroupIdOnFalse;
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation("Successfully updated True/False branching for question {QuestionId}", request.QuestionId);
+                return Ok(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating True/False branching for question {QuestionId}", request?.QuestionId);
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    "An error occurred while updating the True/False branching");
+            }
+        }
+    }
+
+    public class UpdateQuestionGroupRequest
+    {
+        public int QuestionId { get; set; }
+        public int GroupId { get; set; }
+    }
+
+    public class UpdateTrueFalseBranchingRequest
+    {
+        public int QuestionId { get; set; }
+        public int? BranchToGroupIdOnTrue { get; set; }
+        public int? BranchToGroupIdOnFalse { get; set; }
     }
 }

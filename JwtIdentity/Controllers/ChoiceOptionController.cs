@@ -14,6 +14,50 @@
         }
 
 
+        [HttpPut]
+        public async Task<IActionResult> UpdateChoiceOption([FromBody] ChoiceOptionViewModel choiceOptionViewModel)
+        {
+            try
+            {
+                if (choiceOptionViewModel == null || choiceOptionViewModel.Id == 0)
+                {
+                    _logger.LogWarning("Invalid choice option data for update");
+                    return BadRequest("Invalid choice option data");
+                }
+
+                _logger.LogInformation("Updating choice option with ID {ChoiceOptionId}", choiceOptionViewModel.Id);
+
+                var choiceOption = await _context.ChoiceOptions.FindAsync(choiceOptionViewModel.Id);
+                if (choiceOption == null)
+                {
+                    _logger.LogWarning("Choice option with ID {ChoiceOptionId} not found", choiceOptionViewModel.Id);
+                    return NotFound($"Choice option with ID {choiceOptionViewModel.Id} not found");
+                }
+
+                // Update the branching configuration
+                choiceOption.BranchToGroupId = choiceOptionViewModel.BranchToGroupId;
+                choiceOption.OptionText = choiceOptionViewModel.OptionText;
+                choiceOption.Order = choiceOptionViewModel.Order;
+
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation("Successfully updated choice option with ID {ChoiceOptionId}", choiceOption.Id);
+                return Ok(choiceOptionViewModel);
+            }
+            catch (DbUpdateException dbEx)
+            {
+                _logger.LogError(dbEx, "Database error occurred while updating choice option with ID {ChoiceOptionId}: {Message}",
+                    choiceOptionViewModel?.Id, dbEx.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, "A database error occurred. Please try again later.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating choice option with ID {ChoiceOptionId}: {Message}",
+                    choiceOptionViewModel?.Id, ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
+            }
+        }
+
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {

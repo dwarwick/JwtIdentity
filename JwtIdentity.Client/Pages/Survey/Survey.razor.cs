@@ -39,6 +39,20 @@ namespace JwtIdentity.Client.Pages.Survey
 
         protected bool ShowDemoStep(int step) => IsDemoUser && DemoStep == step;
 
+        // Branching-related properties
+        protected bool HasBranching => Survey?.QuestionGroups?.Any(g => g.GroupNumber > 0) ?? false;
+        protected int CurrentQuestionIndex { get; set; } = 0;
+        protected List<QuestionViewModel> QuestionsToShow { get; set; } = new();
+        protected QuestionViewModel CurrentQuestion => QuestionsToShow.ElementAtOrDefault(CurrentQuestionIndex);
+        protected bool IsLastQuestion => CurrentQuestionIndex >= QuestionsToShow.Count - 1;
+        protected bool IsFirstQuestion => CurrentQuestionIndex == 0;
+        protected int TotalQuestionsShown => CurrentQuestionIndex + 1;
+
+        // Track which groups need to be visited based on branching logic
+        private HashSet<int> _groupsToVisit = new();
+        private HashSet<int> _visitedGroups = new();
+        private int _currentGroupId = 0;
+
         protected override async Task OnInitializedAsync()
         {
             var authState = await AuthStateProvider.GetAuthenticationStateAsync();
@@ -209,7 +223,12 @@ namespace JwtIdentity.Client.Pages.Survey
                                         answer.SelectedOptions.Add(false);
                                     }
 
-                                    var selectedOptionIds = answer.SelectedOptionIds?.Split(',').Select(int.Parse).ToList() ?? new List<int>();
+                                    var selectedOptionIds = new List<int>();
+                                    if (!string.IsNullOrWhiteSpace(answer.SelectedOptionIds))
+                                    {
+                                        selectedOptionIds = answer.SelectedOptionIds.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                                            .Select(int.Parse).ToList();
+                                    }
                                     for (int i = 0; i < saQuestion.Options.Count; i++)
                                     {
                                         answer.SelectedOptions[i] = selectedOptionIds.Contains(saQuestion.Options[i].Id);
@@ -219,6 +238,9 @@ namespace JwtIdentity.Client.Pages.Survey
                         }
                     }
                 }
+
+                // Initialize branching questions after loading survey data
+                InitializeBranchingQuestions();
             }
             else
             {
@@ -269,6 +291,8 @@ namespace JwtIdentity.Client.Pages.Survey
                     }
                 }
 
+                // Process branching logic after answer is saved
+                await OnQuestionAnswered();
             }
         }
 
@@ -442,12 +466,13 @@ namespace JwtIdentity.Client.Pages.Survey
 
             // Update the SelectedOptionIds string (comma-separated values)
             var selectedIds = new List<int>();
-            for (int i = 0; i < answer.SelectedOptions.Count; i++)
+            var question = (SelectAllThatApplyQuestionViewModel)Survey.Questions.First(q => q.Id == answer.QuestionId);
+
+            for (int i = 0; i < answer.SelectedOptions.Count && i < question.Options.Count; i++)
             {
                 if (answer.SelectedOptions[i])
                 {
-                    var option = ((SelectAllThatApplyQuestionViewModel)Survey.Questions.First(q => q.Id == answer.QuestionId)).Options[i];
-                    selectedIds.Add(option.Id);
+                    selectedIds.Add(question.Options[i].Id);
                 }
             }
 
@@ -459,22 +484,12 @@ namespace JwtIdentity.Client.Pages.Survey
                 var response = await ApiService.PostAsync(ApiEndpoints.Answer, answer);
                 if (response != null)
                 {
-                    // Update the answer in the Survey.Questions
-                    //foreach (var question in Survey.Questions)
-                    //{
-                    //    if (question.Id == answer.QuestionId)
-                    //    {
-                    //        for (int i = 0; i < question.Answers.Count; i++)
-                    //        {
-                    //            if (question.Answers[i].Id == answer.Id)
-                    //            {
-                    //                question.Answers[i] = response;
-                    //            }
-                    //        }
-                    //    }
-                    //}
-
-                    await LoadData(); // Reload the data to reflect the changes
+                    // Only reload data for non-branching surveys
+                    // For branching surveys, we handle this in navigation
+                    if (!HasBranching)
+                    {
+                        await LoadData();
+                    }
                 }
             }
 
@@ -508,6 +523,219 @@ namespace JwtIdentity.Client.Pages.Survey
                 // Ensure any demo popover tied to the element renders after the scroll
                 StateHasChanged();
             }
+        }
+
+        // Branching navigation methods
+        protected void InitializeBranchingQuestions()
+        {
+            if (!HasBranching)
+            {
+                // No branching - show all questions
+                QuestionsToShow = Survey.Questions.OrderBy(q => q.QuestionNumber).ToList();
+            }
+            else
+            {
+                // Start with group 0 questions ONLY if there are questions in group 0
+                _currentGroupId = 0;
+                _groupsToVisit.Clear();
+                _visitedGroups.Clear();
+                QuestionsToShow.Clear();
+
+                // Only add group 0 if it has questions
+                var group0Questions = Survey.Questions.Where(q => q.GroupId == 0).ToList();
+                if (group0Questions.Any())
+                {
+                    _groupsToVisit.Add(0); // Start with group 0 if it has questions
+                    LoadQuestionsForCurrentGroup();
+                }
+                // If there are no Group 0 questions, the survey can't start
+                // This shouldn't happen in a properly configured survey
+            }
+            CurrentQuestionIndex = 0;
+        }
+
+        private void LoadQuestionsForCurrentGroup()
+        {
+            var groupQuestions = Survey.Questions
+                .Where(q => q.GroupId == _currentGroupId)
+                .OrderBy(q => q.QuestionNumber)
+                .ToList();
+
+            // Initialize SelectedOptions for SelectAllThatApply questions in this group
+            foreach (var question in groupQuestions)
+            {
+                if (question.QuestionType == QuestionType.SelectAllThatApply)
+                {
+                    var saQuestion = question as SelectAllThatApplyQuestionViewModel;
+                    var answer = question.Answers.FirstOrDefault() as SelectAllThatApplyAnswerViewModel;
+                    
+                    if (answer != null && saQuestion != null)
+                    {
+                        // Ensure SelectedOptions list is properly sized
+                        if (answer.SelectedOptions == null)
+                        {
+                            answer.SelectedOptions = new List<bool>();
+                        }
+                        
+                        while (answer.SelectedOptions.Count < saQuestion.Options.Count)
+                        {
+                            answer.SelectedOptions.Add(false);
+                        }
+                        
+                        // Populate based on saved SelectedOptionIds
+                        if (!string.IsNullOrWhiteSpace(answer.SelectedOptionIds))
+                        {
+                            var selectedOptionIds = answer.SelectedOptionIds.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                                .Select(int.Parse).ToList();
+                            
+                            for (int i = 0; i < saQuestion.Options.Count && i < answer.SelectedOptions.Count; i++)
+                            {
+                                answer.SelectedOptions[i] = selectedOptionIds.Contains(saQuestion.Options[i].Id);
+                            }
+                        }
+                    }
+                }
+            }
+
+            QuestionsToShow.AddRange(groupQuestions);
+            _visitedGroups.Add(_currentGroupId);
+        }
+
+        protected void GoToNextQuestion()
+        {
+            if (!HasBranching)
+            {
+                // Simple linear progression
+                if (CurrentQuestionIndex < QuestionsToShow.Count - 1)
+                {
+                    CurrentQuestionIndex++;
+                }
+                StateHasChanged();
+                return;
+            }
+
+            // Branching mode - check if we need to add more groups
+            if (CurrentQuestionIndex < QuestionsToShow.Count - 1)
+            {
+                // Still questions in current list
+                CurrentQuestionIndex++;
+            }
+            else
+            {
+                // Check if we need to load more groups
+                var nextGroup = GetNextGroupToVisit();
+                if (nextGroup.HasValue)
+                {
+                    _currentGroupId = nextGroup.Value;
+                    LoadQuestionsForCurrentGroup();
+                    CurrentQuestionIndex++;
+                }
+            }
+            StateHasChanged();
+        }
+
+        protected void GoToPreviousQuestion()
+        {
+            if (CurrentQuestionIndex > 0)
+            {
+                CurrentQuestionIndex--;
+                StateHasChanged();
+            }
+        }
+
+        private int? GetNextGroupToVisit()
+        {
+            // Find groups that should be visited but haven't been yet
+            var unvisitedGroups = _groupsToVisit.Except(_visitedGroups).OrderBy(g => g).ToList();
+            return unvisitedGroups.FirstOrDefault() as int?;
+        }
+
+        private void ProcessBranchingForCurrentQuestion()
+        {
+            if (!HasBranching || CurrentQuestion == null) return;
+
+            var answer = CurrentQuestion.Answers.FirstOrDefault();
+            if (answer == null) return;
+
+            // Check for branching based on answer type
+            if (CurrentQuestion.QuestionType == QuestionType.MultipleChoice)
+            {
+                var mcAnswer = (MultipleChoiceAnswerViewModel)answer;
+                if (mcAnswer.SelectedOptionId > 0)
+                {
+                    var mcQuestion = CurrentQuestion as MultipleChoiceQuestionViewModel;
+                    var selectedOption = mcQuestion?.Options.FirstOrDefault(o => o.Id == mcAnswer.SelectedOptionId);
+                    if (selectedOption?.BranchToGroupId.HasValue == true)
+                    {
+                        _groupsToVisit.Add(selectedOption.BranchToGroupId.Value);
+                    }
+                }
+            }
+            else if (CurrentQuestion.QuestionType == QuestionType.SelectAllThatApply)
+            {
+                var saAnswer = (SelectAllThatApplyAnswerViewModel)answer;
+                var saQuestion = CurrentQuestion as SelectAllThatApplyQuestionViewModel;
+                if (saQuestion != null && !string.IsNullOrEmpty(saAnswer.SelectedOptionIds))
+                {
+                    var selectedIds = saAnswer.SelectedOptionIds.Split(',').Select(int.Parse).ToList();
+                    foreach (var optionId in selectedIds)
+                    {
+                        var option = saQuestion.Options.FirstOrDefault(o => o.Id == optionId);
+                        if (option?.BranchToGroupId.HasValue == true)
+                        {
+                            _groupsToVisit.Add(option.BranchToGroupId.Value);
+                        }
+                    }
+                }
+            }
+            else if (CurrentQuestion.QuestionType == QuestionType.TrueFalse)
+            {
+                var tfAnswer = (TrueFalseAnswerViewModel)answer;
+                var tfQuestion = CurrentQuestion as TrueFalseQuestionViewModel;
+                if (tfQuestion != null && tfAnswer.Value.HasValue)
+                {
+                    // Check if there's branching configured for this True/False answer
+                    if (tfAnswer.Value.Value == true && tfQuestion.BranchToGroupIdOnTrue.HasValue)
+                    {
+                        _groupsToVisit.Add(tfQuestion.BranchToGroupIdOnTrue.Value);
+                    }
+                    else if (tfAnswer.Value.Value == false && tfQuestion.BranchToGroupIdOnFalse.HasValue)
+                    {
+                        _groupsToVisit.Add(tfQuestion.BranchToGroupIdOnFalse.Value);
+                    }
+                }
+            }
+        }
+
+        protected bool IsCurrentQuestionAnswered()
+        {
+            if (CurrentQuestion == null) return false;
+
+            switch (CurrentQuestion.QuestionType)
+            {
+                case QuestionType.Text:
+                    return !string.IsNullOrEmpty(((TextAnswerViewModel)CurrentQuestion.Answers[0]).Text);
+                case QuestionType.TrueFalse:
+                    return ((TrueFalseAnswerViewModel)CurrentQuestion.Answers[0]).Value != null;
+                case QuestionType.Rating1To10:
+                    return ((Rating1To10AnswerViewModel)CurrentQuestion.Answers[0]).SelectedOptionId != 0;
+                case QuestionType.MultipleChoice:
+                    return ((MultipleChoiceAnswerViewModel)CurrentQuestion.Answers[0]).SelectedOptionId != 0;
+                case QuestionType.SelectAllThatApply:
+                    var selectAllAnswer = (SelectAllThatApplyAnswerViewModel)CurrentQuestion.Answers[0];
+                    return !string.IsNullOrEmpty(selectAllAnswer.SelectedOptionIds) &&
+                           selectAllAnswer.SelectedOptions.Any(opt => opt);
+                default:
+                    return false;
+            }
+        }
+
+        protected Task OnQuestionAnswered()
+        {
+            // Process branching logic when a question is answered
+            ProcessBranchingForCurrentQuestion();
+            StateHasChanged();
+            return Task.CompletedTask;
         }
     }
 }

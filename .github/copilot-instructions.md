@@ -25,4 +25,4 @@ When using Mudchip, do not add a Closable attribute. To make it closable, just d
 When creating a new Razor component, always create a code behind file with the same name as the Razor component file, plus Model. For example, if the Razor component file is named MyComponent.razor, the code behind file should be named MyComponentModel.razor.cs.
 
 Do not create a PR unless all tests pass.
-AGENTS.md files in the solution also contain copilot instructions for specific projects.
+AGENTS.md files in the solution also contain copilot instructions for specific projects.29.MudBlazor MudCheckBox API: Use Value and ValueChanged properties (NOT Checked/CheckedChanged which are deprecated). Example: `<MudCheckBox T="bool" Value="@myValue" ValueChanged="@((bool val) => HandleChange(val))" />`

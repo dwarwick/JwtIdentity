@@ -12,6 +12,7 @@ namespace JwtIdentity.Common.ViewModels
         public bool IsRequired { get; set; } = true; // Indicates if the question is mandatory
         [JsonPropertyName("questionType")]
         public QuestionType QuestionType { get; set; }
+        public int GroupId { get; set; } = 0;
         public List<AnswerViewModel> Answers { get; set; }
     }
 
@@ -22,7 +23,9 @@ namespace JwtIdentity.Common.ViewModels
 
     public class TrueFalseQuestionViewModel : QuestionViewModel
     {
-        // No additional fields for TrueFalseQuestion
+        // Branching logic for True/False questions
+        public int? BranchToGroupIdOnTrue { get; set; }
+        public int? BranchToGroupIdOnFalse { get; set; }
     }
 
     public class Rating1To10QuestionViewModel : QuestionViewModel

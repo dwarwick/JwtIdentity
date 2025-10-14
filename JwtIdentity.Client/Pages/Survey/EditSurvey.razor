@@ -8,10 +8,17 @@
 <MudStack Row="true" Justify="Justify.SpaceBetween">
     <MudText Typo="Typo.h4">Edit Survey</MudText>
 
+    <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center">
+        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" 
+                   OnClick="@(() => Navigation.NavigateTo($"/survey/branching/{SurveyId}"))"
+                   StartIcon="@Icons.Material.Filled.AccountTree">
+            Configure Branching
+        </MudButton>
 
-    <DemoBorder Class="ms-auto mt-2" CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 10 })" IsButton="true">
-        <MudButton id="PublishSurveyBtn" ButtonType="ButtonType.Button" Variant="Variant.Filled" Color="Color.Primary" OnClick="PublishSurvey" Disabled="@(Survey.Published)">Publish Survey</MudButton>
-    </DemoBorder>
+        <DemoBorder Class="ms-auto mt-2" CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 10 })" IsButton="true">
+            <MudButton id="PublishSurveyBtn" ButtonType="ButtonType.Button" Variant="Variant.Filled" Color="Color.Primary" OnClick="PublishSurvey" Disabled="@(Survey.Published)">Publish Survey</MudButton>
+        </DemoBorder>
+    </MudStack>
 
     <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 10 })">
         <MudText Typo="Typo.body2">Now click the Publish Survey button to publish the survey.</MudText>

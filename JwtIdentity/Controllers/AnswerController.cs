@@ -1,5 +1,5 @@
-using System.Security.Claims;
 using JwtIdentity.Interfaces;
+using System.Security.Claims;
 
 namespace JwtIdentity.Controllers
 {
@@ -28,7 +28,7 @@ namespace JwtIdentity.Controllers
         public async Task<ActionResult<AnswerViewModel>> GetAnswersForSurveyForLoggedInUser(string guid, [FromQuery] bool Preview)
         {
             _logger.LogInformation("Getting answers for survey {SurveyGuid} for logged-in user. Preview mode: {IsPreview}", guid, Preview);
-            
+
             try
             {
                 // get the ip address of the user
@@ -69,6 +69,7 @@ namespace JwtIdentity.Controllers
                 survey = await _context.Surveys
                     .Where(s => s.Guid == guid)
                     .Include(s => s.Questions).ThenInclude(q => q.Answers.Where(a => a.CreatedById == userId))
+                    .Include(x => x.QuestionGroups)
                     .FirstOrDefaultAsync();
 
                 if (survey == null)
@@ -105,7 +106,7 @@ namespace JwtIdentity.Controllers
                     .Where(mc => mcIds.Contains(mc.Id))
                     .Include(mc => mc.Options)
                     .LoadAsync();
-                    
+
                 // Now load each select-all-that-apply question's Options
                 await _context.Questions
                     .OfType<SelectAllThatApplyQuestion>()
@@ -113,9 +114,9 @@ namespace JwtIdentity.Controllers
                     .Include(sa => sa.Options)
                     .LoadAsync();
 
-                _logger.LogInformation("Successfully retrieved survey {SurveyGuid} with {QuestionCount} questions for user {UserId}", 
+                _logger.LogInformation("Successfully retrieved survey {SurveyGuid} with {QuestionCount} questions for user {UserId}",
                     guid, survey.Questions.Count, userId);
-                    
+
                 return Ok(_mapper.Map<SurveyViewModel>(survey));
             }
             catch (DbUpdateException dbEx)
@@ -134,20 +135,20 @@ namespace JwtIdentity.Controllers
         public async Task<ActionResult<SurveyViewModel>> GetSurveyResults(string guid)
         {
             _logger.LogInformation("Getting survey results for survey {SurveyGuid}", guid);
-            
+
             try
             {
                 var survey = await _context.Surveys
                     .Where(s => s.Guid == guid)
                     .Include(s => s.Questions).ThenInclude(q => q.Answers)
                     .FirstOrDefaultAsync();
-                    
+
                 if (survey == null)
                 {
                     _logger.LogWarning("Survey with GUID {SurveyGuid} not found", guid);
                     return BadRequest("Survey does not exist");
                 }
-                
+
                 _logger.LogDebug("Found survey: {SurveyId}, {SurveyTitle}", survey.Id, survey.Title);
 
                 // Pull out the IDs of any multiple-choice questions in memory
@@ -156,7 +157,7 @@ namespace JwtIdentity.Controllers
                     .Select(mc => mc.Id)
                     .ToList();
                 _logger.LogDebug("Found {Count} multiple choice questions", mcIds.Count);
-                    
+
                 // Pull out the IDs of any select-all-that-apply questions in memory
                 var selectAllIds = survey.Questions
                     .OfType<SelectAllThatApplyQuestion>()
@@ -170,7 +171,7 @@ namespace JwtIdentity.Controllers
                     .Where(mc => mcIds.Contains(mc.Id))
                     .Include(mc => mc.Options)
                     .LoadAsync();
-                    
+
                 // Now load each select-all-that-apply question's Options
                 await _context.Questions
                     .OfType<SelectAllThatApplyQuestion>()
@@ -178,9 +179,9 @@ namespace JwtIdentity.Controllers
                     .Include(sa => sa.Options)
                     .LoadAsync();
 
-                _logger.LogInformation("Successfully retrieved survey results for {SurveyGuid} with {QuestionCount} questions", 
+                _logger.LogInformation("Successfully retrieved survey results for {SurveyGuid} with {QuestionCount} questions",
                     guid, survey.Questions.Count);
-                    
+
                 return Ok(_mapper.Map<SurveyViewModel>(survey));
             }
             catch (DbUpdateException dbEx)
@@ -199,7 +200,7 @@ namespace JwtIdentity.Controllers
         public async Task<ActionResult<SurveyDataViewModel>> GetAnswersForSurveyForCharts(string guid)
         {
             _logger.LogInformation("Getting chart data for survey {SurveyGuid}", guid);
-            
+
             try
             {
                 int userId = apiAuthService.GetUserId(User);
@@ -232,7 +233,7 @@ namespace JwtIdentity.Controllers
                     .Select(mc => mc.Id)
                     .ToList();
                 _logger.LogDebug("Found {Count} multiple choice questions", mcIds.Count);
-                    
+
                 // Pull out the IDs of any select-all-that-apply questions in memory
                 var selectAllIds = survey.Questions
                     .OfType<SelectAllThatApplyQuestion>()
@@ -246,7 +247,7 @@ namespace JwtIdentity.Controllers
                     .Where(mc => mcIds.Contains(mc.Id))
                     .Include(mc => mc.Options)
                     .LoadAsync();
-                    
+
                 // Now load each select-all-that-apply question's Options
                 await _context.Questions
                     .OfType<SelectAllThatApplyQuestion>()
@@ -282,7 +283,7 @@ namespace JwtIdentity.Controllers
                             // get the question.Answers as Rating1To10Answer
                             var ratingAnswers = await _context.Answers.OfType<Rating1To10Answer>().AsNoTracking().Where(a => a.QuestionId == question.Id).ToListAsync();
                             _logger.LogDebug("Found {Count} rating answers for question {QuestionId}", ratingAnswers.Count, question.Id);
-                            
+
                             var ratingGroups = ratingAnswers.GroupBy(a => a.SelectedOptionId).ToDictionary(g => g.Key, g => g.Count());
                             surveyDataViewModel.SurveyData = Enumerable.Range(1, 10).Select(i => new ChartData { X = i.ToString(), Y = ratingGroups.ContainsKey(i) ? ratingGroups[i] : 0 }).ToList();
                             surveyDataViewModel.Rating1To10Question = _mapper.Map<Rating1To10QuestionViewModel>(question);
@@ -373,9 +374,9 @@ namespace JwtIdentity.Controllers
                     surveyData.Add(surveyDataViewModel);
                 }
 
-                _logger.LogInformation("Successfully generated chart data for survey {SurveyGuid} with {QuestionCount} questions for user {UserId}", 
+                _logger.LogInformation("Successfully generated chart data for survey {SurveyGuid} with {QuestionCount} questions for user {UserId}",
                     guid, survey.Questions.Count, userId);
-                    
+
                 return Ok(surveyData);
             }
             catch (DbUpdateException dbEx)
@@ -400,7 +401,7 @@ namespace JwtIdentity.Controllers
         public async Task<ActionResult<AnswerViewModel>> PostAnswer(AnswerViewModel answerViewModel)
         {
             _logger.LogInformation("Saving answer for question ID {QuestionId}", answerViewModel?.QuestionId);
-            
+
             try
             {
                 if (answerViewModel == null)
@@ -424,10 +425,10 @@ namespace JwtIdentity.Controllers
                 else
                 {
                     _logger.LogDebug("Updating existing answer ID {AnswerId}", answer.Id);
-                    
+
                     var existingAnswer = await _context.Answers.AsNoTracking()
                         .FirstOrDefaultAsync(x => x.Id == answerViewModel.Id);
-                        
+
                     if (existingAnswer == null)
                     {
                         _logger.LogWarning("Attempted to update answer ID {AnswerId} that doesn't exist", answer.Id);
@@ -450,9 +451,9 @@ namespace JwtIdentity.Controllers
                 if (answer.Complete)
                 {
                     var surveyInfo = await (from q in _context.Questions
-                                             join s in _context.Surveys on q.SurveyId equals s.Id
-                                             where q.Id == answer.QuestionId
-                                             select new { SurveyId = s.Id, s.Guid })
+                                            join s in _context.Surveys on q.SurveyId equals s.Id
+                                            where q.Id == answer.QuestionId
+                                            select new { SurveyId = s.Id, s.Guid })
                                             .FirstOrDefaultAsync();
 
                     if (surveyInfo != null)
@@ -474,19 +475,19 @@ namespace JwtIdentity.Controllers
             }
             catch (DbUpdateException dbEx)
             {
-                _logger.LogError(dbEx, "Database error occurred while saving answer for question {QuestionId}: {Message}", 
+                _logger.LogError(dbEx, "Database error occurred while saving answer for question {QuestionId}: {Message}",
                     answerViewModel?.QuestionId, dbEx.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError, "A database error occurred. Please try again later.");
             }
             catch (InvalidCastException icEx)
             {
-                _logger.LogError(icEx, "Type casting error while processing answer of type {AnswerType}: {Message}", 
+                _logger.LogError(icEx, "Type casting error while processing answer of type {AnswerType}: {Message}",
                     answerViewModel?.AnswerType, icEx.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred processing the answer data. Please try again later.");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error saving answer for question {QuestionId}: {Message}", 
+                _logger.LogError(ex, "Error saving answer for question {QuestionId}: {Message}",
                     answerViewModel?.QuestionId, ex.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
             }
