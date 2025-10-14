@@ -535,13 +535,35 @@ namespace JwtIdentity.Client.Pages.Survey
             }
             else
             {
-                // Start with group 0 questions
+                // Start with group 0 questions ONLY if there are questions in group 0
                 _currentGroupId = 0;
                 _groupsToVisit.Clear();
-                _groupsToVisit.Add(0); // Always start with group 0
                 _visitedGroups.Clear();
+                QuestionsToShow.Clear();
 
-                LoadQuestionsForCurrentGroup();
+                // Only add group 0 if it has questions
+                var group0Questions = Survey.Questions.Where(q => q.GroupId == 0).ToList();
+                if (group0Questions.Any())
+                {
+                    _groupsToVisit.Add(0); // Start with group 0 if it has questions
+                    LoadQuestionsForCurrentGroup();
+                }
+                else
+                {
+                    // No group 0 questions - start with first non-zero group
+                    var firstGroup = Survey.Questions
+                        .Where(q => q.GroupId > 0)
+                        .OrderBy(q => q.GroupId)
+                        .Select(q => q.GroupId)
+                        .FirstOrDefault();
+                    
+                    if (firstGroup > 0)
+                    {
+                        _currentGroupId = firstGroup;
+                        _groupsToVisit.Add(firstGroup);
+                        LoadQuestionsForCurrentGroup();
+                    }
+                }
             }
             CurrentQuestionIndex = 0;
         }
@@ -680,7 +702,23 @@ namespace JwtIdentity.Client.Pages.Survey
                     }
                 }
             }
-            // Note: True/False branching would be implemented here when persistence is added
+            else if (CurrentQuestion.QuestionType == QuestionType.TrueFalse)
+            {
+                var tfAnswer = (TrueFalseAnswerViewModel)answer;
+                var tfQuestion = CurrentQuestion as TrueFalseQuestionViewModel;
+                if (tfQuestion != null && tfAnswer.Value.HasValue)
+                {
+                    // Check if there's branching configured for this True/False answer
+                    if (tfAnswer.Value.Value == true && tfQuestion.BranchToGroupIdOnTrue.HasValue)
+                    {
+                        _groupsToVisit.Add(tfQuestion.BranchToGroupIdOnTrue.Value);
+                    }
+                    else if (tfAnswer.Value.Value == false && tfQuestion.BranchToGroupIdOnFalse.HasValue)
+                    {
+                        _groupsToVisit.Add(tfQuestion.BranchToGroupIdOnFalse.Value);
+                    }
+                }
+            }
         }
 
         protected bool IsCurrentQuestionAnswered()

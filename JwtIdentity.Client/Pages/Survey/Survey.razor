@@ -62,9 +62,9 @@
                 {
                     <div class="mb-3">
                         <MudText Typo="Typo.body2" Color="Color.Secondary">
-                            Question @(CurrentQuestionIndex + 1) of @QuestionsToShow.Count
+                            Question @(CurrentQuestionIndex + 1) of @Survey.Questions.Count
                         </MudText>
-                        <MudProgressLinear Color="Color.Primary" Value="@((double)(CurrentQuestionIndex + 1) / QuestionsToShow.Count * 100)" Class="my-2" />
+                        <MudProgressLinear Color="Color.Primary" Value="@((double)(CurrentQuestionIndex + 1) / Survey.Questions.Count * 100)" Class="my-2" />
                     </div>
 
                     <div class="question-container">
