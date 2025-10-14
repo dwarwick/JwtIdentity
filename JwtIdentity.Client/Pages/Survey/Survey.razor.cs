@@ -467,7 +467,7 @@ namespace JwtIdentity.Client.Pages.Survey
             // Update the SelectedOptionIds string (comma-separated values)
             var selectedIds = new List<int>();
             var question = (SelectAllThatApplyQuestionViewModel)Survey.Questions.First(q => q.Id == answer.QuestionId);
-            
+
             for (int i = 0; i < answer.SelectedOptions.Count && i < question.Options.Count; i++)
             {
                 if (answer.SelectedOptions[i])
@@ -484,21 +484,6 @@ namespace JwtIdentity.Client.Pages.Survey
                 var response = await ApiService.PostAsync(ApiEndpoints.Answer, answer);
                 if (response != null)
                 {
-                    // Update the answer in the Survey.Questions
-                    foreach (var question in Survey.Questions)
-                    {
-                        if (question.Id == answer.QuestionId)
-                        {
-                            for (int i = 0; i < question.Answers.Count; i++)
-                            {
-                                if (question.Answers[i].Id == answer.Id)
-                                {
-                                    question.Answers[i] = response;
-                                }
-                            }
-                        }
-                    }
-
                     // Only reload data for non-branching surveys
                     // For branching surveys, we handle this in navigation
                     if (!HasBranching)
