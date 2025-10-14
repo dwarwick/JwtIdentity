@@ -25,5 +25,7 @@
         public bool AiQuestionsApproved { get; set; }
 
         public List<QuestionViewModel> Questions { get; set; }
+
+        public List<QuestionGroupViewModel> QuestionGroups { get; set; }
     }
 }

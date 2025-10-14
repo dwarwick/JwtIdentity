@@ -12,6 +12,7 @@ namespace JwtIdentity.Models
         public int QuestionNumber { get; set; }        
         public bool IsRequired { get; set; } = true; // Indicates if the question is mandatory
         public QuestionType QuestionType { get; set; } // E.g. Text, TrueFalse, MultipleChoice
+        public int GroupId { get; set; } = 0; // Question group, default is 0
         public List<Answer> Answers { get; set; }
     }
 

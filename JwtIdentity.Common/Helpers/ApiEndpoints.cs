@@ -9,6 +9,7 @@
         public const string Feedback = "api/feedback";
         public const string PlaywrightLog = "api/playwrightlog";
         public const string Question = "api/question";
+        public const string QuestionGroup = "api/questiongroup";
         public const string Settings = "api/settings";
         public const string Survey = "api/survey";
         public const string SurveyAnalysis = "api/surveyanalysis";

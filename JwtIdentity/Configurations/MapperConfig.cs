@@ -95,6 +95,9 @@
             
             _ = CreateMap<SurveyViewModel, Survey>();
 
+            _ = CreateMap<QuestionGroup, QuestionGroupViewModel>().ReverseMap()
+                .ForMember(x => x.CreatedBy, options => options.Ignore());
+
             _ = CreateMap<SurveyAnalysis, SurveyAnalysisViewModel>().ReverseMap()
                 .ForMember(x => x.CreatedBy, options => options.Ignore());
 

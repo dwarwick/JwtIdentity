@@ -38,7 +38,10 @@ namespace JwtIdentity.Controllers
             {
                 _logger.LogInformation("Retrieving survey with GUID: {Guid}", guid);
 
-                var survey = await _context.Surveys.Include(s => s.Questions.OrderBy(x => x.QuestionNumber)).FirstOrDefaultAsync(s => s.Guid == guid);
+                var survey = await _context.Surveys
+                    .Include(s => s.Questions.OrderBy(x => x.QuestionNumber))
+                    .Include(s => s.QuestionGroups.OrderBy(x => x.GroupNumber))
+                    .FirstOrDefaultAsync(s => s.Guid == guid);
 
                 if (survey == null)
                 {

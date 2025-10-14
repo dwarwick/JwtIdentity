@@ -11,5 +11,6 @@
         public int AiRetryCount { get; set; }
         public bool AiQuestionsApproved { get; set; }
         public List<Question> Questions { get; set; }
+        public List<QuestionGroup> QuestionGroups { get; set; }
     }
 }
