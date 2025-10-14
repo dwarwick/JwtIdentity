@@ -143,7 +143,7 @@ else
                                                     <MudIcon Icon="@Icons.Material.Filled.ArrowForward" Size="MudBlazor.Size.Small" />
                                                     <MudSelect T="int?" Label="Branch to Group" Value="@option.BranchToGroupId" 
                                                               Variant="Variant.Outlined" Dense="true" Style="width: 250px;"
-                                                              ValueChanged="@((int? value) => { option.BranchToGroupId = value; UpdateChoiceOptionBranch(option); })">
+                                                              ValueChanged="@(async (int? value) => { option.BranchToGroupId = value; await UpdateChoiceOptionBranch(option); })">
                                                         <MudSelectItem Value="@((int?)null)">Continue in sequence</MudSelectItem>
                                                         @foreach (var g in QuestionGroups.Where(qg => qg.GroupNumber != group.GroupNumber))
                                                         {
