@@ -23,7 +23,9 @@ namespace JwtIdentity.Common.ViewModels
 
     public class TrueFalseQuestionViewModel : QuestionViewModel
     {
-        // No additional fields for TrueFalseQuestion
+        // Branching logic for True/False questions
+        public int? BranchToGroupIdOnTrue { get; set; }
+        public int? BranchToGroupIdOnFalse { get; set; }
     }
 
     public class Rating1To10QuestionViewModel : QuestionViewModel
