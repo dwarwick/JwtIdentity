@@ -26,3 +26,5 @@ When creating a new Razor component, always create a code behind file with the s
 
 Do not create a PR unless all tests pass.
 AGENTS.md files in the solution also contain copilot instructions for specific projects.29.MudBlazor MudCheckBox API: Use Value and ValueChanged properties (NOT Checked/CheckedChanged which are deprecated). Example: `<MudCheckBox T="bool" Value="@myValue" ValueChanged="@((bool val) => HandleChange(val))" />`
+Always create comprehensive BUnit Tests when creating new Razor components or pages. Use existing tests in the Tests project as examples.
+When creating a new Razor component or page, always create a corresponding BUnit test class in the Tests project. The test class should be named the same as the Razor component or page, plus "Tests". For example, if the Razor component is named MyComponent.razor, the test class should be named MyComponentTests.cs.
