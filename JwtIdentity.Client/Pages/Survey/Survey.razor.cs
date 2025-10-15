@@ -696,7 +696,11 @@ namespace JwtIdentity.Client.Pages.Survey
         {
             // Find groups that should be visited but haven't been yet
             var unvisitedGroups = _groupsToVisit.Except(_visitedGroups).OrderBy(g => g).ToList();
-            return unvisitedGroups.FirstOrDefault() as int?;
+            if (unvisitedGroups.Any())
+            {
+                return unvisitedGroups.First();
+            }
+            return null;
         }
 
         private void ProcessBranchingForCurrentQuestion()
