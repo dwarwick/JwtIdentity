@@ -61,7 +61,8 @@ namespace JwtIdentity.Client.Pages.Survey
                 return Survey?.Questions?.Count ?? 0;
             }
 
-            // Count questions from all groups that will be visited
+            // Count questions that are either already shown or will be shown
+            // This includes visited groups and groups scheduled to visit
             var allGroupsToConsider = _visitedGroups.Union(_groupsToVisit).ToHashSet();
             return Survey?.Questions?.Count(q => allGroupsToConsider.Contains(q.GroupId)) ?? 0;
         }
