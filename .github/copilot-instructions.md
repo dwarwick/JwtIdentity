@@ -28,3 +28,34 @@ Do not create a PR unless all tests pass.
 AGENTS.md files in the solution also contain copilot instructions for specific projects.29.MudBlazor MudCheckBox API: Use Value and ValueChanged properties (NOT Checked/CheckedChanged which are deprecated). Example: `<MudCheckBox T="bool" Value="@myValue" ValueChanged="@((bool val) => HandleChange(val))" />`
 Always create comprehensive BUnit Tests when creating new Razor components or pages. Use existing tests in the Tests project as examples.
 When creating a new Razor component or page, always create a corresponding BUnit test class in the Tests project. The test class should be named the same as the Razor component or page, plus "Tests". For example, if the Razor component is named MyComponent.razor, the test class should be named MyComponentTests.cs.
+## BUnit Testing Best Practices
+When writing BUnit tests for Blazor components:
+1. **Use the early return pattern in OnAfterRenderAsync**: Follow the pattern used in MainLayout.razor:
+   ```csharp
+   protected override async Task OnAfterRenderAsync(bool firstRender)
+   {
+       if (!firstRender || !OperatingSystem.IsBrowser())
+       {
+           return;
+       }
+       // Browser-specific initialization code here
+   }
+   ```
+   This pattern allows tests to run without requiring browser-specific operations, making components more testable.
+
+2. **Make methods internal for testing**: If methods like `LoadData()` or initialization methods need to be tested directly, make them `internal` instead of `private` and add `InternalsVisibleTo` in the component's project file:
+   ```xml
+   <ItemGroup>
+     <InternalsVisibleTo Include="JwtIdentity.BunitTests" />
+   </ItemGroup>
+   ```
+
+3. **Test categories**: Organize tests into logical categories:
+   - Component Initialization & Structure
+   - Authentication & User Scenarios
+   - Data Loading & Service Integration
+   - Question/Feature-specific tests
+   - Error Handling
+   - UI State & Rendering
+
+4. **Focus on what can be tested**: BUnit tests should focus on component logic, state management, and service interactions. Save full UI interaction testing for Playwright end-to-end tests.
