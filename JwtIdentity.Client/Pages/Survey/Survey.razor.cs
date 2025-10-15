@@ -44,7 +44,22 @@ namespace JwtIdentity.Client.Pages.Survey
         protected int CurrentQuestionIndex { get; set; } = 0;
         protected List<QuestionViewModel> QuestionsToShow { get; set; } = new();
         protected QuestionViewModel CurrentQuestion => QuestionsToShow.ElementAtOrDefault(CurrentQuestionIndex);
-        protected bool IsLastQuestion => CurrentQuestionIndex >= QuestionsToShow.Count - 1;
+        protected bool IsLastQuestion
+        {
+            get
+            {
+                if (!HasBranching)
+                {
+                    return CurrentQuestionIndex >= QuestionsToShow.Count - 1;
+                }
+
+                // In branching mode, we're at the last question only if:
+                // 1. We're at the last question in QuestionsToShow, AND
+                // 2. There are no more groups to visit
+                return CurrentQuestionIndex >= QuestionsToShow.Count - 1 && 
+                       GetNextGroupToVisit() == null;
+            }
+        }
         protected bool IsFirstQuestion => CurrentQuestionIndex == 0;
         protected int TotalQuestionsShown => CurrentQuestionIndex + 1;
 
