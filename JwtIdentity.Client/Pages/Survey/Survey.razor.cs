@@ -519,7 +519,17 @@ namespace JwtIdentity.Client.Pages.Survey
                     {
                         await LoadData();
                     }
+                    else
+                    {
+                        // Process branching logic after answer is saved
+                        await OnQuestionAnswered();
+                    }
                 }
+            }
+            else if (HasBranching)
+            {
+                // In preview mode, still process branching for the UI
+                await OnQuestionAnswered();
             }
 
             StateHasChanged();
