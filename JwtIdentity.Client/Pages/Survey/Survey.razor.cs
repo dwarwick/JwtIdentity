@@ -587,6 +587,11 @@ namespace JwtIdentity.Client.Pages.Survey
                     _groupsToVisit.Add(0); // Start with group 0 if it has questions
                     LoadQuestionsForCurrentGroup();
                 }
+                
+                // Check all questions in the survey for existing answers that trigger branching
+                // This is important when resuming a partially completed survey
+                CalculateInitialGroupsFromExistingAnswers();
+                
                 // If there are no Group 0 questions, the survey can't start
                 // This shouldn't happen in a properly configured survey
             }
@@ -771,6 +776,68 @@ namespace JwtIdentity.Client.Pages.Survey
 
             // Update the groups to visit with the recalculated set
             _groupsToVisit = newGroupsToVisit;
+        }
+
+        private void CalculateInitialGroupsFromExistingAnswers()
+        {
+            if (!HasBranching || Survey?.Questions == null) return;
+
+            // Check all questions in the survey for existing answers that trigger branching
+            // This is important when resuming a partially completed survey
+            foreach (var question in Survey.Questions)
+            {
+                var answer = question.Answers.FirstOrDefault();
+                if (answer == null) continue;
+
+                // Check for branching based on answer type
+                if (question.QuestionType == QuestionType.MultipleChoice)
+                {
+                    var mcAnswer = answer as MultipleChoiceAnswerViewModel;
+                    if (mcAnswer?.SelectedOptionId > 0)
+                    {
+                        var mcQuestion = question as MultipleChoiceQuestionViewModel;
+                        var selectedOption = mcQuestion?.Options.FirstOrDefault(o => o.Id == mcAnswer.SelectedOptionId);
+                        if (selectedOption?.BranchToGroupId.HasValue == true && !_visitedGroups.Contains(selectedOption.BranchToGroupId.Value))
+                        {
+                            _groupsToVisit.Add(selectedOption.BranchToGroupId.Value);
+                        }
+                    }
+                }
+                else if (question.QuestionType == QuestionType.SelectAllThatApply)
+                {
+                    var saAnswer = answer as SelectAllThatApplyAnswerViewModel;
+                    var saQuestion = question as SelectAllThatApplyQuestionViewModel;
+                    if (saQuestion != null && !string.IsNullOrEmpty(saAnswer?.SelectedOptionIds))
+                    {
+                        var selectedIds = saAnswer.SelectedOptionIds.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(int.Parse).ToList();
+                        foreach (var optionId in selectedIds)
+                        {
+                            var option = saQuestion.Options.FirstOrDefault(o => o.Id == optionId);
+                            if (option?.BranchToGroupId.HasValue == true && !_visitedGroups.Contains(option.BranchToGroupId.Value))
+                            {
+                                _groupsToVisit.Add(option.BranchToGroupId.Value);
+                            }
+                        }
+                    }
+                }
+                else if (question.QuestionType == QuestionType.TrueFalse)
+                {
+                    var tfAnswer = answer as TrueFalseAnswerViewModel;
+                    var tfQuestion = question as TrueFalseQuestionViewModel;
+                    if (tfQuestion != null && tfAnswer?.Value.HasValue == true)
+                    {
+                        // Check if there's branching configured for this True/False answer
+                        if (tfAnswer.Value.Value == true && tfQuestion.BranchToGroupIdOnTrue.HasValue && !_visitedGroups.Contains(tfQuestion.BranchToGroupIdOnTrue.Value))
+                        {
+                            _groupsToVisit.Add(tfQuestion.BranchToGroupIdOnTrue.Value);
+                        }
+                        else if (tfAnswer.Value.Value == false && tfQuestion.BranchToGroupIdOnFalse.HasValue && !_visitedGroups.Contains(tfQuestion.BranchToGroupIdOnFalse.Value))
+                        {
+                            _groupsToVisit.Add(tfQuestion.BranchToGroupIdOnFalse.Value);
+                        }
+                    }
+                }
+            }
         }
 
         protected bool IsCurrentQuestionAnswered()
