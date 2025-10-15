@@ -592,6 +592,11 @@ namespace JwtIdentity.Client.Pages.Survey
                 // This is important when resuming a partially completed survey
                 CalculateInitialGroupsFromExistingAnswers();
                 
+                // Load any groups that were identified from existing answers
+                // This ensures that when resuming a survey, all groups that should be visited
+                // based on existing answers are loaded and visible
+                LoadGroupsFromExistingAnswers();
+                
                 // If there are no Group 0 questions, the survey can't start
                 // This shouldn't happen in a properly configured survey
             }
@@ -838,6 +843,24 @@ namespace JwtIdentity.Client.Pages.Survey
                     }
                 }
             }
+        }
+
+        private void LoadGroupsFromExistingAnswers()
+        {
+            if (!HasBranching) return;
+
+            // Get groups that should be loaded based on existing answers
+            // (groups in _groupsToVisit that haven't been visited yet)
+            var groupsToLoad = _groupsToVisit.Except(_visitedGroups).OrderBy(g => g).ToList();
+
+            foreach (var groupId in groupsToLoad)
+            {
+                _currentGroupId = groupId;
+                LoadQuestionsForCurrentGroup();
+            }
+            
+            // Reset current group to 0 for proper navigation
+            _currentGroupId = 0;
         }
 
         protected bool IsCurrentQuestionAnswered()
