@@ -1,5 +1,5 @@
-using Microsoft.AspNetCore.Authorization;
 using JwtIdentity.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 
 namespace JwtIdentity.Controllers
 {
@@ -138,7 +138,7 @@ namespace JwtIdentity.Controllers
                         ? "Retrieved {Count} surveys for admin user {UserId}"
                         : "Retrieved {Count} surveys created by user {UserId}",
                     surveys.Count, createdById);
-                return Ok(surveyViewModels);
+                return Ok(surveyViewModels.OrderByDescending(x => x.Id));
             }
             catch (Exception ex)
             {
@@ -185,7 +185,7 @@ namespace JwtIdentity.Controllers
                 }
 
                 _logger.LogInformation("Retrieved {Count} surveys answered by user {UserId}", surveys.Count, createdById);
-                return Ok(surveyViewModels);
+                return Ok(surveyViewModels.OrderByDescending(x => x.Id));
             }
             catch (Exception ex)
             {
