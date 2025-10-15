@@ -105,27 +105,22 @@ namespace JwtIdentity.Client.Pages.Survey
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
-            if (firstRender)
+            if (!firstRender || !OperatingSystem.IsBrowser())
             {
-                if (OperatingSystem.IsBrowser())
-                {
-                    await HandleLoggingInUser();
-                    await LoadData();
-
-                    if (Survey != null && Survey.Id > 0)
-                    {
-                        await JSRuntime.InvokeVoidAsync("registerCaptchaCallback", objRef);
-                        await JSRuntime.InvokeVoidAsync("renderReCaptcha", "captcha-container", Configuration["ReCaptcha:SiteKey"]);
-                    }
-
-                    Loading = false;
-                    StateHasChanged();
-                }
-                else
-                {
-                    Logger?.LogWarning("OperatingSystem.IsBrowser() returned false; captcha not rendered.");
-                }
+                return;
             }
+
+            await HandleLoggingInUser();
+            await LoadData();
+
+            if (Survey != null && Survey.Id > 0)
+            {
+                await JSRuntime.InvokeVoidAsync("registerCaptchaCallback", objRef);
+                await JSRuntime.InvokeVoidAsync("renderReCaptcha", "captcha-container", Configuration["ReCaptcha:SiteKey"]);
+            }
+
+            Loading = false;
+            StateHasChanged();
 
             if (IsDemoUser && DemoStep != _previousDemoStep && Loading == false)
             {
@@ -134,7 +129,7 @@ namespace JwtIdentity.Client.Pages.Survey
             }
         }
 
-        private async Task HandleLoggingInUser()
+        internal async Task HandleLoggingInUser()
         {
             objRef = DotNetObjectReference.Create(this);
 
@@ -153,7 +148,7 @@ namespace JwtIdentity.Client.Pages.Survey
             }
         }
 
-        private async Task LoadData()
+        internal async Task LoadData()
         {
             // get the survey based on the SurveyId
             Survey = await ApiService.GetAsync<SurveyViewModel>($"{ApiEndpoints.Answer}/getanswersforsurveyforloggedinuser/{SurveyId}?Preview={Preview || ViewAnswers}");
