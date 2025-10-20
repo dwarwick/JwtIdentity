@@ -233,8 +233,7 @@ Therefore, on the charts and later on the grid, you will see fake demo data." :
                                 <MudButton Class=@($"survey-action-button {ShareButtonDisabled(isPublished, false)}")
                                            Variant="Variant.Filled"
                                            Color="Color.Primary"
-                                           Disabled="@(isGenerating || !isPublished)"
-                                           Loading="@isGenerating"
+                                           Disabled="@(isGenerating || !isPublished)"                                           
                                            OnClick="@(async () => await GenerateAnalysis(surveyId, isPublished))">
                                     <MudIcon Icon="@Icons.Material.Filled.Psychology" Class="mr-1" Size="MudBlazor.Size.Small" /> @(!isGenerating ? "Generate Analysis" : "Generating...")
                                 </MudButton>
