@@ -27,7 +27,7 @@ else
             </MudAlert>
             
             <MudPaper Elevation="1" Class="pa-4" Style="min-height: 600px;">
-                @if (DiagramNodes != null && DiagramNodes.Any())
+                @if (QuestionGroups != null && QuestionGroups.Any() && DiagramNodes != null)
                 {
                     <SfDiagramComponent @ref="DiagramRef" 
                                        Height="600px" 
@@ -40,7 +40,7 @@ else
                         <SnapSettings Constraints="SnapConstraints.None" />
                     </SfDiagramComponent>
                 }
-                else
+                else if (!Loading)
                 {
                     <MudAlert Severity="Severity.Info">
                         No question groups defined yet. Add groups to create a branching flow.

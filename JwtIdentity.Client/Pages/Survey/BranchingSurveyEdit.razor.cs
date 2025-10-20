@@ -337,7 +337,7 @@ namespace JwtIdentity.Client.Pages.Survey
             if (Survey == null || QuestionGroups == null || !QuestionGroups.Any())
                 return;
 
-            var verticalSpacing = 120;
+            var verticalSpacing = 200;  // Increased from 120 to 200 for better visibility
             var horizontalPosition = 400;
             var startY = 80;
 
@@ -392,7 +392,9 @@ namespace JwtIdentity.Client.Pages.Survey
                                 var connectionKey = $"Group{question.GroupId}-Group{option.BranchToGroupId.Value}";
                                 if (!processedConnections.Contains(connectionKey))
                                 {
-                                    CreateConnector(question.GroupId, option.BranchToGroupId.Value, option.OptionText);
+                                    // Include question text with option text for better context
+                                    var label = $"Q{question.QuestionNumber}: {TruncateText(question.Text, 30)}\n→ {TruncateText(option.OptionText, 40)}";
+                                    CreateConnector(question.GroupId, option.BranchToGroupId.Value, label);
                                     processedConnections.Add(connectionKey);
                                 }
                             }
@@ -411,7 +413,8 @@ namespace JwtIdentity.Client.Pages.Survey
                                 var connectionKey = $"Group{question.GroupId}-Group{option.BranchToGroupId.Value}";
                                 if (!processedConnections.Contains(connectionKey))
                                 {
-                                    CreateConnector(question.GroupId, option.BranchToGroupId.Value, option.OptionText);
+                                    var label = $"Q{question.QuestionNumber}: {TruncateText(question.Text, 30)}\n→ {TruncateText(option.OptionText, 40)}";
+                                    CreateConnector(question.GroupId, option.BranchToGroupId.Value, label);
                                     processedConnections.Add(connectionKey);
                                 }
                             }
@@ -428,7 +431,8 @@ namespace JwtIdentity.Client.Pages.Survey
                             var connectionKey = $"Group{question.GroupId}-Group{tfQuestion.BranchToGroupIdOnTrue.Value}-True";
                             if (!processedConnections.Contains(connectionKey))
                             {
-                                CreateConnector(question.GroupId, tfQuestion.BranchToGroupIdOnTrue.Value, "True");
+                                var label = $"Q{question.QuestionNumber}: {TruncateText(question.Text, 30)}\n→ True";
+                                CreateConnector(question.GroupId, tfQuestion.BranchToGroupIdOnTrue.Value, label);
                                 processedConnections.Add(connectionKey);
                             }
                         }
@@ -437,7 +441,8 @@ namespace JwtIdentity.Client.Pages.Survey
                             var connectionKey = $"Group{question.GroupId}-Group{tfQuestion.BranchToGroupIdOnFalse.Value}-False";
                             if (!processedConnections.Contains(connectionKey))
                             {
-                                CreateConnector(question.GroupId, tfQuestion.BranchToGroupIdOnFalse.Value, "False");
+                                var label = $"Q{question.QuestionNumber}: {TruncateText(question.Text, 30)}\n→ False";
+                                CreateConnector(question.GroupId, tfQuestion.BranchToGroupIdOnFalse.Value, label);
                                 processedConnections.Add(connectionKey);
                             }
                         }
@@ -457,6 +462,17 @@ namespace JwtIdentity.Client.Pages.Survey
                     CreateConnector(currentGroup.GroupNumber, nextGroup.GroupNumber, "Sequential", isDashed: true);
                 }
             }
+        }
+
+        private string TruncateText(string text, int maxLength)
+        {
+            if (string.IsNullOrEmpty(text))
+                return "";
+            
+            if (text.Length <= maxLength)
+                return text;
+            
+            return text.Substring(0, maxLength - 3) + "...";
         }
 
         private void CreateConnector(int fromGroupNumber, int toGroupNumber, string label, bool isDashed = false)
@@ -485,7 +501,7 @@ namespace JwtIdentity.Client.Pages.Survey
                     new PathAnnotation
                     {
                         Content = label,
-                        Style = new TextStyle { Color = isDashed ? "#666666" : "#1976d2", FontSize = 11, Bold = !isDashed }
+                        Style = new TextStyle { Color = isDashed ? "#666666" : "#1976d2", FontSize = 10, Bold = !isDashed }
                     }
                 }
             };
