@@ -13,9 +13,14 @@ namespace JwtIdentity.Client.Pages.Survey
         protected Dictionary<int, int?> TrueBranch { get; set; } = new();
         protected Dictionary<int, int?> FalseBranch { get; set; } = new();
 
+        // Flow diagram data
+        protected List<FlowNode> FlowNodes { get; set; } = new();
+        protected List<FlowConnection> FlowConnections { get; set; } = new();
+
         protected override async Task OnInitializedAsync()
         {
             await LoadData();
+            BuildFlowDiagram();
         }
 
         private async Task LoadData()
@@ -312,6 +317,164 @@ namespace JwtIdentity.Client.Pages.Survey
                 Logger?.LogError(ex, "Error updating True/False branching");
                 _ = Snackbar.Add("Error updating branching", Severity.Error);
             }
+        }
+
+        protected async Task RefreshDiagram()
+        {
+            BuildFlowDiagram();
+            await Task.CompletedTask;
+            StateHasChanged();
+        }
+
+        private void BuildFlowDiagram()
+        {
+            FlowNodes = new List<FlowNode>();
+            FlowConnections = new List<FlowConnection>();
+
+            if (Survey == null || QuestionGroups == null || !QuestionGroups.Any())
+                return;
+
+            // Create nodes for each group
+            foreach (var group in QuestionGroups.OrderBy(g => g.GroupNumber))
+            {
+                var questionCount = Survey.Questions.Count(q => q.GroupId == group.GroupNumber);
+                var groupName = string.IsNullOrWhiteSpace(group.GroupName) ? $"Group {group.GroupNumber}" : group.GroupName;
+                
+                FlowNodes.Add(new FlowNode
+                {
+                    GroupNumber = group.GroupNumber,
+                    GroupName = groupName,
+                    QuestionCount = questionCount
+                });
+            }
+
+            // Create connections based on branching rules
+            var processedConnections = new HashSet<string>();
+
+            foreach (var question in Survey.Questions.OrderBy(q => q.QuestionNumber))
+            {
+                if (question.QuestionType == QuestionType.MultipleChoice)
+                {
+                    var mcQuestion = question as MultipleChoiceQuestionViewModel;
+                    if (mcQuestion?.Options != null)
+                    {
+                        foreach (var option in mcQuestion.Options)
+                        {
+                            if (option.BranchToGroupId.HasValue)
+                            {
+                                var connectionKey = $"{question.GroupId}-{option.BranchToGroupId.Value}";
+                                if (!processedConnections.Contains(connectionKey))
+                                {
+                                    FlowConnections.Add(new FlowConnection
+                                    {
+                                        FromGroup = question.GroupId,
+                                        ToGroup = option.BranchToGroupId.Value,
+                                        Label = option.OptionText,
+                                        IsConditional = true
+                                    });
+                                    processedConnections.Add(connectionKey);
+                                }
+                            }
+                        }
+                    }
+                }
+                else if (question.QuestionType == QuestionType.SelectAllThatApply)
+                {
+                    var saQuestion = question as SelectAllThatApplyQuestionViewModel;
+                    if (saQuestion?.Options != null)
+                    {
+                        foreach (var option in saQuestion.Options)
+                        {
+                            if (option.BranchToGroupId.HasValue)
+                            {
+                                var connectionKey = $"{question.GroupId}-{option.BranchToGroupId.Value}";
+                                if (!processedConnections.Contains(connectionKey))
+                                {
+                                    FlowConnections.Add(new FlowConnection
+                                    {
+                                        FromGroup = question.GroupId,
+                                        ToGroup = option.BranchToGroupId.Value,
+                                        Label = option.OptionText,
+                                        IsConditional = true
+                                    });
+                                    processedConnections.Add(connectionKey);
+                                }
+                            }
+                        }
+                    }
+                }
+                else if (question.QuestionType == QuestionType.TrueFalse)
+                {
+                    var tfQuestion = question as TrueFalseQuestionViewModel;
+                    if (tfQuestion != null)
+                    {
+                        if (tfQuestion.BranchToGroupIdOnTrue.HasValue)
+                        {
+                            var connectionKey = $"{question.GroupId}-{tfQuestion.BranchToGroupIdOnTrue.Value}-True";
+                            if (!processedConnections.Contains(connectionKey))
+                            {
+                                FlowConnections.Add(new FlowConnection
+                                {
+                                    FromGroup = question.GroupId,
+                                    ToGroup = tfQuestion.BranchToGroupIdOnTrue.Value,
+                                    Label = "True",
+                                    IsConditional = true
+                                });
+                                processedConnections.Add(connectionKey);
+                            }
+                        }
+                        if (tfQuestion.BranchToGroupIdOnFalse.HasValue)
+                        {
+                            var connectionKey = $"{question.GroupId}-{tfQuestion.BranchToGroupIdOnFalse.Value}-False";
+                            if (!processedConnections.Contains(connectionKey))
+                            {
+                                FlowConnections.Add(new FlowConnection
+                                {
+                                    FromGroup = question.GroupId,
+                                    ToGroup = tfQuestion.BranchToGroupIdOnFalse.Value,
+                                    Label = "False",
+                                    IsConditional = true
+                                });
+                                processedConnections.Add(connectionKey);
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Add default sequential flow connectors for groups without explicit branching
+            for (int i = 0; i < QuestionGroups.Count - 1; i++)
+            {
+                var currentGroup = QuestionGroups.OrderBy(g => g.GroupNumber).ElementAt(i);
+                var nextGroup = QuestionGroups.OrderBy(g => g.GroupNumber).ElementAt(i + 1);
+                var connectionKey = $"{currentGroup.GroupNumber}-{nextGroup.GroupNumber}";
+                
+                if (!processedConnections.Contains(connectionKey))
+                {
+                    FlowConnections.Add(new FlowConnection
+                    {
+                        FromGroup = currentGroup.GroupNumber,
+                        ToGroup = nextGroup.GroupNumber,
+                        Label = "Sequential",
+                        IsConditional = false
+                    });
+                }
+            }
+        }
+
+        protected class FlowNode
+        {
+            public int GroupNumber { get; set; }
+            public string GroupName { get; set; }
+            public int QuestionCount { get; set; }
+        }
+
+        protected class FlowConnection
+        {
+            public int FromGroup { get; set; }
+            public int ToGroup { get; set; }
+            public string Label { get; set; }
+            public bool IsConditional { get; set; }
         }
     }
 }
