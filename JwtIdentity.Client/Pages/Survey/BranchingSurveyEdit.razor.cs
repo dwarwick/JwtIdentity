@@ -1,3 +1,5 @@
+using Syncfusion.Blazor.Diagram;
+
 namespace JwtIdentity.Client.Pages.Survey
 {
     public class BranchingSurveyEditModel : BlazorBase
@@ -13,14 +15,15 @@ namespace JwtIdentity.Client.Pages.Survey
         protected Dictionary<int, int?> TrueBranch { get; set; } = new();
         protected Dictionary<int, int?> FalseBranch { get; set; } = new();
 
-        // Flow diagram data
-        protected List<FlowNode> FlowNodes { get; set; } = new();
-        protected List<FlowConnection> FlowConnections { get; set; } = new();
+        // Syncfusion Diagram
+        protected SfDiagramComponent DiagramRef { get; set; }
+        protected DiagramObjectCollection<Node> DiagramNodes { get; set; }
+        protected DiagramObjectCollection<Connector> DiagramConnectors { get; set; }
 
         protected override async Task OnInitializedAsync()
         {
             await LoadData();
-            BuildFlowDiagram();
+            BuildDiagram();
         }
 
         private async Task LoadData()
@@ -321,34 +324,58 @@ namespace JwtIdentity.Client.Pages.Survey
 
         protected async Task RefreshDiagram()
         {
-            BuildFlowDiagram();
-            await Task.CompletedTask;
+            BuildDiagram();
             StateHasChanged();
+            await Task.CompletedTask;
         }
 
-        private void BuildFlowDiagram()
+        private void BuildDiagram()
         {
-            FlowNodes = new List<FlowNode>();
-            FlowConnections = new List<FlowConnection>();
+            DiagramNodes = new DiagramObjectCollection<Node>();
+            DiagramConnectors = new DiagramObjectCollection<Connector>();
 
             if (Survey == null || QuestionGroups == null || !QuestionGroups.Any())
                 return;
 
+            var verticalSpacing = 120;
+            var horizontalPosition = 400;
+            var startY = 80;
+
             // Create nodes for each group
             foreach (var group in QuestionGroups.OrderBy(g => g.GroupNumber))
             {
+                var groupColor = GetGroupColorForDiagram(group.GroupNumber);
                 var questionCount = Survey.Questions.Count(q => q.GroupId == group.GroupNumber);
                 var groupName = string.IsNullOrWhiteSpace(group.GroupName) ? $"Group {group.GroupNumber}" : group.GroupName;
                 
-                FlowNodes.Add(new FlowNode
+                var node = new Node
                 {
-                    GroupNumber = group.GroupNumber,
-                    GroupName = groupName,
-                    QuestionCount = questionCount
-                });
+                    ID = $"Group{group.GroupNumber}",
+                    OffsetX = horizontalPosition,
+                    OffsetY = startY + (group.GroupNumber * verticalSpacing),
+                    Width = 250,
+                    Height = 90,
+                    Shape = new BasicShape { Type = NodeShapes.Basic, Shape = NodeBasicShapes.Rectangle, CornerRadius = 8 },
+                    Style = new ShapeStyle 
+                    { 
+                        Fill = groupColor,
+                        StrokeColor = GetGroupBorderColorForDiagram(group.GroupNumber),
+                        StrokeWidth = 3
+                    },
+                    Annotations = new DiagramObjectCollection<ShapeAnnotation>
+                    {
+                        new ShapeAnnotation
+                        {
+                            Content = $"{groupName}\n({questionCount} question{(questionCount != 1 ? "s" : "")})",
+                            Style = new TextStyle { Color = "#000000", Bold = true, FontSize = 13 }
+                        }
+                    }
+                };
+
+                DiagramNodes.Add(node);
             }
 
-            // Create connections based on branching rules
+            // Create connectors based on branching rules
             var processedConnections = new HashSet<string>();
 
             foreach (var question in Survey.Questions.OrderBy(q => q.QuestionNumber))
@@ -362,16 +389,10 @@ namespace JwtIdentity.Client.Pages.Survey
                         {
                             if (option.BranchToGroupId.HasValue)
                             {
-                                var connectionKey = $"{question.GroupId}-{option.BranchToGroupId.Value}";
+                                var connectionKey = $"Group{question.GroupId}-Group{option.BranchToGroupId.Value}";
                                 if (!processedConnections.Contains(connectionKey))
                                 {
-                                    FlowConnections.Add(new FlowConnection
-                                    {
-                                        FromGroup = question.GroupId,
-                                        ToGroup = option.BranchToGroupId.Value,
-                                        Label = option.OptionText,
-                                        IsConditional = true
-                                    });
+                                    CreateConnector(question.GroupId, option.BranchToGroupId.Value, option.OptionText);
                                     processedConnections.Add(connectionKey);
                                 }
                             }
@@ -387,16 +408,10 @@ namespace JwtIdentity.Client.Pages.Survey
                         {
                             if (option.BranchToGroupId.HasValue)
                             {
-                                var connectionKey = $"{question.GroupId}-{option.BranchToGroupId.Value}";
+                                var connectionKey = $"Group{question.GroupId}-Group{option.BranchToGroupId.Value}";
                                 if (!processedConnections.Contains(connectionKey))
                                 {
-                                    FlowConnections.Add(new FlowConnection
-                                    {
-                                        FromGroup = question.GroupId,
-                                        ToGroup = option.BranchToGroupId.Value,
-                                        Label = option.OptionText,
-                                        IsConditional = true
-                                    });
+                                    CreateConnector(question.GroupId, option.BranchToGroupId.Value, option.OptionText);
                                     processedConnections.Add(connectionKey);
                                 }
                             }
@@ -410,31 +425,19 @@ namespace JwtIdentity.Client.Pages.Survey
                     {
                         if (tfQuestion.BranchToGroupIdOnTrue.HasValue)
                         {
-                            var connectionKey = $"{question.GroupId}-{tfQuestion.BranchToGroupIdOnTrue.Value}-True";
+                            var connectionKey = $"Group{question.GroupId}-Group{tfQuestion.BranchToGroupIdOnTrue.Value}-True";
                             if (!processedConnections.Contains(connectionKey))
                             {
-                                FlowConnections.Add(new FlowConnection
-                                {
-                                    FromGroup = question.GroupId,
-                                    ToGroup = tfQuestion.BranchToGroupIdOnTrue.Value,
-                                    Label = "True",
-                                    IsConditional = true
-                                });
+                                CreateConnector(question.GroupId, tfQuestion.BranchToGroupIdOnTrue.Value, "True");
                                 processedConnections.Add(connectionKey);
                             }
                         }
                         if (tfQuestion.BranchToGroupIdOnFalse.HasValue)
                         {
-                            var connectionKey = $"{question.GroupId}-{tfQuestion.BranchToGroupIdOnFalse.Value}-False";
+                            var connectionKey = $"Group{question.GroupId}-Group{tfQuestion.BranchToGroupIdOnFalse.Value}-False";
                             if (!processedConnections.Contains(connectionKey))
                             {
-                                FlowConnections.Add(new FlowConnection
-                                {
-                                    FromGroup = question.GroupId,
-                                    ToGroup = tfQuestion.BranchToGroupIdOnFalse.Value,
-                                    Label = "False",
-                                    IsConditional = true
-                                });
+                                CreateConnector(question.GroupId, tfQuestion.BranchToGroupIdOnFalse.Value, "False");
                                 processedConnections.Add(connectionKey);
                             }
                         }
@@ -447,34 +450,83 @@ namespace JwtIdentity.Client.Pages.Survey
             {
                 var currentGroup = QuestionGroups.OrderBy(g => g.GroupNumber).ElementAt(i);
                 var nextGroup = QuestionGroups.OrderBy(g => g.GroupNumber).ElementAt(i + 1);
-                var connectionKey = $"{currentGroup.GroupNumber}-{nextGroup.GroupNumber}";
+                var connectionKey = $"Group{currentGroup.GroupNumber}-Group{nextGroup.GroupNumber}";
                 
                 if (!processedConnections.Contains(connectionKey))
                 {
-                    FlowConnections.Add(new FlowConnection
-                    {
-                        FromGroup = currentGroup.GroupNumber,
-                        ToGroup = nextGroup.GroupNumber,
-                        Label = "Sequential",
-                        IsConditional = false
-                    });
+                    CreateConnector(currentGroup.GroupNumber, nextGroup.GroupNumber, "Sequential", isDashed: true);
                 }
             }
         }
 
-        protected class FlowNode
+        private void CreateConnector(int fromGroupNumber, int toGroupNumber, string label, bool isDashed = false)
         {
-            public int GroupNumber { get; set; }
-            public string GroupName { get; set; }
-            public int QuestionCount { get; set; }
+            var connector = new Connector
+            {
+                ID = $"Connector{fromGroupNumber}to{toGroupNumber}_{Guid.NewGuid().ToString().Substring(0, 8)}",
+                SourceID = $"Group{fromGroupNumber}",
+                TargetID = $"Group{toGroupNumber}",
+                Type = ConnectorSegmentType.Orthogonal,
+                Style = new ShapeStyle
+                {
+                    StrokeColor = isDashed ? "#999999" : "#1976d2",
+                    StrokeWidth = isDashed ? 2 : 3,
+                    StrokeDashArray = isDashed ? "5,5" : null
+                },
+                TargetDecorator = new DecoratorSettings
+                {
+                    Shape = DecoratorShape.Arrow,
+                    Style = new ShapeStyle { Fill = isDashed ? "#999999" : "#1976d2", StrokeColor = isDashed ? "#999999" : "#1976d2" },
+                    Width = 12,
+                    Height = 12
+                },
+                Annotations = new DiagramObjectCollection<PathAnnotation>
+                {
+                    new PathAnnotation
+                    {
+                        Content = label,
+                        Style = new TextStyle { Color = isDashed ? "#666666" : "#1976d2", FontSize = 11, Bold = !isDashed }
+                    }
+                }
+            };
+
+            DiagramConnectors.Add(connector);
         }
 
-        protected class FlowConnection
+        private string GetGroupColorForDiagram(int groupNumber)
         {
-            public int FromGroup { get; set; }
-            public int ToGroup { get; set; }
-            public string Label { get; set; }
-            public bool IsConditional { get; set; }
+            var colors = new[]
+            {
+                "rgba(96, 125, 139, 0.25)",   // Blue Gray
+                "rgba(103, 58, 183, 0.25)",   // Deep Purple
+                "rgba(0, 150, 136, 0.25)",    // Teal
+                "rgba(255, 87, 34, 0.25)",    // Deep Orange
+                "rgba(3, 169, 244, 0.25)",    // Light Blue
+                "rgba(76, 175, 80, 0.25)",    // Green
+                "rgba(233, 30, 99, 0.25)",    // Pink
+                "rgba(255, 152, 0, 0.25)",    // Orange
+                "rgba(121, 85, 72, 0.25)",    // Brown
+                "rgba(158, 158, 158, 0.25)"   // Gray
+            };
+            return colors[groupNumber % colors.Length];
+        }
+
+        private string GetGroupBorderColorForDiagram(int groupNumber)
+        {
+            var colors = new[]
+            {
+                "rgb(96, 125, 139)",   // Blue Gray
+                "rgb(103, 58, 183)",   // Deep Purple
+                "rgb(0, 150, 136)",    // Teal
+                "rgb(255, 87, 34)",    // Deep Orange
+                "rgb(3, 169, 244)",    // Light Blue
+                "rgb(76, 175, 80)",    // Green
+                "rgb(233, 30, 99)",    // Pink
+                "rgb(255, 152, 0)",    // Orange
+                "rgb(121, 85, 72)",    // Brown
+                "rgb(158, 158, 158)"   // Gray
+            };
+            return colors[groupNumber % colors.Length];
         }
     }
 }

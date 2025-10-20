@@ -2,6 +2,7 @@
 @namespace JwtIdentity.Client.Pages.Survey
 @inherits BranchingSurveyEditModel
 @attribute [Authorize(Policy = Permissions.CreateSurvey)]
+@using Syncfusion.Blazor.Diagram
 
 <PageTitle>Survey Shark - Survey Branching</PageTitle>
 
@@ -22,45 +23,23 @@ else
         <MudTabPanel Text="Overview" Icon="@Icons.Material.Filled.Visibility">
             <MudText Typo="Typo.h5" Class="mb-3">Survey Flow Diagram</MudText>
             <MudAlert Severity="Severity.Info" Class="mb-4">
-                This diagram shows the flow of your survey based on the branching configuration. Solid arrows indicate conditional branching, while dashed arrows show sequential flow.
+                This diagram shows the flow of your survey based on the branching configuration. Solid arrows indicate conditional branching, while dashed arrows show sequential flow. You can pan and zoom the diagram.
             </MudAlert>
             
-            <MudPaper Elevation="1" Class="pa-4" Style="min-height: 400px;">
-                @if (FlowNodes.Any())
+            <MudPaper Elevation="1" Class="pa-4" Style="min-height: 600px;">
+                @if (DiagramNodes != null && DiagramNodes.Any())
                 {
-                    <div style="display: flex; flex-direction: column; gap: 30px; align-items: center;">
-                        @foreach (var node in FlowNodes.OrderBy(n => n.GroupNumber))
-                        {
-                            var colorClass = $"group-color-{node.GroupNumber % 10}";
-                            <div>
-                                <MudPaper Elevation="3" Class="@($"pa-3 {colorClass}")" Style="width: 300px; text-align: center;">
-                                    <MudStack Spacing="1">
-                                        <span class="@($"group-badge group-badge-{node.GroupNumber % 10}")">Group @node.GroupNumber</span>
-                                        <MudText Typo="Typo.h6">@node.GroupName</MudText>
-                                        <MudText Typo="Typo.body2">@node.QuestionCount question@(node.QuestionCount != 1 ? "s" : "")</MudText>
-                                    </MudStack>
-                                </MudPaper>
-
-                                @* Show connections from this node *@
-                                @foreach (var connection in FlowConnections.Where(c => c.FromGroup == node.GroupNumber))
-                                {
-                                    <div style="text-align: center; margin: 10px 0;">
-                                        <MudIcon Icon="@Icons.Material.Filled.ArrowDownward" Size="MudBlazor.Size.Large" Color="@(connection.IsConditional ? Color.Primary : Color.Default)" />
-                                        <MudText Typo="Typo.caption" Style="@(connection.IsConditional ? "color: var(--mud-palette-primary); font-weight: 600;" : "color: var(--mud-palette-text-secondary); font-style: italic;")">
-                                            @connection.Label
-                                        </MudText>
-                                    </div>
-                                }
-                            </div>
-                        }
-                        
-                        @if (!FlowConnections.Any())
-                        {
-                            <MudAlert Severity="Severity.Warning">
-                                No branching configured. All questions will be shown sequentially in their group order.
-                            </MudAlert>
-                        }
-                    </div>
+                    <SfDiagramComponent @ref="DiagramRef" 
+                                       Height="600px" 
+                                       Width="100%"
+                                       Nodes="@DiagramNodes"
+                                       Connectors="@DiagramConnectors"
+                                       BackgroundColor="transparent">
+                        <PageSettings>
+                            <PageMargin Left="20" Right="20" Top="20" Bottom="20" />
+                        </PageSettings>
+                        <SnapSettings Constraints="SnapConstraints.None" />
+                    </SfDiagramComponent>
                 }
                 else
                 {
