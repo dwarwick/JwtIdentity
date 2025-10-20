@@ -2,7 +2,6 @@
 @namespace JwtIdentity.Client.Pages.Survey
 @inherits BranchingSurveyEditModel
 @attribute [Authorize(Policy = Permissions.CreateSurvey)]
-@using Syncfusion.Blazor.Diagram
 
 <PageTitle>Survey Shark - Survey Branching</PageTitle>
 
@@ -23,24 +22,47 @@ else
         <MudTabPanel Text="Overview" Icon="@Icons.Material.Filled.Visibility">
             <MudText Typo="Typo.h5" Class="mb-3">Survey Flow Diagram</MudText>
             <MudAlert Severity="Severity.Info" Class="mb-4">
-                This diagram shows the flow of your survey based on the branching configuration. Solid arrows indicate conditional branching, while dashed arrows show sequential flow. You can pan and zoom the diagram.
+                This diagram shows the flow of your survey based on the branching configuration. Solid arrows indicate conditional branching, while dashed arrows show sequential flow.
             </MudAlert>
             
-            <MudPaper Elevation="1" Class="pa-4" Style="min-height: 600px;">
-                @if (QuestionGroups != null && QuestionGroups.Any() && DiagramNodes != null)
+            <MudPaper Elevation="1" Class="pa-4" Style="min-height: 400px; overflow-x: auto;">
+                @if (FlowNodes.Any())
                 {
-                    <SfDiagramComponent @ref="DiagramRef" 
-                                       Height="600px" 
-                                       Width="100%"
-                                       Nodes="@DiagramNodes"
-                                       Connectors="@DiagramConnectors">
-                        <PageSettings>
-                            <PageMargin Left="20" Right="20" Top="20" Bottom="20" />
-                        </PageSettings>
-                        <SnapSettings Constraints="SnapConstraints.None" />
-                    </SfDiagramComponent>
+                    <div style="display: flex; flex-direction: column; gap: 50px; align-items: center; padding: 20px;">
+                        @foreach (var node in FlowNodes.OrderBy(n => n.GroupNumber))
+                        {
+                            var colorClass = $"group-color-{node.GroupNumber % 10}";
+                            <div>
+                                <MudPaper Elevation="3" Class="@($"pa-3 {colorClass}")" Style="width: 350px; text-align: center;">
+                                    <MudStack Spacing="1">
+                                        <span class="@($"group-badge group-badge-{node.GroupNumber % 10}")">Group @node.GroupNumber</span>
+                                        <MudText Typo="Typo.h6">@node.GroupName</MudText>
+                                        <MudText Typo="Typo.body2">@node.QuestionCount question@(node.QuestionCount != 1 ? "s" : "")</MudText>
+                                    </MudStack>
+                                </MudPaper>
+
+                                @* Show connections from this node *@
+                                @foreach (var connection in FlowConnections.Where(c => c.FromGroup == node.GroupNumber))
+                                {
+                                    <div style="text-align: center; margin: 15px 0; min-height: 70px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                                        <MudIcon Icon="@Icons.Material.Filled.ArrowDownward" Size="MudBlazor.Size.Large" Color="@(connection.IsConditional ? Color.Primary : Color.Default)" />
+                                        <MudText Typo="Typo.body2" Style="@(connection.IsConditional ? "color: var(--mud-palette-primary); font-weight: 600; max-width: 400px; margin-top: 8px;" : "color: var(--mud-palette-text-secondary); font-style: italic; max-width: 400px; margin-top: 8px;")">
+                                            @connection.Label
+                                        </MudText>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        
+                        @if (!FlowConnections.Any())
+                        {
+                            <MudAlert Severity="Severity.Warning">
+                                No branching configured. All questions will be shown sequentially in their group order.
+                            </MudAlert>
+                        }
+                    </div>
                 }
-                else if (!Loading)
+                else
                 {
                     <MudAlert Severity="Severity.Info">
                         No question groups defined yet. Add groups to create a branching flow.
