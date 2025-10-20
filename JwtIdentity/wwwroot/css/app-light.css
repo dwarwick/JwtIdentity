@@ -32,6 +32,28 @@
     --sharing-bg: #eaf7ff;
     --mobile-bg: #f0f8f1;
     --signup-bg: #f5f3ff;
+    
+    /* Survey Branching Group Colors - Light Mode */
+    --group-color-0: rgba(var(--group-color-0-base), 0.8);
+    --group-color-0-muted: rgba(var(--group-color-0-base), 0.15);
+    --group-color-1: rgba(var(--group-color-1-base), 0.8);
+    --group-color-1-muted: rgba(var(--group-color-1-base), 0.15);
+    --group-color-2: rgba(var(--group-color-2-base), 0.8);
+    --group-color-2-muted: rgba(var(--group-color-2-base), 0.15);
+    --group-color-3: rgba(var(--group-color-3-base), 0.8);
+    --group-color-3-muted: rgba(var(--group-color-3-base), 0.15);
+    --group-color-4: rgba(var(--group-color-4-base), 0.8);
+    --group-color-4-muted: rgba(var(--group-color-4-base), 0.15);
+    --group-color-5: rgba(var(--group-color-5-base), 0.8);
+    --group-color-5-muted: rgba(var(--group-color-5-base), 0.15);
+    --group-color-6: rgba(var(--group-color-6-base), 0.8);
+    --group-color-6-muted: rgba(var(--group-color-6-base), 0.15);
+    --group-color-7: rgba(var(--group-color-7-base), 0.8);
+    --group-color-7-muted: rgba(var(--group-color-7-base), 0.15);
+    --group-color-8: rgba(var(--group-color-8-base), 0.8);
+    --group-color-8-muted: rgba(var(--group-color-8-base), 0.15);
+    --group-color-9: rgba(var(--group-color-9-base), 0.8);
+    --group-color-9-muted: rgba(var(--group-color-9-base), 0.15);
 }
 
 html, body {

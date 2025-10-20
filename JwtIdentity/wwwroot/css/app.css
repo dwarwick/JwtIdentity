@@ -1,5 +1,17 @@
 :root {
     --mud-palette-appbar-background: rgb(22 22 24) !important;
+    
+    /* Survey Branching Group Colors - Base RGB values that work in both modes */
+    --group-color-0-base: 96, 125, 139;   /* Blue Gray - Default Group */
+    --group-color-1-base: 103, 58, 183;   /* Deep Purple */
+    --group-color-2-base: 0, 150, 136;    /* Teal */
+    --group-color-3-base: 255, 87, 34;    /* Deep Orange */
+    --group-color-4-base: 3, 169, 244;    /* Light Blue */
+    --group-color-5-base: 76, 175, 80;    /* Green */
+    --group-color-6-base: 233, 30, 99;    /* Pink */
+    --group-color-7-base: 255, 152, 0;    /* Orange */
+    --group-color-8-base: 121, 85, 72;    /* Brown */
+    --group-color-9-base: 158, 158, 158;  /* Gray */
 }
 
 /* Add these styles to control scrollbar behavior */
@@ -902,4 +914,123 @@ td.e-summarycell.e-templatecell.e-leftalign {
     text-transform: uppercase;
     letter-spacing: 0.08em;
     opacity: 0.7;
+}
+
+/* Survey Branching Group Color Classes */
+.group-color-0 {
+    background-color: var(--group-color-0-muted);
+    border-left: 4px solid var(--group-color-0);
+}
+
+.group-color-1 {
+    background-color: var(--group-color-1-muted);
+    border-left: 4px solid var(--group-color-1);
+}
+
+.group-color-2 {
+    background-color: var(--group-color-2-muted);
+    border-left: 4px solid var(--group-color-2);
+}
+
+.group-color-3 {
+    background-color: var(--group-color-3-muted);
+    border-left: 4px solid var(--group-color-3);
+}
+
+.group-color-4 {
+    background-color: var(--group-color-4-muted);
+    border-left: 4px solid var(--group-color-4);
+}
+
+.group-color-5 {
+    background-color: var(--group-color-5-muted);
+    border-left: 4px solid var(--group-color-5);
+}
+
+.group-color-6 {
+    background-color: var(--group-color-6-muted);
+    border-left: 4px solid var(--group-color-6);
+}
+
+.group-color-7 {
+    background-color: var(--group-color-7-muted);
+    border-left: 4px solid var(--group-color-7);
+}
+
+.group-color-8 {
+    background-color: var(--group-color-8-muted);
+    border-left: 4px solid var(--group-color-8);
+}
+
+.group-color-9 {
+    background-color: var(--group-color-9-muted);
+    border-left: 4px solid var(--group-color-9);
+}
+
+.group-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.group-badge-0 {
+    background-color: var(--group-color-0-muted);
+    color: var(--group-color-0);
+    border: 1px solid var(--group-color-0);
+}
+
+.group-badge-1 {
+    background-color: var(--group-color-1-muted);
+    color: var(--group-color-1);
+    border: 1px solid var(--group-color-1);
+}
+
+.group-badge-2 {
+    background-color: var(--group-color-2-muted);
+    color: var(--group-color-2);
+    border: 1px solid var(--group-color-2);
+}
+
+.group-badge-3 {
+    background-color: var(--group-color-3-muted);
+    color: var(--group-color-3);
+    border: 1px solid var(--group-color-3);
+}
+
+.group-badge-4 {
+    background-color: var(--group-color-4-muted);
+    color: var(--group-color-4);
+    border: 1px solid var(--group-color-4);
+}
+
+.group-badge-5 {
+    background-color: var(--group-color-5-muted);
+    color: var(--group-color-5);
+    border: 1px solid var(--group-color-5);
+}
+
+.group-badge-6 {
+    background-color: var(--group-color-6-muted);
+    color: var(--group-color-6);
+    border: 1px solid var(--group-color-6);
+}
+
+.group-badge-7 {
+    background-color: var(--group-color-7-muted);
+    color: var(--group-color-7);
+    border: 1px solid var(--group-color-7);
+}
+
+.group-badge-8 {
+    background-color: var(--group-color-8-muted);
+    color: var(--group-color-8);
+    border: 1px solid var(--group-color-8);
+}
+
+.group-badge-9 {
+    background-color: var(--group-color-9-muted);
+    color: var(--group-color-9);
+    border: 1px solid var(--group-color-9);
 }
