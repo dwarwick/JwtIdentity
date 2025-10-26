@@ -350,7 +350,7 @@ namespace JwtIdentity.Client.Pages.Survey
 
             // Create connections based on branching rules
             // Note: We no longer deduplicate conditional connections because we want to show ALL branching rules
-            var processedSequentialConnections = new HashSet<string>();
+            var groupPairsWithConditionalBranching = new HashSet<string>();
 
             foreach (var question in Survey.Questions.OrderBy(q => q.QuestionNumber))
             {
@@ -363,6 +363,10 @@ namespace JwtIdentity.Client.Pages.Survey
                         {
                             if (option.BranchToGroupId.HasValue)
                             {
+                                // Track that there's a conditional branch between these groups
+                                var pairKey = $"{question.GroupId}-{option.BranchToGroupId.Value}";
+                                groupPairsWithConditionalBranching.Add(pairKey);
+                                
                                 // Include question text with option text for better context
                                 var label = $"Q{question.QuestionNumber}: {TruncateText(question.Text, 35)} → {TruncateText(option.OptionText, 45)}";
                                 FlowConnections.Add(new FlowConnection
@@ -385,6 +389,10 @@ namespace JwtIdentity.Client.Pages.Survey
                         {
                             if (option.BranchToGroupId.HasValue)
                             {
+                                // Track that there's a conditional branch between these groups
+                                var pairKey = $"{question.GroupId}-{option.BranchToGroupId.Value}";
+                                groupPairsWithConditionalBranching.Add(pairKey);
+                                
                                 var label = $"Q{question.QuestionNumber}: {TruncateText(question.Text, 35)} → {TruncateText(option.OptionText, 45)}";
                                 FlowConnections.Add(new FlowConnection
                                 {
@@ -404,6 +412,10 @@ namespace JwtIdentity.Client.Pages.Survey
                     {
                         if (tfQuestion.BranchToGroupIdOnTrue.HasValue)
                         {
+                            // Track that there's a conditional branch between these groups
+                            var pairKey = $"{question.GroupId}-{tfQuestion.BranchToGroupIdOnTrue.Value}";
+                            groupPairsWithConditionalBranching.Add(pairKey);
+                            
                             var label = $"Q{question.QuestionNumber}: {TruncateText(question.Text, 35)} → True";
                             FlowConnections.Add(new FlowConnection
                             {
@@ -415,6 +427,10 @@ namespace JwtIdentity.Client.Pages.Survey
                         }
                         if (tfQuestion.BranchToGroupIdOnFalse.HasValue)
                         {
+                            // Track that there's a conditional branch between these groups
+                            var pairKey = $"{question.GroupId}-{tfQuestion.BranchToGroupIdOnFalse.Value}";
+                            groupPairsWithConditionalBranching.Add(pairKey);
+                            
                             var label = $"Q{question.QuestionNumber}: {TruncateText(question.Text, 35)} → False";
                             FlowConnections.Add(new FlowConnection
                             {
@@ -433,10 +449,10 @@ namespace JwtIdentity.Client.Pages.Survey
             {
                 var currentGroup = QuestionGroups.OrderBy(g => g.GroupNumber).ElementAt(i);
                 var nextGroup = QuestionGroups.OrderBy(g => g.GroupNumber).ElementAt(i + 1);
-                var connectionKey = $"{currentGroup.GroupNumber}-{nextGroup.GroupNumber}";
+                var pairKey = $"{currentGroup.GroupNumber}-{nextGroup.GroupNumber}";
                 
                 // Only add sequential connection if there's no conditional branching between these groups
-                if (!processedSequentialConnections.Contains(connectionKey))
+                if (!groupPairsWithConditionalBranching.Contains(pairKey))
                 {
                     FlowConnections.Add(new FlowConnection
                     {
@@ -445,7 +461,6 @@ namespace JwtIdentity.Client.Pages.Survey
                         Label = "Sequential",
                         IsConditional = false
                     });
-                    processedSequentialConnections.Add(connectionKey);
                 }
             }
         }
