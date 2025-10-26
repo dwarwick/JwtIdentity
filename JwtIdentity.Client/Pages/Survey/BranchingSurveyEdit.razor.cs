@@ -349,7 +349,8 @@ namespace JwtIdentity.Client.Pages.Survey
             }
 
             // Create connections based on branching rules
-            var processedConnections = new HashSet<string>();
+            // Note: We no longer deduplicate conditional connections because we want to show ALL branching rules
+            var processedSequentialConnections = new HashSet<string>();
 
             foreach (var question in Survey.Questions.OrderBy(q => q.QuestionNumber))
             {
@@ -362,20 +363,15 @@ namespace JwtIdentity.Client.Pages.Survey
                         {
                             if (option.BranchToGroupId.HasValue)
                             {
-                                var connectionKey = $"{question.GroupId}-{option.BranchToGroupId.Value}";
-                                if (!processedConnections.Contains(connectionKey))
+                                // Include question text with option text for better context
+                                var label = $"Q{question.QuestionNumber}: {TruncateText(question.Text, 35)} → {TruncateText(option.OptionText, 45)}";
+                                FlowConnections.Add(new FlowConnection
                                 {
-                                    // Include question text with option text for better context
-                                    var label = $"Q{question.QuestionNumber}: {TruncateText(question.Text, 35)} → {TruncateText(option.OptionText, 45)}";
-                                    FlowConnections.Add(new FlowConnection
-                                    {
-                                        FromGroup = question.GroupId,
-                                        ToGroup = option.BranchToGroupId.Value,
-                                        Label = label,
-                                        IsConditional = true
-                                    });
-                                    processedConnections.Add(connectionKey);
-                                }
+                                    FromGroup = question.GroupId,
+                                    ToGroup = option.BranchToGroupId.Value,
+                                    Label = label,
+                                    IsConditional = true
+                                });
                             }
                         }
                     }
@@ -389,19 +385,14 @@ namespace JwtIdentity.Client.Pages.Survey
                         {
                             if (option.BranchToGroupId.HasValue)
                             {
-                                var connectionKey = $"{question.GroupId}-{option.BranchToGroupId.Value}";
-                                if (!processedConnections.Contains(connectionKey))
+                                var label = $"Q{question.QuestionNumber}: {TruncateText(question.Text, 35)} → {TruncateText(option.OptionText, 45)}";
+                                FlowConnections.Add(new FlowConnection
                                 {
-                                    var label = $"Q{question.QuestionNumber}: {TruncateText(question.Text, 35)} → {TruncateText(option.OptionText, 45)}";
-                                    FlowConnections.Add(new FlowConnection
-                                    {
-                                        FromGroup = question.GroupId,
-                                        ToGroup = option.BranchToGroupId.Value,
-                                        Label = label,
-                                        IsConditional = true
-                                    });
-                                    processedConnections.Add(connectionKey);
-                                }
+                                    FromGroup = question.GroupId,
+                                    ToGroup = option.BranchToGroupId.Value,
+                                    Label = label,
+                                    IsConditional = true
+                                });
                             }
                         }
                     }
@@ -413,35 +404,25 @@ namespace JwtIdentity.Client.Pages.Survey
                     {
                         if (tfQuestion.BranchToGroupIdOnTrue.HasValue)
                         {
-                            var connectionKey = $"{question.GroupId}-{tfQuestion.BranchToGroupIdOnTrue.Value}-True";
-                            if (!processedConnections.Contains(connectionKey))
+                            var label = $"Q{question.QuestionNumber}: {TruncateText(question.Text, 35)} → True";
+                            FlowConnections.Add(new FlowConnection
                             {
-                                var label = $"Q{question.QuestionNumber}: {TruncateText(question.Text, 35)} → True";
-                                FlowConnections.Add(new FlowConnection
-                                {
-                                    FromGroup = question.GroupId,
-                                    ToGroup = tfQuestion.BranchToGroupIdOnTrue.Value,
-                                    Label = label,
-                                    IsConditional = true
-                                });
-                                processedConnections.Add(connectionKey);
-                            }
+                                FromGroup = question.GroupId,
+                                ToGroup = tfQuestion.BranchToGroupIdOnTrue.Value,
+                                Label = label,
+                                IsConditional = true
+                            });
                         }
                         if (tfQuestion.BranchToGroupIdOnFalse.HasValue)
                         {
-                            var connectionKey = $"{question.GroupId}-{tfQuestion.BranchToGroupIdOnFalse.Value}-False";
-                            if (!processedConnections.Contains(connectionKey))
+                            var label = $"Q{question.QuestionNumber}: {TruncateText(question.Text, 35)} → False";
+                            FlowConnections.Add(new FlowConnection
                             {
-                                var label = $"Q{question.QuestionNumber}: {TruncateText(question.Text, 35)} → False";
-                                FlowConnections.Add(new FlowConnection
-                                {
-                                    FromGroup = question.GroupId,
-                                    ToGroup = tfQuestion.BranchToGroupIdOnFalse.Value,
-                                    Label = label,
-                                    IsConditional = true
-                                });
-                                processedConnections.Add(connectionKey);
-                            }
+                                FromGroup = question.GroupId,
+                                ToGroup = tfQuestion.BranchToGroupIdOnFalse.Value,
+                                Label = label,
+                                IsConditional = true
+                            });
                         }
                     }
                 }
@@ -454,7 +435,8 @@ namespace JwtIdentity.Client.Pages.Survey
                 var nextGroup = QuestionGroups.OrderBy(g => g.GroupNumber).ElementAt(i + 1);
                 var connectionKey = $"{currentGroup.GroupNumber}-{nextGroup.GroupNumber}";
                 
-                if (!processedConnections.Contains(connectionKey))
+                // Only add sequential connection if there's no conditional branching between these groups
+                if (!processedSequentialConnections.Contains(connectionKey))
                 {
                     FlowConnections.Add(new FlowConnection
                     {
@@ -463,6 +445,7 @@ namespace JwtIdentity.Client.Pages.Survey
                         Label = "Sequential",
                         IsConditional = false
                     });
+                    processedSequentialConnections.Add(connectionKey);
                 }
             }
         }

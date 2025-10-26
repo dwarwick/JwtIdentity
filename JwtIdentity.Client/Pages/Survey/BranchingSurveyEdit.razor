@@ -42,13 +42,41 @@ else
                                 </MudPaper>
 
                                 @* Show connections from this node *@
-                                @foreach (var connection in FlowConnections.Where(c => c.FromGroup == node.GroupNumber))
+                                @{
+                                    var connectionsFromNode = FlowConnections.Where(c => c.FromGroup == node.GroupNumber).ToList();
+                                    var connectionsByTarget = connectionsFromNode.GroupBy(c => c.ToGroup).OrderBy(g => g.Key);
+                                }
+                                @foreach (var targetGroup in connectionsByTarget)
                                 {
-                                    <div style="text-align: center; margin: 15px 0; min-height: 70px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-                                        <MudIcon Icon="@Icons.Material.Filled.ArrowDownward" Size="MudBlazor.Size.Large" Color="@(connection.IsConditional ? Color.Primary : Color.Default)" />
-                                        <MudText Typo="Typo.body2" Style="@(connection.IsConditional ? "color: var(--mud-palette-primary); font-weight: 600; max-width: 400px; margin-top: 8px;" : "color: var(--mud-palette-text-secondary); font-style: italic; max-width: 400px; margin-top: 8px;")">
-                                            @connection.Label
-                                        </MudText>
+                                    var conditionalConnections = targetGroup.Where(c => c.IsConditional).ToList();
+                                    var sequentialConnection = targetGroup.FirstOrDefault(c => !c.IsConditional);
+
+                                    <div style="text-align: center; margin: 15px 0; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                                        <MudIcon Icon="@Icons.Material.Filled.ArrowDownward" Size="MudBlazor.Size.Large" Color="@(conditionalConnections.Any() ? Color.Primary : Color.Default)" />
+                                        
+                                        @if (conditionalConnections.Any())
+                                        {
+                                            @* Show branching rules in a neutral-colored box *@
+                                            <MudPaper Elevation="2" Class="pa-3 mt-2" Style="background-color: var(--mud-palette-background-grey); max-width: 450px; border: 1px solid var(--mud-palette-divider);">
+                                                <MudText Typo="Typo.caption" Class="mb-2" Style="font-weight: 600; color: var(--mud-palette-text-primary);">
+                                                    Branching Rules to Group @targetGroup.Key
+                                                </MudText>
+                                                <MudStack Spacing="1">
+                                                    @foreach (var connection in conditionalConnections)
+                                                    {
+                                                        <MudText Typo="Typo.body2" Style="color: var(--mud-palette-primary); font-weight: 500; font-size: 0.875rem;">
+                                                            @connection.Label
+                                                        </MudText>
+                                                    }
+                                                </MudStack>
+                                            </MudPaper>
+                                        }
+                                        else if (sequentialConnection != null)
+                                        {
+                                            <MudText Typo="Typo.body2" Style="color: var(--mud-palette-text-secondary); font-style: italic; max-width: 400px; margin-top: 8px;">
+                                                @sequentialConnection.Label
+                                            </MudText>
+                                        }
                                     </div>
                                 }
                             </div>
