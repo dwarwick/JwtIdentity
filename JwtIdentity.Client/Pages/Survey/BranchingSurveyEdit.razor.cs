@@ -332,15 +332,8 @@ namespace JwtIdentity.Client.Pages.Survey
         protected void OnNodeCreating(IDiagramObject obj)
         {
             Node node = obj as Node;
-            node.Height = 40;
-            node.Width = 100;
-            //Disables the selection of a node in the diagram
+            // Disables the selection of a node in the diagram
             node.Constraints = NodeConstraints.Default & ~NodeConstraints.Select;
-            node.Style = new ShapeStyle() { Fill = "darkcyan", StrokeWidth = 3, StrokeColor = "Black" };
-            if (node.Annotations != null && node.Annotations.Count > 0)
-            {
-                node.Annotations[0].Style = new TextStyle() { Color = "white", Bold = true };
-            }
         }
 
         private void BuildSyncfusionDiagram()
