@@ -43,7 +43,7 @@ namespace JwtIdentity.Client.Pages.Survey
 
                     // Always ensure Group 0 exists (it's implicit and may not be in the database)
                     QuestionGroups = new List<QuestionGroupViewModel>();
-                    
+
                     // Add Group 0 if it doesn't exist in the loaded groups
                     if (groups == null || !groups.Any(g => g.GroupNumber == 0))
                     {
@@ -55,7 +55,7 @@ namespace JwtIdentity.Client.Pages.Survey
                             SubmitAfterGroup = false // Default to false so it can flow to other groups
                         });
                     }
-                    
+
                     // Add all other groups from the database
                     if (groups != null && groups.Any())
                     {
@@ -337,6 +337,20 @@ namespace JwtIdentity.Client.Pages.Survey
             node.Constraints = NodeConstraints.Default & ~NodeConstraints.Select;
         }
 
+        //Creates connectors with some default values.
+        protected void OnConnectorCreating(IDiagramObject connector)
+        {
+            (connector as Connector).Type = ConnectorSegmentType.Orthogonal;
+            (connector as Connector).CornerRadius = 7;
+            (connector as Connector).Style.StrokeWidth = 1;
+            (connector as Connector).TargetDecorator.Height = 7;
+            (connector as Connector).TargetDecorator.Width = 7;
+            (connector as Connector).Style.Fill = "#6495ED";
+            (connector as Connector).Style.StrokeColor = "#6495ED";
+            (connector as Connector).TargetDecorator.Style.Fill = "#6BA5D7";
+            (connector as Connector).TargetDecorator.Style.StrokeColor = "#6BA5D7";
+        }
+
         private void BuildSyncfusionDiagram()
         {
             Nodes = new DiagramObjectCollection<Node>();
@@ -353,7 +367,7 @@ namespace JwtIdentity.Client.Pages.Survey
             {
                 var questionCount = Survey.Questions.Count(q => q.GroupId == group.GroupNumber);
                 var groupName = string.IsNullOrWhiteSpace(group.GroupName) ? $"Group {group.GroupNumber}" : group.GroupName;
-                
+
                 // Create primary node for the group
                 var groupNode = new Node()
                 {
@@ -370,21 +384,21 @@ namespace JwtIdentity.Client.Pages.Survey
                             Style = new TextStyle() { Color = "white", Bold = true }
                         }
                     },
-                    Style = new ShapeStyle() 
-                    { 
-                        Fill = GetGroupColor(group.GroupNumber), 
-                        StrokeWidth = 3, 
-                        StrokeColor = "Black" 
+                    Style = new ShapeStyle()
+                    {
+                        Fill = GetGroupColor(group.GroupNumber),
+                        StrokeWidth = 3,
+                        StrokeColor = "Black"
                     }
                 };
-                
+
                 Nodes.Add(groupNode);
                 nodePositions[group.GroupNumber] = (300, yPosition);
 
                 // Create nodes for branching rules within this group
                 var groupQuestions = Survey.Questions
-                    .Where(q => q.GroupId == group.GroupNumber && 
-                        (q.QuestionType == QuestionType.MultipleChoice || 
+                    .Where(q => q.GroupId == group.GroupNumber &&
+                        (q.QuestionType == QuestionType.MultipleChoice ||
                          q.QuestionType == QuestionType.SelectAllThatApply ||
                          q.QuestionType == QuestionType.TrueFalse))
                     .OrderBy(q => q.QuestionNumber)
@@ -417,11 +431,11 @@ namespace JwtIdentity.Client.Pages.Survey
                                             Style = new TextStyle() { Color = "white", Bold = false, FontSize = 10 }
                                         }
                                     },
-                                    Style = new ShapeStyle() 
-                                    { 
-                                        Fill = "#2196F3", 
-                                        StrokeWidth = 2, 
-                                        StrokeColor = "#1976D2" 
+                                    Style = new ShapeStyle()
+                                    {
+                                        Fill = "#2196F3",
+                                        StrokeWidth = 2,
+                                        StrokeColor = "#1976D2"
                                     }
                                 };
                                 Nodes.Add(branchNode);
@@ -479,11 +493,11 @@ namespace JwtIdentity.Client.Pages.Survey
                                             Style = new TextStyle() { Color = "white", Bold = false, FontSize = 10 }
                                         }
                                     },
-                                    Style = new ShapeStyle() 
-                                    { 
-                                        Fill = "#2196F3", 
-                                        StrokeWidth = 2, 
-                                        StrokeColor = "#1976D2" 
+                                    Style = new ShapeStyle()
+                                    {
+                                        Fill = "#2196F3",
+                                        StrokeWidth = 2,
+                                        StrokeColor = "#1976D2"
                                     }
                                 };
                                 Nodes.Add(branchNode);
@@ -541,11 +555,11 @@ namespace JwtIdentity.Client.Pages.Survey
                                             Style = new TextStyle() { Color = "white", Bold = false, FontSize = 10 }
                                         }
                                     },
-                                    Style = new ShapeStyle() 
-                                    { 
-                                        Fill = "#2196F3", 
-                                        StrokeWidth = 2, 
-                                        StrokeColor = "#1976D2" 
+                                    Style = new ShapeStyle()
+                                    {
+                                        Fill = "#2196F3",
+                                        StrokeWidth = 2,
+                                        StrokeColor = "#1976D2"
                                     }
                                 };
                                 Nodes.Add(branchNode);
@@ -597,11 +611,11 @@ namespace JwtIdentity.Client.Pages.Survey
                                             Style = new TextStyle() { Color = "white", Bold = false, FontSize = 10 }
                                         }
                                     },
-                                    Style = new ShapeStyle() 
-                                    { 
-                                        Fill = "#2196F3", 
-                                        StrokeWidth = 2, 
-                                        StrokeColor = "#1976D2" 
+                                    Style = new ShapeStyle()
+                                    {
+                                        Fill = "#2196F3",
+                                        StrokeWidth = 2,
+                                        StrokeColor = "#1976D2"
                                     }
                                 };
                                 Nodes.Add(branchNode);
@@ -647,10 +661,10 @@ namespace JwtIdentity.Client.Pages.Survey
             {
                 var currentGroup = QuestionGroups.OrderBy(g => g.GroupNumber).ElementAt(i);
                 var nextGroup = QuestionGroups.OrderBy(g => g.GroupNumber).ElementAt(i + 1);
-                
+
                 // Only add sequential connector if there's no branching from this group
-                bool hasExplicitBranching = Survey.Questions.Any(q => 
-                    q.GroupId == currentGroup.GroupNumber && 
+                bool hasExplicitBranching = Survey.Questions.Any(q =>
+                    q.GroupId == currentGroup.GroupNumber &&
                     ((q is MultipleChoiceQuestionViewModel mc && mc.Options.Any(o => o.BranchToGroupId.HasValue)) ||
                      (q is SelectAllThatApplyQuestionViewModel sa && sa.Options.Any(o => o.BranchToGroupId.HasValue)) ||
                      (q is TrueFalseQuestionViewModel tf && (tf.BranchToGroupIdOnTrue.HasValue || tf.BranchToGroupIdOnFalse.HasValue))));
@@ -677,10 +691,10 @@ namespace JwtIdentity.Client.Pages.Survey
 
         private string GetGroupColor(int groupNumber)
         {
-            var colors = new[] 
-            { 
-                "#00897B", "#1976D2", "#7B1FA2", "#C62828", "#F57C00", 
-                "#558B2F", "#0277BD", "#5E35B1", "#C2185B", "#EF6C00" 
+            var colors = new[]
+            {
+                "#00897B", "#1976D2", "#7B1FA2", "#C62828", "#F57C00",
+                "#558B2F", "#0277BD", "#5E35B1", "#C2185B", "#EF6C00"
             };
             return colors[groupNumber % colors.Length];
         }
@@ -689,10 +703,10 @@ namespace JwtIdentity.Client.Pages.Survey
         {
             if (string.IsNullOrEmpty(text))
                 return "";
-            
+
             if (text.Length <= maxLength)
                 return text;
-            
+
             return text.Substring(0, maxLength - 3) + "...";
         }
     }

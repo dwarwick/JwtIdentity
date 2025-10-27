@@ -34,7 +34,8 @@ else
                                        Width="100%"
                                        Nodes="@Nodes" 
                                        Connectors="@Connectors"
-                                       NodeCreating="@OnNodeCreating">
+                                       NodeCreating="@OnNodeCreating" 
+                                       ConnectorCreating="OnConnectorCreating">
                         <SnapSettings Constraints="SnapConstraints.None"></SnapSettings>
                         <Layout Type="LayoutType.ComplexHierarchicalTree" 
                                HorizontalSpacing="100" 
