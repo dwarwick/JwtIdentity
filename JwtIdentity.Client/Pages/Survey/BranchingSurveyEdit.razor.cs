@@ -332,6 +332,7 @@ namespace JwtIdentity.Client.Pages.Survey
         protected void OnNodeCreating(IDiagramObject obj)
         {
             Node node = obj as Node;
+            if (node == null) return;
             // Disables the selection of a node in the diagram
             node.Constraints = NodeConstraints.Default & ~NodeConstraints.Select;
         }
