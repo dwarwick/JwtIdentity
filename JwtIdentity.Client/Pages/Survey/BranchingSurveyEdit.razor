@@ -26,11 +26,11 @@ else
                 This diagram shows the flow of your survey based on the branching configuration. Blue boxes indicate conditional branching rules, while dashed arrows show sequential flow.
             </MudAlert>
             
-            <MudPaper Elevation="1" Class="pa-4" Style="min-height: 600px; overflow: auto;">
+            <MudPaper Elevation="1" Class="pa-4" Style="overflow: auto;">
                 @if (Nodes.Any())
                 {
                     <SfDiagramComponent @ref="@diagram" 
-                                       Height="800px" 
+                                       Height="100%" 
                                        Width="100%"
                                        Nodes="@Nodes" 
                                        Connectors="@Connectors"
@@ -43,7 +43,7 @@ else
                                Orientation="LayoutOrientation.TopToBottom"
                                HorizontalAlignment="Syncfusion.Blazor.Diagram.HorizontalAlignment.Center"
                                VerticalAlignment="VerticalAlignment.Top">
-                            <LayoutMargin Top="50" Left="50" Right="50" Bottom="50"></LayoutMargin>
+                            <LayoutMargin Top="20" Left="20" Right="20" Bottom="20"></LayoutMargin>
                         </Layout>
                     </SfDiagramComponent>
                 }

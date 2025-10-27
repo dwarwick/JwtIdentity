@@ -359,21 +359,16 @@ namespace JwtIdentity.Client.Pages.Survey
             if (Survey == null || QuestionGroups == null || !QuestionGroups.Any())
                 return;
 
-            // Create nodes for each group
-            int yPosition = 50;
-            var nodePositions = new Dictionary<int, (double x, double y)>();
-
+            // Create nodes for each group - let the layout algorithm position them
             foreach (var group in QuestionGroups.OrderBy(g => g.GroupNumber))
             {
                 var questionCount = Survey.Questions.Count(q => q.GroupId == group.GroupNumber);
                 var groupName = string.IsNullOrWhiteSpace(group.GroupName) ? $"Group {group.GroupNumber}" : group.GroupName;
 
-                // Create primary node for the group
+                // Create primary node for the group (no manual positioning)
                 var groupNode = new Node()
                 {
                     ID = $"Group{group.GroupNumber}",
-                    OffsetX = 300,
-                    OffsetY = yPosition,
                     Width = 200,
                     Height = 60,
                     Annotations = new DiagramObjectCollection<ShapeAnnotation>()
@@ -393,7 +388,6 @@ namespace JwtIdentity.Client.Pages.Survey
                 };
 
                 Nodes.Add(groupNode);
-                nodePositions[group.GroupNumber] = (300, yPosition);
 
                 // Create nodes for branching rules within this group
                 var groupQuestions = Survey.Questions
@@ -403,9 +397,6 @@ namespace JwtIdentity.Client.Pages.Survey
                          q.QuestionType == QuestionType.TrueFalse))
                     .OrderBy(q => q.QuestionNumber)
                     .ToList();
-
-                int branchNodeX = 550;
-                int branchNodeY = yPosition;
 
                 foreach (var question in groupQuestions)
                 {
@@ -419,8 +410,6 @@ namespace JwtIdentity.Client.Pages.Survey
                                 var branchNode = new Node()
                                 {
                                     ID = $"Branch_MC_Q{question.Id}_O{option.Id}",
-                                    OffsetX = branchNodeX,
-                                    OffsetY = branchNodeY,
                                     Width = 220,
                                     Height = 60,
                                     Annotations = new DiagramObjectCollection<ShapeAnnotation>()
@@ -466,8 +455,6 @@ namespace JwtIdentity.Client.Pages.Survey
                                     }
                                 };
                                 Connectors.Add(connectorToTarget);
-
-                                branchNodeY += 80;
                             }
                         }
                     }
@@ -481,8 +468,6 @@ namespace JwtIdentity.Client.Pages.Survey
                                 var branchNode = new Node()
                                 {
                                     ID = $"Branch_SA_Q{question.Id}_O{option.Id}",
-                                    OffsetX = branchNodeX,
-                                    OffsetY = branchNodeY,
                                     Width = 220,
                                     Height = 60,
                                     Annotations = new DiagramObjectCollection<ShapeAnnotation>()
@@ -528,8 +513,6 @@ namespace JwtIdentity.Client.Pages.Survey
                                     }
                                 };
                                 Connectors.Add(connectorToTarget);
-
-                                branchNodeY += 80;
                             }
                         }
                     }
@@ -543,8 +526,6 @@ namespace JwtIdentity.Client.Pages.Survey
                                 var branchNode = new Node()
                                 {
                                     ID = $"Branch_TF_Q{question.Id}_True",
-                                    OffsetX = branchNodeX,
-                                    OffsetY = branchNodeY,
                                     Width = 220,
                                     Height = 60,
                                     Annotations = new DiagramObjectCollection<ShapeAnnotation>()
@@ -590,8 +571,6 @@ namespace JwtIdentity.Client.Pages.Survey
                                     }
                                 };
                                 Connectors.Add(connectorToTarget);
-
-                                branchNodeY += 80;
                             }
 
                             if (tfQuestion.BranchToGroupIdOnFalse.HasValue)
@@ -599,8 +578,6 @@ namespace JwtIdentity.Client.Pages.Survey
                                 var branchNode = new Node()
                                 {
                                     ID = $"Branch_TF_Q{question.Id}_False",
-                                    OffsetX = branchNodeX,
-                                    OffsetY = branchNodeY,
                                     Width = 220,
                                     Height = 60,
                                     Annotations = new DiagramObjectCollection<ShapeAnnotation>()
@@ -646,14 +623,10 @@ namespace JwtIdentity.Client.Pages.Survey
                                     }
                                 };
                                 Connectors.Add(connectorToTarget);
-
-                                branchNodeY += 80;
                             }
                         }
                     }
                 }
-
-                yPosition += Math.Max(120, branchNodeY - yPosition + 40);
             }
 
             // Add sequential flow connectors between groups without explicit branching
