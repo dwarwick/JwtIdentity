@@ -407,6 +407,8 @@ namespace JwtIdentity.Client.Pages.Survey
                         {
                             foreach (var option in mcQuestion.Options.Where(o => o.BranchToGroupId.HasValue))
                             {
+                                var targetGroupColor = GetGroupColor(option.BranchToGroupId.Value);
+                                
                                 var branchNode = new Node()
                                 {
                                     ID = $"Branch_MC_Q{question.Id}_O{option.Id}",
@@ -429,29 +431,29 @@ namespace JwtIdentity.Client.Pages.Survey
                                 };
                                 Nodes.Add(branchNode);
 
-                                // Connect group to branch node
+                                // Connect group to branch node with gray color
                                 var connectorToBranch = new Connector()
                                 {
                                     ID = $"Connector_Group{group.GroupNumber}_To_Branch_Q{question.Id}_O{option.Id}",
                                     SourceID = $"Group{group.GroupNumber}",
                                     TargetID = branchNode.ID,
-                                    Type = ConnectorSegmentType.Straight,
-                                    Style = new ShapeStyle() { StrokeColor = "#757575", StrokeWidth = 1 }
+                                    Type = ConnectorSegmentType.Orthogonal,
+                                    Style = new ShapeStyle() { StrokeColor = "#757575", StrokeWidth = 1.5 }
                                 };
                                 Connectors.Add(connectorToBranch);
 
-                                // Connect branch node to target group
+                                // Connect branch node to target group with target group's color
                                 var connectorToTarget = new Connector()
                                 {
                                     ID = $"Connector_Branch_Q{question.Id}_O{option.Id}_To_Group{option.BranchToGroupId}",
                                     SourceID = branchNode.ID,
                                     TargetID = $"Group{option.BranchToGroupId}",
                                     Type = ConnectorSegmentType.Orthogonal,
-                                    Style = new ShapeStyle() { StrokeColor = "#2196F3", StrokeWidth = 2 },
+                                    Style = new ShapeStyle() { StrokeColor = targetGroupColor, StrokeWidth = 3 },
                                     TargetDecorator = new DecoratorSettings()
                                     {
                                         Shape = DecoratorShape.Arrow,
-                                        Style = new ShapeStyle() { Fill = "#2196F3", StrokeColor = "#2196F3" }
+                                        Style = new ShapeStyle() { Fill = targetGroupColor, StrokeColor = targetGroupColor }
                                     }
                                 };
                                 Connectors.Add(connectorToTarget);
@@ -465,6 +467,8 @@ namespace JwtIdentity.Client.Pages.Survey
                         {
                             foreach (var option in saQuestion.Options.Where(o => o.BranchToGroupId.HasValue))
                             {
+                                var targetGroupColor = GetGroupColor(option.BranchToGroupId.Value);
+                                
                                 var branchNode = new Node()
                                 {
                                     ID = $"Branch_SA_Q{question.Id}_O{option.Id}",
@@ -487,29 +491,29 @@ namespace JwtIdentity.Client.Pages.Survey
                                 };
                                 Nodes.Add(branchNode);
 
-                                // Connect group to branch node
+                                // Connect group to branch node with gray color
                                 var connectorToBranch = new Connector()
                                 {
                                     ID = $"Connector_Group{group.GroupNumber}_To_Branch_Q{question.Id}_O{option.Id}",
                                     SourceID = $"Group{group.GroupNumber}",
                                     TargetID = branchNode.ID,
-                                    Type = ConnectorSegmentType.Straight,
-                                    Style = new ShapeStyle() { StrokeColor = "#757575", StrokeWidth = 1 }
+                                    Type = ConnectorSegmentType.Orthogonal,
+                                    Style = new ShapeStyle() { StrokeColor = "#757575", StrokeWidth = 1.5 }
                                 };
                                 Connectors.Add(connectorToBranch);
 
-                                // Connect branch node to target group
+                                // Connect branch node to target group with target group's color
                                 var connectorToTarget = new Connector()
                                 {
                                     ID = $"Connector_Branch_Q{question.Id}_O{option.Id}_To_Group{option.BranchToGroupId}",
                                     SourceID = branchNode.ID,
                                     TargetID = $"Group{option.BranchToGroupId}",
                                     Type = ConnectorSegmentType.Orthogonal,
-                                    Style = new ShapeStyle() { StrokeColor = "#2196F3", StrokeWidth = 2 },
+                                    Style = new ShapeStyle() { StrokeColor = targetGroupColor, StrokeWidth = 3 },
                                     TargetDecorator = new DecoratorSettings()
                                     {
                                         Shape = DecoratorShape.Arrow,
-                                        Style = new ShapeStyle() { Fill = "#2196F3", StrokeColor = "#2196F3" }
+                                        Style = new ShapeStyle() { Fill = targetGroupColor, StrokeColor = targetGroupColor }
                                     }
                                 };
                                 Connectors.Add(connectorToTarget);
@@ -523,6 +527,8 @@ namespace JwtIdentity.Client.Pages.Survey
                         {
                             if (tfQuestion.BranchToGroupIdOnTrue.HasValue)
                             {
+                                var targetGroupColor = GetGroupColor(tfQuestion.BranchToGroupIdOnTrue.Value);
+                                
                                 var branchNode = new Node()
                                 {
                                     ID = $"Branch_TF_Q{question.Id}_True",
@@ -545,29 +551,29 @@ namespace JwtIdentity.Client.Pages.Survey
                                 };
                                 Nodes.Add(branchNode);
 
-                                // Connect group to branch node
+                                // Connect group to branch node with gray color
                                 var connectorToBranch = new Connector()
                                 {
                                     ID = $"Connector_Group{group.GroupNumber}_To_Branch_Q{question.Id}_True",
                                     SourceID = $"Group{group.GroupNumber}",
                                     TargetID = branchNode.ID,
-                                    Type = ConnectorSegmentType.Straight,
-                                    Style = new ShapeStyle() { StrokeColor = "#757575", StrokeWidth = 1 }
+                                    Type = ConnectorSegmentType.Orthogonal,
+                                    Style = new ShapeStyle() { StrokeColor = "#757575", StrokeWidth = 1.5 }
                                 };
                                 Connectors.Add(connectorToBranch);
 
-                                // Connect branch node to target group
+                                // Connect branch node to target group with target group's color
                                 var connectorToTarget = new Connector()
                                 {
                                     ID = $"Connector_Branch_Q{question.Id}_True_To_Group{tfQuestion.BranchToGroupIdOnTrue}",
                                     SourceID = branchNode.ID,
                                     TargetID = $"Group{tfQuestion.BranchToGroupIdOnTrue}",
                                     Type = ConnectorSegmentType.Orthogonal,
-                                    Style = new ShapeStyle() { StrokeColor = "#2196F3", StrokeWidth = 2 },
+                                    Style = new ShapeStyle() { StrokeColor = targetGroupColor, StrokeWidth = 3 },
                                     TargetDecorator = new DecoratorSettings()
                                     {
                                         Shape = DecoratorShape.Arrow,
-                                        Style = new ShapeStyle() { Fill = "#2196F3", StrokeColor = "#2196F3" }
+                                        Style = new ShapeStyle() { Fill = targetGroupColor, StrokeColor = targetGroupColor }
                                     }
                                 };
                                 Connectors.Add(connectorToTarget);
@@ -575,6 +581,8 @@ namespace JwtIdentity.Client.Pages.Survey
 
                             if (tfQuestion.BranchToGroupIdOnFalse.HasValue)
                             {
+                                var targetGroupColor = GetGroupColor(tfQuestion.BranchToGroupIdOnFalse.Value);
+                                
                                 var branchNode = new Node()
                                 {
                                     ID = $"Branch_TF_Q{question.Id}_False",
@@ -597,29 +605,29 @@ namespace JwtIdentity.Client.Pages.Survey
                                 };
                                 Nodes.Add(branchNode);
 
-                                // Connect group to branch node
+                                // Connect group to branch node with gray color
                                 var connectorToBranch = new Connector()
                                 {
                                     ID = $"Connector_Group{group.GroupNumber}_To_Branch_Q{question.Id}_False",
                                     SourceID = $"Group{group.GroupNumber}",
                                     TargetID = branchNode.ID,
-                                    Type = ConnectorSegmentType.Straight,
-                                    Style = new ShapeStyle() { StrokeColor = "#757575", StrokeWidth = 1 }
+                                    Type = ConnectorSegmentType.Orthogonal,
+                                    Style = new ShapeStyle() { StrokeColor = "#757575", StrokeWidth = 1.5 }
                                 };
                                 Connectors.Add(connectorToBranch);
 
-                                // Connect branch node to target group
+                                // Connect branch node to target group with target group's color
                                 var connectorToTarget = new Connector()
                                 {
                                     ID = $"Connector_Branch_Q{question.Id}_False_To_Group{tfQuestion.BranchToGroupIdOnFalse}",
                                     SourceID = branchNode.ID,
                                     TargetID = $"Group{tfQuestion.BranchToGroupIdOnFalse}",
                                     Type = ConnectorSegmentType.Orthogonal,
-                                    Style = new ShapeStyle() { StrokeColor = "#2196F3", StrokeWidth = 2 },
+                                    Style = new ShapeStyle() { StrokeColor = targetGroupColor, StrokeWidth = 3 },
                                     TargetDecorator = new DecoratorSettings()
                                     {
                                         Shape = DecoratorShape.Arrow,
-                                        Style = new ShapeStyle() { Fill = "#2196F3", StrokeColor = "#2196F3" }
+                                        Style = new ShapeStyle() { Fill = targetGroupColor, StrokeColor = targetGroupColor }
                                     }
                                 };
                                 Connectors.Add(connectorToTarget);
