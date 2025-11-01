@@ -394,7 +394,7 @@ namespace JwtIdentity.Client.Pages.Survey
                             foreach (var option in mcQuestion.Options.Where(o => o.BranchToGroupId.HasValue))
                             {
                                 var targetGroupColor = GetGroupColor(option.BranchToGroupId.Value);
-                                
+
                                 var branchNode = new Node()
                                 {
                                     ID = $"Branch_MC_Q{question.Id}_O{option.Id}",
@@ -423,7 +423,7 @@ namespace JwtIdentity.Client.Pages.Survey
                                     ID = $"Connector_Group{group.GroupNumber}_To_Branch_Q{question.Id}_O{option.Id}",
                                     SourceID = $"Group{group.GroupNumber}",
                                     TargetID = branchNode.ID,
-                                    Type = ConnectorSegmentType.Orthogonal,
+                                    Type = ConnectorSegmentType.Bezier,
                                     Style = new ShapeStyle() { StrokeColor = "#757575", StrokeWidth = 1.5 }
                                 };
                                 Connectors.Add(connectorToBranch);
@@ -434,7 +434,7 @@ namespace JwtIdentity.Client.Pages.Survey
                                     ID = $"Connector_Branch_Q{question.Id}_O{option.Id}_To_Group{option.BranchToGroupId}",
                                     SourceID = branchNode.ID,
                                     TargetID = $"Group{option.BranchToGroupId}",
-                                    Type = ConnectorSegmentType.Orthogonal,
+                                    Type = ConnectorSegmentType.Bezier,
                                     Style = new ShapeStyle() { StrokeColor = targetGroupColor, StrokeWidth = 3 },
                                     TargetDecorator = new DecoratorSettings()
                                     {
@@ -454,7 +454,7 @@ namespace JwtIdentity.Client.Pages.Survey
                             foreach (var option in saQuestion.Options.Where(o => o.BranchToGroupId.HasValue))
                             {
                                 var targetGroupColor = GetGroupColor(option.BranchToGroupId.Value);
-                                
+
                                 var branchNode = new Node()
                                 {
                                     ID = $"Branch_SA_Q{question.Id}_O{option.Id}",
@@ -483,7 +483,7 @@ namespace JwtIdentity.Client.Pages.Survey
                                     ID = $"Connector_Group{group.GroupNumber}_To_Branch_Q{question.Id}_O{option.Id}",
                                     SourceID = $"Group{group.GroupNumber}",
                                     TargetID = branchNode.ID,
-                                    Type = ConnectorSegmentType.Orthogonal,
+                                    Type = ConnectorSegmentType.Bezier,
                                     Style = new ShapeStyle() { StrokeColor = "#757575", StrokeWidth = 1.5 }
                                 };
                                 Connectors.Add(connectorToBranch);
@@ -494,7 +494,7 @@ namespace JwtIdentity.Client.Pages.Survey
                                     ID = $"Connector_Branch_Q{question.Id}_O{option.Id}_To_Group{option.BranchToGroupId}",
                                     SourceID = branchNode.ID,
                                     TargetID = $"Group{option.BranchToGroupId}",
-                                    Type = ConnectorSegmentType.Orthogonal,
+                                    Type = ConnectorSegmentType.Bezier,
                                     Style = new ShapeStyle() { StrokeColor = targetGroupColor, StrokeWidth = 3 },
                                     TargetDecorator = new DecoratorSettings()
                                     {
@@ -514,7 +514,7 @@ namespace JwtIdentity.Client.Pages.Survey
                             if (tfQuestion.BranchToGroupIdOnTrue.HasValue)
                             {
                                 var targetGroupColor = GetGroupColor(tfQuestion.BranchToGroupIdOnTrue.Value);
-                                
+
                                 var branchNode = new Node()
                                 {
                                     ID = $"Branch_TF_Q{question.Id}_True",
@@ -543,7 +543,7 @@ namespace JwtIdentity.Client.Pages.Survey
                                     ID = $"Connector_Group{group.GroupNumber}_To_Branch_Q{question.Id}_True",
                                     SourceID = $"Group{group.GroupNumber}",
                                     TargetID = branchNode.ID,
-                                    Type = ConnectorSegmentType.Orthogonal,
+                                    Type = ConnectorSegmentType.Bezier,
                                     Style = new ShapeStyle() { StrokeColor = "#757575", StrokeWidth = 1.5 }
                                 };
                                 Connectors.Add(connectorToBranch);
@@ -554,7 +554,7 @@ namespace JwtIdentity.Client.Pages.Survey
                                     ID = $"Connector_Branch_Q{question.Id}_True_To_Group{tfQuestion.BranchToGroupIdOnTrue}",
                                     SourceID = branchNode.ID,
                                     TargetID = $"Group{tfQuestion.BranchToGroupIdOnTrue}",
-                                    Type = ConnectorSegmentType.Orthogonal,
+                                    Type = ConnectorSegmentType.Bezier,
                                     Style = new ShapeStyle() { StrokeColor = targetGroupColor, StrokeWidth = 3 },
                                     TargetDecorator = new DecoratorSettings()
                                     {
@@ -568,7 +568,7 @@ namespace JwtIdentity.Client.Pages.Survey
                             if (tfQuestion.BranchToGroupIdOnFalse.HasValue)
                             {
                                 var targetGroupColor = GetGroupColor(tfQuestion.BranchToGroupIdOnFalse.Value);
-                                
+
                                 var branchNode = new Node()
                                 {
                                     ID = $"Branch_TF_Q{question.Id}_False",
@@ -597,7 +597,7 @@ namespace JwtIdentity.Client.Pages.Survey
                                     ID = $"Connector_Group{group.GroupNumber}_To_Branch_Q{question.Id}_False",
                                     SourceID = $"Group{group.GroupNumber}",
                                     TargetID = branchNode.ID,
-                                    Type = ConnectorSegmentType.Orthogonal,
+                                    Type = ConnectorSegmentType.Bezier,
                                     Style = new ShapeStyle() { StrokeColor = "#757575", StrokeWidth = 1.5 }
                                 };
                                 Connectors.Add(connectorToBranch);
@@ -608,7 +608,7 @@ namespace JwtIdentity.Client.Pages.Survey
                                     ID = $"Connector_Branch_Q{question.Id}_False_To_Group{tfQuestion.BranchToGroupIdOnFalse}",
                                     SourceID = branchNode.ID,
                                     TargetID = $"Group{tfQuestion.BranchToGroupIdOnFalse}",
-                                    Type = ConnectorSegmentType.Orthogonal,
+                                    Type = ConnectorSegmentType.Bezier,
                                     Style = new ShapeStyle() { StrokeColor = targetGroupColor, StrokeWidth = 3 },
                                     TargetDecorator = new DecoratorSettings()
                                     {
