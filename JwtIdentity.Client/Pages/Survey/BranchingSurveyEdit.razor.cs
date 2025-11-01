@@ -19,6 +19,7 @@ namespace JwtIdentity.Client.Pages.Survey
         protected DiagramObjectCollection<Node> Nodes { get; set; } = new DiagramObjectCollection<Node>();
         protected DiagramObjectCollection<Connector> Connectors { get; set; } = new DiagramObjectCollection<Connector>();
         protected SfDiagramComponent diagram;
+        protected double ZoomLevel { get; set; } = 1.0;
 
         protected override async Task OnInitializedAsync()
         {
@@ -326,6 +327,12 @@ namespace JwtIdentity.Client.Pages.Survey
         {
             BuildSyncfusionDiagram();
             await Task.CompletedTask;
+            StateHasChanged();
+        }
+
+        protected void OnZoomChanged(double newZoom)
+        {
+            ZoomLevel = newZoom;
             StateHasChanged();
         }
 
