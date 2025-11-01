@@ -34,25 +34,26 @@ else
                             
                 @if (Nodes.Any())
                 {
-                    <div style="height: 600px; width: 100%;">
+                    @* <div style="height: 600px; width: 100%;"> *@
                         <SfDiagramComponent @ref="@diagram"  
-                                            Height="100%"
-                                            Width="100%"
+                                            
                                             Nodes="@Nodes" 
                                             Connectors="@Connectors"
                                             NodeCreating="@OnNodeCreating" 
                                             ConnectorCreating="OnConnectorCreating">
                             <SnapSettings Constraints="SnapConstraints.None"></SnapSettings>
                             <Layout Type="LayoutType.ComplexHierarchicalTree" 
-                                   HorizontalSpacing="100" 
-                                   VerticalSpacing="80"
+                                   
                                    Orientation="LayoutOrientation.TopToBottom"
                                    HorizontalAlignment="Syncfusion.Blazor.Diagram.HorizontalAlignment.Center"
                                    VerticalAlignment="VerticalAlignment.Top">
-                                <LayoutMargin Top="20" Left="20" Right="20" Bottom="20"></LayoutMargin>
+                                @* <LayoutMargin Top="20" Left="20" Right="20" Bottom="20"></LayoutMargin> *@
                             </Layout>
+                        @* <PageSettings Height="5" Width="5" Margin="@(new PageMargin{ Top=1, Bottom=1, Left=50, Right=5})">
+                            <PageMargin Left="100" Right="1" Top="1" Bottom="1"></PageMargin>
+                        </PageSettings> *@
                         </SfDiagramComponent>
-                    </div>
+                    @* </div> *@
                 }
                 else
                 {

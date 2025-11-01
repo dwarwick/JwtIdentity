@@ -416,7 +416,7 @@ namespace JwtIdentity.Client.Pages.Survey
                                     {
                                         new ShapeAnnotation()
                                         {
-                                            Content = $"Q{question.QuestionNumber}: {TruncateText(option.OptionText, 30)}",
+                                            Content = $"Q{question.QuestionNumber}: {TruncateText( question.Text, 60)}\r\n{TruncateText(option.OptionText, 30)}",
                                             Style = new TextStyle() { Color = "white", Bold = false, FontSize = 10 }
                                         }
                                     },
@@ -474,7 +474,7 @@ namespace JwtIdentity.Client.Pages.Survey
                                     {
                                         new ShapeAnnotation()
                                         {
-                                            Content = $"Q{question.QuestionNumber}: {TruncateText(option.OptionText, 30)}",
+                                            Content = $"Q{question.QuestionNumber}: {TruncateText( question.Text, 60)}\r\n{TruncateText(option.OptionText, 30)}",
                                             Style = new TextStyle() { Color = "white", Bold = false, FontSize = 10 }
                                         }
                                     },
@@ -532,7 +532,7 @@ namespace JwtIdentity.Client.Pages.Survey
                                     {
                                         new ShapeAnnotation()
                                         {
-                                            Content = $"Q{question.QuestionNumber}: True",
+                                            Content = $"Q{question.QuestionNumber}: {TruncateText( question.Text, 60)}\r\nTrue",
                                             Style = new TextStyle() { Color = "white", Bold = false, FontSize = 10 }
                                         }
                                     },
@@ -584,7 +584,7 @@ namespace JwtIdentity.Client.Pages.Survey
                                     {
                                         new ShapeAnnotation()
                                         {
-                                            Content = $"Q{question.QuestionNumber}: False",
+                                            Content = $"Q{question.QuestionNumber}: {TruncateText( question.Text, 60)}\r\nFalse",
                                             Style = new TextStyle() { Color = "white", Bold = false, FontSize = 10 }
                                         }
                                     },
