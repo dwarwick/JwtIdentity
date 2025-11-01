@@ -337,20 +337,6 @@ namespace JwtIdentity.Client.Pages.Survey
             node.Constraints = NodeConstraints.Default & ~NodeConstraints.Select;
         }
 
-        //Creates connectors with some default values.
-        protected void OnConnectorCreating(IDiagramObject connector)
-        {
-            (connector as Connector).Type = ConnectorSegmentType.Orthogonal;
-            (connector as Connector).CornerRadius = 7;
-            (connector as Connector).Style.StrokeWidth = 1;
-            (connector as Connector).TargetDecorator.Height = 7;
-            (connector as Connector).TargetDecorator.Width = 7;
-            (connector as Connector).Style.Fill = "#6495ED";
-            (connector as Connector).Style.StrokeColor = "#6495ED";
-            (connector as Connector).TargetDecorator.Style.Fill = "#6BA5D7";
-            (connector as Connector).TargetDecorator.Style.StrokeColor = "#6BA5D7";
-        }
-
         private void BuildSyncfusionDiagram()
         {
             Nodes = new DiagramObjectCollection<Node>();

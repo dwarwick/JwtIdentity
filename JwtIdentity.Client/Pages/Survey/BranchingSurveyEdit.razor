@@ -34,14 +34,13 @@ else
                             
                 @if (Nodes.Any())
                 {
-                    <div style="width: 100%; height: 600px; overflow: auto;">
+                    <div style="width: 100%; height: 600px; overflow: auto; border: 1px solid #ddd;">
                         <SfDiagramComponent @ref="@diagram"  
-                                            Height="100%"
+                                            Height="600px"
                                             Width="100%"
                                             Nodes="@Nodes" 
                                             Connectors="@Connectors"
-                                            NodeCreating="@OnNodeCreating" 
-                                            ConnectorCreating="OnConnectorCreating">
+                                            NodeCreating="@OnNodeCreating">
                             <SnapSettings Constraints="SnapConstraints.None"></SnapSettings>
                             <Layout Type="LayoutType.ComplexHierarchicalTree" 
                                    HorizontalSpacing="80" 
