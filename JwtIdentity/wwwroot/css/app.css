@@ -1034,3 +1034,8 @@ td.e-summarycell.e-templatecell.e-leftalign {
     color: var(--group-color-9);
     border: 1px solid var(--group-color-9);
 }
+
+/* used on question rules diagram */
+.e-diagram-blazor-diagramcontent {
+    background-color: var(--mud-palette-surface) !important;
+}
