@@ -628,38 +628,6 @@ namespace JwtIdentity.Client.Pages.Survey
                     }
                 }
             }
-
-            // Add sequential flow connectors between groups without explicit branching
-            for (int i = 0; i < QuestionGroups.OrderBy(g => g.GroupNumber).Count() - 1; i++)
-            {
-                var currentGroup = QuestionGroups.OrderBy(g => g.GroupNumber).ElementAt(i);
-                var nextGroup = QuestionGroups.OrderBy(g => g.GroupNumber).ElementAt(i + 1);
-
-                // Only add sequential connector if there's no branching from this group
-                bool hasExplicitBranching = Survey.Questions.Any(q =>
-                    q.GroupId == currentGroup.GroupNumber &&
-                    ((q is MultipleChoiceQuestionViewModel mc && mc.Options.Any(o => o.BranchToGroupId.HasValue)) ||
-                     (q is SelectAllThatApplyQuestionViewModel sa && sa.Options.Any(o => o.BranchToGroupId.HasValue)) ||
-                     (q is TrueFalseQuestionViewModel tf && (tf.BranchToGroupIdOnTrue.HasValue || tf.BranchToGroupIdOnFalse.HasValue))));
-
-                if (!hasExplicitBranching)
-                {
-                    var sequentialConnector = new Connector()
-                    {
-                        ID = $"Connector_Group{currentGroup.GroupNumber}_To_Group{nextGroup.GroupNumber}_Sequential",
-                        SourceID = $"Group{currentGroup.GroupNumber}",
-                        TargetID = $"Group{nextGroup.GroupNumber}",
-                        Type = ConnectorSegmentType.Orthogonal,
-                        Style = new ShapeStyle() { StrokeColor = "#9E9E9E", StrokeWidth = 2, StrokeDashArray = "5,5" },
-                        TargetDecorator = new DecoratorSettings()
-                        {
-                            Shape = DecoratorShape.Arrow,
-                            Style = new ShapeStyle() { Fill = "#9E9E9E", StrokeColor = "#9E9E9E" }
-                        }
-                    };
-                    Connectors.Add(sequentialConnector);
-                }
-            }
         }
 
         private string GetGroupColor(int groupNumber)
