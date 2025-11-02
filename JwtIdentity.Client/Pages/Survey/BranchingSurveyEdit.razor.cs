@@ -449,6 +449,8 @@ namespace JwtIdentity.Client.Pages.Survey
             Nodes = new DiagramObjectCollection<Node>();
             Connectors = new DiagramObjectCollection<Connector>();
 
+            string choiceNodeColor = "#f5d671";
+
             if (Survey == null || QuestionGroups == null || !QuestionGroups.Any())
                 return;
 
@@ -517,7 +519,7 @@ namespace JwtIdentity.Client.Pages.Survey
                                     },
                                     Style = new ShapeStyle()
                                     {
-                                        Fill = "#2196F3",
+                                        Fill = choiceNodeColor,
                                         StrokeWidth = 2,
                                         StrokeColor = "#1976D2"
                                     }
@@ -577,7 +579,7 @@ namespace JwtIdentity.Client.Pages.Survey
                                     },
                                     Style = new ShapeStyle()
                                     {
-                                        Fill = "#2196F3",
+                                        Fill = choiceNodeColor,
                                         StrokeWidth = 2,
                                         StrokeColor = "#1976D2"
                                     }
@@ -637,7 +639,7 @@ namespace JwtIdentity.Client.Pages.Survey
                                     },
                                     Style = new ShapeStyle()
                                     {
-                                        Fill = "#2196F3",
+                                        Fill = choiceNodeColor,
                                         StrokeWidth = 2,
                                         StrokeColor = "#1976D2"
                                     }
@@ -691,7 +693,7 @@ namespace JwtIdentity.Client.Pages.Survey
                                     },
                                     Style = new ShapeStyle()
                                     {
-                                        Fill = "#2196F3",
+                                        Fill = choiceNodeColor,
                                         StrokeWidth = 2,
                                         StrokeColor = "#1976D2"
                                     }
