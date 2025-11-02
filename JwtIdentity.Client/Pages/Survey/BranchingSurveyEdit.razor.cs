@@ -449,7 +449,9 @@ namespace JwtIdentity.Client.Pages.Survey
             Nodes = new DiagramObjectCollection<Node>();
             Connectors = new DiagramObjectCollection<Connector>();
 
-            string choiceNodeColor = "#f5d671";
+            // Use dark teal for branching rule nodes - provides excellent contrast with white text
+            // and is visually distinct from all group colors
+            string choiceNodeColor = "#00796B";
 
             if (Survey == null || QuestionGroups == null || !QuestionGroups.Any())
                 return;
