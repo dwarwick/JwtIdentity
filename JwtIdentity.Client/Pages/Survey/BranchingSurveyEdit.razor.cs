@@ -21,6 +21,17 @@ namespace JwtIdentity.Client.Pages.Survey
         protected SfDiagramComponent diagram;
         protected double ZoomLevel { get; set; } = 1.0;
 
+        // Node sizing constants
+        private const double BASE_HEIGHT = 80;
+        private const double QUESTION_HEIGHT = 50;
+        private const double OPTION_HEIGHT = 35;
+        private const double MIN_NODE_HEIGHT = 100;
+        private const double MAX_NODE_HEIGHT = 600;
+
+        // Port positioning constants
+        private const double PORT_START_OFFSET = 0.2;
+        private const double PORT_SPACING = 0.15;
+
         protected override async Task OnInitializedAsync()
         {
             await LoadData();
@@ -595,13 +606,13 @@ namespace JwtIdentity.Client.Pages.Survey
         private double CalculateNodeHeight(List<QuestionViewModel> groupQuestions)
         {
             // Base height for group header
-            double height = 80;
+            double height = BASE_HEIGHT;
             
             // Add height for each question with options
             foreach (var question in groupQuestions)
             {
                 // Question text height
-                height += 50;
+                height += QUESTION_HEIGHT;
                 
                 // Option heights
                 if (question.QuestionType == QuestionType.MultipleChoice)
@@ -609,7 +620,7 @@ namespace JwtIdentity.Client.Pages.Survey
                     var mcQuestion = question as MultipleChoiceQuestionViewModel;
                     if (mcQuestion?.Options != null)
                     {
-                        height += mcQuestion.Options.Count(o => o.BranchToGroupId.HasValue) * 35;
+                        height += mcQuestion.Options.Count(o => o.BranchToGroupId.HasValue) * OPTION_HEIGHT;
                     }
                 }
                 else if (question.QuestionType == QuestionType.SelectAllThatApply)
@@ -617,7 +628,7 @@ namespace JwtIdentity.Client.Pages.Survey
                     var saQuestion = question as SelectAllThatApplyQuestionViewModel;
                     if (saQuestion?.Options != null)
                     {
-                        height += saQuestion.Options.Count(o => o.BranchToGroupId.HasValue) * 35;
+                        height += saQuestion.Options.Count(o => o.BranchToGroupId.HasValue) * OPTION_HEIGHT;
                     }
                 }
                 else if (question.QuestionType == QuestionType.TrueFalse)
@@ -625,14 +636,14 @@ namespace JwtIdentity.Client.Pages.Survey
                     var tfQuestion = question as TrueFalseQuestionViewModel;
                     if (tfQuestion != null)
                     {
-                        if (tfQuestion.BranchToGroupIdOnTrue.HasValue) height += 35;
-                        if (tfQuestion.BranchToGroupIdOnFalse.HasValue) height += 35;
+                        if (tfQuestion.BranchToGroupIdOnTrue.HasValue) height += OPTION_HEIGHT;
+                        if (tfQuestion.BranchToGroupIdOnFalse.HasValue) height += OPTION_HEIGHT;
                     }
                 }
             }
             
             // Min and max height constraints
-            return Math.Max(100, Math.Min(height, 600));
+            return Math.Max(MIN_NODE_HEIGHT, Math.Min(height, MAX_NODE_HEIGHT));
         }
 
         private DiagramObjectCollection<PointPort> CreatePortsForOptions(QuestionGroupViewModel group, List<QuestionViewModel> groupQuestions)
@@ -652,7 +663,7 @@ namespace JwtIdentity.Client.Pages.Survey
                             ports.Add(new PointPort()
                             {
                                 ID = $"port_mc_{option.Id}",
-                                Offset = new DiagramPoint() { X = 1, Y = 0.2 + (portIndex * 0.15) },
+                                Offset = new DiagramPoint() { X = 1, Y = PORT_START_OFFSET + (portIndex * PORT_SPACING) },
                                 Visibility = PortVisibility.Visible,
                                 Width = 8,
                                 Height = 8,
@@ -672,7 +683,7 @@ namespace JwtIdentity.Client.Pages.Survey
                             ports.Add(new PointPort()
                             {
                                 ID = $"port_sa_{option.Id}",
-                                Offset = new DiagramPoint() { X = 1, Y = 0.2 + (portIndex * 0.15) },
+                                Offset = new DiagramPoint() { X = 1, Y = PORT_START_OFFSET + (portIndex * PORT_SPACING) },
                                 Visibility = PortVisibility.Visible,
                                 Width = 8,
                                 Height = 8,
@@ -692,7 +703,7 @@ namespace JwtIdentity.Client.Pages.Survey
                             ports.Add(new PointPort()
                             {
                                 ID = $"port_tf_{question.Id}_true",
-                                Offset = new DiagramPoint() { X = 1, Y = 0.2 + (portIndex * 0.15) },
+                                Offset = new DiagramPoint() { X = 1, Y = PORT_START_OFFSET + (portIndex * PORT_SPACING) },
                                 Visibility = PortVisibility.Visible,
                                 Width = 8,
                                 Height = 8,
@@ -705,7 +716,7 @@ namespace JwtIdentity.Client.Pages.Survey
                             ports.Add(new PointPort()
                             {
                                 ID = $"port_tf_{question.Id}_false",
-                                Offset = new DiagramPoint() { X = 1, Y = 0.2 + (portIndex * 0.15) },
+                                Offset = new DiagramPoint() { X = 1, Y = PORT_START_OFFSET + (portIndex * PORT_SPACING) },
                                 Visibility = PortVisibility.Visible,
                                 Width = 8,
                                 Height = 8,
