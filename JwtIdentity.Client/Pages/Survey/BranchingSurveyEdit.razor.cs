@@ -516,13 +516,13 @@ namespace JwtIdentity.Client.Pages.Survey
                                         new ShapeAnnotation()
                                         {
                                             Content = $"Q{question.QuestionNumber}: {TruncateText( question.Text, 60)}\r\n{TruncateText(option.OptionText, 30)}",
-                                            Style = new TextStyle() { Color = "white", Bold = false, FontSize = 10 }
+                                            Style = new TextStyle() { Color = "white", Bold = false }
                                         }
                                     },
                                     Style = new ShapeStyle()
                                     {
                                         Fill = choiceNodeColor,
-                                        StrokeWidth = 2,
+                                        StrokeWidth = 3,
                                         StrokeColor = "#1976D2"
                                     }
                                 };
@@ -576,13 +576,13 @@ namespace JwtIdentity.Client.Pages.Survey
                                         new ShapeAnnotation()
                                         {
                                             Content = $"Q{question.QuestionNumber}: {TruncateText( question.Text, 60)}\r\n{TruncateText(option.OptionText, 30)}",
-                                            Style = new TextStyle() { Color = "white", Bold = false, FontSize = 10 }
+                                            Style = new TextStyle() { Color = "white", Bold = false }
                                         }
                                     },
                                     Style = new ShapeStyle()
                                     {
                                         Fill = choiceNodeColor,
-                                        StrokeWidth = 2,
+                                        StrokeWidth = 3,
                                         StrokeColor = "#1976D2"
                                     }
                                 };
@@ -636,13 +636,13 @@ namespace JwtIdentity.Client.Pages.Survey
                                         new ShapeAnnotation()
                                         {
                                             Content = $"Q{question.QuestionNumber}: {TruncateText( question.Text, 60)}\r\nTrue",
-                                            Style = new TextStyle() { Color = "white", Bold = false, FontSize = 10 }
+                                            Style = new TextStyle() { Color = "white", Bold = false }
                                         }
                                     },
                                     Style = new ShapeStyle()
                                     {
                                         Fill = choiceNodeColor,
-                                        StrokeWidth = 2,
+                                        StrokeWidth = 3,
                                         StrokeColor = "#1976D2"
                                     }
                                 };
@@ -690,13 +690,13 @@ namespace JwtIdentity.Client.Pages.Survey
                                         new ShapeAnnotation()
                                         {
                                             Content = $"Q{question.QuestionNumber}: {TruncateText( question.Text, 60)}\r\nFalse",
-                                            Style = new TextStyle() { Color = "white", Bold = false, FontSize = 10 }
+                                            Style = new TextStyle() { Color = "white", Bold = false }
                                         }
                                     },
                                     Style = new ShapeStyle()
                                     {
                                         Fill = choiceNodeColor,
-                                        StrokeWidth = 2,
+                                        StrokeWidth = 3,
                                         StrokeColor = "#1976D2"
                                     }
                                 };
