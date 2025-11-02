@@ -175,6 +175,92 @@ namespace JwtIdentity.Client.Pages.Survey
         {
             try
             {
+                // Check if this group is used in any branching rules
+                var branchingRulesUsingGroup = new List<string>();
+
+                // Check Multiple Choice and Select All That Apply questions
+                foreach (var question in Survey.Questions)
+                {
+                    if (question.QuestionType == QuestionType.MultipleChoice)
+                    {
+                        var mcQuestion = question as MultipleChoiceQuestionViewModel;
+                        if (mcQuestion?.Options != null)
+                        {
+                            foreach (var option in mcQuestion.Options)
+                            {
+                                if (option.BranchToGroupId == group.GroupNumber)
+                                {
+                                    branchingRulesUsingGroup.Add($"Q{question.QuestionNumber}: {question.Text} - Option: {option.OptionText}");
+                                }
+                            }
+                        }
+                    }
+                    else if (question.QuestionType == QuestionType.SelectAllThatApply)
+                    {
+                        var saQuestion = question as SelectAllThatApplyQuestionViewModel;
+                        if (saQuestion?.Options != null)
+                        {
+                            foreach (var option in saQuestion.Options)
+                            {
+                                if (option.BranchToGroupId == group.GroupNumber)
+                                {
+                                    branchingRulesUsingGroup.Add($"Q{question.QuestionNumber}: {question.Text} - Option: {option.OptionText}");
+                                }
+                            }
+                        }
+                    }
+                    else if (question.QuestionType == QuestionType.TrueFalse)
+                    {
+                        var tfQuestion = question as TrueFalseQuestionViewModel;
+                        if (tfQuestion != null)
+                        {
+                            if (tfQuestion.BranchToGroupIdOnTrue == group.GroupNumber)
+                            {
+                                branchingRulesUsingGroup.Add($"Q{question.QuestionNumber}: {question.Text} - True branch");
+                            }
+                            if (tfQuestion.BranchToGroupIdOnFalse == group.GroupNumber)
+                            {
+                                branchingRulesUsingGroup.Add($"Q{question.QuestionNumber}: {question.Text} - False branch");
+                            }
+                        }
+                    }
+
+                    // Check if this group contains questions that branch TO other groups
+                    if (question.GroupId == group.GroupNumber)
+                    {
+                        if (question.QuestionType == QuestionType.MultipleChoice)
+                        {
+                            var mcQuestion = question as MultipleChoiceQuestionViewModel;
+                            if (mcQuestion?.Options != null && mcQuestion.Options.Any(o => o.BranchToGroupId.HasValue))
+                            {
+                                branchingRulesUsingGroup.Add($"Q{question.QuestionNumber} in this group has branching rules");
+                            }
+                        }
+                        else if (question.QuestionType == QuestionType.SelectAllThatApply)
+                        {
+                            var saQuestion = question as SelectAllThatApplyQuestionViewModel;
+                            if (saQuestion?.Options != null && saQuestion.Options.Any(o => o.BranchToGroupId.HasValue))
+                            {
+                                branchingRulesUsingGroup.Add($"Q{question.QuestionNumber} in this group has branching rules");
+                            }
+                        }
+                        else if (question.QuestionType == QuestionType.TrueFalse)
+                        {
+                            var tfQuestion = question as TrueFalseQuestionViewModel;
+                            if (tfQuestion != null && (tfQuestion.BranchToGroupIdOnTrue.HasValue || tfQuestion.BranchToGroupIdOnFalse.HasValue))
+                            {
+                                branchingRulesUsingGroup.Add($"Q{question.QuestionNumber} in this group has branching rules");
+                            }
+                        }
+                    }
+                }
+
+                if (branchingRulesUsingGroup.Any())
+                {
+                    _ = Snackbar.Add($"Cannot delete Group {group.GroupNumber}. Remove it from all branching rules first.", Severity.Error);
+                    return;
+                }
+
                 bool? confirm = await MudDialog.ShowMessageBox(
                     "Confirm Delete",
                     $"Delete Group {group.GroupNumber}? All questions in this group will be moved to Group 0.",
