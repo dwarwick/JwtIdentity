@@ -97,56 +97,61 @@ else
                     </MudButton>
                 </MudStack>
 
-                @foreach (var group in QuestionGroups.OrderBy(g => g.GroupNumber))
-                {
-                    var colorClass = $"group-color-{group.GroupNumber % 10}";
-                    <MudPaper Elevation="2" Class="@($"pa-4 mb-3 {colorClass}")">
-                        <MudStack Spacing="3">
-                            <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
-                                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                <MudExpansionPanels MultiExpansion="true">
+                    @foreach (var group in QuestionGroups.OrderBy(g => g.GroupNumber))
+                    {
+                        var colorClass = $"group-color-{group.GroupNumber % 10}";
+                        <MudExpansionPanel Class="mb-3">
+                            <TitleContent>
+                                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Style="width: 100%;">
                                     <span class="@($"group-badge group-badge-{group.GroupNumber % 10}")">Group @group.GroupNumber</span>
-                                    <MudText Typo="Typo.h6">
+                                    <MudText Typo="Typo.h6" Style="flex: 1;">
                                         @(string.IsNullOrWhiteSpace(group.GroupName) ? "Unnamed Group" : group.GroupName)
                                     </MudText>
-                                </MudStack>
-                                @if (group.GroupNumber > 0)
-                                {
-                                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="MudBlazor.Size.Small"
-                                                   OnClick="@(() => DeleteQuestionGroup(group))" />
-                                }
-                            </MudStack>
-
-                            <MudTextField Label="Group Name" Value="@group.GroupName" 
-                                         Variant="Variant.Outlined" 
-                                         HelperText="Optional: Give this group a descriptive name"
-                                         ValueChanged="@(async (string value)  => { group.GroupName = value; await UpdateQuestionGroup(group); await RefreshDiagram(); })" />
-
-                            <MudDivider />
-
-                            <MudText Typo="Typo.subtitle1" Class="font-weight-bold">Questions in this Group:</MudText>
-                            
-                            @{
-                                var groupQuestions = Survey.Questions.Where(q => q.GroupId == group.GroupNumber).OrderBy(q => q.QuestionNumber).ToList();
-                            }
-
-                            @if (!groupQuestions.Any())
-                            {
-                                <MudAlert Severity="Severity.Info">No questions in this group yet. Assign questions from the Branching Rules section.</MudAlert>
-                            }
-                            else
-                            {
-                                <MudList T="string" Dense="true">
-                                    @foreach (var question in groupQuestions)
+                                    @if (group.GroupNumber > 0)
                                     {
-                                        <MudListItem T="string">
-                                            <MudText>Q@(question.QuestionNumber): @question.Text</MudText>
-                                        </MudListItem>
+                                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="MudBlazor.Size.Small"
+                                                       OnClick="@(() => DeleteQuestionGroup(group))" />
                                     }
-                                </MudList>
-                            }
-                        </MudStack>
-                    </MudPaper>
-                }
+                                </MudStack>
+                            </TitleContent>
+                            <ChildContent>
+                                <MudPaper Elevation="2" Class="@($"pa-4 {colorClass}")">
+                                    <MudStack Spacing="3">
+                                        <MudTextField Label="Group Name" Value="@group.GroupName" 
+                                                     Variant="Variant.Outlined" 
+                                                     HelperText="Optional: Give this group a descriptive name"
+                                                     ValueChanged="@(async (string value)  => { group.GroupName = value; await UpdateQuestionGroup(group); await RefreshDiagram(); })" />
+
+                                        <MudDivider />
+
+                                        <MudText Typo="Typo.subtitle1" Class="font-weight-bold">Questions in this Group:</MudText>
+                                        
+                                        @{
+                                            var groupQuestions = Survey.Questions.Where(q => q.GroupId == group.GroupNumber).OrderBy(q => q.QuestionNumber).ToList();
+                                        }
+
+                                        @if (!groupQuestions.Any())
+                                        {
+                                            <MudAlert Severity="Severity.Info">No questions in this group yet. Assign questions from the Branching Rules section.</MudAlert>
+                                        }
+                                        else
+                                        {
+                                            <MudList T="string" Dense="true">
+                                                @foreach (var question in groupQuestions)
+                                                {
+                                                    <MudListItem T="string">
+                                                        <MudText>Q@(question.QuestionNumber): @question.Text</MudText>
+                                                    </MudListItem>
+                                                }
+                                            </MudList>
+                                        }
+                                    </MudStack>
+                                </MudPaper>
+                            </ChildContent>
+                        </MudExpansionPanel>
+                    }
+                </MudExpansionPanels>
             </ChildContent>
         </MudExpansionPanel>
 
@@ -188,24 +193,28 @@ else
                 </MudPaper>
 
                 <MudText Typo="Typo.subtitle1" Class="mb-3 font-weight-bold">Configure Conditional Branching:</MudText>
-                @foreach (var group in QuestionGroups.OrderBy(g => g.GroupNumber))
-                {
-                    var groupQuestions = Survey.Questions.Where(q => q.GroupId == group.GroupNumber && 
-                        (q.QuestionType == QuestionType.MultipleChoice || 
-                         q.QuestionType == QuestionType.SelectAllThatApply ||
-                         q.QuestionType == QuestionType.TrueFalse)).OrderBy(q => q.QuestionNumber).ToList();
-                    
-                    if (groupQuestions.Any())
+                <MudExpansionPanels MultiExpansion="true">
+                    @foreach (var group in QuestionGroups.OrderBy(g => g.GroupNumber))
                     {
-                        var colorClass = $"group-color-{group.GroupNumber % 10}";
-                        <MudPaper Elevation="2" Class="@($"pa-4 mb-3 {colorClass}")">
-                            <MudStack Spacing="2">
-                                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
-                                    <span class="@($"group-badge group-badge-{group.GroupNumber % 10}")">Group @group.GroupNumber</span>
-                                    <MudText Typo="Typo.h6">@(string.IsNullOrWhiteSpace(group.GroupName) ? "Unnamed Group" : group.GroupName)</MudText>
-                                </MudStack>
-
-                                @foreach (var question in groupQuestions)
+                        var groupQuestions = Survey.Questions.Where(q => q.GroupId == group.GroupNumber && 
+                            (q.QuestionType == QuestionType.MultipleChoice || 
+                             q.QuestionType == QuestionType.SelectAllThatApply ||
+                             q.QuestionType == QuestionType.TrueFalse)).OrderBy(q => q.QuestionNumber).ToList();
+                        
+                        if (groupQuestions.Any())
+                        {
+                            var colorClass = $"group-color-{group.GroupNumber % 10}";
+                            <MudExpansionPanel Class="mb-3">
+                                <TitleContent>
+                                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                        <span class="@($"group-badge group-badge-{group.GroupNumber % 10}")">Group @group.GroupNumber</span>
+                                        <MudText Typo="Typo.h6">@(string.IsNullOrWhiteSpace(group.GroupName) ? "Unnamed Group" : group.GroupName)</MudText>
+                                    </MudStack>
+                                </TitleContent>
+                                <ChildContent>
+                                    <MudPaper Elevation="2" Class="@($"pa-4 {colorClass}")">
+                                        <MudStack Spacing="2">
+                                            @foreach (var question in groupQuestions)
                                 {
                                     <MudDivider />
                                     <MudText Typo="Typo.subtitle2" Class="font-weight-bold">
@@ -279,11 +288,14 @@ else
                                             </MudStack>
                                         }
                                     }
-                                }
-                            </MudStack>
-                        </MudPaper>
+                                            }
+                                        </MudStack>
+                                    </MudPaper>
+                                </ChildContent>
+                            </MudExpansionPanel>
+                        }
                     }
-                }
+                </MudExpansionPanels>
 
                 @if (!Survey.Questions.Any(q => q.QuestionType == QuestionType.MultipleChoice || 
                                                q.QuestionType == QuestionType.SelectAllThatApply ||
