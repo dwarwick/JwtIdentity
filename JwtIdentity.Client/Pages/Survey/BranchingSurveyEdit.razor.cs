@@ -459,9 +459,7 @@ namespace JwtIdentity.Client.Pages.Survey
             if (Survey == null || QuestionGroups == null || !QuestionGroups.Any())
                 return;
 
-            double xPosition = 50; // Starting X position for layout
-
-            // Create container-style groupings for each group with option nodes inside
+            // Create Container nodes for each group with option nodes as children
             foreach (var group in QuestionGroups.OrderBy(g => g.GroupNumber))
             {
                 var questionCount = Survey.Questions.Count(q => q.GroupId == group.GroupNumber);
@@ -476,32 +474,35 @@ namespace JwtIdentity.Client.Pages.Survey
                     .OrderBy(q => q.QuestionNumber)
                     .ToList();
 
-                // Calculate container dimensions based on children
-                var childCount = 0;
-                foreach (var question in groupQuestions)
-                {
-                    childCount += GetOptionCount(question);
-                }
-
-                var containerHeight = Math.Max(200, 120 + (childCount * 75));
+                // Calculate container dimensions
+                var childCount = GetOptionCount(groupQuestions);
+                var containerHeight = Math.Max(200, 100 + (childCount * 75));
                 var containerWidth = 360.0;
 
-                // Create background container node for the group
-                var containerNode = new Node()
+                // Create Container node
+                var container = new Container()
                 {
                     ID = $"Container{group.GroupNumber}",
                     Width = containerWidth,
                     Height = containerHeight,
-                    OffsetX = xPosition + (containerWidth / 2),
-                    OffsetY = 50 + (containerHeight / 2),
-                    Annotations = new DiagramObjectCollection<ShapeAnnotation>()
+                    Header = new ContainerHeader()
                     {
-                        new ShapeAnnotation()
+                        ID = $"Header{group.GroupNumber}",
+                        Height = 50,
+                        Annotation = new ShapeAnnotation()
                         {
                             Content = $"{groupName}\n({questionCount} question{(questionCount != 1 ? "s" : "")})",
-                            Style = new TextStyle() { Color = "white", Bold = true, FontSize = 14 },
-                            VerticalAlignment = VerticalAlignment.Top,
-                            Margin = new DiagramThickness() { Top = 10 }
+                            Style = new TextStyle()
+                            {
+                                Color = "white",
+                                Bold = true,
+                                FontSize = 14
+                            }
+                        },
+                        Style = new TextStyle()
+                        {
+                            Fill = GetGroupColor(group.GroupNumber),
+                            StrokeColor = "Black",
                         }
                     },
                     Style = new ShapeStyle()
@@ -509,14 +510,14 @@ namespace JwtIdentity.Client.Pages.Survey
                         Fill = GetGroupColor(group.GroupNumber),
                         StrokeWidth = 3,
                         StrokeColor = "Black"
-                    },
-                    Constraints = NodeConstraints.Default & ~NodeConstraints.Select // Make it non-selectable like a background
+                    }
                 };
 
-                Nodes.Add(containerNode);
+                // Create children array for the container
+                var childrenIds = new List<string>();
 
-                // Create child option nodes positioned inside the container
-                var yOffset = 50 + 70.0; // Start below the header
+                // Create child option nodes and add them to the container
+                var yOffset = 20.0; // Offset from header
                 foreach (var question in groupQuestions)
                 {
                     if (question.QuestionType == QuestionType.MultipleChoice)
@@ -527,20 +528,27 @@ namespace JwtIdentity.Client.Pages.Survey
                             foreach (var option in mcQuestion.Options.Where(o => o.BranchToGroupId.HasValue))
                             {
                                 var targetGroupColor = GetGroupColor(option.BranchToGroupId.Value);
+                                var optionNodeId = $"Option_MC_Q{question.Id}_O{option.Id}";
 
                                 var optionNode = new Node()
                                 {
-                                    ID = $"Option_MC_Q{question.Id}_O{option.Id}",
+                                    ID = optionNodeId,
                                     Width = 320,
                                     Height = 65,
-                                    OffsetX = xPosition + (containerWidth / 2),
+                                    OffsetX = containerWidth / 2,
                                     OffsetY = yOffset,
                                     Annotations = new DiagramObjectCollection<ShapeAnnotation>()
                                     {
                                         new ShapeAnnotation()
                                         {
                                             Content = $"Q{question.QuestionNumber}: {question.Text}\n{TruncateText(option.OptionText, 35)}",
-                                            Style = new TextStyle() { Color = "black", Bold = false, FontSize = 11, TextWrapping = Syncfusion.Blazor.Diagram.TextWrap.Wrap }
+                                            Style = new TextStyle() 
+                                            { 
+                                                Color = "black", 
+                                                Bold = false, 
+                                                FontSize = 11, 
+                                                TextWrapping = Syncfusion.Blazor.Diagram.TextWrap.Wrap 
+                                            }
                                         }
                                     },
                                     Style = new ShapeStyle()
@@ -550,14 +558,16 @@ namespace JwtIdentity.Client.Pages.Survey
                                         StrokeColor = targetGroupColor
                                     }
                                 };
+
                                 Nodes.Add(optionNode);
+                                childrenIds.Add(optionNodeId);
                                 yOffset += 75;
 
-                                // Connect option node to target group container
+                                // Create connector from option to target group
                                 var connector = new Connector()
                                 {
-                                    ID = $"Connector_Option_Q{question.Id}_O{option.Id}_To_Container{option.BranchToGroupId}",
-                                    SourceID = optionNode.ID,
+                                    ID = $"Connector_O{option.Id}_To_Container{option.BranchToGroupId}",
+                                    SourceID = optionNodeId,
                                     TargetID = $"Container{option.BranchToGroupId}",
                                     Type = ConnectorSegmentType.Bezier,
                                     Style = new ShapeStyle() { StrokeColor = targetGroupColor, StrokeWidth = 3 },
@@ -579,20 +589,27 @@ namespace JwtIdentity.Client.Pages.Survey
                             foreach (var option in saQuestion.Options.Where(o => o.BranchToGroupId.HasValue))
                             {
                                 var targetGroupColor = GetGroupColor(option.BranchToGroupId.Value);
+                                var optionNodeId = $"Option_SA_Q{question.Id}_O{option.Id}";
 
                                 var optionNode = new Node()
                                 {
-                                    ID = $"Option_SA_Q{question.Id}_O{option.Id}",
+                                    ID = optionNodeId,
                                     Width = 320,
                                     Height = 65,
-                                    OffsetX = xPosition + (containerWidth / 2),
+                                    OffsetX = containerWidth / 2,
                                     OffsetY = yOffset,
                                     Annotations = new DiagramObjectCollection<ShapeAnnotation>()
                                     {
                                         new ShapeAnnotation()
                                         {
                                             Content = $"Q{question.QuestionNumber}: {question.Text}\n{TruncateText(option.OptionText, 35)}",
-                                            Style = new TextStyle() { Color = "black", Bold = false, FontSize = 11, TextWrapping = Syncfusion.Blazor.Diagram.TextWrap.Wrap }
+                                            Style = new TextStyle() 
+                                            { 
+                                                Color = "black", 
+                                                Bold = false, 
+                                                FontSize = 11, 
+                                                TextWrapping = Syncfusion.Blazor.Diagram.TextWrap.Wrap 
+                                            }
                                         }
                                     },
                                     Style = new ShapeStyle()
@@ -602,14 +619,16 @@ namespace JwtIdentity.Client.Pages.Survey
                                         StrokeColor = targetGroupColor
                                     }
                                 };
+
                                 Nodes.Add(optionNode);
+                                childrenIds.Add(optionNodeId);
                                 yOffset += 75;
 
-                                // Connect option node to target group container
+                                // Create connector from option to target group
                                 var connector = new Connector()
                                 {
-                                    ID = $"Connector_Option_Q{question.Id}_O{option.Id}_To_Container{option.BranchToGroupId}",
-                                    SourceID = optionNode.ID,
+                                    ID = $"Connector_O{option.Id}_To_Container{option.BranchToGroupId}",
+                                    SourceID = optionNodeId,
                                     TargetID = $"Container{option.BranchToGroupId}",
                                     Type = ConnectorSegmentType.Bezier,
                                     Style = new ShapeStyle() { StrokeColor = targetGroupColor, StrokeWidth = 3 },
@@ -631,20 +650,27 @@ namespace JwtIdentity.Client.Pages.Survey
                             if (tfQuestion.BranchToGroupIdOnTrue.HasValue)
                             {
                                 var targetGroupColor = GetGroupColor(tfQuestion.BranchToGroupIdOnTrue.Value);
+                                var optionNodeId = $"Option_TF_Q{question.Id}_True";
 
                                 var optionNode = new Node()
                                 {
-                                    ID = $"Option_TF_Q{question.Id}_True",
+                                    ID = optionNodeId,
                                     Width = 320,
                                     Height = 65,
-                                    OffsetX = xPosition + (containerWidth / 2),
+                                    OffsetX = containerWidth / 2,
                                     OffsetY = yOffset,
                                     Annotations = new DiagramObjectCollection<ShapeAnnotation>()
                                     {
                                         new ShapeAnnotation()
                                         {
                                             Content = $"Q{question.QuestionNumber}: {question.Text}\nTrue",
-                                            Style = new TextStyle() { Color = "black", Bold = false, FontSize = 11, TextWrapping = Syncfusion.Blazor.Diagram.TextWrap.Wrap }
+                                            Style = new TextStyle() 
+                                            { 
+                                                Color = "black", 
+                                                Bold = false, 
+                                                FontSize = 11, 
+                                                TextWrapping = Syncfusion.Blazor.Diagram.TextWrap.Wrap 
+                                            }
                                         }
                                     },
                                     Style = new ShapeStyle()
@@ -654,14 +680,16 @@ namespace JwtIdentity.Client.Pages.Survey
                                         StrokeColor = targetGroupColor
                                     }
                                 };
+
                                 Nodes.Add(optionNode);
+                                childrenIds.Add(optionNodeId);
                                 yOffset += 75;
 
-                                // Connect option node to target group container
+                                // Create connector from option to target group
                                 var connector = new Connector()
                                 {
-                                    ID = $"Connector_Option_Q{question.Id}_True_To_Container{tfQuestion.BranchToGroupIdOnTrue}",
-                                    SourceID = optionNode.ID,
+                                    ID = $"Connector_TF{question.Id}_True_To_Container{tfQuestion.BranchToGroupIdOnTrue}",
+                                    SourceID = optionNodeId,
                                     TargetID = $"Container{tfQuestion.BranchToGroupIdOnTrue}",
                                     Type = ConnectorSegmentType.Bezier,
                                     Style = new ShapeStyle() { StrokeColor = targetGroupColor, StrokeWidth = 3 },
@@ -677,20 +705,27 @@ namespace JwtIdentity.Client.Pages.Survey
                             if (tfQuestion.BranchToGroupIdOnFalse.HasValue)
                             {
                                 var targetGroupColor = GetGroupColor(tfQuestion.BranchToGroupIdOnFalse.Value);
+                                var optionNodeId = $"Option_TF_Q{question.Id}_False";
 
                                 var optionNode = new Node()
                                 {
-                                    ID = $"Option_TF_Q{question.Id}_False",
+                                    ID = optionNodeId,
                                     Width = 320,
                                     Height = 65,
-                                    OffsetX = xPosition + (containerWidth / 2),
+                                    OffsetX = containerWidth / 2,
                                     OffsetY = yOffset,
                                     Annotations = new DiagramObjectCollection<ShapeAnnotation>()
                                     {
                                         new ShapeAnnotation()
                                         {
                                             Content = $"Q{question.QuestionNumber}: {question.Text}\nFalse",
-                                            Style = new TextStyle() { Color = "black", Bold = false, FontSize = 11, TextWrapping = Syncfusion.Blazor.Diagram.TextWrap.Wrap }
+                                            Style = new TextStyle() 
+                                            { 
+                                                Color = "black", 
+                                                Bold = false, 
+                                                FontSize = 11, 
+                                                TextWrapping = Syncfusion.Blazor.Diagram.TextWrap.Wrap 
+                                            }
                                         }
                                     },
                                     Style = new ShapeStyle()
@@ -700,14 +735,16 @@ namespace JwtIdentity.Client.Pages.Survey
                                         StrokeColor = targetGroupColor
                                     }
                                 };
+
                                 Nodes.Add(optionNode);
+                                childrenIds.Add(optionNodeId);
                                 yOffset += 75;
 
-                                // Connect option node to target group container
+                                // Create connector from option to target group
                                 var connector = new Connector()
                                 {
-                                    ID = $"Connector_Option_Q{question.Id}_False_To_Container{tfQuestion.BranchToGroupIdOnFalse}",
-                                    SourceID = optionNode.ID,
+                                    ID = $"Connector_TF{question.Id}_False_To_Container{tfQuestion.BranchToGroupIdOnFalse}",
+                                    SourceID = optionNodeId,
                                     TargetID = $"Container{tfQuestion.BranchToGroupIdOnFalse}",
                                     Type = ConnectorSegmentType.Bezier,
                                     Style = new ShapeStyle() { StrokeColor = targetGroupColor, StrokeWidth = 3 },
@@ -723,31 +760,37 @@ namespace JwtIdentity.Client.Pages.Survey
                     }
                 }
 
-                xPosition += containerWidth + 100; // Space between containers
+                // Set the Children property
+                container.Children = childrenIds.ToArray();
+
+                // Add container to nodes
+                Nodes.Add(container);
             }
         }
 
-        private int GetOptionCount(QuestionViewModel question)
+        private int GetOptionCount(List<QuestionViewModel> groupQuestions)
         {
-            if (question.QuestionType == QuestionType.MultipleChoice)
+            var count = 0;
+            foreach (var question in groupQuestions)
             {
-                var mcQuestion = question as MultipleChoiceQuestionViewModel;
-                return mcQuestion?.Options?.Count(o => o.BranchToGroupId.HasValue) ?? 0;
+                if (question.QuestionType == QuestionType.MultipleChoice)
+                {
+                    var mcQuestion = question as MultipleChoiceQuestionViewModel;
+                    count += mcQuestion?.Options?.Count(o => o.BranchToGroupId.HasValue) ?? 0;
+                }
+                else if (question.QuestionType == QuestionType.SelectAllThatApply)
+                {
+                    var saQuestion = question as SelectAllThatApplyQuestionViewModel;
+                    count += saQuestion?.Options?.Count(o => o.BranchToGroupId.HasValue) ?? 0;
+                }
+                else if (question.QuestionType == QuestionType.TrueFalse)
+                {
+                    var tfQuestion = question as TrueFalseQuestionViewModel;
+                    if (tfQuestion?.BranchToGroupIdOnTrue.HasValue == true) count++;
+                    if (tfQuestion?.BranchToGroupIdOnFalse.HasValue == true) count++;
+                }
             }
-            else if (question.QuestionType == QuestionType.SelectAllThatApply)
-            {
-                var saQuestion = question as SelectAllThatApplyQuestionViewModel;
-                return saQuestion?.Options?.Count(o => o.BranchToGroupId.HasValue) ?? 0;
-            }
-            else if (question.QuestionType == QuestionType.TrueFalse)
-            {
-                var tfQuestion = question as TrueFalseQuestionViewModel;
-                var count = 0;
-                if (tfQuestion?.BranchToGroupIdOnTrue.HasValue == true) count++;
-                if (tfQuestion?.BranchToGroupIdOnFalse.HasValue == true) count++;
-                return count;
-            }
-            return 0;
+            return count;
         }
 
         private string GetGroupColor(int groupNumber)
