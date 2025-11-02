@@ -156,6 +156,7 @@ namespace JwtIdentity.Client.Pages.Survey
                 {
                     QuestionGroups.Add(response);
                     _ = Snackbar.Add($"Added Group {newGroup.GroupNumber}", Severity.Success);
+                    await RefreshDiagram();
                     StateHasChanged();
                 }
                 else
@@ -193,6 +194,7 @@ namespace JwtIdentity.Client.Pages.Survey
                         }
 
                         _ = Snackbar.Add($"Deleted Group {group.GroupNumber}", Severity.Success);
+                        await RefreshDiagram();
                         StateHasChanged();
                     }
                     else
@@ -215,6 +217,7 @@ namespace JwtIdentity.Client.Pages.Survey
                 if (group.Id == 0)
                 {
                     // Group 0 doesn't need to be saved to database as it's implicit
+                    await RefreshDiagram();
                     return;
                 }
 
@@ -222,6 +225,7 @@ namespace JwtIdentity.Client.Pages.Survey
                 if (response != null)
                 {
                     _ = Snackbar.Add("Group updated", Severity.Success);
+                    await RefreshDiagram();
                 }
                 else
                 {
@@ -252,6 +256,7 @@ namespace JwtIdentity.Client.Pages.Survey
                 if (response != null)
                 {
                     _ = Snackbar.Add($"Moved question to Group {targetGroupId}", Severity.Success);
+                    await RefreshDiagram();
                     StateHasChanged();
                 }
                 else
@@ -279,6 +284,7 @@ namespace JwtIdentity.Client.Pages.Survey
                 if (response != null)
                 {
                     _ = Snackbar.Add("Branching updated", Severity.Success);
+                    await RefreshDiagram();
                 }
                 else
                 {
@@ -317,6 +323,7 @@ namespace JwtIdentity.Client.Pages.Survey
                 if (response != null)
                 {
                     _ = Snackbar.Add("Branching updated", Severity.Success);
+                    await RefreshDiagram();
                 }
                 else
                 {
