@@ -1,0 +1,103 @@
+/* Group color styles for consistent coloring across diagram, question groups, and branching rules */
+
+/* Group background colors */
+.group-color-0 {
+    background-color: #f5f5f5 !important;
+    border-left: 4px solid #9e9e9e !important;
+}
+
+.group-color-1 {
+    background-color: #e3f2fd !important;
+    border-left: 4px solid #1976D2 !important;
+}
+
+.group-color-2 {
+    background-color: #f3e5f5 !important;
+    border-left: 4px solid #7B1FA2 !important;
+}
+
+.group-color-3 {
+    background-color: #ffebee !important;
+    border-left: 4px solid #C62828 !important;
+}
+
+.group-color-4 {
+    background-color: #fff3e0 !important;
+    border-left: 4px solid #F57C00 !important;
+}
+
+.group-color-5 {
+    background-color: #f1f8e9 !important;
+    border-left: 4px solid #558B2F !important;
+}
+
+.group-color-6 {
+    background-color: #e1f5fe !important;
+    border-left: 4px solid #0277BD !important;
+}
+
+.group-color-7 {
+    background-color: #ede7f6 !important;
+    border-left: 4px solid #5E35B1 !important;
+}
+
+.group-color-8 {
+    background-color: #fce4ec !important;
+    border-left: 4px solid #C2185B !important;
+}
+
+.group-color-9 {
+    background-color: #fff8e1 !important;
+    border-left: 4px solid #EF6C00 !important;
+}
+
+/* Group badge styles */
+.group-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: white;
+    text-align: center;
+}
+
+.group-badge-0 {
+    background-color: #9e9e9e;
+}
+
+.group-badge-1 {
+    background-color: #1976D2;
+}
+
+.group-badge-2 {
+    background-color: #7B1FA2;
+}
+
+.group-badge-3 {
+    background-color: #C62828;
+}
+
+.group-badge-4 {
+    background-color: #F57C00;
+}
+
+.group-badge-5 {
+    background-color: #558B2F;
+}
+
+.group-badge-6 {
+    background-color: #0277BD;
+}
+
+.group-badge-7 {
+    background-color: #5E35B1;
+}
+
+.group-badge-8 {
+    background-color: #C2185B;
+}
+
+.group-badge-9 {
+    background-color: #EF6C00;
+}

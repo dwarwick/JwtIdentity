@@ -1,3 +1,5 @@
+using Syncfusion.Blazor.Diagram;
+
 namespace JwtIdentity.Client.Pages.Survey
 {
     public class BranchingSurveyEditModel : BlazorBase
@@ -13,14 +15,23 @@ namespace JwtIdentity.Client.Pages.Survey
         protected Dictionary<int, int?> TrueBranch { get; set; } = new();
         protected Dictionary<int, int?> FalseBranch { get; set; } = new();
 
-        // Flow diagram data
-        protected List<FlowNode> FlowNodes { get; set; } = new();
-        protected List<FlowConnection> FlowConnections { get; set; } = new();
+        // Syncfusion Diagram data
+        protected DiagramObjectCollection<Node> Nodes { get; set; } = new DiagramObjectCollection<Node>();
+        protected DiagramObjectCollection<Connector> Connectors { get; set; } = new DiagramObjectCollection<Connector>();
+        protected SfDiagramComponent diagram;
+        protected double ZoomLevel { get; set; } = 1.0;
 
         protected override async Task OnInitializedAsync()
         {
             await LoadData();
-            BuildFlowDiagram();
+            BuildSyncfusionDiagram();
+        }
+
+        protected void DiagramCreated()
+        {
+            FitOptions options = new FitOptions() { Mode = FitMode.Both, Region = DiagramRegion.Content };
+
+            diagram.FitToPage(options);
         }
 
         private async Task LoadData()
@@ -40,7 +51,7 @@ namespace JwtIdentity.Client.Pages.Survey
 
                     // Always ensure Group 0 exists (it's implicit and may not be in the database)
                     QuestionGroups = new List<QuestionGroupViewModel>();
-                    
+
                     // Add Group 0 if it doesn't exist in the loaded groups
                     if (groups == null || !groups.Any(g => g.GroupNumber == 0))
                     {
@@ -52,7 +63,7 @@ namespace JwtIdentity.Client.Pages.Survey
                             SubmitAfterGroup = false // Default to false so it can flow to other groups
                         });
                     }
-                    
+
                     // Add all other groups from the database
                     if (groups != null && groups.Any())
                     {
@@ -145,6 +156,7 @@ namespace JwtIdentity.Client.Pages.Survey
                 {
                     QuestionGroups.Add(response);
                     _ = Snackbar.Add($"Added Group {newGroup.GroupNumber}", Severity.Success);
+                    await RefreshDiagram();
                     StateHasChanged();
                 }
                 else
@@ -163,6 +175,92 @@ namespace JwtIdentity.Client.Pages.Survey
         {
             try
             {
+                // Check if this group is used in any branching rules
+                var branchingRulesUsingGroup = new List<string>();
+
+                // Check Multiple Choice and Select All That Apply questions
+                foreach (var question in Survey.Questions)
+                {
+                    if (question.QuestionType == QuestionType.MultipleChoice)
+                    {
+                        var mcQuestion = question as MultipleChoiceQuestionViewModel;
+                        if (mcQuestion?.Options != null)
+                        {
+                            foreach (var option in mcQuestion.Options)
+                            {
+                                if (option.BranchToGroupId == group.GroupNumber)
+                                {
+                                    branchingRulesUsingGroup.Add($"Q{question.QuestionNumber}: {question.Text} - Option: {option.OptionText}");
+                                }
+                            }
+                        }
+                    }
+                    else if (question.QuestionType == QuestionType.SelectAllThatApply)
+                    {
+                        var saQuestion = question as SelectAllThatApplyQuestionViewModel;
+                        if (saQuestion?.Options != null)
+                        {
+                            foreach (var option in saQuestion.Options)
+                            {
+                                if (option.BranchToGroupId == group.GroupNumber)
+                                {
+                                    branchingRulesUsingGroup.Add($"Q{question.QuestionNumber}: {question.Text} - Option: {option.OptionText}");
+                                }
+                            }
+                        }
+                    }
+                    else if (question.QuestionType == QuestionType.TrueFalse)
+                    {
+                        var tfQuestion = question as TrueFalseQuestionViewModel;
+                        if (tfQuestion != null)
+                        {
+                            if (tfQuestion.BranchToGroupIdOnTrue == group.GroupNumber)
+                            {
+                                branchingRulesUsingGroup.Add($"Q{question.QuestionNumber}: {question.Text} - True branch");
+                            }
+                            if (tfQuestion.BranchToGroupIdOnFalse == group.GroupNumber)
+                            {
+                                branchingRulesUsingGroup.Add($"Q{question.QuestionNumber}: {question.Text} - False branch");
+                            }
+                        }
+                    }
+
+                    // Check if this group contains questions that branch TO other groups
+                    if (question.GroupId == group.GroupNumber)
+                    {
+                        if (question.QuestionType == QuestionType.MultipleChoice)
+                        {
+                            var mcQuestion = question as MultipleChoiceQuestionViewModel;
+                            if (mcQuestion?.Options != null && mcQuestion.Options.Any(o => o.BranchToGroupId.HasValue))
+                            {
+                                branchingRulesUsingGroup.Add($"Q{question.QuestionNumber} in this group has branching rules");
+                            }
+                        }
+                        else if (question.QuestionType == QuestionType.SelectAllThatApply)
+                        {
+                            var saQuestion = question as SelectAllThatApplyQuestionViewModel;
+                            if (saQuestion?.Options != null && saQuestion.Options.Any(o => o.BranchToGroupId.HasValue))
+                            {
+                                branchingRulesUsingGroup.Add($"Q{question.QuestionNumber} in this group has branching rules");
+                            }
+                        }
+                        else if (question.QuestionType == QuestionType.TrueFalse)
+                        {
+                            var tfQuestion = question as TrueFalseQuestionViewModel;
+                            if (tfQuestion != null && (tfQuestion.BranchToGroupIdOnTrue.HasValue || tfQuestion.BranchToGroupIdOnFalse.HasValue))
+                            {
+                                branchingRulesUsingGroup.Add($"Q{question.QuestionNumber} in this group has branching rules");
+                            }
+                        }
+                    }
+                }
+
+                if (branchingRulesUsingGroup.Any())
+                {
+                    _ = Snackbar.Add($"Cannot delete Group {group.GroupNumber}. Remove it from all branching rules first.", Severity.Error);
+                    return;
+                }
+
                 bool? confirm = await MudDialog.ShowMessageBox(
                     "Confirm Delete",
                     $"Delete Group {group.GroupNumber}? All questions in this group will be moved to Group 0.",
@@ -182,6 +280,7 @@ namespace JwtIdentity.Client.Pages.Survey
                         }
 
                         _ = Snackbar.Add($"Deleted Group {group.GroupNumber}", Severity.Success);
+                        await RefreshDiagram();
                         StateHasChanged();
                     }
                     else
@@ -204,6 +303,7 @@ namespace JwtIdentity.Client.Pages.Survey
                 if (group.Id == 0)
                 {
                     // Group 0 doesn't need to be saved to database as it's implicit
+                    await RefreshDiagram();
                     return;
                 }
 
@@ -211,6 +311,7 @@ namespace JwtIdentity.Client.Pages.Survey
                 if (response != null)
                 {
                     _ = Snackbar.Add("Group updated", Severity.Success);
+                    await RefreshDiagram();
                 }
                 else
                 {
@@ -241,6 +342,7 @@ namespace JwtIdentity.Client.Pages.Survey
                 if (response != null)
                 {
                     _ = Snackbar.Add($"Moved question to Group {targetGroupId}", Severity.Success);
+                    await RefreshDiagram();
                     StateHasChanged();
                 }
                 else
@@ -268,6 +370,7 @@ namespace JwtIdentity.Client.Pages.Survey
                 if (response != null)
                 {
                     _ = Snackbar.Add("Branching updated", Severity.Success);
+                    await RefreshDiagram();
                 }
                 else
                 {
@@ -306,6 +409,7 @@ namespace JwtIdentity.Client.Pages.Survey
                 if (response != null)
                 {
                     _ = Snackbar.Add("Branching updated", Severity.Success);
+                    await RefreshDiagram();
                 }
                 else
                 {
@@ -321,176 +425,343 @@ namespace JwtIdentity.Client.Pages.Survey
 
         protected async Task RefreshDiagram()
         {
-            BuildFlowDiagram();
-            await Task.CompletedTask;
+            BuildSyncfusionDiagram();
+            StateHasChanged();
+            
+            // Allow UI to update before triggering layout
+            await Task.Delay(100);
+            
+            if (diagram != null)
+            {
+                await diagram.DoLayoutAsync();
+            }
+        }
+
+        protected void OnZoomChanged(double newZoom)
+        {
+            ZoomLevel = newZoom;
             StateHasChanged();
         }
 
-        private void BuildFlowDiagram()
+        protected void OnNodeCreating(IDiagramObject obj)
         {
-            FlowNodes = new List<FlowNode>();
-            FlowConnections = new List<FlowConnection>();
+            Node node = obj as Node;
+            if (node == null) return;
+            // Disables the selection of a node in the diagram
+            node.Constraints = NodeConstraints.Default & ~NodeConstraints.Select;
+        }
+
+        private void BuildSyncfusionDiagram()
+        {
+            Nodes = new DiagramObjectCollection<Node>();
+            Connectors = new DiagramObjectCollection<Connector>();
+
+            // Use dark teal for branching rule nodes - provides excellent contrast with white text
+            // and is visually distinct from all group colors
+            string choiceNodeColor = "#00796B";
 
             if (Survey == null || QuestionGroups == null || !QuestionGroups.Any())
                 return;
 
-            // Create nodes for each group
+            // Create nodes for each group - let the layout algorithm position them
             foreach (var group in QuestionGroups.OrderBy(g => g.GroupNumber))
             {
                 var questionCount = Survey.Questions.Count(q => q.GroupId == group.GroupNumber);
                 var groupName = string.IsNullOrWhiteSpace(group.GroupName) ? $"Group {group.GroupNumber}" : group.GroupName;
-                
-                FlowNodes.Add(new FlowNode
-                {
-                    GroupNumber = group.GroupNumber,
-                    GroupName = groupName,
-                    QuestionCount = questionCount
-                });
-            }
 
-            // Create connections based on branching rules
-            var processedConnections = new HashSet<string>();
-
-            foreach (var question in Survey.Questions.OrderBy(q => q.QuestionNumber))
-            {
-                if (question.QuestionType == QuestionType.MultipleChoice)
+                // Create primary node for the group (no manual positioning)
+                var groupNode = new Node()
                 {
-                    var mcQuestion = question as MultipleChoiceQuestionViewModel;
-                    if (mcQuestion?.Options != null)
+                    ID = $"Group{group.GroupNumber}",
+                    Width = 200,
+                    Height = 60,
+                    Annotations = new DiagramObjectCollection<ShapeAnnotation>()
                     {
-                        foreach (var option in mcQuestion.Options)
+                        new ShapeAnnotation()
                         {
-                            if (option.BranchToGroupId.HasValue)
+                            Content = $"{groupName}\n({questionCount} question{(questionCount != 1 ? "s" : "")})",
+                            Style = new TextStyle() { Color = "white", Bold = true }
+                        }
+                    },
+                    Style = new ShapeStyle()
+                    {
+                        Fill = GetGroupColor(group.GroupNumber),
+                        StrokeWidth = 3,
+                        StrokeColor = "Black"
+                    }
+                };
+
+                Nodes.Add(groupNode);
+
+                // Create nodes for branching rules within this group
+                var groupQuestions = Survey.Questions
+                    .Where(q => q.GroupId == group.GroupNumber &&
+                        (q.QuestionType == QuestionType.MultipleChoice ||
+                         q.QuestionType == QuestionType.SelectAllThatApply ||
+                         q.QuestionType == QuestionType.TrueFalse))
+                    .OrderBy(q => q.QuestionNumber)
+                    .ToList();
+
+                foreach (var question in groupQuestions)
+                {
+                    if (question.QuestionType == QuestionType.MultipleChoice)
+                    {
+                        var mcQuestion = question as MultipleChoiceQuestionViewModel;
+                        if (mcQuestion?.Options != null)
+                        {
+                            foreach (var option in mcQuestion.Options.Where(o => o.BranchToGroupId.HasValue))
                             {
-                                var connectionKey = $"{question.GroupId}-{option.BranchToGroupId.Value}";
-                                if (!processedConnections.Contains(connectionKey))
+                                var targetGroupColor = GetGroupColor(option.BranchToGroupId.Value);
+
+                                var branchNode = new Node()
                                 {
-                                    // Include question text with option text for better context
-                                    var label = $"Q{question.QuestionNumber}: {TruncateText(question.Text, 35)} → {TruncateText(option.OptionText, 45)}";
-                                    FlowConnections.Add(new FlowConnection
+                                    ID = $"Branch_MC_Q{question.Id}_O{option.Id}",
+                                    Width = 220,
+                                    Height = 60,
+                                    Annotations = new DiagramObjectCollection<ShapeAnnotation>()
                                     {
-                                        FromGroup = question.GroupId,
-                                        ToGroup = option.BranchToGroupId.Value,
-                                        Label = label,
-                                        IsConditional = true
-                                    });
-                                    processedConnections.Add(connectionKey);
-                                }
-                            }
-                        }
-                    }
-                }
-                else if (question.QuestionType == QuestionType.SelectAllThatApply)
-                {
-                    var saQuestion = question as SelectAllThatApplyQuestionViewModel;
-                    if (saQuestion?.Options != null)
-                    {
-                        foreach (var option in saQuestion.Options)
-                        {
-                            if (option.BranchToGroupId.HasValue)
-                            {
-                                var connectionKey = $"{question.GroupId}-{option.BranchToGroupId.Value}";
-                                if (!processedConnections.Contains(connectionKey))
-                                {
-                                    var label = $"Q{question.QuestionNumber}: {TruncateText(question.Text, 35)} → {TruncateText(option.OptionText, 45)}";
-                                    FlowConnections.Add(new FlowConnection
+                                        new ShapeAnnotation()
+                                        {
+                                            Content = $"Q{question.QuestionNumber}: {TruncateText( question.Text, 60)}\r\n{TruncateText(option.OptionText, 30)}",
+                                            Style = new TextStyle() { Color = "white", Bold = false }
+                                        }
+                                    },
+                                    Style = new ShapeStyle()
                                     {
-                                        FromGroup = question.GroupId,
-                                        ToGroup = option.BranchToGroupId.Value,
-                                        Label = label,
-                                        IsConditional = true
-                                    });
-                                    processedConnections.Add(connectionKey);
-                                }
-                            }
-                        }
-                    }
-                }
-                else if (question.QuestionType == QuestionType.TrueFalse)
-                {
-                    var tfQuestion = question as TrueFalseQuestionViewModel;
-                    if (tfQuestion != null)
-                    {
-                        if (tfQuestion.BranchToGroupIdOnTrue.HasValue)
-                        {
-                            var connectionKey = $"{question.GroupId}-{tfQuestion.BranchToGroupIdOnTrue.Value}-True";
-                            if (!processedConnections.Contains(connectionKey))
-                            {
-                                var label = $"Q{question.QuestionNumber}: {TruncateText(question.Text, 35)} → True";
-                                FlowConnections.Add(new FlowConnection
-                                {
-                                    FromGroup = question.GroupId,
-                                    ToGroup = tfQuestion.BranchToGroupIdOnTrue.Value,
-                                    Label = label,
-                                    IsConditional = true
-                                });
-                                processedConnections.Add(connectionKey);
-                            }
-                        }
-                        if (tfQuestion.BranchToGroupIdOnFalse.HasValue)
-                        {
-                            var connectionKey = $"{question.GroupId}-{tfQuestion.BranchToGroupIdOnFalse.Value}-False";
-                            if (!processedConnections.Contains(connectionKey))
-                            {
-                                var label = $"Q{question.QuestionNumber}: {TruncateText(question.Text, 35)} → False";
-                                FlowConnections.Add(new FlowConnection
-                                {
-                                    FromGroup = question.GroupId,
-                                    ToGroup = tfQuestion.BranchToGroupIdOnFalse.Value,
-                                    Label = label,
-                                    IsConditional = true
-                                });
-                                processedConnections.Add(connectionKey);
-                            }
-                        }
-                    }
-                }
-            }
+                                        Fill = choiceNodeColor,
+                                        StrokeWidth = 3,
+                                        StrokeColor = "#1976D2"
+                                    }
+                                };
+                                Nodes.Add(branchNode);
 
-            // Add default sequential flow connectors for groups without explicit branching
-            for (int i = 0; i < QuestionGroups.Count - 1; i++)
-            {
-                var currentGroup = QuestionGroups.OrderBy(g => g.GroupNumber).ElementAt(i);
-                var nextGroup = QuestionGroups.OrderBy(g => g.GroupNumber).ElementAt(i + 1);
-                var connectionKey = $"{currentGroup.GroupNumber}-{nextGroup.GroupNumber}";
-                
-                if (!processedConnections.Contains(connectionKey))
-                {
-                    FlowConnections.Add(new FlowConnection
+                                // Connect group to branch node with gray color
+                                var connectorToBranch = new Connector()
+                                {
+                                    ID = $"Connector_Group{group.GroupNumber}_To_Branch_Q{question.Id}_O{option.Id}",
+                                    SourceID = $"Group{group.GroupNumber}",
+                                    TargetID = branchNode.ID,
+                                    Type = ConnectorSegmentType.Bezier,
+                                    Style = new ShapeStyle() { StrokeColor = "#757575", StrokeWidth = 1.5 }
+                                };
+                                Connectors.Add(connectorToBranch);
+
+                                // Connect branch node to target group with target group's color
+                                var connectorToTarget = new Connector()
+                                {
+                                    ID = $"Connector_Branch_Q{question.Id}_O{option.Id}_To_Group{option.BranchToGroupId}",
+                                    SourceID = branchNode.ID,
+                                    TargetID = $"Group{option.BranchToGroupId}",
+                                    Type = ConnectorSegmentType.Bezier,
+                                    Style = new ShapeStyle() { StrokeColor = targetGroupColor, StrokeWidth = 3 },
+                                    TargetDecorator = new DecoratorSettings()
+                                    {
+                                        Shape = DecoratorShape.Arrow,
+                                        Style = new ShapeStyle() { Fill = targetGroupColor, StrokeColor = targetGroupColor }
+                                    }
+                                };
+                                Connectors.Add(connectorToTarget);
+                            }
+                        }
+                    }
+                    else if (question.QuestionType == QuestionType.SelectAllThatApply)
                     {
-                        FromGroup = currentGroup.GroupNumber,
-                        ToGroup = nextGroup.GroupNumber,
-                        Label = "Sequential",
-                        IsConditional = false
-                    });
+                        var saQuestion = question as SelectAllThatApplyQuestionViewModel;
+                        if (saQuestion?.Options != null)
+                        {
+                            foreach (var option in saQuestion.Options.Where(o => o.BranchToGroupId.HasValue))
+                            {
+                                var targetGroupColor = GetGroupColor(option.BranchToGroupId.Value);
+
+                                var branchNode = new Node()
+                                {
+                                    ID = $"Branch_SA_Q{question.Id}_O{option.Id}",
+                                    Width = 220,
+                                    Height = 60,
+                                    Annotations = new DiagramObjectCollection<ShapeAnnotation>()
+                                    {
+                                        new ShapeAnnotation()
+                                        {
+                                            Content = $"Q{question.QuestionNumber}: {TruncateText( question.Text, 60)}\r\n{TruncateText(option.OptionText, 30)}",
+                                            Style = new TextStyle() { Color = "white", Bold = false }
+                                        }
+                                    },
+                                    Style = new ShapeStyle()
+                                    {
+                                        Fill = choiceNodeColor,
+                                        StrokeWidth = 3,
+                                        StrokeColor = "#1976D2"
+                                    }
+                                };
+                                Nodes.Add(branchNode);
+
+                                // Connect group to branch node with gray color
+                                var connectorToBranch = new Connector()
+                                {
+                                    ID = $"Connector_Group{group.GroupNumber}_To_Branch_Q{question.Id}_O{option.Id}",
+                                    SourceID = $"Group{group.GroupNumber}",
+                                    TargetID = branchNode.ID,
+                                    Type = ConnectorSegmentType.Bezier,
+                                    Style = new ShapeStyle() { StrokeColor = "#757575", StrokeWidth = 1.5 }
+                                };
+                                Connectors.Add(connectorToBranch);
+
+                                // Connect branch node to target group with target group's color
+                                var connectorToTarget = new Connector()
+                                {
+                                    ID = $"Connector_Branch_Q{question.Id}_O{option.Id}_To_Group{option.BranchToGroupId}",
+                                    SourceID = branchNode.ID,
+                                    TargetID = $"Group{option.BranchToGroupId}",
+                                    Type = ConnectorSegmentType.Bezier,
+                                    Style = new ShapeStyle() { StrokeColor = targetGroupColor, StrokeWidth = 3 },
+                                    TargetDecorator = new DecoratorSettings()
+                                    {
+                                        Shape = DecoratorShape.Arrow,
+                                        Style = new ShapeStyle() { Fill = targetGroupColor, StrokeColor = targetGroupColor }
+                                    }
+                                };
+                                Connectors.Add(connectorToTarget);
+                            }
+                        }
+                    }
+                    else if (question.QuestionType == QuestionType.TrueFalse)
+                    {
+                        var tfQuestion = question as TrueFalseQuestionViewModel;
+                        if (tfQuestion != null)
+                        {
+                            if (tfQuestion.BranchToGroupIdOnTrue.HasValue)
+                            {
+                                var targetGroupColor = GetGroupColor(tfQuestion.BranchToGroupIdOnTrue.Value);
+
+                                var branchNode = new Node()
+                                {
+                                    ID = $"Branch_TF_Q{question.Id}_True",
+                                    Width = 220,
+                                    Height = 60,
+                                    Annotations = new DiagramObjectCollection<ShapeAnnotation>()
+                                    {
+                                        new ShapeAnnotation()
+                                        {
+                                            Content = $"Q{question.QuestionNumber}: {TruncateText( question.Text, 60)}\r\nTrue",
+                                            Style = new TextStyle() { Color = "white", Bold = false }
+                                        }
+                                    },
+                                    Style = new ShapeStyle()
+                                    {
+                                        Fill = choiceNodeColor,
+                                        StrokeWidth = 3,
+                                        StrokeColor = "#1976D2"
+                                    }
+                                };
+                                Nodes.Add(branchNode);
+
+                                // Connect group to branch node with gray color
+                                var connectorToBranch = new Connector()
+                                {
+                                    ID = $"Connector_Group{group.GroupNumber}_To_Branch_Q{question.Id}_True",
+                                    SourceID = $"Group{group.GroupNumber}",
+                                    TargetID = branchNode.ID,
+                                    Type = ConnectorSegmentType.Bezier,
+                                    Style = new ShapeStyle() { StrokeColor = "#757575", StrokeWidth = 1.5 }
+                                };
+                                Connectors.Add(connectorToBranch);
+
+                                // Connect branch node to target group with target group's color
+                                var connectorToTarget = new Connector()
+                                {
+                                    ID = $"Connector_Branch_Q{question.Id}_True_To_Group{tfQuestion.BranchToGroupIdOnTrue}",
+                                    SourceID = branchNode.ID,
+                                    TargetID = $"Group{tfQuestion.BranchToGroupIdOnTrue}",
+                                    Type = ConnectorSegmentType.Bezier,
+                                    Style = new ShapeStyle() { StrokeColor = targetGroupColor, StrokeWidth = 3 },
+                                    TargetDecorator = new DecoratorSettings()
+                                    {
+                                        Shape = DecoratorShape.Arrow,
+                                        Style = new ShapeStyle() { Fill = targetGroupColor, StrokeColor = targetGroupColor }
+                                    }
+                                };
+                                Connectors.Add(connectorToTarget);
+                            }
+
+                            if (tfQuestion.BranchToGroupIdOnFalse.HasValue)
+                            {
+                                var targetGroupColor = GetGroupColor(tfQuestion.BranchToGroupIdOnFalse.Value);
+
+                                var branchNode = new Node()
+                                {
+                                    ID = $"Branch_TF_Q{question.Id}_False",
+                                    Width = 220,
+                                    Height = 60,
+                                    Annotations = new DiagramObjectCollection<ShapeAnnotation>()
+                                    {
+                                        new ShapeAnnotation()
+                                        {
+                                            Content = $"Q{question.QuestionNumber}: {TruncateText( question.Text, 60)}\r\nFalse",
+                                            Style = new TextStyle() { Color = "white", Bold = false }
+                                        }
+                                    },
+                                    Style = new ShapeStyle()
+                                    {
+                                        Fill = choiceNodeColor,
+                                        StrokeWidth = 3,
+                                        StrokeColor = "#1976D2"
+                                    }
+                                };
+                                Nodes.Add(branchNode);
+
+                                // Connect group to branch node with gray color
+                                var connectorToBranch = new Connector()
+                                {
+                                    ID = $"Connector_Group{group.GroupNumber}_To_Branch_Q{question.Id}_False",
+                                    SourceID = $"Group{group.GroupNumber}",
+                                    TargetID = branchNode.ID,
+                                    Type = ConnectorSegmentType.Bezier,
+                                    Style = new ShapeStyle() { StrokeColor = "#757575", StrokeWidth = 1.5 }
+                                };
+                                Connectors.Add(connectorToBranch);
+
+                                // Connect branch node to target group with target group's color
+                                var connectorToTarget = new Connector()
+                                {
+                                    ID = $"Connector_Branch_Q{question.Id}_False_To_Group{tfQuestion.BranchToGroupIdOnFalse}",
+                                    SourceID = branchNode.ID,
+                                    TargetID = $"Group{tfQuestion.BranchToGroupIdOnFalse}",
+                                    Type = ConnectorSegmentType.Bezier,
+                                    Style = new ShapeStyle() { StrokeColor = targetGroupColor, StrokeWidth = 3 },
+                                    TargetDecorator = new DecoratorSettings()
+                                    {
+                                        Shape = DecoratorShape.Arrow,
+                                        Style = new ShapeStyle() { Fill = targetGroupColor, StrokeColor = targetGroupColor }
+                                    }
+                                };
+                                Connectors.Add(connectorToTarget);
+                            }
+                        }
+                    }
                 }
             }
+        }
+
+        private string GetGroupColor(int groupNumber)
+        {
+            // Colors match the group-badge-{n} CSS classes for consistency
+            var colors = new[]
+            {
+                "#9e9e9e", "#1976D2", "#7B1FA2", "#C62828", "#F57C00",
+                "#558B2F", "#0277BD", "#5E35B1", "#C2185B", "#EF6C00"
+            };
+            return colors[groupNumber % colors.Length];
         }
 
         private string TruncateText(string text, int maxLength)
         {
             if (string.IsNullOrEmpty(text))
                 return "";
-            
+
             if (text.Length <= maxLength)
                 return text;
-            
+
             return text.Substring(0, maxLength - 3) + "...";
-        }
-
-        protected class FlowNode
-        {
-            public int GroupNumber { get; set; }
-            public string GroupName { get; set; }
-            public int QuestionCount { get; set; }
-        }
-
-        protected class FlowConnection
-        {
-            public int FromGroup { get; set; }
-            public int ToGroup { get; set; }
-            public string Label { get; set; }
-            public bool IsConditional { get; set; }
         }
     }
 }
