@@ -27,6 +27,13 @@ namespace JwtIdentity.Client.Pages.Survey
             BuildSyncfusionDiagram();
         }
 
+        protected void DiagramCreated()
+        {
+            FitOptions options = new FitOptions() { Mode = FitMode.Both, Region = DiagramRegion.Content };
+
+            diagram.FitToPage(options);
+        }
+
         private async Task LoadData()
         {
             Loading = true;
