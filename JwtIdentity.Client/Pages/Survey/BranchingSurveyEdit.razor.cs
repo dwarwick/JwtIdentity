@@ -425,22 +425,15 @@ namespace JwtIdentity.Client.Pages.Survey
 
         protected async Task RefreshDiagram()
         {
-            if (diagram != null)
-            {
-                // Clear existing nodes and connectors from the diagram
-                diagram.Nodes.Clear();
-                diagram.Connectors.Clear();
-            }
-            
             BuildSyncfusionDiagram();
             StateHasChanged();
             
-            // Allow the diagram to re-render, then fit to page
+            // Allow UI to update before triggering layout
             await Task.Delay(100);
+            
             if (diagram != null)
             {
-                FitOptions options = new FitOptions() { Mode = FitMode.Both, Region = DiagramRegion.Content };
-                diagram.FitToPage(options);
+                await diagram.DoLayoutAsync();
             }
         }
 
