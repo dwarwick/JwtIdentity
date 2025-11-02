@@ -733,9 +733,10 @@ namespace JwtIdentity.Client.Pages.Survey
 
         private string GetGroupColor(int groupNumber)
         {
+            // Colors match the group-badge-{n} CSS classes for consistency
             var colors = new[]
             {
-                "#00897B", "#1976D2", "#7B1FA2", "#C62828", "#F57C00",
+                "#9e9e9e", "#1976D2", "#7B1FA2", "#C62828", "#F57C00",
                 "#558B2F", "#0277BD", "#5E35B1", "#C2185B", "#EF6C00"
             };
             return colors[groupNumber % colors.Length];
