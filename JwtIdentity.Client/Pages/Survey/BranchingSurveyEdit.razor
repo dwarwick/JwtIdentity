@@ -230,7 +230,7 @@ else
                                                           ValueChanged="@(async (int? value) => { TrueBranch[question.Id] = value; await UpdateTrueFalseBranch((TrueFalseQuestionViewModel)question, value, true); await RefreshDiagram(); })"
                                                           Variant="Variant.Outlined" Dense="true" Style="width: 250px;">
                                                     <MudSelectItem Value="@((int?)null)">Continue in sequence</MudSelectItem>
-                                                    @foreach (var g in QuestionGroups.Where(qg => qg.GroupNumber != group.GroupNumber).OrderBy(x => x.GroupNumber))
+                                                    @foreach (var g in QuestionGroups.Where(qg => qg.GroupNumber != group.GroupNumber && (group.GroupNumber == 0 || qg.GroupNumber != 0)).OrderBy(x => x.GroupNumber))
                                                     {
                                                         <MudSelectItem Value="@((int?)g.GroupNumber)">
                                                             <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
@@ -247,7 +247,7 @@ else
                                                           ValueChanged="@(async (int? value) => { FalseBranch[question.Id] = value; await UpdateTrueFalseBranch((TrueFalseQuestionViewModel)question, value, false); await RefreshDiagram(); })"
                                                           Variant="Variant.Outlined" Dense="true" Style="width: 250px;">
                                                     <MudSelectItem Value="@((int?)null)">Continue in sequence</MudSelectItem>
-                                                    @foreach (var g in QuestionGroups.Where(qg => qg.GroupNumber != group.GroupNumber).OrderBy(x => x.GroupNumber))
+                                                    @foreach (var g in QuestionGroups.Where(qg => qg.GroupNumber != group.GroupNumber && (group.GroupNumber == 0 || qg.GroupNumber != 0)).OrderBy(x => x.GroupNumber))
                                                     {
                                                         <MudSelectItem Value="@((int?)g.GroupNumber)">
                                                             <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
@@ -275,7 +275,7 @@ else
                                                           Variant="Variant.Outlined" Dense="true" Style="width: 250px;"
                                                           ValueChanged="@(async (int? value) => { option.BranchToGroupId = value; await UpdateChoiceOptionBranch(option); await RefreshDiagram(); })">
                                                     <MudSelectItem Value="@((int?)null)">Continue in sequence</MudSelectItem>
-                                                    @foreach (var g in QuestionGroups.Where(qg => qg.GroupNumber != group.GroupNumber).OrderBy(x => x.GroupNumber))
+                                                    @foreach (var g in QuestionGroups.Where(qg => qg.GroupNumber != group.GroupNumber && (group.GroupNumber == 0 || qg.GroupNumber != 0)).OrderBy(x => x.GroupNumber))
                                                     {
                                                         <MudSelectItem Value="@((int?)g.GroupNumber)">
                                                             <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
