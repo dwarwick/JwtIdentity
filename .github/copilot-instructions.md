@@ -1,75 +1,105 @@
-This is a blazor webassembly project that uses a server project that provides an API. 
-Both projects are in the same solution. They both use .Net9.
-The solution also contains a Common Library for shared functionality, which can be utilized across both the Blazor WebAssembly and the server project for consistency and code reuse.
-The common project contains ViewModels and static classes and helper methods that are used by the client and server project. This enhances maintainability and promotes a clean architecture in the solution.
-The solution uses cookie authentication and authorization for the Blazor WebAssembly project. Additionally, best practices are followed for security and performance optimizations.
-The Blazor WebAssembly project is configured to use the latest .NET 9 features and libraries, ensuring that it is up-to-date with the latest advancements in the .NET ecosystem.
-The solution is designed to be modular and scalable, allowing for easy addition of new features and components in the future.
-The project structure is organized to separate concerns, making it easier to manage and understand the codebase.
-The solution is built using the latest .NET 9 features and libraries, ensuring that it is up-to-date with the latest advancements in the .NET ecosystem.
-The server project uses ef core and has a database connection string in the appsettings.json file and appsettings.Development.json file. The connection string is used to connect to a SQL Server database.
-The database is created using ef core migrations, and the initial migration is included in the project. The database is created when the application is run for the first time, and the data is seeded with some initial data.
-When building datagrids, use Syncfusion Blazor components for data grids. Examples of how to use Syncfusion Blazor components are included in the project in LogsGrid.razor, ManageFeedback.razor, MyFeedback.razor, Filter.razor, SurveysIAnswered.razor, and SurverysICreated.razor.
+# JwtIdentity - Copilot Instructions
 
-When creating razor components or blazor pages, always create razor.cs code behind files.
-The class name for the code behind file should be named the same as the razor component file, plus Model. For example, if the razor component file is named MyComponent.razor, the code behind file should be named MyComponentModel.razor.cs.
-The razor component file should inherit from the code behind file. For example, if the code behind file is named MyComponentModel.razor.cs, the razor component file should inherit from MyComponentModel.
-The code behind file should inherit from BlazorBase. All of the injected services are in the BlazorBase class. Do not inject services in the razor component file or the code behind file. Always use the injected services from BlazorBase.
-When creating a new dialog, always use examples from Pages\Admin\Dialogs and Pages\Common.
-When creating a <MudList, always add the T parameter as T="string". See Home.razor for an example, or Documentation.razor
+## Project Overview
+This is a Blazor WebAssembly project with a server-side API. The solution uses .NET 9 and follows a clean architecture pattern with separated concerns.
 
-The API project uses AutoMapper for mapping between entities and DTOs. The mapping profiles are located in the API project, and the AutoMapper configuration is done in Configurations/MapperConfig.cs.
-The controller endpoints that take a body take and return Viewmodels. The ViewModels are located in the Common project. 
-The client project makes API calls using IApiService. Please review the methods in this file to understand how to make API calls. The IApiService is injected in the BlazorBase class, so you can use it directly in inherited Razor components and access API methods through dependency injection.
-When using Mudchip, do not add a Closable attribute. To make it closable, just define the OnClose event. See the example in EditUserDialog.razor.
-When creating a new Razor component, always create a code behind file with the same name as the Razor component file, plus Model. For example, if the Razor component file is named MyComponent.razor, the code behind file should be named MyComponentModel.razor.cs.
+### Solution Structure
+- **JwtIdentity**: ASP.NET Core server project providing the API and hosting the Blazor app
+- **JwtIdentity.Client**: Blazor WebAssembly client application
+- **JwtIdentity.Common**: Shared library containing ViewModels, DTOs, and helper methods
+- **JwtIdentity.Tests**: Server-side unit tests using NUnit
+- **JwtIdentity.BunitTests**: Blazor component tests using bUnit
+- **JwtIdentity.PlaywrightTests**: End-to-end tests using Playwright and NUnit
 
-Do not create a PR unless all tests pass.
-AGENTS.md files in the solution also contain copilot instructions for specific projects.29.MudBlazor MudCheckBox API: Use Value and ValueChanged properties (NOT Checked/CheckedChanged which are deprecated). Example: `<MudCheckBox T="bool" Value="@myValue" ValueChanged="@((bool val) => HandleChange(val))" />`
-Always create comprehensive BUnit Tests when creating new Razor components or pages. Use existing tests in the Tests project as examples.
-When creating a new Razor component or page, always create a corresponding BUnit test class in the Tests project. The test class should be named the same as the Razor component or page, plus "Tests". For example, if the Razor component is named MyComponent.razor, the test class should be named MyComponentTests.cs.
-## BUnit Testing Best Practices
-When writing BUnit tests for Blazor components:
-1. **Use the early return pattern in OnAfterRenderAsync**: Follow the pattern used in MainLayout.razor:
-   ```csharp
-   protected override async Task OnAfterRenderAsync(bool firstRender)
-   {
-       if (!firstRender || !OperatingSystem.IsBrowser())
-       {
-           return;
-       }
-       // Browser-specific initialization code here
-   }
-   ```
-   This pattern allows tests to run without requiring browser-specific operations, making components more testable.
+## Technology Stack
+- **.NET 9**: Latest .NET framework features and libraries
+- **Blazor WebAssembly**: Client-side SPA framework
+- **Entity Framework Core**: ORM for SQL Server database
+- **AutoMapper**: Object-to-object mapping
+- **MudBlazor**: UI component library
+- **Syncfusion Blazor**: Advanced data grid components
+- **Cookie Authentication**: For user authentication and authorization
+- **SignalR**: Real-time communication (if applicable)
 
-2. **Make methods internal for testing**: If methods like `LoadData()` or initialization methods need to be tested directly, make them `internal` instead of `private` and add `InternalsVisibleTo` in the component's project file:
-   ```xml
-   <ItemGroup>
-     <InternalsVisibleTo Include="JwtIdentity.BunitTests" />
-   </ItemGroup>
-   ```
+## Development Guidelines
 
-3. **Test categories**: Organize tests into logical categories:
-   - Component Initialization & Structure
-   - Authentication & User Scenarios
-   - Data Loading & Service Integration
-   - Question/Feature-specific tests
-   - Error Handling
-   - UI State & Rendering
+### Architecture Patterns
+- The Common project contains ViewModels and helper methods shared between client and server
+- Controller endpoints accept and return ViewModels (located in Common project)
+- Use AutoMapper for entity-to-DTO mapping (configuration in `Configurations/MapperConfig.cs`)
+- Database uses EF Core migrations; connection strings in `appsettings.json` and `appsettings.Development.json`
 
-4. **Focus on what can be tested**: BUnit tests should focus on component logic, state management, and service interactions. Save full UI interaction testing for Playwright end-to-end tests.
+### Razor Component Conventions
+- **Always create code-behind files** for Razor components and pages
+- Code-behind file naming: `[ComponentName]Model.razor.cs` (e.g., `MyComponent.razor` → `MyComponentModel.razor.cs`)
+- The Razor component must inherit from its code-behind class
+- Code-behind classes must inherit from `BlazorBase`
+- **Never inject services** in the component or code-behind; use services from `BlazorBase`
+- For dialogs, use examples from `Pages\Admin\Dialogs` and `Pages\Common`
 
-## Testing Environment Restrictions
-**DO NOT RUN PLAYWRIGHT TESTS in the automated testing environment.** Playwright tests require:
-- A running server instance
-- Chrome/Chromium browser installation
-- Full browser automation infrastructure
+### API and Service Usage
+- Client makes API calls using `IApiService` (injected via `BlazorBase`)
+- Review `IApiService` methods to understand available API endpoints
+- Access API methods through dependency injection in Razor components
 
-These are not available in the CI/CD testing environment. When running tests:
-- ✅ DO run: `dotnet test --filter "FullyQualifiedName!~Playwright"`
-- ❌ DO NOT run: `dotnet test` (includes Playwright tests)
-- ✅ DO run: BUnit tests and integration tests only
-- ❌ DO NOT attempt to install browsers or run Playwright in automated workflows
+### UI Component Guidelines
+- **Syncfusion Data Grids**: Use for data tables; see examples in `LogsGrid.razor`, `ManageFeedback.razor`, `MyFeedback.razor`, `Filter.razor`, `SurveysIAnswered.razor`, `SurveysICreated.razor`
+- **MudList**: Always add `T="string"` parameter; see `Home.razor` or `Documentation.razor`
+- **MudChip**: Do not use `Closable` attribute; define `OnClose` event instead (see `EditUserDialog.razor`)
+- **MudStack**: Use `Wrap` enum value for the Wrap attribute (see `DemoLanding.razor`)
 
-Playwright tests should only be run in local development environments with full browser support.
+### Styling Conventions
+- `app-dark.css`: Dark mode styles only
+- `app-light.css`: Light mode styles only
+- `app.css`: Common styles for both modes
+- Do not mix dark/light mode styles into common CSS
+
+### Code Quality Standards
+- **Nullable Reference Types**: Disabled in all projects; do not enable or use nullable annotations
+- **Warnings**: Treat as errors and fix before committing
+- Check for new warnings after each build
+- All tests must pass before creating a PR
+
+## Testing
+
+### Test Frameworks
+- **NUnit**: Server-side unit tests and Playwright E2E tests
+- **bUnit**: Blazor component tests
+- **Playwright**: End-to-end browser tests
+
+### Running Tests
+```bash
+# Run all tests
+dotnet test
+
+# Run specific test project
+dotnet test JwtIdentity.Tests
+dotnet test JwtIdentity.BunitTests
+dotnet test JwtIdentity.PlaywrightTests
+
+# Install Playwright browsers (after first build)
+pwsh bin/Debug/net9.0/playwright.ps1 install
+```
+
+## Build and Deployment
+
+### Build Commands
+```bash
+# Restore packages
+dotnet restore
+
+# Build solution
+dotnet build
+
+# Run the application
+dotnet run --project JwtIdentity
+```
+
+### Database
+- SQL Server database managed by EF Core migrations
+- Database created automatically on first run with seed data
+- Migration files located in `JwtIdentity/Migrations`
+
+## Additional Resources
+- See `AGENTS.md` for project-specific copilot instructions
+- See `ADDING_NEW_QUESTION_TYPES.md` for guidance on extending question types
