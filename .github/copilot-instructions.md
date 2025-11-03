@@ -68,7 +68,7 @@ This is a Blazor WebAssembly project with a server-side API. The solution uses .
 - **Playwright**: End-to-end browser tests
 
 ### Running Tests
-```bash
+bash
 # Run all tests
 dotnet test
 
@@ -77,14 +77,26 @@ dotnet test JwtIdentity.Tests
 dotnet test JwtIdentity.BunitTests
 dotnet test JwtIdentity.PlaywrightTests
 
-# Install Playwright browsers (after first build)
-pwsh bin/Debug/net9.0/playwright.ps1 install
-```
+## Testing Environment Restrictions
+
+**DO NOT RUN PLAYWRIGHT TESTS in the automated testing environment.** Playwright tests require:
+- A running server instance
+- Chrome/Chromium browser installation
+- Full browser automation infrastructure
+
+These are not available in the CI/CD testing environment. When running tests:
+- ✅ DO run: `dotnet test --filter "FullyQualifiedName!~Playwright"`
+- ❌ DO NOT run: `dotnet test` (includes Playwright tests)
+- ✅ DO run: BUnit tests and integration tests only
+- ❌ DO NOT attempt to install browsers or run Playwright in automated workflows
+
+Playwright tests should only be run in local development environments with full browser support.
+
 
 ## Build and Deployment
 
 ### Build Commands
-```bash
+bash
 # Restore packages
 dotnet restore
 
@@ -93,7 +105,7 @@ dotnet build
 
 # Run the application
 dotnet run --project JwtIdentity
-```
+
 
 ### Database
 - SQL Server database managed by EF Core migrations
