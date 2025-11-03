@@ -59,3 +59,17 @@ When writing BUnit tests for Blazor components:
    - UI State & Rendering
 
 4. **Focus on what can be tested**: BUnit tests should focus on component logic, state management, and service interactions. Save full UI interaction testing for Playwright end-to-end tests.
+
+## Testing Environment Restrictions
+**DO NOT RUN PLAYWRIGHT TESTS in the automated testing environment.** Playwright tests require:
+- A running server instance
+- Chrome/Chromium browser installation
+- Full browser automation infrastructure
+
+These are not available in the CI/CD testing environment. When running tests:
+- ✅ DO run: `dotnet test --filter "FullyQualifiedName!~Playwright"`
+- ❌ DO NOT run: `dotnet test` (includes Playwright tests)
+- ✅ DO run: BUnit tests and integration tests only
+- ❌ DO NOT attempt to install browsers or run Playwright in automated workflows
+
+Playwright tests should only be run in local development environments with full browser support.
