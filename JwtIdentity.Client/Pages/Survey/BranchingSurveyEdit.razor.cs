@@ -772,5 +772,26 @@ namespace JwtIdentity.Client.Pages.Survey
 
             return text.Substring(0, maxLength - 3) + "...";
         }
+
+        /// <summary>
+        /// Determines if branching from one group to another is allowed.
+        /// Users cannot branch back to the default group (Group 0) from non-default groups.
+        /// </summary>
+        /// <param name="fromGroupNumber">The source group number</param>
+        /// <param name="toGroupNumber">The target group number</param>
+        /// <returns>True if branching is allowed, false otherwise</returns>
+        protected bool CanBranchToGroup(int fromGroupNumber, int toGroupNumber)
+        {
+            // Can't branch to the same group
+            if (fromGroupNumber == toGroupNumber)
+                return false;
+
+            // From Group 0 (default), can branch to any other group
+            if (fromGroupNumber == 0)
+                return true;
+
+            // From non-default groups, cannot branch back to Group 0
+            return toGroupNumber != 0;
+        }
     }
 }
