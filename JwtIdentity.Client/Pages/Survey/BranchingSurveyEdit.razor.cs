@@ -460,7 +460,9 @@ namespace JwtIdentity.Client.Pages.Survey
             if (Survey == null || QuestionGroups == null || !QuestionGroups.Any())
                 return;
 
+            double xPosition = 300; // Starting X position
             double yPosition = 150; // Starting Y position
+            const double groupSpacing = 600; // Horizontal spacing between groups
 
             // Create nested containers with manual positioning (like Azure example)
             foreach (var group in QuestionGroups.OrderBy(g => g.GroupNumber))
@@ -487,7 +489,7 @@ namespace JwtIdentity.Client.Pages.Survey
                         ID = $"GroupContainer{group.GroupNumber}",
                         Width = 300,
                         Height = 80,
-                        OffsetX = 400,
+                        OffsetX = xPosition,
                         OffsetY = yPosition,
                         Annotations = new DiagramObjectCollection<ShapeAnnotation>()
                         {
@@ -505,7 +507,7 @@ namespace JwtIdentity.Client.Pages.Survey
                         }
                     };
                     Nodes.Add(placeholderNode);
-                    yPosition += 120;
+                    xPosition += groupSpacing;
                     continue;
                 }
 
@@ -519,7 +521,7 @@ namespace JwtIdentity.Client.Pages.Survey
 
                 var groupContainerWidth = 480.0;
                 var groupContainerHeight = totalQuestionHeight + 60; // Add space for header
-                var groupCenterX = 400.0;
+                var groupCenterX = xPosition;
                 var groupCenterY = yPosition + (groupContainerHeight / 2);
 
                 var groupChildrenIds = new List<string>();
@@ -676,7 +678,7 @@ namespace JwtIdentity.Client.Pages.Survey
                 };
 
                 Nodes.Add(groupContainer);
-                yPosition += groupContainerHeight + 80;
+                xPosition += groupSpacing; // Move X for next group horizontally
             }
         }
 
