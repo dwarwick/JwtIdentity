@@ -20,7 +20,7 @@ namespace JwtIdentity.Client.Pages.Survey
         protected DiagramObjectCollection<Connector> Connectors { get; set; } = new DiagramObjectCollection<Connector>();
         protected SfDiagramComponent diagram;
         protected double ZoomLevel { get; set; } = 1.0;
-        protected LayoutType DiagramLayoutType { get; set; } = LayoutType.None; // Use None for containers
+        protected LayoutType DiagramLayoutType { get; set; } = LayoutType.ComplexHierarchicalTree;
 
         protected override async Task OnInitializedAsync()
         {
@@ -460,9 +460,7 @@ namespace JwtIdentity.Client.Pages.Survey
             if (Survey == null || QuestionGroups == null || !QuestionGroups.Any())
                 return;
 
-            double yPosition = 100; // Starting Y position for vertical layout
-
-            // Create a container for each question that has branching rules
+            // Create nested containers: Group containers with Question containers inside
             foreach (var group in QuestionGroups.OrderBy(g => g.GroupNumber))
             {
                 var groupName = string.IsNullOrWhiteSpace(group.GroupName) ? $"Group {group.GroupNumber}" : group.GroupName;
@@ -476,22 +474,20 @@ namespace JwtIdentity.Client.Pages.Survey
                     .OrderBy(q => q.QuestionNumber)
                     .ToList();
 
-                // Create a container for each question with branching
+                // Collect all question container IDs and option node IDs for this group
+                var groupChildrenIds = new List<string>();
+
+                // Create question containers for each question with branching
                 foreach (var question in groupQuestions)
                 {
                     var options = GetBranchingOptions(question);
                     if (options.Count == 0)
                         continue;
 
-                    var containerWidth = 400.0;
-                    var containerHeight = 100 + (options.Count * 60); // Header + options
-                    var xPosition = 300; // Center X position
+                    var questionContainerId = $"QuestionContainer{question.Id}";
+                    var optionChildrenIds = new List<string>();
 
-                    // Create children array for the container
-                    var childrenIds = new List<string>();
-
-                    // Create child option nodes (only option text, no question text)
-                    var yOffset = yPosition + 70; // Start below header
+                    // Create option nodes (children of question container)
                     foreach (var (optionText, branchToGroupId, optionId) in options)
                     {
                         var targetGroupColor = GetGroupColor(branchToGroupId);
@@ -500,15 +496,13 @@ namespace JwtIdentity.Client.Pages.Survey
                         var optionNode = new Node()
                         {
                             ID = optionNodeId,
-                            Width = 360,
+                            Width = 320,
                             Height = 50,
-                            OffsetX = xPosition,
-                            OffsetY = yOffset,
                             Annotations = new DiagramObjectCollection<ShapeAnnotation>()
                             {
                                 new ShapeAnnotation()
                                 {
-                                    Content = TruncateText(optionText, 45),
+                                    Content = TruncateText(optionText, 40),
                                     Style = new TextStyle() 
                                     { 
                                         Color = "black", 
@@ -527,51 +521,86 @@ namespace JwtIdentity.Client.Pages.Survey
                         };
 
                         Nodes.Add(optionNode);
-                        childrenIds.Add(optionNodeId);
-                        yOffset += 60;
+                        optionChildrenIds.Add(optionNodeId);
 
-                        // Create connector from option to target group
-                        var targetContainerId = GetFirstQuestionContainerInGroup(branchToGroupId);
-                        if (!string.IsNullOrEmpty(targetContainerId) || branchToGroupId != group.GroupNumber)
+                        // Create connector from option to target group container
+                        var targetGroupContainerId = $"GroupContainer{branchToGroupId}";
+                        var connector = new Connector()
                         {
-                            var connector = new Connector()
+                            ID = $"Connector_Q{question.Id}_O{optionId}_To_Group{branchToGroupId}",
+                            SourceID = optionNodeId,
+                            TargetID = targetGroupContainerId,
+                            Type = ConnectorSegmentType.Bezier,
+                            Style = new ShapeStyle() { StrokeColor = targetGroupColor, StrokeWidth = 3 },
+                            TargetDecorator = new DecoratorSettings()
                             {
-                                ID = $"Connector_Q{question.Id}_O{optionId}_To_Group{branchToGroupId}",
-                                SourceID = optionNodeId,
-                                TargetID = !string.IsNullOrEmpty(targetContainerId) ? targetContainerId : $"GroupPlaceholder{branchToGroupId}",
-                                Type = ConnectorSegmentType.Bezier,
-                                Style = new ShapeStyle() { StrokeColor = targetGroupColor, StrokeWidth = 3 },
-                                TargetDecorator = new DecoratorSettings()
-                                {
-                                    Shape = DecoratorShape.Arrow,
-                                    Style = new ShapeStyle() { Fill = targetGroupColor, StrokeColor = targetGroupColor }
-                                }
-                            };
-                            Connectors.Add(connector);
-                        }
+                                Shape = DecoratorShape.Arrow,
+                                Style = new ShapeStyle() { Fill = targetGroupColor, StrokeColor = targetGroupColor }
+                            }
+                        };
+                        Connectors.Add(connector);
                     }
 
-                    // Create Container node for this question
-                    var container = new Container()
+                    // Create question container
+                    var questionContainer = new Container()
                     {
-                        ID = $"QuestionContainer{question.Id}",
-                        Width = containerWidth,
-                        Height = containerHeight,
-                        OffsetX = xPosition,
-                        OffsetY = yPosition + (containerHeight / 2),
+                        ID = questionContainerId,
+                        Width = 360,
+                        Height = 80 + (options.Count * 60),
                         Header = new ContainerHeader()
                         {
-                            ID = $"Header_Q{question.Id}",
-                            Height = 60,
+                            ID = $"QHeader{question.Id}",
+                            Height = 50,
                             Annotation = new ShapeAnnotation()
                             {
-                                Content = $"{groupName} - Q{question.QuestionNumber}: {question.Text}",
+                                Content = $"Q{question.QuestionNumber}: {question.Text}",
+                                Style = new TextStyle()
+                                {
+                                    Color = "black",
+                                    Bold = true,
+                                    FontSize = 11,
+                                    TextWrapping = Syncfusion.Blazor.Diagram.TextWrap.Wrap
+                                }
+                            },
+                            Style = new TextStyle()
+                            {
+                                Fill = "#E0E0E0",
+                                StrokeColor = "Black",
+                            }
+                        },
+                        Style = new ShapeStyle()
+                        {
+                            Fill = "#F5F5F5",
+                            StrokeWidth = 2,
+                            StrokeColor = "#999999"
+                        },
+                        Children = optionChildrenIds.ToArray()
+                    };
+
+                    Nodes.Add(questionContainer);
+                    groupChildrenIds.Add(questionContainerId);
+                }
+
+                // Create group container (parent of question containers)
+                if (groupChildrenIds.Any())
+                {
+                    var groupContainer = new Container()
+                    {
+                        ID = $"GroupContainer{group.GroupNumber}",
+                        Width = 420,
+                        Height = 150 + (groupChildrenIds.Count * 200),
+                        Header = new ContainerHeader()
+                        {
+                            ID = $"GHeader{group.GroupNumber}",
+                            Height = 40,
+                            Annotation = new ShapeAnnotation()
+                            {
+                                Content = $"{groupName}",
                                 Style = new TextStyle()
                                 {
                                     Color = "white",
                                     Bold = true,
-                                    FontSize = 12,
-                                    TextWrapping = Syncfusion.Blazor.Diagram.TextWrap.Wrap
+                                    FontSize = 14
                                 }
                             },
                             Style = new TextStyle()
@@ -583,34 +612,28 @@ namespace JwtIdentity.Client.Pages.Survey
                         Style = new ShapeStyle()
                         {
                             Fill = GetGroupColor(group.GroupNumber),
+                            Opacity = 0.3,
                             StrokeWidth = 3,
-                            StrokeColor = "Black"
+                            StrokeColor = GetGroupColor(group.GroupNumber)
                         },
-                        Children = childrenIds.ToArray()
+                        Children = groupChildrenIds.ToArray()
                     };
 
-                    // Add container to nodes
-                    Nodes.Add(container);
-
-                    // Move Y position for next container (vertical stacking)
-                    yPosition += containerHeight + 50;
+                    Nodes.Add(groupContainer);
                 }
-
-                // Add placeholder nodes for groups with no branching questions
-                if (!groupQuestions.Any())
+                else
                 {
+                    // Create a simple node for groups with no branching questions
                     var placeholderNode = new Node()
                     {
-                        ID = $"GroupPlaceholder{group.GroupNumber}",
+                        ID = $"GroupContainer{group.GroupNumber}",
                         Width = 300,
                         Height = 80,
-                        OffsetX = 300,
-                        OffsetY = yPosition + 40,
                         Annotations = new DiagramObjectCollection<ShapeAnnotation>()
                         {
                             new ShapeAnnotation()
                             {
-                                Content = $"{groupName}\n(No branching questions)",
+                                Content = $"{groupName}\n(No branching)",
                                 Style = new TextStyle() { Color = "white", Bold = true, FontSize = 12 }
                             }
                         },
@@ -622,7 +645,6 @@ namespace JwtIdentity.Client.Pages.Survey
                         }
                     };
                     Nodes.Add(placeholderNode);
-                    yPosition += 130;
                 }
             }
         }
