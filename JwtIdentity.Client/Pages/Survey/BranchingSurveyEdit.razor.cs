@@ -20,7 +20,7 @@ namespace JwtIdentity.Client.Pages.Survey
         protected DiagramObjectCollection<Connector> Connectors { get; set; } = new DiagramObjectCollection<Connector>();
         protected SfDiagramComponent diagram;
         protected double ZoomLevel { get; set; } = 1.0;
-        protected LayoutType DiagramLayoutType { get; set; } = LayoutType.ComplexHierarchicalTree;
+        protected LayoutType DiagramLayoutType { get; set; } = LayoutType.None; // Manual positioning like Azure example
 
         protected override async Task OnInitializedAsync()
         {
@@ -460,7 +460,9 @@ namespace JwtIdentity.Client.Pages.Survey
             if (Survey == null || QuestionGroups == null || !QuestionGroups.Any())
                 return;
 
-            // Create nested containers: Group containers with Question containers inside
+            double yPosition = 150; // Starting Y position
+
+            // Create nested containers with manual positioning (like Azure example)
             foreach (var group in QuestionGroups.OrderBy(g => g.GroupNumber))
             {
                 var groupName = string.IsNullOrWhiteSpace(group.GroupName) ? $"Group {group.GroupNumber}" : group.GroupName;
@@ -474,161 +476,19 @@ namespace JwtIdentity.Client.Pages.Survey
                     .OrderBy(q => q.QuestionNumber)
                     .ToList();
 
-                // Collect all question container IDs and option node IDs for this group
-                var groupChildrenIds = new List<string>();
-
-                // Create question containers for each question with branching
-                foreach (var question in groupQuestions)
+                // Calculate group container dimensions
+                var questionsWithOptions = groupQuestions.Where(q => GetBranchingOptions(q).Count > 0).ToList();
+                
+                if (!questionsWithOptions.Any())
                 {
-                    var options = GetBranchingOptions(question);
-                    if (options.Count == 0)
-                        continue;
-
-                    var questionContainerId = $"QuestionContainer{question.Id}";
-                    var optionChildrenIds = new List<string>();
-
-                    // Create option nodes (children of question container)
-                    foreach (var (optionText, branchToGroupId, optionId) in options)
-                    {
-                        var targetGroupColor = GetGroupColor(branchToGroupId);
-                        var optionNodeId = $"Option_Q{question.Id}_O{optionId}";
-
-                        var optionNode = new Node()
-                        {
-                            ID = optionNodeId,
-                            Width = 320,
-                            Height = 50,
-                            Annotations = new DiagramObjectCollection<ShapeAnnotation>()
-                            {
-                                new ShapeAnnotation()
-                                {
-                                    Content = TruncateText(optionText, 40),
-                                    Style = new TextStyle() 
-                                    { 
-                                        Color = "black", 
-                                        Bold = false, 
-                                        FontSize = 11, 
-                                        TextWrapping = Syncfusion.Blazor.Diagram.TextWrap.Wrap 
-                                    }
-                                }
-                            },
-                            Style = new ShapeStyle()
-                            {
-                                Fill = "white",
-                                StrokeWidth = 3,
-                                StrokeColor = targetGroupColor
-                            }
-                        };
-
-                        Nodes.Add(optionNode);
-                        optionChildrenIds.Add(optionNodeId);
-
-                        // Create connector from option to target group container
-                        var targetGroupContainerId = $"GroupContainer{branchToGroupId}";
-                        var connector = new Connector()
-                        {
-                            ID = $"Connector_Q{question.Id}_O{optionId}_To_Group{branchToGroupId}",
-                            SourceID = optionNodeId,
-                            TargetID = targetGroupContainerId,
-                            Type = ConnectorSegmentType.Bezier,
-                            Style = new ShapeStyle() { StrokeColor = targetGroupColor, StrokeWidth = 3 },
-                            TargetDecorator = new DecoratorSettings()
-                            {
-                                Shape = DecoratorShape.Arrow,
-                                Style = new ShapeStyle() { Fill = targetGroupColor, StrokeColor = targetGroupColor }
-                            }
-                        };
-                        Connectors.Add(connector);
-                    }
-
-                    // Create question container
-                    var questionContainer = new Container()
-                    {
-                        ID = questionContainerId,
-                        Width = 360,
-                        Height = 80 + (options.Count * 60),
-                        Header = new ContainerHeader()
-                        {
-                            ID = $"QHeader{question.Id}",
-                            Height = 50,
-                            Annotation = new ShapeAnnotation()
-                            {
-                                Content = $"Q{question.QuestionNumber}: {question.Text}",
-                                Style = new TextStyle()
-                                {
-                                    Color = "black",
-                                    Bold = true,
-                                    FontSize = 11,
-                                    TextWrapping = Syncfusion.Blazor.Diagram.TextWrap.Wrap
-                                }
-                            },
-                            Style = new TextStyle()
-                            {
-                                Fill = "#E0E0E0",
-                                StrokeColor = "Black",
-                            }
-                        },
-                        Style = new ShapeStyle()
-                        {
-                            Fill = "#F5F5F5",
-                            StrokeWidth = 2,
-                            StrokeColor = "#999999"
-                        },
-                        Children = optionChildrenIds.ToArray()
-                    };
-
-                    Nodes.Add(questionContainer);
-                    groupChildrenIds.Add(questionContainerId);
-                }
-
-                // Create group container (parent of question containers)
-                if (groupChildrenIds.Any())
-                {
-                    var groupContainer = new Container()
-                    {
-                        ID = $"GroupContainer{group.GroupNumber}",
-                        Width = 420,
-                        Height = 150 + (groupChildrenIds.Count * 200),
-                        Header = new ContainerHeader()
-                        {
-                            ID = $"GHeader{group.GroupNumber}",
-                            Height = 40,
-                            Annotation = new ShapeAnnotation()
-                            {
-                                Content = $"{groupName}",
-                                Style = new TextStyle()
-                                {
-                                    Color = "white",
-                                    Bold = true,
-                                    FontSize = 14
-                                }
-                            },
-                            Style = new TextStyle()
-                            {
-                                Fill = GetGroupColor(group.GroupNumber),
-                                StrokeColor = "Black",
-                            }
-                        },
-                        Style = new ShapeStyle()
-                        {
-                            Fill = GetGroupColor(group.GroupNumber),
-                            Opacity = 0.3,
-                            StrokeWidth = 3,
-                            StrokeColor = GetGroupColor(group.GroupNumber)
-                        },
-                        Children = groupChildrenIds.ToArray()
-                    };
-
-                    Nodes.Add(groupContainer);
-                }
-                else
-                {
-                    // Create a simple node for groups with no branching questions
+                    // Create simple placeholder for groups with no branching
                     var placeholderNode = new Node()
                     {
                         ID = $"GroupContainer{group.GroupNumber}",
                         Width = 300,
                         Height = 80,
+                        OffsetX = 400,
+                        OffsetY = yPosition,
                         Annotations = new DiagramObjectCollection<ShapeAnnotation>()
                         {
                             new ShapeAnnotation()
@@ -645,7 +505,178 @@ namespace JwtIdentity.Client.Pages.Survey
                         }
                     };
                     Nodes.Add(placeholderNode);
+                    yPosition += 120;
+                    continue;
                 }
+
+                // Calculate total height needed for all question containers
+                var totalQuestionHeight = 0.0;
+                foreach (var question in questionsWithOptions)
+                {
+                    var options = GetBranchingOptions(question);
+                    totalQuestionHeight += 80 + (options.Count * 60) + 20; // container height + spacing
+                }
+
+                var groupContainerWidth = 480.0;
+                var groupContainerHeight = totalQuestionHeight + 60; // Add space for header
+                var groupCenterX = 400.0;
+                var groupCenterY = yPosition + (groupContainerHeight / 2);
+
+                var groupChildrenIds = new List<string>();
+                var questionYOffset = yPosition + 50; // Start below group header
+
+                // Create question containers and option nodes
+                foreach (var question in questionsWithOptions)
+                {
+                    var options = GetBranchingOptions(question);
+                    if (options.Count == 0)
+                        continue;
+
+                    var questionContainerId = $"QuestionContainer{question.Id}";
+                    var optionChildrenIds = new List<string>();
+                    var questionContainerHeight = 80 + (options.Count * 60);
+                    var questionCenterY = questionYOffset + (questionContainerHeight / 2);
+
+                    // Create option nodes
+                    var optionYOffset = questionYOffset + 60; // Start below question header
+                    foreach (var (optionText, branchToGroupId, optionId) in options)
+                    {
+                        var targetGroupColor = GetGroupColor(branchToGroupId);
+                        var optionNodeId = $"Option_Q{question.Id}_O{optionId}";
+
+                        var optionNode = new Node()
+                        {
+                            ID = optionNodeId,
+                            Width = 400,
+                            Height = 50,
+                            OffsetX = groupCenterX,
+                            OffsetY = optionYOffset + 25,
+                            Annotations = new DiagramObjectCollection<ShapeAnnotation>()
+                            {
+                                new ShapeAnnotation()
+                                {
+                                    Content = TruncateText(optionText, 50),
+                                    Style = new TextStyle() 
+                                    { 
+                                        Color = "black", 
+                                        Bold = false, 
+                                        FontSize = 11, 
+                                        TextWrapping = Syncfusion.Blazor.Diagram.TextWrap.Wrap 
+                                    }
+                                }
+                            },
+                            Style = new ShapeStyle()
+                            {
+                                Fill = "white",
+                                StrokeWidth = 2,
+                                StrokeColor = targetGroupColor
+                            }
+                        };
+
+                        Nodes.Add(optionNode);
+                        optionChildrenIds.Add(optionNodeId);
+                        optionYOffset += 60;
+
+                        // Create connector from option to target group container
+                        var connector = new Connector()
+                        {
+                            ID = $"Connector_Q{question.Id}_O{optionId}_To_Group{branchToGroupId}",
+                            SourceID = optionNodeId,
+                            TargetID = $"GroupContainer{branchToGroupId}",
+                            Type = ConnectorSegmentType.Bezier,
+                            Style = new ShapeStyle() { StrokeColor = targetGroupColor, StrokeWidth = 2 },
+                            TargetDecorator = new DecoratorSettings()
+                            {
+                                Shape = DecoratorShape.Arrow,
+                                Style = new ShapeStyle() { Fill = targetGroupColor, StrokeColor = targetGroupColor }
+                            }
+                        };
+                        Connectors.Add(connector);
+                    }
+
+                    // Create question container
+                    var questionContainer = new Container()
+                    {
+                        ID = questionContainerId,
+                        Width = 440,
+                        Height = questionContainerHeight,
+                        OffsetX = groupCenterX,
+                        OffsetY = questionCenterY,
+                        Header = new ContainerHeader()
+                        {
+                            ID = $"QHeader{question.Id}",
+                            Height = 50,
+                            Annotation = new ShapeAnnotation()
+                            {
+                                Content = $"Q{question.QuestionNumber}: {TruncateText(question.Text, 60)}",
+                                Style = new TextStyle()
+                                {
+                                    Color = "black",
+                                    Bold = true,
+                                    FontSize = 11,
+                                    TextWrapping = Syncfusion.Blazor.Diagram.TextWrap.Wrap
+                                }
+                            },
+                            Style = new TextStyle()
+                            {
+                                Fill = "#E8E8E8",
+                                StrokeColor = "#999999",
+                            }
+                        },
+                        Style = new ShapeStyle()
+                        {
+                            Fill = "#F5F5F5",
+                            StrokeWidth = 1,
+                            StrokeColor = "#CCCCCC"
+                        },
+                        Children = optionChildrenIds.ToArray()
+                    };
+
+                    Nodes.Add(questionContainer);
+                    groupChildrenIds.Add(questionContainerId);
+                    questionYOffset += questionContainerHeight + 20;
+                }
+
+                // Create group container
+                var groupContainer = new Container()
+                {
+                    ID = $"GroupContainer{group.GroupNumber}",
+                    Width = groupContainerWidth,
+                    Height = groupContainerHeight,
+                    OffsetX = groupCenterX,
+                    OffsetY = groupCenterY,
+                    Header = new ContainerHeader()
+                    {
+                        ID = $"GHeader{group.GroupNumber}",
+                        Height = 40,
+                        Annotation = new ShapeAnnotation()
+                        {
+                            Content = groupName,
+                            Style = new TextStyle()
+                            {
+                                Color = "white",
+                                Bold = true,
+                                FontSize = 14
+                            }
+                        },
+                        Style = new TextStyle()
+                        {
+                            Fill = GetGroupColor(group.GroupNumber),
+                            StrokeColor = GetGroupColor(group.GroupNumber),
+                        }
+                    },
+                    Style = new ShapeStyle()
+                    {
+                        Fill = GetGroupColor(group.GroupNumber),
+                        Opacity = 0.15,
+                        StrokeWidth = 2,
+                        StrokeColor = GetGroupColor(group.GroupNumber)
+                    },
+                    Children = groupChildrenIds.ToArray()
+                };
+
+                Nodes.Add(groupContainer);
+                yPosition += groupContainerHeight + 80;
             }
         }
 
