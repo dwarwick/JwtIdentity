@@ -20,6 +20,7 @@ namespace JwtIdentity.Client.Pages.Survey
         protected DiagramObjectCollection<Connector> Connectors { get; set; } = new DiagramObjectCollection<Connector>();
         protected SfDiagramComponent diagram;
         protected double ZoomLevel { get; set; } = 1.0;
+        protected LayoutType DiagramLayoutType { get; set; } = LayoutType.None; // Use None for containers
 
         protected override async Task OnInitializedAsync()
         {
