@@ -460,12 +460,11 @@ namespace JwtIdentity.Client.Pages.Survey
             if (Survey == null || QuestionGroups == null || !QuestionGroups.Any())
                 return;
 
-            double xPosition = 200; // Starting X position
+            double yPosition = 100; // Starting Y position for vertical layout
 
-            // Create Container nodes for each group with option nodes as children
+            // Create a container for each question that has branching rules
             foreach (var group in QuestionGroups.OrderBy(g => g.GroupNumber))
             {
-                var questionCount = Survey.Questions.Count(q => q.GroupId == group.GroupNumber);
                 var groupName = string.IsNullOrWhiteSpace(group.GroupName) ? $"Group {group.GroupNumber}" : group.GroupName;
 
                 // Get all questions with branching rules in this group
@@ -477,391 +476,224 @@ namespace JwtIdentity.Client.Pages.Survey
                     .OrderBy(q => q.QuestionNumber)
                     .ToList();
 
-                // Calculate container dimensions
-                var childCount = GetOptionCount(groupQuestions);
-                var containerHeight = Math.Max(200, 150 + (childCount * 75));
-                var containerWidth = 360.0;
-
-                // Container center position
-                var containerCenterY = 300;
-
-                // Create children array for the container
-                var childrenIds = new List<string>();
-
-                // Create child option nodes first (they need absolute positions)
-                var yOffset = containerCenterY - (containerHeight / 2) + 80; // Start below header
+                // Create a container for each question with branching
                 foreach (var question in groupQuestions)
                 {
-                    if (question.QuestionType == QuestionType.MultipleChoice)
+                    var options = GetBranchingOptions(question);
+                    if (options.Count == 0)
+                        continue;
+
+                    var containerWidth = 400.0;
+                    var containerHeight = 100 + (options.Count * 60); // Header + options
+                    var xPosition = 300; // Center X position
+
+                    // Create children array for the container
+                    var childrenIds = new List<string>();
+
+                    // Create child option nodes (only option text, no question text)
+                    var yOffset = yPosition + 70; // Start below header
+                    foreach (var (optionText, branchToGroupId, optionId) in options)
                     {
-                        var mcQuestion = question as MultipleChoiceQuestionViewModel;
-                        if (mcQuestion?.Options != null)
+                        var targetGroupColor = GetGroupColor(branchToGroupId);
+                        var optionNodeId = $"Option_Q{question.Id}_O{optionId}";
+
+                        var optionNode = new Node()
                         {
-                            foreach (var option in mcQuestion.Options.Where(o => o.BranchToGroupId.HasValue))
+                            ID = optionNodeId,
+                            Width = 360,
+                            Height = 50,
+                            OffsetX = xPosition,
+                            OffsetY = yOffset,
+                            Annotations = new DiagramObjectCollection<ShapeAnnotation>()
                             {
-                                var targetGroupColor = GetGroupColor(option.BranchToGroupId.Value);
-                                var optionNodeId = $"Option_MC_Q{question.Id}_O{option.Id}";
-
-                                var optionNode = new Node()
+                                new ShapeAnnotation()
                                 {
-                                    ID = optionNodeId,
-                                    Width = 320,
-                                    Height = 65,
-                                    OffsetX = xPosition,
-                                    OffsetY = yOffset,
-                                    Annotations = new DiagramObjectCollection<ShapeAnnotation>()
-                                    {
-                                        new ShapeAnnotation()
-                                        {
-                                            Content = $"Q{question.QuestionNumber}: {question.Text}\n{TruncateText(option.OptionText, 35)}",
-                                            Style = new TextStyle() 
-                                            { 
-                                                Color = "black", 
-                                                Bold = false, 
-                                                FontSize = 11, 
-                                                TextWrapping = Syncfusion.Blazor.Diagram.TextWrap.Wrap 
-                                            }
-                                        }
-                                    },
-                                    Style = new ShapeStyle()
-                                    {
-                                        Fill = "white",
-                                        StrokeWidth = 3,
-                                        StrokeColor = targetGroupColor
+                                    Content = TruncateText(optionText, 45),
+                                    Style = new TextStyle() 
+                                    { 
+                                        Color = "black", 
+                                        Bold = false, 
+                                        FontSize = 11, 
+                                        TextWrapping = Syncfusion.Blazor.Diagram.TextWrap.Wrap 
                                     }
-                                };
-
-                                Nodes.Add(optionNode);
-                                childrenIds.Add(optionNodeId);
-                                yOffset += 75;
-
-                                // Create connector from option to target group
-                                var targetXPosition = 200 + (option.BranchToGroupId.Value * 460);
-                                var connector = new Connector()
-                                {
-                                    ID = $"Connector_O{option.Id}_To_Container{option.BranchToGroupId}",
-                                    SourceID = optionNodeId,
-                                    TargetID = $"Container{option.BranchToGroupId}",
-                                    Type = ConnectorSegmentType.Bezier,
-                                    Style = new ShapeStyle() { StrokeColor = targetGroupColor, StrokeWidth = 3 },
-                                    TargetDecorator = new DecoratorSettings()
-                                    {
-                                        Shape = DecoratorShape.Arrow,
-                                        Style = new ShapeStyle() { Fill = targetGroupColor, StrokeColor = targetGroupColor }
-                                    }
-                                };
-                                Connectors.Add(connector);
+                                }
+                            },
+                            Style = new ShapeStyle()
+                            {
+                                Fill = "white",
+                                StrokeWidth = 3,
+                                StrokeColor = targetGroupColor
                             }
+                        };
+
+                        Nodes.Add(optionNode);
+                        childrenIds.Add(optionNodeId);
+                        yOffset += 60;
+
+                        // Create connector from option to target group
+                        var targetContainerId = GetFirstQuestionContainerInGroup(branchToGroupId);
+                        if (!string.IsNullOrEmpty(targetContainerId) || branchToGroupId != group.GroupNumber)
+                        {
+                            var connector = new Connector()
+                            {
+                                ID = $"Connector_Q{question.Id}_O{optionId}_To_Group{branchToGroupId}",
+                                SourceID = optionNodeId,
+                                TargetID = !string.IsNullOrEmpty(targetContainerId) ? targetContainerId : $"GroupPlaceholder{branchToGroupId}",
+                                Type = ConnectorSegmentType.Bezier,
+                                Style = new ShapeStyle() { StrokeColor = targetGroupColor, StrokeWidth = 3 },
+                                TargetDecorator = new DecoratorSettings()
+                                {
+                                    Shape = DecoratorShape.Arrow,
+                                    Style = new ShapeStyle() { Fill = targetGroupColor, StrokeColor = targetGroupColor }
+                                }
+                            };
+                            Connectors.Add(connector);
                         }
                     }
-                    else if (question.QuestionType == QuestionType.SelectAllThatApply)
+
+                    // Create Container node for this question
+                    var container = new Container()
                     {
-                        var saQuestion = question as SelectAllThatApplyQuestionViewModel;
-                        if (saQuestion?.Options != null)
+                        ID = $"QuestionContainer{question.Id}",
+                        Width = containerWidth,
+                        Height = containerHeight,
+                        OffsetX = xPosition,
+                        OffsetY = yPosition + (containerHeight / 2),
+                        Header = new ContainerHeader()
                         {
-                            foreach (var option in saQuestion.Options.Where(o => o.BranchToGroupId.HasValue))
+                            ID = $"Header_Q{question.Id}",
+                            Height = 60,
+                            Annotation = new ShapeAnnotation()
                             {
-                                var targetGroupColor = GetGroupColor(option.BranchToGroupId.Value);
-                                var optionNodeId = $"Option_SA_Q{question.Id}_O{option.Id}";
-
-                                var optionNode = new Node()
+                                Content = $"{groupName} - Q{question.QuestionNumber}: {question.Text}",
+                                Style = new TextStyle()
                                 {
-                                    ID = optionNodeId,
-                                    Width = 320,
-                                    Height = 65,
-                                    OffsetX = containerWidth / 2,
-                                    OffsetY = yOffset,
-                                    Annotations = new DiagramObjectCollection<ShapeAnnotation>()
-                                    {
-                                        new ShapeAnnotation()
-                                        {
-                                            Content = $"Q{question.QuestionNumber}: {question.Text}\n{TruncateText(option.OptionText, 35)}",
-                                            Style = new TextStyle() 
-                                            { 
-                                                Color = "black", 
-                                                Bold = false, 
-                                                FontSize = 11, 
-                                                TextWrapping = Syncfusion.Blazor.Diagram.TextWrap.Wrap 
-                                            }
-                                        }
-                                    },
-                                    Style = new ShapeStyle()
-                                    {
-                                        Fill = "white",
-                                        StrokeWidth = 3,
-                                        StrokeColor = targetGroupColor
-                                    }
-                                };
-
-                                Nodes.Add(optionNode);
-                                childrenIds.Add(optionNodeId);
-                                yOffset += 75;
-
-                                // Create connector from option to target group
-                                var connector = new Connector()
-                                {
-                                    ID = $"Connector_O{option.Id}_To_Container{option.BranchToGroupId}",
-                                    SourceID = optionNodeId,
-                                    TargetID = $"Container{option.BranchToGroupId}",
-                                    Type = ConnectorSegmentType.Bezier,
-                                    Style = new ShapeStyle() { StrokeColor = targetGroupColor, StrokeWidth = 3 },
-                                    TargetDecorator = new DecoratorSettings()
-                                    {
-                                        Shape = DecoratorShape.Arrow,
-                                        Style = new ShapeStyle() { Fill = targetGroupColor, StrokeColor = targetGroupColor }
-                                    }
-                                };
-                                Connectors.Add(connector);
-                            }
-                        }
-                    }
-                    else if (question.QuestionType == QuestionType.SelectAllThatApply)
-                    {
-                        var saQuestion = question as SelectAllThatApplyQuestionViewModel;
-                        if (saQuestion?.Options != null)
-                        {
-                            foreach (var option in saQuestion.Options.Where(o => o.BranchToGroupId.HasValue))
-                            {
-                                var targetGroupColor = GetGroupColor(option.BranchToGroupId.Value);
-                                var optionNodeId = $"Option_SA_Q{question.Id}_O{option.Id}";
-
-                                var optionNode = new Node()
-                                {
-                                    ID = optionNodeId,
-                                    Width = 320,
-                                    Height = 65,
-                                    OffsetX = xPosition,
-                                    OffsetY = yOffset,
-                                    Annotations = new DiagramObjectCollection<ShapeAnnotation>()
-                                    {
-                                        new ShapeAnnotation()
-                                        {
-                                            Content = $"Q{question.QuestionNumber}: {question.Text}\n{TruncateText(option.OptionText, 35)}",
-                                            Style = new TextStyle() 
-                                            { 
-                                                Color = "black", 
-                                                Bold = false, 
-                                                FontSize = 11, 
-                                                TextWrapping = Syncfusion.Blazor.Diagram.TextWrap.Wrap 
-                                            }
-                                        }
-                                    },
-                                    Style = new ShapeStyle()
-                                    {
-                                        Fill = "white",
-                                        StrokeWidth = 3,
-                                        StrokeColor = targetGroupColor
-                                    }
-                                };
-
-                                Nodes.Add(optionNode);
-                                childrenIds.Add(optionNodeId);
-                                yOffset += 75;
-
-                                // Create connector from option to target group
-                                var connector = new Connector()
-                                {
-                                    ID = $"Connector_O{option.Id}_To_Container{option.BranchToGroupId}",
-                                    SourceID = optionNodeId,
-                                    TargetID = $"Container{option.BranchToGroupId}",
-                                    Type = ConnectorSegmentType.Bezier,
-                                    Style = new ShapeStyle() { StrokeColor = targetGroupColor, StrokeWidth = 3 },
-                                    TargetDecorator = new DecoratorSettings()
-                                    {
-                                        Shape = DecoratorShape.Arrow,
-                                        Style = new ShapeStyle() { Fill = targetGroupColor, StrokeColor = targetGroupColor }
-                                    }
-                                };
-                                Connectors.Add(connector);
-                            }
-                        }
-                    }
-                    else if (question.QuestionType == QuestionType.TrueFalse)
-                    {
-                        var tfQuestion = question as TrueFalseQuestionViewModel;
-                        if (tfQuestion != null)
-                        {
-                            if (tfQuestion.BranchToGroupIdOnTrue.HasValue)
-                            {
-                                var targetGroupColor = GetGroupColor(tfQuestion.BranchToGroupIdOnTrue.Value);
-                                var optionNodeId = $"Option_TF_Q{question.Id}_True";
-
-                                var optionNode = new Node()
-                                {
-                                    ID = optionNodeId,
-                                    Width = 320,
-                                    Height = 65,
-                                    OffsetX = xPosition,
-                                    OffsetY = yOffset,
-                                    Annotations = new DiagramObjectCollection<ShapeAnnotation>()
-                                    {
-                                        new ShapeAnnotation()
-                                        {
-                                            Content = $"Q{question.QuestionNumber}: {question.Text}\nTrue",
-                                            Style = new TextStyle() 
-                                            { 
-                                                Color = "black", 
-                                                Bold = false, 
-                                                FontSize = 11, 
-                                                TextWrapping = Syncfusion.Blazor.Diagram.TextWrap.Wrap 
-                                            }
-                                        }
-                                    },
-                                    Style = new ShapeStyle()
-                                    {
-                                        Fill = "white",
-                                        StrokeWidth = 3,
-                                        StrokeColor = targetGroupColor
-                                    }
-                                };
-
-                                Nodes.Add(optionNode);
-                                childrenIds.Add(optionNodeId);
-                                yOffset += 75;
-
-                                // Create connector from option to target group
-                                var connector = new Connector()
-                                {
-                                    ID = $"Connector_TF{question.Id}_True_To_Container{tfQuestion.BranchToGroupIdOnTrue}",
-                                    SourceID = optionNodeId,
-                                    TargetID = $"Container{tfQuestion.BranchToGroupIdOnTrue}",
-                                    Type = ConnectorSegmentType.Bezier,
-                                    Style = new ShapeStyle() { StrokeColor = targetGroupColor, StrokeWidth = 3 },
-                                    TargetDecorator = new DecoratorSettings()
-                                    {
-                                        Shape = DecoratorShape.Arrow,
-                                        Style = new ShapeStyle() { Fill = targetGroupColor, StrokeColor = targetGroupColor }
-                                    }
-                                };
-                                Connectors.Add(connector);
-                            }
-
-                            if (tfQuestion.BranchToGroupIdOnFalse.HasValue)
-                            {
-                                var targetGroupColor = GetGroupColor(tfQuestion.BranchToGroupIdOnFalse.Value);
-                                var optionNodeId = $"Option_TF_Q{question.Id}_False";
-
-                                var optionNode = new Node()
-                                {
-                                    ID = optionNodeId,
-                                    Width = 320,
-                                    Height = 65,
-                                    OffsetX = xPosition,
-                                    OffsetY = yOffset,
-                                    Annotations = new DiagramObjectCollection<ShapeAnnotation>()
-                                    {
-                                        new ShapeAnnotation()
-                                        {
-                                            Content = $"Q{question.QuestionNumber}: {question.Text}\nFalse",
-                                            Style = new TextStyle() 
-                                            { 
-                                                Color = "black", 
-                                                Bold = false, 
-                                                FontSize = 11, 
-                                                TextWrapping = Syncfusion.Blazor.Diagram.TextWrap.Wrap 
-                                            }
-                                        }
-                                    },
-                                    Style = new ShapeStyle()
-                                    {
-                                        Fill = "white",
-                                        StrokeWidth = 3,
-                                        StrokeColor = targetGroupColor
-                                    }
-                                };
-
-                                Nodes.Add(optionNode);
-                                childrenIds.Add(optionNodeId);
-                                yOffset += 75;
-
-                                // Create connector from option to target group
-                                var connector = new Connector()
-                                {
-                                    ID = $"Connector_TF{question.Id}_False_To_Container{tfQuestion.BranchToGroupIdOnFalse}",
-                                    SourceID = optionNodeId,
-                                    TargetID = $"Container{tfQuestion.BranchToGroupIdOnFalse}",
-                                    Type = ConnectorSegmentType.Bezier,
-                                    Style = new ShapeStyle() { StrokeColor = targetGroupColor, StrokeWidth = 3 },
-                                    TargetDecorator = new DecoratorSettings()
-                                    {
-                                        Shape = DecoratorShape.Arrow,
-                                        Style = new ShapeStyle() { Fill = targetGroupColor, StrokeColor = targetGroupColor }
-                                    }
-                                };
-                                Connectors.Add(connector);
-                            }
-                        }
-                    }
-                }
-
-                // Create Container node with absolute positioning
-                var container = new Container()
-                {
-                    ID = $"Container{group.GroupNumber}",
-                    Width = containerWidth,
-                    Height = containerHeight,
-                    OffsetX = xPosition,
-                    OffsetY = containerCenterY,
-                    Header = new ContainerHeader()
-                    {
-                        ID = $"Header{group.GroupNumber}",
-                        Height = 50,
-                        Annotation = new ShapeAnnotation()
-                        {
-                            Content = $"{groupName}\n({questionCount} question{(questionCount != 1 ? "s" : "")})",
+                                    Color = "white",
+                                    Bold = true,
+                                    FontSize = 12,
+                                    TextWrapping = Syncfusion.Blazor.Diagram.TextWrap.Wrap
+                                }
+                            },
                             Style = new TextStyle()
                             {
-                                Color = "white",
-                                Bold = true,
-                                FontSize = 14
+                                Fill = GetGroupColor(group.GroupNumber),
+                                StrokeColor = "Black",
                             }
                         },
-                        Style = new TextStyle()
+                        Style = new ShapeStyle()
                         {
                             Fill = GetGroupColor(group.GroupNumber),
-                            StrokeColor = "Black",
-                        }
-                    },
-                    Style = new ShapeStyle()
+                            StrokeWidth = 3,
+                            StrokeColor = "Black"
+                        },
+                        Children = childrenIds.ToArray()
+                    };
+
+                    // Add container to nodes
+                    Nodes.Add(container);
+
+                    // Move Y position for next container (vertical stacking)
+                    yPosition += containerHeight + 50;
+                }
+
+                // Add placeholder nodes for groups with no branching questions
+                if (!groupQuestions.Any())
+                {
+                    var placeholderNode = new Node()
                     {
-                        Fill = GetGroupColor(group.GroupNumber),
-                        StrokeWidth = 3,
-                        StrokeColor = "Black"
-                    },
-                    Children = childrenIds.ToArray()
-                };
-
-                // Add container to nodes
-                Nodes.Add(container);
-
-                // Move X position for next container
-                xPosition += containerWidth + 100;
+                        ID = $"GroupPlaceholder{group.GroupNumber}",
+                        Width = 300,
+                        Height = 80,
+                        OffsetX = 300,
+                        OffsetY = yPosition + 40,
+                        Annotations = new DiagramObjectCollection<ShapeAnnotation>()
+                        {
+                            new ShapeAnnotation()
+                            {
+                                Content = $"{groupName}\n(No branching questions)",
+                                Style = new TextStyle() { Color = "white", Bold = true, FontSize = 12 }
+                            }
+                        },
+                        Style = new ShapeStyle()
+                        {
+                            Fill = GetGroupColor(group.GroupNumber),
+                            StrokeWidth = 3,
+                            StrokeColor = "Black"
+                        }
+                    };
+                    Nodes.Add(placeholderNode);
+                    yPosition += 130;
+                }
             }
         }
 
-        private int GetOptionCount(List<QuestionViewModel> groupQuestions)
+
+        private List<(string optionText, int branchToGroupId, int optionId)> GetBranchingOptions(QuestionViewModel question)
         {
-            var count = 0;
-            foreach (var question in groupQuestions)
+            var result = new List<(string, int, int)>();
+
+            if (question.QuestionType == QuestionType.MultipleChoice)
             {
-                if (question.QuestionType == QuestionType.MultipleChoice)
+                var mcQuestion = question as MultipleChoiceQuestionViewModel;
+                if (mcQuestion?.Options != null)
                 {
-                    var mcQuestion = question as MultipleChoiceQuestionViewModel;
-                    count += mcQuestion?.Options?.Count(o => o.BranchToGroupId.HasValue) ?? 0;
-                }
-                else if (question.QuestionType == QuestionType.SelectAllThatApply)
-                {
-                    var saQuestion = question as SelectAllThatApplyQuestionViewModel;
-                    count += saQuestion?.Options?.Count(o => o.BranchToGroupId.HasValue) ?? 0;
-                }
-                else if (question.QuestionType == QuestionType.TrueFalse)
-                {
-                    var tfQuestion = question as TrueFalseQuestionViewModel;
-                    if (tfQuestion?.BranchToGroupIdOnTrue.HasValue == true) count++;
-                    if (tfQuestion?.BranchToGroupIdOnFalse.HasValue == true) count++;
+                    foreach (var option in mcQuestion.Options.Where(o => o.BranchToGroupId.HasValue))
+                    {
+                        result.Add((option.OptionText, option.BranchToGroupId.Value, option.Id));
+                    }
                 }
             }
-            return count;
+            else if (question.QuestionType == QuestionType.SelectAllThatApply)
+            {
+                var saQuestion = question as SelectAllThatApplyQuestionViewModel;
+                if (saQuestion?.Options != null)
+                {
+                    foreach (var option in saQuestion.Options.Where(o => o.BranchToGroupId.HasValue))
+                    {
+                        result.Add((option.OptionText, option.BranchToGroupId.Value, option.Id));
+                    }
+                }
+            }
+            else if (question.QuestionType == QuestionType.TrueFalse)
+            {
+                var tfQuestion = question as TrueFalseQuestionViewModel;
+                if (tfQuestion != null)
+                {
+                    if (tfQuestion.BranchToGroupIdOnTrue.HasValue)
+                    {
+                        result.Add(("True", tfQuestion.BranchToGroupIdOnTrue.Value, question.Id * 1000 + 1));
+                    }
+                    if (tfQuestion.BranchToGroupIdOnFalse.HasValue)
+                    {
+                        result.Add(("False", tfQuestion.BranchToGroupIdOnFalse.Value, question.Id * 1000 + 2));
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        private string GetFirstQuestionContainerInGroup(int groupNumber)
+        {
+            // Find the first question container in the target group
+            var firstQuestion = Survey.Questions
+                .Where(q => q.GroupId == groupNumber &&
+                    (q.QuestionType == QuestionType.MultipleChoice ||
+                     q.QuestionType == QuestionType.SelectAllThatApply ||
+                     q.QuestionType == QuestionType.TrueFalse))
+                .OrderBy(q => q.QuestionNumber)
+                .FirstOrDefault();
+
+            if (firstQuestion != null)
+            {
+                var hasOptions = GetBranchingOptions(firstQuestion).Count > 0;
+                if (hasOptions)
+                {
+                    return $"QuestionContainer{firstQuestion.Id}";
+                }
+            }
+
+            return null;
         }
 
         private string GetGroupColor(int groupNumber)
