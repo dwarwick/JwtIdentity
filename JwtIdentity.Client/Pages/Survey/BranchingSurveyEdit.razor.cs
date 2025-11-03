@@ -428,10 +428,10 @@ namespace JwtIdentity.Client.Pages.Survey
         {
             BuildSyncfusionDiagram();
             StateHasChanged();
-            
+
             // Allow UI to update before triggering layout
             await Task.Delay(100);
-            
+
             if (diagram != null)
             {
                 await diagram.DoLayoutAsync();
@@ -478,7 +478,7 @@ namespace JwtIdentity.Client.Pages.Survey
 
                 // Calculate group container dimensions
                 var questionsWithOptions = groupQuestions.Where(q => GetBranchingOptions(q).Count > 0).ToList();
-                
+
                 if (!questionsWithOptions.Any())
                 {
                     // Create simple placeholder for groups with no branching
@@ -556,12 +556,12 @@ namespace JwtIdentity.Client.Pages.Survey
                                 new ShapeAnnotation()
                                 {
                                     Content = TruncateText(optionText, 50),
-                                    Style = new TextStyle() 
-                                    { 
-                                        Color = "black", 
-                                        Bold = false, 
-                                        FontSize = 11, 
-                                        TextWrapping = Syncfusion.Blazor.Diagram.TextWrap.Wrap 
+                                    Style = new TextStyle()
+                                    {
+                                        Color = "black",
+                                        Bold = false,
+                                        FontSize = 11,
+                                        TextWrapping = Syncfusion.Blazor.Diagram.TextWrap.Wrap
                                     }
                                 }
                             },
@@ -583,7 +583,7 @@ namespace JwtIdentity.Client.Pages.Survey
                             ID = $"Connector_Q{question.Id}_O{optionId}_To_Group{branchToGroupId}",
                             SourceID = optionNodeId,
                             TargetID = $"GroupContainer{branchToGroupId}",
-                            Type = ConnectorSegmentType.Bezier,
+                            Type = ConnectorSegmentType.Orthogonal,
                             Style = new ShapeStyle() { StrokeColor = targetGroupColor, StrokeWidth = 2 },
                             TargetDecorator = new DecoratorSettings()
                             {
