@@ -459,6 +459,8 @@ namespace JwtIdentity.Client.Pages.Survey
             if (Survey == null || QuestionGroups == null || !QuestionGroups.Any())
                 return;
 
+            double xPosition = 200; // Starting X position
+
             // Create Container nodes for each group with option nodes as children
             foreach (var group in QuestionGroups.OrderBy(g => g.GroupNumber))
             {
@@ -476,48 +478,17 @@ namespace JwtIdentity.Client.Pages.Survey
 
                 // Calculate container dimensions
                 var childCount = GetOptionCount(groupQuestions);
-                var containerHeight = Math.Max(200, 100 + (childCount * 75));
+                var containerHeight = Math.Max(200, 150 + (childCount * 75));
                 var containerWidth = 360.0;
 
-                // Create Container node
-                var container = new Container()
-                {
-                    ID = $"Container{group.GroupNumber}",
-                    Width = containerWidth,
-                    Height = containerHeight,
-                    Header = new ContainerHeader()
-                    {
-                        ID = $"Header{group.GroupNumber}",
-                        Height = 50,
-                        Annotation = new ShapeAnnotation()
-                        {
-                            Content = $"{groupName}\n({questionCount} question{(questionCount != 1 ? "s" : "")})",
-                            Style = new TextStyle()
-                            {
-                                Color = "white",
-                                Bold = true,
-                                FontSize = 14
-                            }
-                        },
-                        Style = new TextStyle()
-                        {
-                            Fill = GetGroupColor(group.GroupNumber),
-                            StrokeColor = "Black",
-                        }
-                    },
-                    Style = new ShapeStyle()
-                    {
-                        Fill = GetGroupColor(group.GroupNumber),
-                        StrokeWidth = 3,
-                        StrokeColor = "Black"
-                    }
-                };
+                // Container center position
+                var containerCenterY = 300;
 
                 // Create children array for the container
                 var childrenIds = new List<string>();
 
-                // Create child option nodes and add them to the container
-                var yOffset = 20.0; // Offset from header
+                // Create child option nodes first (they need absolute positions)
+                var yOffset = containerCenterY - (containerHeight / 2) + 80; // Start below header
                 foreach (var question in groupQuestions)
                 {
                     if (question.QuestionType == QuestionType.MultipleChoice)
@@ -535,7 +506,7 @@ namespace JwtIdentity.Client.Pages.Survey
                                     ID = optionNodeId,
                                     Width = 320,
                                     Height = 65,
-                                    OffsetX = containerWidth / 2,
+                                    OffsetX = xPosition,
                                     OffsetY = yOffset,
                                     Annotations = new DiagramObjectCollection<ShapeAnnotation>()
                                     {
@@ -564,6 +535,7 @@ namespace JwtIdentity.Client.Pages.Survey
                                 yOffset += 75;
 
                                 // Create connector from option to target group
+                                var targetXPosition = 200 + (option.BranchToGroupId.Value * 460);
                                 var connector = new Connector()
                                 {
                                     ID = $"Connector_O{option.Id}_To_Container{option.BranchToGroupId}",
@@ -642,6 +614,67 @@ namespace JwtIdentity.Client.Pages.Survey
                             }
                         }
                     }
+                    else if (question.QuestionType == QuestionType.SelectAllThatApply)
+                    {
+                        var saQuestion = question as SelectAllThatApplyQuestionViewModel;
+                        if (saQuestion?.Options != null)
+                        {
+                            foreach (var option in saQuestion.Options.Where(o => o.BranchToGroupId.HasValue))
+                            {
+                                var targetGroupColor = GetGroupColor(option.BranchToGroupId.Value);
+                                var optionNodeId = $"Option_SA_Q{question.Id}_O{option.Id}";
+
+                                var optionNode = new Node()
+                                {
+                                    ID = optionNodeId,
+                                    Width = 320,
+                                    Height = 65,
+                                    OffsetX = xPosition,
+                                    OffsetY = yOffset,
+                                    Annotations = new DiagramObjectCollection<ShapeAnnotation>()
+                                    {
+                                        new ShapeAnnotation()
+                                        {
+                                            Content = $"Q{question.QuestionNumber}: {question.Text}\n{TruncateText(option.OptionText, 35)}",
+                                            Style = new TextStyle() 
+                                            { 
+                                                Color = "black", 
+                                                Bold = false, 
+                                                FontSize = 11, 
+                                                TextWrapping = Syncfusion.Blazor.Diagram.TextWrap.Wrap 
+                                            }
+                                        }
+                                    },
+                                    Style = new ShapeStyle()
+                                    {
+                                        Fill = "white",
+                                        StrokeWidth = 3,
+                                        StrokeColor = targetGroupColor
+                                    }
+                                };
+
+                                Nodes.Add(optionNode);
+                                childrenIds.Add(optionNodeId);
+                                yOffset += 75;
+
+                                // Create connector from option to target group
+                                var connector = new Connector()
+                                {
+                                    ID = $"Connector_O{option.Id}_To_Container{option.BranchToGroupId}",
+                                    SourceID = optionNodeId,
+                                    TargetID = $"Container{option.BranchToGroupId}",
+                                    Type = ConnectorSegmentType.Bezier,
+                                    Style = new ShapeStyle() { StrokeColor = targetGroupColor, StrokeWidth = 3 },
+                                    TargetDecorator = new DecoratorSettings()
+                                    {
+                                        Shape = DecoratorShape.Arrow,
+                                        Style = new ShapeStyle() { Fill = targetGroupColor, StrokeColor = targetGroupColor }
+                                    }
+                                };
+                                Connectors.Add(connector);
+                            }
+                        }
+                    }
                     else if (question.QuestionType == QuestionType.TrueFalse)
                     {
                         var tfQuestion = question as TrueFalseQuestionViewModel;
@@ -657,7 +690,7 @@ namespace JwtIdentity.Client.Pages.Survey
                                     ID = optionNodeId,
                                     Width = 320,
                                     Height = 65,
-                                    OffsetX = containerWidth / 2,
+                                    OffsetX = xPosition,
                                     OffsetY = yOffset,
                                     Annotations = new DiagramObjectCollection<ShapeAnnotation>()
                                     {
@@ -712,7 +745,7 @@ namespace JwtIdentity.Client.Pages.Survey
                                     ID = optionNodeId,
                                     Width = 320,
                                     Height = 65,
-                                    OffsetX = containerWidth / 2,
+                                    OffsetX = xPosition,
                                     OffsetY = yOffset,
                                     Annotations = new DiagramObjectCollection<ShapeAnnotation>()
                                     {
@@ -760,11 +793,48 @@ namespace JwtIdentity.Client.Pages.Survey
                     }
                 }
 
-                // Set the Children property
-                container.Children = childrenIds.ToArray();
+                // Create Container node with absolute positioning
+                var container = new Container()
+                {
+                    ID = $"Container{group.GroupNumber}",
+                    Width = containerWidth,
+                    Height = containerHeight,
+                    OffsetX = xPosition,
+                    OffsetY = containerCenterY,
+                    Header = new ContainerHeader()
+                    {
+                        ID = $"Header{group.GroupNumber}",
+                        Height = 50,
+                        Annotation = new ShapeAnnotation()
+                        {
+                            Content = $"{groupName}\n({questionCount} question{(questionCount != 1 ? "s" : "")})",
+                            Style = new TextStyle()
+                            {
+                                Color = "white",
+                                Bold = true,
+                                FontSize = 14
+                            }
+                        },
+                        Style = new TextStyle()
+                        {
+                            Fill = GetGroupColor(group.GroupNumber),
+                            StrokeColor = "Black",
+                        }
+                    },
+                    Style = new ShapeStyle()
+                    {
+                        Fill = GetGroupColor(group.GroupNumber),
+                        StrokeWidth = 3,
+                        StrokeColor = "Black"
+                    },
+                    Children = childrenIds.ToArray()
+                };
 
                 // Add container to nodes
                 Nodes.Add(container);
+
+                // Move X position for next container
+                xPosition += containerWidth + 100;
             }
         }
 
