@@ -673,6 +673,72 @@ namespace JwtIdentity.Controllers
             }
         }
 
+        [HttpPost("unpublish/{id}")]
+        [Authorize(Policy = $"{Permissions.CreateSurvey}")]
+        public async Task<ActionResult<SurveyViewModel>> UnpublishSurvey(int id)
+        {
+            try
+            {
+                _logger.LogInformation("Attempting to unpublish survey with ID: {SurveyId}", id);
+
+                int userId = authService.GetUserId(User);
+                if (userId == 0)
+                {
+                    _logger.LogWarning("Unauthorized attempt to unpublish survey {SurveyId}", id);
+                    return Unauthorized();
+                }
+
+                var survey = await _context.Surveys
+                    .Include(s => s.Questions)
+                    .ThenInclude(q => q.Answers)
+                    .FirstOrDefaultAsync(s => s.Id == id);
+
+                if (survey == null)
+                {
+                    _logger.LogWarning("Survey not found for unpublish: {SurveyId}", id);
+                    return NotFound("Survey not found");
+                }
+
+                // Check if user owns the survey or is admin
+                bool isAdmin = User.IsInRole("Admin");
+                if (survey.CreatedById != userId && !isAdmin)
+                {
+                    _logger.LogWarning("User {UserId} attempted to unpublish survey {SurveyId} they don't own", userId, id);
+                    return Forbid();
+                }
+
+                if (!survey.Published)
+                {
+                    _logger.LogWarning("Survey {SurveyId} is already unpublished", id);
+                    return BadRequest("Survey is already unpublished");
+                }
+
+                // Check if survey has any answers
+                var hasAnswers = survey.Questions.Any(q => q.Answers.Any());
+                if (hasAnswers)
+                {
+                    _logger.LogWarning("Cannot unpublish survey {SurveyId} - survey has answers", id);
+                    return BadRequest("Cannot unpublish survey that has responses. Please delete the survey instead.");
+                }
+
+                survey.Published = false;
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation("Successfully unpublished survey {SurveyId}", id);
+                return Ok(_mapper.Map<SurveyViewModel>(survey));
+            }
+            catch (DbUpdateException dbEx)
+            {
+                _logger.LogError(dbEx, "Database error occurred while unpublishing survey {SurveyId}: {Message}", id, dbEx.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, "A database error occurred while unpublishing the survey");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while unpublishing survey {SurveyId}", id);
+                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while unpublishing the survey");
+            }
+        }
+
         private bool SurveyExists(int id)
         {
             return _context.Surveys.Any(e => e.Id == id);
