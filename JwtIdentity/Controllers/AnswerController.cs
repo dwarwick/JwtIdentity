@@ -410,6 +410,32 @@ namespace JwtIdentity.Controllers
                     return BadRequest("Bad Request: Answer data is required");
                 }
 
+                // Check if the survey is published before allowing answers
+                var question = await _context.Questions
+                    .FirstOrDefaultAsync(q => q.Id == answerViewModel.QuestionId);
+
+                if (question == null)
+                {
+                    _logger.LogWarning("Question not found with ID {QuestionId}", answerViewModel.QuestionId);
+                    return BadRequest("Question not found");
+                }
+
+                var survey = await _context.Surveys
+                    .FirstOrDefaultAsync(s => s.Id == question.SurveyId);
+
+                if (survey == null)
+                {
+                    _logger.LogWarning("Survey not found for question ID {QuestionId}", answerViewModel.QuestionId);
+                    return BadRequest("Survey not found");
+                }
+
+                if (!survey.Published)
+                {
+                    _logger.LogWarning("Attempt to answer question on unpublished survey. Survey ID: {SurveyId}, Question ID: {QuestionId}",
+                        survey.Id, answerViewModel.QuestionId);
+                    return BadRequest("This survey is no longer active and cannot accept responses");
+                }
+
                 _logger.LogDebug("Mapping answer view model to domain model. Answer type: {AnswerType}", answerViewModel.AnswerType);
                 var answer = _mapper.Map<Answer>(answerViewModel);
 
