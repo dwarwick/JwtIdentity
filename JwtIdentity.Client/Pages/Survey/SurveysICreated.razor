@@ -84,6 +84,11 @@
         color: var(--mud-palette-secondary-text) !important;
     }
 
+    .unpublish-button {
+        background-color: var(--mud-palette-error) !important;
+        color: var(--mud-palette-error-text) !important;
+    }
+
     /* Action buttons container */
     .action-buttons-container {
         display: flex;
@@ -185,6 +190,15 @@
                                     <MudButton OnClick="@(async () => await NextDemoStep(guid))" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
                                 </DemoBorder>
                             </DemoPopup>
+                        </div>
+
+                        <div> @* Unpublish Button *@
+                            <MudButton Class=@($"survey-action-button unpublish-button {ShareButtonDisabled(isPublished, false)}")
+                                       Variant="Variant.Filled"
+                                       OnClick="@(() => UnpublishSurvey((context as SurveyViewModel).Id, guid, isPublished, (context as SurveyViewModel).NumberOfResponses > 0))"
+                                       title="@(GetUnpublishTitleText(isPublished, (context as SurveyViewModel).NumberOfResponses > 0))">
+                                <MudIcon Icon="@Icons.Material.Filled.Unpublished" Class="mr-1" Size="MudBlazor.Size.Small" /> Unpublish
+                            </MudButton>
                         </div>
 
                         <div> @* Charts Button *@

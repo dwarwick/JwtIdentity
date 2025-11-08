@@ -25,6 +25,13 @@
 
         protected static string GetTitleText(bool published) => published ? "Copy Survey Link" : "Survey not published";
 
+        protected static string GetUnpublishTitleText(bool published, bool hasResponses)
+        {
+            if (!published) return "Survey is not published";
+            if (hasResponses) return "Cannot unpublish survey with responses";
+            return "Unpublish Survey";
+        }
+
         protected static string ShareButtonDisabled(bool published, bool disabledCondition) => published == disabledCondition ? "disabled" : "";
 
         Guid IBrowserViewportObserver.Id => Guid.NewGuid();
@@ -200,6 +207,48 @@
             if (IsDemoUser && DemoStep != 9) return;
 
             NavigationManager.NavigateTo($"/survey/analysis/{surveyId}?DemoStep=0");
+        }
+
+        protected async Task UnpublishSurvey(int surveyId, string guid, bool published, bool hasResponses)
+        {
+            if (!published)
+            {
+                _ = Snackbar.Add("Survey is already unpublished.", Severity.Warning);
+                return;
+            }
+
+            if (hasResponses)
+            {
+                _ = Snackbar.Add("Cannot unpublish survey that has responses. Please delete the survey instead.", Severity.Error);
+                return;
+            }
+
+            var confirmed = await JSRuntime.InvokeAsync<bool>("confirm", "Are you sure you want to unpublish this survey? Users will no longer be able to access or respond to it.");
+            if (!confirmed)
+            {
+                return;
+            }
+
+            try
+            {
+                var result = await ApiService.PostAsync<SurveyViewModel>($"{ApiEndpoints.Survey}/unpublish/{surveyId}", null);
+                if (result != null)
+                {
+                    _ = Snackbar.Add("Survey unpublished successfully!", Severity.Success);
+                    
+                    // Update the local survey in the list
+                    var survey = UserSurveys.FirstOrDefault(s => s.Id == surveyId);
+                    if (survey != null)
+                    {
+                        survey.Published = false;
+                        StateHasChanged();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _ = Snackbar.Add($"Error unpublishing survey: {ex.Message}", Severity.Error);
+            }
         }
 
         Task IBrowserViewportObserver.NotifyBrowserViewportChangeAsync(BrowserViewportEventArgs browserViewportEventArgs)
