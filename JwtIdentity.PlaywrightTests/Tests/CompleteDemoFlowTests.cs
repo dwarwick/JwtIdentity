@@ -252,8 +252,15 @@ namespace JwtIdentity.PlaywrightTests.Tests
 
             var beforeCopy = await GetPageReadyIdAsync(Page);
             await WaitForBlazorInteractiveAsync(beforeCopy, Page);
-            var copySurveyLinkButton = Page.GetByTitle("Copy Survey Link").First;
-            await copySurveyLinkButton.ClickAsync(new() { Force = true });
+            
+            // Click the Share menu button
+            var shareMenuButton = Page.Locator(".share-button").First;
+            await shareMenuButton.ClickAsync(new() { Force = true });
+            await Page.WaitForTimeoutAsync(500);
+            
+            // Click Copy Link menu item
+            var copyLinkMenuItem = Page.GetByRole(AriaRole.Menuitem).Filter(new() { HasTextString = "Copy Link" });
+            await copyLinkMenuItem.ClickAsync();
 
             // Open the survey in a new tab and replace the Page reference
             await WaitForPopupAndReplacePageAsync(async () => await nextButton.ClickAsync());
@@ -344,8 +351,15 @@ namespace JwtIdentity.PlaywrightTests.Tests
             await nextButton.ClickAsync();
             await nextButton.ClickAsync();
 
-            var chartsButton = Page.Locator(".charts-button").First;
-            await chartsButton.ClickAsync();
+            // Click the Analysis menu button
+            var analysisMenuButton = Page.Locator(".analysis-button").First;
+            await analysisMenuButton.ClickAsync();
+            await Page.WaitForTimeoutAsync(500);
+            
+            // Click Charts menu item
+            var chartsMenuItem = Page.GetByRole(AriaRole.Menuitem).Filter(new() { HasTextString = "Charts" });
+            await chartsMenuItem.ClickAsync();
+            
             var beforeResponses = await GetPageReadyIdAsync(Page);
             await Page.WaitForURLAsync("**/survey/responses/**", new() { Timeout = 15000 });
             await WaitForBlazorInteractiveAsync(beforeResponses, Page);
@@ -385,8 +399,15 @@ namespace JwtIdentity.PlaywrightTests.Tests
 
         private async Task ViewGridResultsAsync()
         {
-            var gridButton = Page.Locator(".grid-button");
-            await gridButton.ClickAsync();
+            // Click the Analysis menu button
+            var analysisMenuButton = Page.Locator(".analysis-button");
+            await analysisMenuButton.ClickAsync();
+            await Page.WaitForTimeoutAsync(500);
+            
+            // Click Grid menu item
+            var gridMenuItem = Page.GetByRole(AriaRole.Menuitem).Filter(new() { HasTextString = "Grid" });
+            await gridMenuItem.ClickAsync();
+            
             var beforeGrid = await GetPageReadyIdAsync(Page);
             await Page.WaitForURLAsync("**/survey/filter/**", new() { Timeout = 15000 });
             await WaitForBlazorInteractiveAsync(beforeGrid, Page);
@@ -412,9 +433,14 @@ namespace JwtIdentity.PlaywrightTests.Tests
             var mySurveysHeading = Page.GetByRole(AriaRole.Heading, new() { Name = "Surveys I've Created" });
             await Microsoft.Playwright.Assertions.Expect(mySurveysHeading).ToBeVisibleAsync();
 
-            // Click Generate Analysis button
-            var generateAnalysisButton = Page.GetByRole(AriaRole.Button, new() { Name = "Generate Analysis" });
-            await generateAnalysisButton.ClickAsync();
+            // Click the Analysis menu button
+            var analysisMenuButton = Page.Locator(".analysis-button").First;
+            await analysisMenuButton.ClickAsync();
+            await Page.WaitForTimeoutAsync(500);
+            
+            // Click Generate Analysis menu item
+            var generateAnalysisMenuItem = Page.GetByRole(AriaRole.Menuitem).Filter(new() { HasTextString = "Generate Analysis" });
+            await generateAnalysisMenuItem.ClickAsync();
 
             // Wait for the "Generating analysis" snackbar
             var generatingToast = Page.Locator(".mud-snackbar").Filter(new() { HasTextString = "Generating analysis" });
@@ -430,9 +456,14 @@ namespace JwtIdentity.PlaywrightTests.Tests
 
         private async Task ViewAnalysisAsync()
         {
-            // Click View Analysis button
-            var viewAnalysisButton = Page.GetByRole(AriaRole.Button, new() { Name = "View Analysis" });
-            await viewAnalysisButton.ClickAsync();
+            // Click the Analysis menu button
+            var analysisMenuButton = Page.Locator(".analysis-button").First;
+            await analysisMenuButton.ClickAsync();
+            await Page.WaitForTimeoutAsync(500);
+            
+            // Click View Analysis menu item
+            var viewAnalysisMenuItem = Page.GetByRole(AriaRole.Menuitem).Filter(new() { HasTextString = "View Analysis" });
+            await viewAnalysisMenuItem.ClickAsync();
 
             var beforeAnalysisPage = await GetPageReadyIdAsync(Page);
             await Page.WaitForURLAsync("**/survey/analysis/**", new() { Timeout = 15000 });
