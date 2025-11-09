@@ -482,6 +482,22 @@ namespace JwtIdentity.Client.Pages.Survey
                 if (!groupQuestions.Any())
                 {
                     // Create simple placeholder for empty groups
+                    var placeholderPorts = new DiagramObjectCollection<PointPort>()
+                    {
+                        new PointPort()
+                        {
+                            ID = "leftPort",
+                            Offset = new DiagramPoint() { X = 0, Y = 0.5 },
+                            Visibility = PortVisibility.Hidden
+                        },
+                        new PointPort()
+                        {
+                            ID = "rightPort",
+                            Offset = new DiagramPoint() { X = 1, Y = 0.5 },
+                            Visibility = PortVisibility.Hidden
+                        }
+                    };
+
                     var placeholderNode = new Node()
                     {
                         ID = $"GroupContainer{group.GroupNumber}",
@@ -489,6 +505,7 @@ namespace JwtIdentity.Client.Pages.Survey
                         Height = 80,
                         OffsetX = xPosition,
                         OffsetY = yPosition,
+                        Ports = placeholderPorts,
                         Annotations = new DiagramObjectCollection<ShapeAnnotation>()
                         {
                             new ShapeAnnotation()
@@ -602,8 +619,9 @@ namespace JwtIdentity.Client.Pages.Survey
                             optionChildrenIds.Add(optionNodeId);
                             optionYOffset += 60;
 
-                            // Determine source port based on target group position
+                            // Determine source and target ports based on group positions
                             var sourcePortId = DetermineSourcePort(group.GroupNumber, branchToGroupId);
+                            var targetPortId = DetermineTargetPort(group.GroupNumber, branchToGroupId);
 
                             // Create connector from option to target group container
                             var connector = new Connector()
@@ -612,6 +630,7 @@ namespace JwtIdentity.Client.Pages.Survey
                                 SourceID = optionNodeId,
                                 SourcePortID = sourcePortId,
                                 TargetID = $"GroupContainer{branchToGroupId}",
+                                TargetPortID = targetPortId,
                                 Type = ConnectorSegmentType.Orthogonal,
                                 Constraints = ConnectorConstraints,
                                 Style = new ShapeStyle() { StrokeColor = targetGroupColor, StrokeWidth = 2 },
@@ -668,6 +687,23 @@ namespace JwtIdentity.Client.Pages.Survey
                     questionYOffset += questionContainerHeight + 20;
                 }
 
+                // Create ports for the group container
+                var groupPorts = new DiagramObjectCollection<PointPort>()
+                {
+                    new PointPort()
+                    {
+                        ID = "leftPort",
+                        Offset = new DiagramPoint() { X = 0, Y = 0.5 },
+                        Visibility = PortVisibility.Hidden
+                    },
+                    new PointPort()
+                    {
+                        ID = "rightPort",
+                        Offset = new DiagramPoint() { X = 1, Y = 0.5 },
+                        Visibility = PortVisibility.Hidden
+                    }
+                };
+
                 // Create group container
                 var groupContainer = new Container()
                 {
@@ -676,6 +712,7 @@ namespace JwtIdentity.Client.Pages.Survey
                     Height = groupContainerHeight,
                     OffsetX = groupCenterX,
                     OffsetY = groupCenterY,
+                    Ports = groupPorts,
                     Header = new ContainerHeader()
                     {
                         ID = $"GHeader{group.GroupNumber}",
@@ -813,6 +850,19 @@ namespace JwtIdentity.Client.Pages.Survey
             // If target group is before source group (lower number), use left port
             // If target group is after source group (higher number), use right port
             return targetGroupNumber < sourceGroupNumber ? "leftPort" : "rightPort";
+        }
+
+        /// <summary>
+        /// Determines which port (left or right) to use for the connector target based on source group position.
+        /// </summary>
+        /// <param name="sourceGroupNumber">The source group number</param>
+        /// <param name="targetGroupNumber">The target group number</param>
+        /// <returns>Port ID ("leftPort" or "rightPort")</returns>
+        private string DetermineTargetPort(int sourceGroupNumber, int targetGroupNumber)
+        {
+            // If source group is before target group (lower number), use left port on target
+            // If source group is after target group (higher number), use right port on target
+            return sourceGroupNumber < targetGroupNumber ? "leftPort" : "rightPort";
         }
 
         /// <summary>
