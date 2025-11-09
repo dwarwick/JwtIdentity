@@ -739,110 +739,24 @@ namespace JwtIdentity.Client.Pages.Survey
 
         private void CreateConnectorsWithWaypoints(Dictionary<int, double> groupPositions)
         {
-            const double routingGap = 50; // Gap to leave when routing around nodes
-            const double verticalSpacing = 30; // Vertical spacing between parallel connectors
-            
-            // Group connectors by their source-target pair to calculate offsets
-            var connectorsByRoute = new Dictionary<string, List<(QuestionViewModel question, string optionText, int branchToGroupId, int optionId)>>();
-            
+            // Create connectors without manual segments - let orthogonal routing handle it
             foreach (var question in Survey.Questions.OrderBy(q => q.QuestionNumber))
             {
                 var options = GetBranchingOptions(question);
                 if (options.Count == 0) continue;
 
-                foreach (var (optionText, branchToGroupId, optionId) in options)
-                {
-                    var routeKey = $"{question.GroupId}_{branchToGroupId}";
-                    if (!connectorsByRoute.ContainsKey(routeKey))
-                    {
-                        connectorsByRoute[routeKey] = new List<(QuestionViewModel, string, int, int)>();
-                    }
-                    connectorsByRoute[routeKey].Add((question, optionText, branchToGroupId, optionId));
-                }
-            }
+                var sourceGroupNumber = question.GroupId;
 
-            // Create connectors with calculated routes
-            foreach (var routeGroup in connectorsByRoute)
-            {
-                var routeParts = routeGroup.Key.Split('_');
-                var sourceGroupNumber = int.Parse(routeParts[0]);
-                var targetGroupNumber = int.Parse(routeParts[1]);
-                
-                var routeIndex = 0;
-                foreach (var (question, optionText, branchToGroupId, optionId) in routeGroup.Value)
+                foreach (var (optionText, branchToGroupId, optionId) in options)
                 {
                     var targetGroupColor = GetGroupColor(branchToGroupId);
                     var optionNodeId = $"Option_Q{question.Id}_O{optionId}";
-                    var sourceGroupX = groupPositions[sourceGroupNumber];
-                    var targetGroupX = groupPositions[targetGroupNumber];
 
                     // Determine source and target ports
                     var sourcePortId = DetermineSourcePort(sourceGroupNumber, branchToGroupId);
                     var targetPortId = DetermineTargetPort(sourceGroupNumber, branchToGroupId);
 
-                    // Calculate waypoints to route around nodes
-                    var segments = new DiagramObjectCollection<ConnectorSegment>();
-                    
-                    if (sourceGroupNumber != branchToGroupId)
-                    {
-                        // Calculate intermediate routing point
-                        var midX = (sourceGroupX + targetGroupX) / 2;
-                        
-                        // Add vertical offset for each connector in the same route
-                        var verticalOffset = routeIndex * verticalSpacing;
-                        
-                        // Determine if routing left or right
-                        if (targetGroupNumber > sourceGroupNumber)
-                        {
-                            // Routing to the right - go around nodes below
-                            segments.Add(new OrthogonalSegment()
-                            {
-                                Type = ConnectorSegmentType.Orthogonal,
-                                Length = routingGap + verticalOffset,
-                                Direction = Syncfusion.Blazor.Diagram.Direction.Bottom
-                            });
-                            segments.Add(new OrthogonalSegment()
-                            {
-                                Type = ConnectorSegmentType.Orthogonal,
-                                Direction = Syncfusion.Blazor.Diagram.Direction.Right
-                            });
-                            segments.Add(new OrthogonalSegment()
-                            {
-                                Type = ConnectorSegmentType.Orthogonal,
-                                Direction = Syncfusion.Blazor.Diagram.Direction.Top
-                            });
-                        }
-                        else
-                        {
-                            // Routing to the left - go around nodes below
-                            segments.Add(new OrthogonalSegment()
-                            {
-                                Type = ConnectorSegmentType.Orthogonal,
-                                Length = routingGap + verticalOffset,
-                                Direction = Syncfusion.Blazor.Diagram.Direction.Bottom
-                            });
-                            segments.Add(new OrthogonalSegment()
-                            {
-                                Type = ConnectorSegmentType.Orthogonal,
-                                Direction = Syncfusion.Blazor.Diagram.Direction.Left
-                            });
-                            segments.Add(new OrthogonalSegment()
-                            {
-                                Type = ConnectorSegmentType.Orthogonal,
-                                Direction = Syncfusion.Blazor.Diagram.Direction.Top
-                            });
-                        }
-                    }
-                    else
-                    {
-                        // Same group - simple connection
-                        segments.Add(new OrthogonalSegment()
-                        {
-                            Type = ConnectorSegmentType.Orthogonal
-                        });
-                    }
-
-                    // Create connector
+                    // Create connector without manual segments - use default orthogonal routing
                     var connector = new Connector()
                     {
                         ID = $"Connector_Q{question.Id}_O{optionId}_To_Group{branchToGroupId}",
@@ -851,7 +765,6 @@ namespace JwtIdentity.Client.Pages.Survey
                         TargetID = $"GroupContainer{branchToGroupId}",
                         TargetPortID = targetPortId,
                         Type = ConnectorSegmentType.Orthogonal,
-                        Segments = segments,
                         Constraints = ConnectorConstraints,
                         Style = new ShapeStyle() { StrokeColor = targetGroupColor, StrokeWidth = 2 },
                         TargetDecorator = new DecoratorSettings()
@@ -862,7 +775,6 @@ namespace JwtIdentity.Client.Pages.Survey
                     };
                     
                     Connectors.Add(connector);
-                    routeIndex++;
                 }
             }
         }
