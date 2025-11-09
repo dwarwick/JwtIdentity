@@ -602,7 +602,11 @@ namespace JwtIdentity.Client.Pages.Survey
                         new ShapeAnnotation()
                         {
                             Content = groupName,
-                            Style = new TextStyle() { Color = "white", Bold = true, FontSize = 14 }
+                            Style = new TextStyle() { Color = "white", Bold = true, FontSize = 14 },
+                            Offset = new DiagramPoint() { X = 0.5, Y = 0 },
+                            Margin = new DiagramThickness() { Top = 5, Left = 0, Right = 0, Bottom = 0 },
+                            VerticalAlignment = VerticalAlignment.Top,
+                            HorizontalAlignment = Syncfusion.Blazor.Diagram.HorizontalAlignment.Center
                         }
                     },
                     Style = new ShapeStyle()
