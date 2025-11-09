@@ -18,6 +18,9 @@ namespace JwtIdentity.Client.Pages.Survey
         // Syncfusion Diagram data
         protected DiagramObjectCollection<Node> Nodes { get; set; } = new DiagramObjectCollection<Node>();
         protected DiagramObjectCollection<Connector> Connectors { get; set; } = new DiagramObjectCollection<Connector>();
+        protected DiagramConstraints Constraints { get; set; } = DiagramConstraints.Default | DiagramConstraints.Bridging | DiagramConstraints.Routing | DiagramConstraints.AvoidLineOverlapping;
+        protected ConnectorConstraints ConnectorConstraints { get; set; } = ConnectorConstraints.Default | ConnectorConstraints.Bridging | ConnectorConstraints.Routing;
+
         protected SfDiagramComponent diagram;
         protected double ZoomLevel { get; set; } = 1.0;
         protected LayoutType DiagramLayoutType { get; set; } = LayoutType.None; // Manual positioning like Azure example

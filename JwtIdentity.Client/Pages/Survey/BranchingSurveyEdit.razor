@@ -60,8 +60,9 @@ else
                                                 Height="100%" Width="100%"
                                                 Nodes="@Nodes" 
                                                 Connectors="@Connectors"
-                                                NodeCreating="@OnNodeCreating">                                
-                                <SnapSettings Constraints="SnapConstraints.None" />
+                                                NodeCreating="@OnNodeCreating"
+                                                Constraints="@Constraints">
+                                <SnapSettings Constraints="SnapConstraints.All & ~SnapConstraints.ShowLines" />
                                 <Layout Type="@DiagramLayoutType"
                                         Orientation="LayoutOrientation.TopToBottom"
                                         HorizontalSpacing="40" VerticalSpacing="40"
