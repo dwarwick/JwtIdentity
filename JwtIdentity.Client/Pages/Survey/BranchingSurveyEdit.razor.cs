@@ -18,8 +18,8 @@ namespace JwtIdentity.Client.Pages.Survey
         // Syncfusion Diagram data
         protected DiagramObjectCollection<Node> Nodes { get; set; } = new DiagramObjectCollection<Node>();
         protected DiagramObjectCollection<Connector> Connectors { get; set; } = new DiagramObjectCollection<Connector>();
-        protected DiagramConstraints Constraints { get; set; } = DiagramConstraints.Default | DiagramConstraints.Bridging | DiagramConstraints.Routing | DiagramConstraints.AvoidLineOverlapping;
-        protected ConnectorConstraints ConnectorConstraints { get; set; } = ConnectorConstraints.Default | ConnectorConstraints.Bridging | ConnectorConstraints.Routing;
+        protected DiagramConstraints Constraints { get; set; } = DiagramConstraints.Default | DiagramConstraints.Routing;
+        protected ConnectorConstraints ConnectorConstraints { get; set; } = ConnectorConstraints.Default | ConnectorConstraints.Routing;
 
         protected SfDiagramComponent diagram;
         protected double ZoomLevel { get; set; } = 1.0;
@@ -613,6 +613,7 @@ namespace JwtIdentity.Client.Pages.Survey
                                 SourcePortID = sourcePortId,
                                 TargetID = $"GroupContainer{branchToGroupId}",
                                 Type = ConnectorSegmentType.Orthogonal,
+                                Constraints = ConnectorConstraints,
                                 Style = new ShapeStyle() { StrokeColor = targetGroupColor, StrokeWidth = 2 },
                                 TargetDecorator = new DecoratorSettings()
                                 {
