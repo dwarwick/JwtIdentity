@@ -18,6 +18,9 @@ namespace JwtIdentity.Client.Pages.Survey
         // Syncfusion Diagram data
         protected DiagramObjectCollection<Node> Nodes { get; set; } = new DiagramObjectCollection<Node>();
         protected DiagramObjectCollection<Connector> Connectors { get; set; } = new DiagramObjectCollection<Connector>();
+        protected DiagramConstraints Constraints { get; set; } = DiagramConstraints.Default | DiagramConstraints.Bridging | DiagramConstraints.Routing | DiagramConstraints.AvoidLineOverlapping;
+        protected ConnectorConstraints ConnectorConstraints { get; set; } = ConnectorConstraints.Default | ConnectorConstraints.Bridging | ConnectorConstraints.Routing;
+
         protected SfDiagramComponent diagram;
         protected double ZoomLevel { get; set; } = 1.0;
         protected LayoutType DiagramLayoutType { get; set; } = LayoutType.None; // Manual positioning like Azure example
@@ -469,21 +472,16 @@ namespace JwtIdentity.Client.Pages.Survey
             {
                 var groupName = string.IsNullOrWhiteSpace(group.GroupName) ? $"Group {group.GroupNumber}" : group.GroupName;
 
-                // Get all questions with branching rules in this group
+                // Get all questions in this group (not just those with branching rules)
                 var groupQuestions = Survey.Questions
-                    .Where(q => q.GroupId == group.GroupNumber &&
-                        (q.QuestionType == QuestionType.MultipleChoice ||
-                         q.QuestionType == QuestionType.SelectAllThatApply ||
-                         q.QuestionType == QuestionType.TrueFalse))
+                    .Where(q => q.GroupId == group.GroupNumber)
                     .OrderBy(q => q.QuestionNumber)
                     .ToList();
 
-                // Calculate group container dimensions
-                var questionsWithOptions = groupQuestions.Where(q => GetBranchingOptions(q).Count > 0).ToList();
-
-                if (!questionsWithOptions.Any())
+                // Skip groups with no questions at all
+                if (!groupQuestions.Any())
                 {
-                    // Create simple placeholder for groups with no branching
+                    // Create simple placeholder for empty groups
                     var placeholderNode = new Node()
                     {
                         ID = $"GroupContainer{group.GroupNumber}",
@@ -495,7 +493,7 @@ namespace JwtIdentity.Client.Pages.Survey
                         {
                             new ShapeAnnotation()
                             {
-                                Content = $"{groupName}\n(No branching)",
+                                Content = $"{groupName}\n(No questions)",
                                 Style = new TextStyle() { Color = "white", Bold = true, FontSize = 12 }
                             }
                         },
@@ -513,10 +511,16 @@ namespace JwtIdentity.Client.Pages.Survey
 
                 // Calculate total height needed for all question containers
                 var totalQuestionHeight = 0.0;
-                foreach (var question in questionsWithOptions)
+                foreach (var question in groupQuestions)
                 {
                     var options = GetBranchingOptions(question);
-                    totalQuestionHeight += 80 + (options.Count * 60) + 20; // container height + spacing
+                    // Each question needs space: header + options (if any) + spacing
+                    var questionHeight = 80; // base height for question header
+                    if (options.Count > 0)
+                    {
+                        questionHeight += options.Count * 60; // space for each option
+                    }
+                    totalQuestionHeight += questionHeight + 20; // add spacing between questions
                 }
 
                 var groupContainerWidth = 480.0;
@@ -528,72 +532,96 @@ namespace JwtIdentity.Client.Pages.Survey
                 var questionYOffset = yPosition + 50; // Start below group header
 
                 // Create question containers and option nodes
-                foreach (var question in questionsWithOptions)
+                foreach (var question in groupQuestions)
                 {
                     var options = GetBranchingOptions(question);
-                    if (options.Count == 0)
-                        continue;
 
                     var questionContainerId = $"QuestionContainer{question.Id}";
                     var optionChildrenIds = new List<string>();
-                    var questionContainerHeight = 80 + (options.Count * 60);
+                    // Calculate container height based on whether there are options
+                    var questionContainerHeight = options.Count > 0 ? 80 + (options.Count * 60) : 80;
                     var questionCenterY = questionYOffset + (questionContainerHeight / 2);
 
-                    // Create option nodes
-                    var optionYOffset = questionYOffset + 60; // Start below question header
-                    foreach (var (optionText, branchToGroupId, optionId) in options)
+                    // Create option nodes only if there are branching options
+                    if (options.Count > 0)
                     {
-                        var targetGroupColor = GetGroupColor(branchToGroupId);
-                        var optionNodeId = $"Option_Q{question.Id}_O{optionId}";
-
-                        var optionNode = new Node()
+                        var optionYOffset = questionYOffset + 60; // Start below question header
+                        foreach (var (optionText, branchToGroupId, optionId) in options)
                         {
-                            ID = optionNodeId,
-                            Width = 400,
-                            Height = 50,
-                            OffsetX = groupCenterX,
-                            OffsetY = optionYOffset + 25,
-                            Annotations = new DiagramObjectCollection<ShapeAnnotation>()
+                            var targetGroupColor = GetGroupColor(branchToGroupId);
+                            var optionNodeId = $"Option_Q{question.Id}_O{optionId}";
+
+                            // Create ports for left and right sides of the option node
+                            var ports = new DiagramObjectCollection<PointPort>()
                             {
-                                new ShapeAnnotation()
+                                new PointPort()
                                 {
-                                    Content = TruncateText(optionText, 50),
-                                    Style = new TextStyle()
-                                    {
-                                        Color = "black",
-                                        Bold = false,
-                                        FontSize = 11,
-                                        TextWrapping = Syncfusion.Blazor.Diagram.TextWrap.Wrap
-                                    }
+                                    ID = "leftPort",
+                                    Offset = new DiagramPoint() { X = 0, Y = 0.5 },
+                                    Visibility = PortVisibility.Hidden
+                                },
+                                new PointPort()
+                                {
+                                    ID = "rightPort",
+                                    Offset = new DiagramPoint() { X = 1, Y = 0.5 },
+                                    Visibility = PortVisibility.Hidden
                                 }
-                            },
-                            Style = new ShapeStyle()
-                            {
-                                Fill = "white",
-                                StrokeWidth = 2,
-                                StrokeColor = targetGroupColor
-                            }
-                        };
+                            };
 
-                        Nodes.Add(optionNode);
-                        optionChildrenIds.Add(optionNodeId);
-                        optionYOffset += 60;
-
-                        // Create connector from option to target group container
-                        var connector = new Connector()
-                        {
-                            ID = $"Connector_Q{question.Id}_O{optionId}_To_Group{branchToGroupId}",
-                            SourceID = optionNodeId,
-                            TargetID = $"GroupContainer{branchToGroupId}",
-                            Type = ConnectorSegmentType.Orthogonal,
-                            Style = new ShapeStyle() { StrokeColor = targetGroupColor, StrokeWidth = 2 },
-                            TargetDecorator = new DecoratorSettings()
+                            var optionNode = new Node()
                             {
-                                Shape = DecoratorShape.Arrow,
-                                Style = new ShapeStyle() { Fill = targetGroupColor, StrokeColor = targetGroupColor }
-                            }
-                        };
-                        Connectors.Add(connector);
+                                ID = optionNodeId,
+                                Width = 400,
+                                Height = 50,
+                                OffsetX = groupCenterX,
+                                OffsetY = optionYOffset + 25,
+                                Ports = ports,
+                                Annotations = new DiagramObjectCollection<ShapeAnnotation>()
+                                {
+                                    new ShapeAnnotation()
+                                    {
+                                        Content = optionText,
+                                        Style = new TextStyle()
+                                        {
+                                            Color = "black",
+                                            Bold = false,
+                                            FontSize = 11,
+                                            TextWrapping = Syncfusion.Blazor.Diagram.TextWrap.Wrap
+                                        }
+                                    }
+                                },
+                                Style = new ShapeStyle()
+                                {
+                                    Fill = "white",
+                                    StrokeWidth = 2,
+                                    StrokeColor = targetGroupColor
+                                }
+                            };
+
+                            Nodes.Add(optionNode);
+                            optionChildrenIds.Add(optionNodeId);
+                            optionYOffset += 60;
+
+                            // Determine source port based on target group position
+                            var sourcePortId = DetermineSourcePort(group.GroupNumber, branchToGroupId);
+
+                            // Create connector from option to target group container
+                            var connector = new Connector()
+                            {
+                                ID = $"Connector_Q{question.Id}_O{optionId}_To_Group{branchToGroupId}",
+                                SourceID = optionNodeId,
+                                SourcePortID = sourcePortId,
+                                TargetID = $"GroupContainer{branchToGroupId}",
+                                Type = ConnectorSegmentType.Orthogonal,
+                                Style = new ShapeStyle() { StrokeColor = targetGroupColor, StrokeWidth = 2 },
+                                TargetDecorator = new DecoratorSettings()
+                                {
+                                    Shape = DecoratorShape.Arrow,
+                                    Style = new ShapeStyle() { Fill = targetGroupColor, StrokeColor = targetGroupColor }
+                                }
+                            };
+                            Connectors.Add(connector);
+                        }
                     }
 
                     // Create question container
@@ -610,7 +638,7 @@ namespace JwtIdentity.Client.Pages.Survey
                             Height = 50,
                             Annotation = new ShapeAnnotation()
                             {
-                                Content = $"Q{question.QuestionNumber}: {TruncateText(question.Text, 60)}",
+                                Content = $"Q{question.QuestionNumber}: {question.Text}",
                                 Style = new TextStyle()
                                 {
                                     Color = "black",
@@ -771,6 +799,19 @@ namespace JwtIdentity.Client.Pages.Survey
                 return text;
 
             return text.Substring(0, maxLength - 3) + "...";
+        }
+
+        /// <summary>
+        /// Determines which port (left or right) to use for the connector source based on target group position.
+        /// </summary>
+        /// <param name="sourceGroupNumber">The source group number</param>
+        /// <param name="targetGroupNumber">The target group number</param>
+        /// <returns>Port ID ("leftPort" or "rightPort")</returns>
+        private string DetermineSourcePort(int sourceGroupNumber, int targetGroupNumber)
+        {
+            // If target group is before source group (lower number), use left port
+            // If target group is after source group (higher number), use right port
+            return targetGroupNumber < sourceGroupNumber ? "leftPort" : "rightPort";
         }
 
         /// <summary>
