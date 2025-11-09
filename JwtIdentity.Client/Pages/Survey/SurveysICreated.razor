@@ -84,6 +84,16 @@
         color: var(--mud-palette-secondary-text) !important;
     }
 
+    .share-button {
+        background-color: var(--mud-palette-info) !important;
+        color: var(--mud-palette-info-text) !important;
+    }
+
+    .analysis-button {
+        background-color: var(--mud-palette-tertiary) !important;
+        color: var(--mud-palette-tertiary-text) !important;
+    }
+
     .unpublish-button {
         background-color: var(--mud-palette-error) !important;
         color: var(--mud-palette-error-text) !important;
@@ -125,53 +135,44 @@
                             </DemoPopup>
                         </div>
 
-                        <div> @* Copy Link Button *@
-                            <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 1 })" IsButton="true">
-                                <MudButton Class=@($"survey-action-button copy-button {ShareButtonDisabled(isPublished, false)}")
-                                           Variant="Variant.Filled"
-                                           OnClick="@(async () => await CopySurveyLinkAsync(guid))"
-                                           title="@(GetTitleText(isPublished))">
-                                    <MudIcon Icon="@Icons.Material.Filled.ContentCopy" Class="mr-1" Size="MudBlazor.Size.Small" /> Copy Link
-                                </MudButton>
+                        <div> @* Share Menu Button *@
+                            <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 1, 3 })" IsButton="true">
+                                <MudMenu Icon="@Icons.Material.Filled.Share" 
+                                         Class=@($"survey-action-button share-button {ShareButtonDisabled(isPublished, false)}")
+                                         Variant="Variant.Filled"
+                                         Disabled="@(!isPublished)"
+                                         AnchorOrigin="Origin.BottomCenter"
+                                         TransformOrigin="Origin.TopCenter">
+                                    <ActivatorContent>
+                                        <MudIcon Icon="@Icons.Material.Filled.Share" Class="mr-1" Size="MudBlazor.Size.Small" /> Share
+                                    </ActivatorContent>
+                                    <ChildContent>
+                                        <MudMenuItem OnClick="@(async () => await CopySurveyLinkAsync(guid))">
+                                            <MudIcon Icon="@Icons.Material.Filled.ContentCopy" Class="mr-2" Size="MudBlazor.Size.Small" /> Copy Link
+                                        </MudMenuItem>
+                                        <MudMenuItem OnClick="@(async () => await HandleShareClick(guid, isPublished))">
+                                            <MudIcon Icon="@Icons.Material.Filled.Public" Class="mr-2" Size="MudBlazor.Size.Small" /> Facebook
+                                        </MudMenuItem>
+                                    </ChildContent>
+                                </MudMenu>
                             </DemoBorder>
                             @{
-                                string copyStepText = DemoStep == 1 ? @"Copy the survey link to share manually. This button is disabled until the survey is published.
-                                Go ahead click the copy button to copy a link that you can share. People who click the link can take your survey.
+                                string shareStepText = DemoStep == 1 ? @"The Share button has two options: Copy Link and Facebook.
+                                Click the Share button to see the menu, then select Copy Link to copy a link that you can share. People who click the link can take your survey.
                                 After you copy the link, click Next." : 
                                 DemoStep == 2 ? @"Normally, after you click the copy button, you would paste the link into an email or share it to social media or text message.
-                                For this demo, when you click Next, you are just going to navigate to the survey so that you can take the survey and submit it." : "";
+                                For this demo, when you click Next, you are just going to navigate to the survey so that you can take the survey and submit it." : 
+                                DemoStep == 3 ? @"The Share button also has a Facebook option that allows you to share the survey directly on Facebook.
+                                You get to choose who you want to share it with.
+                                Feel free to try it if you want and then click Next to continue the demo." : "";
                             }
-                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 1,2 })" AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft">
-                                <MudText Typo="Typo.body2" Style="white-space: pre-line">@copyStepText</MudText>
-                                <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 2 })" IsButton="true">
-                                @if (DemoStep == 2)
+                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 1, 2, 3 })" AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft">
+                                <MudText Typo="Typo.body2" Style="white-space: pre-line">@shareStepText</MudText>
+                                <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 2, 3 })" IsButton="true">
+                                @if (DemoStep == 2 || DemoStep == 3)
                                 {
                                     <MudButton OnClick="@(async () => await NextDemoStep(guid))" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
                                 }                                    
-                                </DemoBorder>
-                            </DemoPopup>
-                        </div>
-
-                        <div> @* Facebook Share Button *@
-                            <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 3 })" IsButton="true">
-                                <div class=@($"fb-share-button d-flex {ShareButtonDisabled(isPublished, false)}")
-                                     data-href=@($"https://{Utility.Domain}/survey/{guid}")
-                                     data-layout="button_count"
-                                     data-size="small"
-                                     @onclick="@(() => HandleShareClick(guid, isPublished))">
-                                    <div class="fb-xfbml-parse-ignore mud-palette-white">Share</div>
-                                    <svg viewBox="0 0 12 12" preserveAspectRatio="xMidYMid meet">
-                                        <path class="svg-icon-path" d="M9.1,0.1V2H8C7.6,2,7.3,2.1,7.1,2.3C7,2.4,6.9,2.7,6.9,3v1.4H9L8.8,6.5H6.9V12H4.7V6.5H2.9V4.4h1.8V2.8 c0-0.9,0.3-1.6,0.7-2.1C6,0.2,6.6,0,7.5,0C8.2,0,8.7,0,9.1,0.1z"></path>
-                                    </svg>
-                                </div>
-                            </DemoBorder>
-                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 3 })" AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft">
-                                <MudText Typo="Typo.body2" Style="white-space: pre-line">Clicking the Facebook button allows you to share the survey directly on Facebook. 
-                                You get to choose who you want to share it with.
-                                @(isPublished ? "" : "This is disabled until the survey is published.")
-                                Feel free to try it if you want and then click Next to continue the demo.</MudText>
-                                <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 3 })" IsButton="true">
-                                    <MudButton OnClick="@(async () => await NextDemoStep(guid))" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
                                 </DemoBorder>
                             </DemoPopup>
                         </div>
@@ -201,73 +202,53 @@
                             </MudButton>
                         </div>
 
-                        <div> @* Charts Button *@
-                            <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 5, 6 })" IsButton="true">
-                                <MudButton Class=@($"survey-action-button charts-button {ShareButtonDisabled(isPublished, false)}")
-                                           Variant="Variant.Filled"
-                                           OnClick="@(() => ViewCharts(guid, isPublished))">
-                                    <MudIcon Icon="@Icons.Material.Filled.BarChart" Class="mr-1" Size="MudBlazor.Size.Small" /> Charts
-                                </MudButton>
+                        <div> @* Analysis Menu Button *@
+                            @{
+                                var surveyId = (context as SurveyViewModel).Id;
+                                var isGenerating = IsGenerating(surveyId);
+                            }
+                            <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 5, 6, 7, 8, 9 })" IsButton="true">
+                                <MudMenu Icon="@Icons.Material.Filled.Analytics" 
+                                         Class=@($"survey-action-button analysis-button {ShareButtonDisabled(isPublished, false)}")
+                                         Variant="Variant.Filled"
+                                         Disabled="@(!isPublished)"
+                                         AnchorOrigin="Origin.BottomCenter"
+                                         TransformOrigin="Origin.TopCenter">
+                                    <ActivatorContent>
+                                        <MudIcon Icon="@Icons.Material.Filled.Analytics" Class="mr-1" Size="MudBlazor.Size.Small" /> Analysis
+                                    </ActivatorContent>
+                                    <ChildContent>
+                                        <MudMenuItem OnClick="@(() => ViewCharts(guid, isPublished))">
+                                            <MudIcon Icon="@Icons.Material.Filled.BarChart" Class="mr-2" Size="MudBlazor.Size.Small" /> Charts
+                                        </MudMenuItem>
+                                        <MudMenuItem OnClick="@(() => ViewGrid(guid, isPublished))">
+                                            <MudIcon Icon="@Icons.Material.Filled.TableChart" Class="mr-2" Size="MudBlazor.Size.Small" /> Grid
+                                        </MudMenuItem>
+                                        <MudMenuItem OnClick="@(async () => await GenerateAnalysis(surveyId, isPublished))" Disabled="@isGenerating">
+                                            <MudIcon Icon="@Icons.Material.Filled.Psychology" Class="mr-2" Size="MudBlazor.Size.Small" /> @(!isGenerating ? "Generate Analysis" : "Generating...")
+                                        </MudMenuItem>
+                                        <MudMenuItem OnClick="@(() => ViewAnalysis(surveyId, isPublished))">
+                                            <MudIcon Icon="@Icons.Material.Filled.Insights" Class="mr-2" Size="MudBlazor.Size.Small" /> View Analysis
+                                        </MudMenuItem>
+                                    </ChildContent>
+                                </MudMenu>
                             </DemoBorder>
                             @{
-                                string chartStepText = DemoStep == 5 ? @"To make the demo more realistic, we have simulated that 20 other users have taken the survey.
+                                string analysisStepText = DemoStep == 5 ? @"To make the demo more realistic, we have simulated that 20 other users have taken the survey.
 Therefore, on the charts and later on the grid, you will see fake demo data." :
-                                                        DemoStep == 6 ? "Click the Charts button to view charts of survey results." : "";                                        
+                                                        DemoStep == 6 ? "The Analysis button has four options: Charts, Grid, Generate Analysis, and View Analysis. Click the Analysis button, then select Charts to view charts of survey results." :
+                                                        DemoStep == 7 ? "Click the Analysis button again, then select Grid to view individual responses in a grid." :
+                                                        DemoStep == 8 ? "Survey Shark can use AI to analyze survey responses and provide insights. Click the Analysis button, then select Generate Analysis to create an AI-powered analysis of the survey results." :
+                                                        DemoStep == 9 ? "Click the Analysis button, then select View Analysis to see the AI-generated insights about your survey responses." : "";                                        
                             }
-                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 5, 6 })" AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft">
-                                <MudText Typo="Typo.body2" Style="white-space:pre-line;">@chartStepText</MudText>
+                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 5, 6, 7, 8, 9 })" AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft">
+                                <MudText Typo="Typo.body2" Style="white-space:pre-line;">@analysisStepText</MudText>
                                 @if (DemoStep == 5)
                                 {
                                     <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 5 })" IsButton="true">
                                         <MudButton OnClick="@(async () => await NextDemoStep(guid))" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
                                     </DemoBorder>
                                 }
-                            </DemoPopup>
-                        </div>
-
-                        <div> @* Grid Button *@
-                            <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 7 })" IsButton="true">
-                                <MudButton Class=@($"survey-action-button grid-button {ShareButtonDisabled(isPublished, false)}")
-                                           Variant="Variant.Filled"
-                                           OnClick="@(() => ViewGrid(guid, isPublished))">
-                                    <MudIcon Icon="@Icons.Material.Filled.TableChart" Class="mr-1" Size="MudBlazor.Size.Small" /> Grid
-                                </MudButton>
-                            </DemoBorder>
-                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 7 })" AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft">
-                                <MudText Typo="Typo.body2">Click the Grid button to view individual responses in a grid. @(isPublished ? "" : "It's disabled until the survey is published.")</MudText>                                
-                            </DemoPopup>
-                        </div>
-
-                        <div> @* Generate Analysis Button *@
-                            @{
-                                var surveyId = (context as SurveyViewModel).Id;
-                                var isGenerating = IsGenerating(surveyId);
-                            }
-                            <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 8 })" IsButton="true">
-                                <MudButton Class=@($"survey-action-button {ShareButtonDisabled(isPublished, false)}")
-                                           Variant="Variant.Filled"
-                                           Color="Color.Primary"
-                                           Disabled="@(isGenerating || !isPublished)"                                           
-                                           OnClick="@(async () => await GenerateAnalysis(surveyId, isPublished))">
-                                    <MudIcon Icon="@Icons.Material.Filled.Psychology" Class="mr-1" Size="MudBlazor.Size.Small" /> @(!isGenerating ? "Generate Analysis" : "Generating...")
-                                </MudButton>
-                            </DemoBorder>
-                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 8 })" AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft">
-                                <MudText Typo="Typo.body2">Survey Shark can use AI to analyze survey responses and provide insights. Click the Generate Analysis button to create an AI-powered analysis of the survey results.</MudText>
-                            </DemoPopup>
-                        </div>
-
-                        <div> @* View Analysis Button *@
-                            <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 9 })" IsButton="true">
-                                <MudButton Class=@($"survey-action-button {ShareButtonDisabled(isPublished, false)}")
-                                           Variant="Variant.Filled"
-                                           Color="Color.Info"
-                                           OnClick="@(() => ViewAnalysis((context as SurveyViewModel).Id, isPublished))">
-                                    <MudIcon Icon="@Icons.Material.Filled.Analytics" Class="mr-1" Size="MudBlazor.Size.Small" /> View Analysis
-                                </MudButton>
-                            </DemoBorder>
-                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 9 })" AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft">
-                                <MudText Typo="Typo.body2">Click the View Analysis button to see the AI-generated insights about your survey responses.</MudText>
                             </DemoPopup>
                         </div>
                     }
