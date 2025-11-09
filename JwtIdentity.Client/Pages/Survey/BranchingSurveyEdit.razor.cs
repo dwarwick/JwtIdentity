@@ -18,8 +18,8 @@ namespace JwtIdentity.Client.Pages.Survey
         // Syncfusion Diagram data
         protected DiagramObjectCollection<Node> Nodes { get; set; } = new DiagramObjectCollection<Node>();
         protected DiagramObjectCollection<Connector> Connectors { get; set; } = new DiagramObjectCollection<Connector>();
-        protected DiagramConstraints Constraints { get; set; } = DiagramConstraints.Default | DiagramConstraints.Routing;
-        protected ConnectorConstraints ConnectorConstraints { get; set; } = ConnectorConstraints.Default | ConnectorConstraints.Routing;
+        protected DiagramConstraints Constraints { get; set; } = DiagramConstraints.Default | DiagramConstraints.Bridging;
+        protected ConnectorConstraints ConnectorConstraints { get; set; } = ConnectorConstraints.Default | ConnectorConstraints.Bridging;
 
         protected SfDiagramComponent diagram;
         protected double ZoomLevel { get; set; } = 1.0;
@@ -467,6 +467,9 @@ namespace JwtIdentity.Client.Pages.Survey
             double yPosition = 150; // Starting Y position
             const double groupSpacing = 600; // Horizontal spacing between groups
 
+            // Dictionary to store group center X positions for routing calculations
+            var groupPositions = new Dictionary<int, double>();
+
             // Create nested containers with manual positioning (like Azure example)
             foreach (var group in QuestionGroups.OrderBy(g => g.GroupNumber))
             {
@@ -618,29 +621,8 @@ namespace JwtIdentity.Client.Pages.Survey
                             Nodes.Add(optionNode);
                             optionChildrenIds.Add(optionNodeId);
                             optionYOffset += 60;
-
-                            // Determine source and target ports based on group positions
-                            var sourcePortId = DetermineSourcePort(group.GroupNumber, branchToGroupId);
-                            var targetPortId = DetermineTargetPort(group.GroupNumber, branchToGroupId);
-
-                            // Create connector from option to target group container
-                            var connector = new Connector()
-                            {
-                                ID = $"Connector_Q{question.Id}_O{optionId}_To_Group{branchToGroupId}",
-                                SourceID = optionNodeId,
-                                SourcePortID = sourcePortId,
-                                TargetID = $"GroupContainer{branchToGroupId}",
-                                TargetPortID = targetPortId,
-                                Type = ConnectorSegmentType.Orthogonal,
-                                Constraints = ConnectorConstraints,
-                                Style = new ShapeStyle() { StrokeColor = targetGroupColor, StrokeWidth = 2 },
-                                TargetDecorator = new DecoratorSettings()
-                                {
-                                    Shape = DecoratorShape.Arrow,
-                                    Style = new ShapeStyle() { Fill = targetGroupColor, StrokeColor = targetGroupColor }
-                                }
-                            };
-                            Connectors.Add(connector);
+                            
+                            // Connectors will be created in second pass
                         }
                     }
 
@@ -744,7 +726,88 @@ namespace JwtIdentity.Client.Pages.Survey
                 };
 
                 Nodes.Add(groupContainer);
+                
+                // Store group position for connector routing calculations
+                groupPositions[group.GroupNumber] = groupCenterX;
+                
                 xPosition += groupSpacing; // Move X for next group horizontally
+            }
+            
+            // Second pass: Create connectors with calculated waypoints
+            CreateConnectorsWithWaypoints(groupPositions);
+        }
+
+        private void CreateConnectorsWithWaypoints(Dictionary<int, double> groupPositions)
+        {
+            const double waypointOffset = 40; // Vertical offset between different connector paths
+            var connectorIndex = 0; // Track connector index for vertical spacing
+
+            foreach (var question in Survey.Questions.OrderBy(q => q.QuestionNumber))
+            {
+                var options = GetBranchingOptions(question);
+                if (options.Count == 0) continue;
+
+                var sourceGroupNumber = question.GroupId;
+                var sourceGroupX = groupPositions[sourceGroupNumber];
+
+                foreach (var (optionText, branchToGroupId, optionId) in options)
+                {
+                    var targetGroupX = groupPositions[branchToGroupId];
+                    var targetGroupColor = GetGroupColor(branchToGroupId);
+                    var optionNodeId = $"Option_Q{question.Id}_O{optionId}";
+
+                    // Determine source and target ports
+                    var sourcePortId = DetermineSourcePort(sourceGroupNumber, branchToGroupId);
+                    var targetPortId = DetermineTargetPort(sourceGroupNumber, branchToGroupId);
+
+                    // Calculate intermediate waypoints based on group positions
+                    var segments = new DiagramObjectCollection<ConnectorSegment>();
+                    
+                    if (sourceGroupNumber != branchToGroupId)
+                    {
+                        // Add orthogonal segments with intermediate points for routing
+                        var midX = (sourceGroupX + targetGroupX) / 2;
+                        
+                        // Vertical offset for this connector to avoid overlap
+                        var verticalOffset = (connectorIndex % 5) * waypointOffset;
+                        
+                        // Create segments that route around nodes
+                        segments.Add(new OrthogonalSegment()
+                        {
+                            Type = ConnectorSegmentType.Orthogonal,
+                            Direction = Syncfusion.Blazor.Diagram.Direction.Right
+                        });
+                    }
+                    else
+                    {
+                        segments.Add(new OrthogonalSegment()
+                        {
+                            Type = ConnectorSegmentType.Orthogonal
+                        });
+                    }
+
+                    // Create connector
+                    var connector = new Connector()
+                    {
+                        ID = $"Connector_Q{question.Id}_O{optionId}_To_Group{branchToGroupId}",
+                        SourceID = optionNodeId,
+                        SourcePortID = sourcePortId,
+                        TargetID = $"GroupContainer{branchToGroupId}",
+                        TargetPortID = targetPortId,
+                        Type = ConnectorSegmentType.Orthogonal,
+                        Segments = segments,
+                        Constraints = ConnectorConstraints,
+                        Style = new ShapeStyle() { StrokeColor = targetGroupColor, StrokeWidth = 2 },
+                        TargetDecorator = new DecoratorSettings()
+                        {
+                            Shape = DecoratorShape.Arrow,
+                            Style = new ShapeStyle() { Fill = targetGroupColor, StrokeColor = targetGroupColor }
+                        }
+                    };
+                    
+                    Connectors.Add(connector);
+                    connectorIndex++;
+                }
             }
         }
 
