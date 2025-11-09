@@ -739,47 +739,103 @@ namespace JwtIdentity.Client.Pages.Survey
 
         private void CreateConnectorsWithWaypoints(Dictionary<int, double> groupPositions)
         {
-            const double waypointOffset = 40; // Vertical offset between different connector paths
-            var connectorIndex = 0; // Track connector index for vertical spacing
-
+            const double routingGap = 50; // Gap to leave when routing around nodes
+            const double verticalSpacing = 30; // Vertical spacing between parallel connectors
+            
+            // Group connectors by their source-target pair to calculate offsets
+            var connectorsByRoute = new Dictionary<string, List<(QuestionViewModel question, string optionText, int branchToGroupId, int optionId)>>();
+            
             foreach (var question in Survey.Questions.OrderBy(q => q.QuestionNumber))
             {
                 var options = GetBranchingOptions(question);
                 if (options.Count == 0) continue;
 
-                var sourceGroupNumber = question.GroupId;
-                var sourceGroupX = groupPositions[sourceGroupNumber];
-
                 foreach (var (optionText, branchToGroupId, optionId) in options)
                 {
-                    var targetGroupX = groupPositions[branchToGroupId];
+                    var routeKey = $"{question.GroupId}_{branchToGroupId}";
+                    if (!connectorsByRoute.ContainsKey(routeKey))
+                    {
+                        connectorsByRoute[routeKey] = new List<(QuestionViewModel, string, int, int)>();
+                    }
+                    connectorsByRoute[routeKey].Add((question, optionText, branchToGroupId, optionId));
+                }
+            }
+
+            // Create connectors with calculated routes
+            foreach (var routeGroup in connectorsByRoute)
+            {
+                var routeParts = routeGroup.Key.Split('_');
+                var sourceGroupNumber = int.Parse(routeParts[0]);
+                var targetGroupNumber = int.Parse(routeParts[1]);
+                
+                var routeIndex = 0;
+                foreach (var (question, optionText, branchToGroupId, optionId) in routeGroup.Value)
+                {
                     var targetGroupColor = GetGroupColor(branchToGroupId);
                     var optionNodeId = $"Option_Q{question.Id}_O{optionId}";
+                    var sourceGroupX = groupPositions[sourceGroupNumber];
+                    var targetGroupX = groupPositions[targetGroupNumber];
 
                     // Determine source and target ports
                     var sourcePortId = DetermineSourcePort(sourceGroupNumber, branchToGroupId);
                     var targetPortId = DetermineTargetPort(sourceGroupNumber, branchToGroupId);
 
-                    // Calculate intermediate waypoints based on group positions
+                    // Calculate waypoints to route around nodes
                     var segments = new DiagramObjectCollection<ConnectorSegment>();
                     
                     if (sourceGroupNumber != branchToGroupId)
                     {
-                        // Add orthogonal segments with intermediate points for routing
+                        // Calculate intermediate routing point
                         var midX = (sourceGroupX + targetGroupX) / 2;
                         
-                        // Vertical offset for this connector to avoid overlap
-                        var verticalOffset = (connectorIndex % 5) * waypointOffset;
+                        // Add vertical offset for each connector in the same route
+                        var verticalOffset = routeIndex * verticalSpacing;
                         
-                        // Create segments that route around nodes
-                        segments.Add(new OrthogonalSegment()
+                        // Determine if routing left or right
+                        if (targetGroupNumber > sourceGroupNumber)
                         {
-                            Type = ConnectorSegmentType.Orthogonal,
-                            Direction = Syncfusion.Blazor.Diagram.Direction.Right
-                        });
+                            // Routing to the right - go around nodes below
+                            segments.Add(new OrthogonalSegment()
+                            {
+                                Type = ConnectorSegmentType.Orthogonal,
+                                Length = routingGap + verticalOffset,
+                                Direction = Syncfusion.Blazor.Diagram.Direction.Bottom
+                            });
+                            segments.Add(new OrthogonalSegment()
+                            {
+                                Type = ConnectorSegmentType.Orthogonal,
+                                Direction = Syncfusion.Blazor.Diagram.Direction.Right
+                            });
+                            segments.Add(new OrthogonalSegment()
+                            {
+                                Type = ConnectorSegmentType.Orthogonal,
+                                Direction = Syncfusion.Blazor.Diagram.Direction.Top
+                            });
+                        }
+                        else
+                        {
+                            // Routing to the left - go around nodes below
+                            segments.Add(new OrthogonalSegment()
+                            {
+                                Type = ConnectorSegmentType.Orthogonal,
+                                Length = routingGap + verticalOffset,
+                                Direction = Syncfusion.Blazor.Diagram.Direction.Bottom
+                            });
+                            segments.Add(new OrthogonalSegment()
+                            {
+                                Type = ConnectorSegmentType.Orthogonal,
+                                Direction = Syncfusion.Blazor.Diagram.Direction.Left
+                            });
+                            segments.Add(new OrthogonalSegment()
+                            {
+                                Type = ConnectorSegmentType.Orthogonal,
+                                Direction = Syncfusion.Blazor.Diagram.Direction.Top
+                            });
+                        }
                     }
                     else
                     {
+                        // Same group - simple connection
                         segments.Add(new OrthogonalSegment()
                         {
                             Type = ConnectorSegmentType.Orthogonal
@@ -806,7 +862,7 @@ namespace JwtIdentity.Client.Pages.Survey
                     };
                     
                     Connectors.Add(connector);
-                    connectorIndex++;
+                    routeIndex++;
                 }
             }
         }
