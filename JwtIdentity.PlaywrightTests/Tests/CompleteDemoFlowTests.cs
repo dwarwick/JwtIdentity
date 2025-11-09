@@ -247,19 +247,20 @@ namespace JwtIdentity.PlaywrightTests.Tests
 
             await ScrollToElementAsync("1", Page);
             await nextButton.ClickAsync();
+            await ScrollToElementAsync("survey-submit-btn", Page);
             await nextButton.ClickAsync();
             await nextButton.ClickAsync();
 
             var beforeCopy = await GetPageReadyIdAsync(Page);
             await WaitForBlazorInteractiveAsync(beforeCopy, Page);
-            
+
             // Click the Share menu button
             var shareMenuButton = Page.Locator(".share-button").First;
             await shareMenuButton.ClickAsync(new() { Force = true });
             await Page.WaitForTimeoutAsync(500);
-            
+
             // Click Copy Link menu item
-            var copyLinkMenuItem = Page.GetByRole(AriaRole.Menuitem).Filter(new() { HasTextString = "Copy Link" });
+            var copyLinkMenuItem = Page.Locator(".mud-menu-item").Filter(new() { HasTextString = "Copy Link" });
             await copyLinkMenuItem.ClickAsync();
 
             // Open the survey in a new tab and replace the Page reference
@@ -355,11 +356,11 @@ namespace JwtIdentity.PlaywrightTests.Tests
             var analysisMenuButton = Page.Locator(".analysis-button").First;
             await analysisMenuButton.ClickAsync();
             await Page.WaitForTimeoutAsync(500);
-            
+
             // Click Charts menu item
-            var chartsMenuItem = Page.GetByRole(AriaRole.Menuitem).Filter(new() { HasTextString = "Charts" });
+            var chartsMenuItem = Page.Locator(".mud-menu-item").Filter(new() { HasTextString = "Charts" });
             await chartsMenuItem.ClickAsync();
-            
+
             var beforeResponses = await GetPageReadyIdAsync(Page);
             await Page.WaitForURLAsync("**/survey/responses/**", new() { Timeout = 15000 });
             await WaitForBlazorInteractiveAsync(beforeResponses, Page);
@@ -403,11 +404,11 @@ namespace JwtIdentity.PlaywrightTests.Tests
             var analysisMenuButton = Page.Locator(".analysis-button");
             await analysisMenuButton.ClickAsync();
             await Page.WaitForTimeoutAsync(500);
-            
+
             // Click Grid menu item
-            var gridMenuItem = Page.GetByRole(AriaRole.Menuitem).Filter(new() { HasTextString = "Grid" });
+            var gridMenuItem = Page.Locator(".mud-menu-item").Filter(new() { HasTextString = "Grid" });
             await gridMenuItem.ClickAsync();
-            
+
             var beforeGrid = await GetPageReadyIdAsync(Page);
             await Page.WaitForURLAsync("**/survey/filter/**", new() { Timeout = 15000 });
             await WaitForBlazorInteractiveAsync(beforeGrid, Page);
@@ -437,9 +438,9 @@ namespace JwtIdentity.PlaywrightTests.Tests
             var analysisMenuButton = Page.Locator(".analysis-button").First;
             await analysisMenuButton.ClickAsync();
             await Page.WaitForTimeoutAsync(500);
-            
+
             // Click Generate Analysis menu item
-            var generateAnalysisMenuItem = Page.GetByRole(AriaRole.Menuitem).Filter(new() { HasTextString = "Generate Analysis" });
+            var generateAnalysisMenuItem = Page.Locator(".mud-menu-item").Filter(new() { HasTextString = "Generate Analysis" });
             await generateAnalysisMenuItem.ClickAsync();
 
             // Wait for the "Generating analysis" snackbar
@@ -460,9 +461,9 @@ namespace JwtIdentity.PlaywrightTests.Tests
             var analysisMenuButton = Page.Locator(".analysis-button").First;
             await analysisMenuButton.ClickAsync();
             await Page.WaitForTimeoutAsync(500);
-            
+
             // Click View Analysis menu item
-            var viewAnalysisMenuItem = Page.GetByRole(AriaRole.Menuitem).Filter(new() { HasTextString = "View Analysis" });
+            var viewAnalysisMenuItem = Page.Locator(".mud-menu-item").Filter(new() { HasTextString = "View Analysis" });
             await viewAnalysisMenuItem.ClickAsync();
 
             var beforeAnalysisPage = await GetPageReadyIdAsync(Page);
