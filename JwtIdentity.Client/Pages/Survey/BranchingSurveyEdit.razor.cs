@@ -526,7 +526,7 @@ namespace JwtIdentity.Client.Pages.Survey
                             {
                                 new ShapeAnnotation()
                                 {
-                                    Content = TruncateText($"Q{question.QuestionNumber}: {question.Text}", 50),
+                                    Content = TruncateText($"Q{question.QuestionNumber}: {question.Text}", 300),
                                     Style = new TextStyle() { Color = "black", FontSize = 11, Bold = true }
                                 }
                             },
@@ -547,7 +547,7 @@ namespace JwtIdentity.Client.Pages.Survey
                         {
                             var optionNodeId = $"Option_Q{question.Id}_O{optionId}";
                             var targetGroupColor = GetGroupColor(branchToGroupId);
-                            
+
                             var optionNode = new Node()
                             {
                                 ID = optionNodeId,
