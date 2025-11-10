@@ -433,39 +433,52 @@ namespace JwtIdentity.Client.Pages.Survey
 
         protected async Task RefreshDiagram()
         {
-            if (diagram != null)
-            {
-                // Clear existing diagram elements
-                diagram.Clear();
-            }
+            // Clear the existing collections that are bound to the diagram
+            Nodes.Clear();
+            Connectors.Clear();
 
-            // Build new nodes and connectors
+            // Rebuild nodes and connectors into temporary collections
+            var tempNodes = new DiagramObjectCollection<Node>();
+            var tempConnectors = new DiagramObjectCollection<Connector>();
+            
+            // Store the original collections temporarily
+            var originalNodes = Nodes;
+            var originalConnectors = Connectors;
+            
+            // Build into temporary collections
+            Nodes = tempNodes;
+            Connectors = tempConnectors;
             BuildSyncfusionDiagram();
-
-            // Add elements to the diagram using the async method
-            if (diagram != null && (Nodes.Any() || Connectors.Any()))
+            
+            // Get the built collections
+            tempNodes = Nodes;
+            tempConnectors = Connectors;
+            
+            // Restore original collections and populate them
+            Nodes = originalNodes;
+            Connectors = originalConnectors;
+            
+            // Add all nodes first
+            foreach (var node in tempNodes)
             {
-                // Combine nodes and connectors into a single collection
-                var diagramElements = new DiagramObjectCollection<NodeBase>();
-                foreach (var node in Nodes)
-                {
-                    diagramElements.Add(node);
-                }
-                foreach (var connector in Connectors)
-                {
-                    diagramElements.Add(connector);
-                }
-
-                await diagram.AddDiagramElementsAsync(diagramElements);
-
-                // Allow UI to update before triggering layout
-                await Task.Delay(100);
-
-                // Apply layout
-                await diagram.DoLayoutAsync();
+                Nodes.Add(node);
+            }
+            
+            // Then add all connectors
+            foreach (var connector in tempConnectors)
+            {
+                Connectors.Add(connector);
             }
 
             StateHasChanged();
+
+            // Allow UI to update before triggering layout
+            await Task.Delay(100);
+
+            if (diagram != null)
+            {
+                await diagram.DoLayoutAsync();
+            }
         }
 
         protected void OnZoomChanged(double newZoom)
