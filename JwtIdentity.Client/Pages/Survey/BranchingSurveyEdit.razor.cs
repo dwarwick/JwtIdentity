@@ -21,7 +21,7 @@ namespace JwtIdentity.Client.Pages.Survey
         protected DiagramConstraints Constraints { get; set; } = DiagramConstraints.Default | DiagramConstraints.Bridging;
         protected ConnectorConstraints ConnectorConstraints { get; set; } = ConnectorConstraints.Default | ConnectorConstraints.Bridging;
 
-        protected SfDiagramComponent diagram;
+        protected SfDiagramComponent diagram { get; set; }
         protected double ZoomLevel { get; set; } = 1.0;
         protected LayoutType DiagramLayoutType { get; set; } = LayoutType.None; // Manual positioning like Azure example
 
@@ -35,7 +35,11 @@ namespace JwtIdentity.Client.Pages.Survey
         {
             FitOptions options = new FitOptions() { Mode = FitMode.Both, Region = DiagramRegion.Content };
 
-            diagram.FitToPage(options);
+            if (diagram != null)
+            {
+                diagram.FitToPage(options);
+            }
+
         }
 
         private async Task LoadData()
@@ -437,7 +441,7 @@ namespace JwtIdentity.Client.Pages.Survey
 
             // Build new nodes and connectors
             BuildSyncfusionDiagram();
-            
+
             // Add elements to the diagram using the async method
             if (diagram != null && (Nodes.Any() || Connectors.Any()))
             {
@@ -451,16 +455,16 @@ namespace JwtIdentity.Client.Pages.Survey
                 {
                     diagramElements.Add(connector);
                 }
-                
+
                 await diagram.AddDiagramElementsAsync(diagramElements);
-                
+
                 // Allow UI to update before triggering layout
                 await Task.Delay(100);
-                
+
                 // Apply layout
                 await diagram.DoLayoutAsync();
             }
-            
+
             StateHasChanged();
         }
 

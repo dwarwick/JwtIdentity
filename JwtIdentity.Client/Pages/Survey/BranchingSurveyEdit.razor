@@ -31,34 +31,34 @@ else
                 <MudAlert Severity="Severity.Info" Class="mb-4">
                     This diagram shows the flow of your survey based on the branching configuration. Blue boxes indicate conditional branching rules with arrows showing the flow path.
                 </MudAlert>
-                            
+
                 @if (Nodes.Any())
                 {
                     <MudStack Spacing="2" Class="mb-3">
                         <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3">
                             <MudText Typo="Typo.body2" Style="min-width: 60px;">Zoom:</MudText>
-                            <MudSlider Value="ZoomLevel" 
-                                      ValueChanged="@((double val) => OnZoomChanged(val))"
-                                      Min="0.1" 
-                                      Max="2.0" 
-                                      Step="0.01" 
-                                      Color="Color.Primary" 
-                                      Style="max-width: 300px;" />
+                            <MudSlider Value="ZoomLevel"
+                                       ValueChanged="@((double val) => OnZoomChanged(val))"
+                                       Min="0.1"
+                                       Max="2.0"
+                                       Step="0.01"
+                                       Color="Color.Primary"
+                                       Style="max-width: 300px;" />
                             <MudText Typo="Typo.body2" Style="min-width: 60px;">@((ZoomLevel * 100).ToString("F0"))%</MudText>
                         </MudStack>
                     </MudStack>
 
                     <div style="width:100%; height:600px; overflow:auto; border:1px solid #ddd; position:relative;">
                         <div style="height:0px; width:100%;
-                      transform: scale(@ZoomLevel);
-                      transform-origin: left top;
-                      transition: transform 0.2s ease;">
-                       
+                                      transform: scale(@ZoomLevel);
+                                      transform-origin: left top;
+                                      transition: transform 0.2s ease;">
+
                             <SfDiagramComponent id="branchingDiagram"
                                                 @ref="diagram"
-                                                Created="DiagramCreated"                                                
+                                                Created="DiagramCreated"
                                                 Height="100%" Width="100%"
-                                                Nodes="@Nodes" 
+                                                Nodes="@Nodes"
                                                 Connectors="@Connectors"
                                                 NodeCreating="@OnNodeCreating"
                                                 Constraints="@Constraints">
@@ -119,15 +119,15 @@ else
                             <ChildContent>
                                 <MudPaper Elevation="2" Class="@($"pa-4 {colorClass}")">
                                     <MudStack Spacing="3">
-                                        <MudTextField Label="Group Name" Value="@group.GroupName" 
-                                                     Variant="Variant.Outlined" 
-                                                     HelperText="Optional: Give this group a descriptive name"
-                                                     ValueChanged="@(async (string value)  => { group.GroupName = value; await UpdateQuestionGroup(group); await RefreshDiagram(); })" />
+                                        <MudTextField Label="Group Name" Value="@group.GroupName"
+                                                      Variant="Variant.Outlined"
+                                                      HelperText="Optional: Give this group a descriptive name"
+                                                      ValueChanged="@(async (string value) => { group.GroupName = value; await UpdateQuestionGroup(group); await RefreshDiagram(); })" />
 
                                         <MudDivider />
 
                                         <MudText Typo="Typo.subtitle1" Class="font-weight-bold">Questions in this Group:</MudText>
-                                        
+
                                         @{
                                             var groupQuestions = Survey.Questions.Where(q => q.GroupId == group.GroupNumber).OrderBy(q => q.QuestionNumber).ToList();
                                         }
@@ -174,9 +174,9 @@ else
                                 <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
                                     <span class="@($"group-badge group-badge-{question.GroupId % 10}")">Group @question.GroupId</span>
                                     <MudText Style="flex: 1;">Q@(question.QuestionNumber): @question.Text</MudText>
-                                    <MudSelect T="int" Label="Assign to Group" Value="question.GroupId" 
-                                              ValueChanged="@(async value => { await MoveQuestionToGroup(question, value); await RefreshDiagram(); })"
-                                              Variant="Variant.Outlined" Dense="true" Style="width: 250px;">
+                                    <MudSelect T="int" Label="Assign to Group" Value="question.GroupId"
+                                               ValueChanged="@(async value => { await MoveQuestionToGroup(question, value); await RefreshDiagram(); })"
+                                               Variant="Variant.Outlined" Dense="true" Style="width: 250px;">
                                         @foreach (var g in QuestionGroups.OrderBy(x => x.GroupNumber))
                                         {
                                             <MudSelectItem Value="@g.GroupNumber">
@@ -197,11 +197,11 @@ else
                 <MudExpansionPanels MultiExpansion="true">
                     @foreach (var group in QuestionGroups.OrderBy(g => g.GroupNumber))
                     {
-                        var groupQuestions = Survey.Questions.Where(q => q.GroupId == group.GroupNumber && 
-                            (q.QuestionType == QuestionType.MultipleChoice || 
-                             q.QuestionType == QuestionType.SelectAllThatApply ||
-                             q.QuestionType == QuestionType.TrueFalse)).OrderBy(q => q.QuestionNumber).ToList();
-                        
+                        var groupQuestions = Survey.Questions.Where(q => q.GroupId == group.GroupNumber &&
+                        (q.QuestionType == QuestionType.MultipleChoice ||
+                        q.QuestionType == QuestionType.SelectAllThatApply ||
+                        q.QuestionType == QuestionType.TrueFalse)).OrderBy(q => q.QuestionNumber).ToList();
+
                         if (groupQuestions.Any())
                         {
                             var colorClass = $"group-color-{group.GroupNumber % 10}";
@@ -216,79 +216,79 @@ else
                                     <MudPaper Elevation="2" Class="@($"pa-4 {colorClass}")">
                                         <MudStack Spacing="2">
                                             @foreach (var question in groupQuestions)
-                                {
-                                    <MudDivider />
-                                    <MudText Typo="Typo.subtitle2" Class="font-weight-bold">
-                                        Q@(question.QuestionNumber): @question.Text
-                                    </MudText>
+                                            {
+                                                <MudDivider />
+                                                <MudText Typo="Typo.subtitle2" Class="font-weight-bold">
+                                                    Q@(question.QuestionNumber): @question.Text
+                                                </MudText>
 
-                                    @if (question.QuestionType == QuestionType.TrueFalse)
-                                    {
-                                        <MudStack Spacing="2" Class="ml-4">
-                                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
-                                                <MudText>If True, go to:</MudText>
-                                                <MudSelect T="int?" Label="Group" Value="@TrueBranch[question.Id]" 
-                                                          ValueChanged="@(async (int? value) => { TrueBranch[question.Id] = value; await UpdateTrueFalseBranch((TrueFalseQuestionViewModel)question, value, true); await RefreshDiagram(); })"
-                                                          Variant="Variant.Outlined" Dense="true" Style="width: 250px;">
-                                                    <MudSelectItem Value="@((int?)null)">Continue in sequence</MudSelectItem>
-                                                    @foreach (var g in QuestionGroups.Where(qg => CanBranchToGroup(group.GroupNumber, qg.GroupNumber)).OrderBy(x => x.GroupNumber))
-                                                    {
-                                                        <MudSelectItem Value="@((int?)g.GroupNumber)">
-                                                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
-                                                                <span class="@($"group-badge group-badge-{g.GroupNumber % 10}")">Group @g.GroupNumber</span>
-                                                                <span>@(string.IsNullOrWhiteSpace(g.GroupName) ? "" : $"- {g.GroupName}")</span>
-                                                            </MudStack>
-                                                        </MudSelectItem>
-                                                    }
-                                                </MudSelect>
-                                            </MudStack>
-                                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
-                                                <MudText>If False, go to:</MudText>
-                                                <MudSelect T="int?" Label="Group" Value="@FalseBranch[question.Id]" 
-                                                          ValueChanged="@(async (int? value) => { FalseBranch[question.Id] = value; await UpdateTrueFalseBranch((TrueFalseQuestionViewModel)question, value, false); await RefreshDiagram(); })"
-                                                          Variant="Variant.Outlined" Dense="true" Style="width: 250px;">
-                                                    <MudSelectItem Value="@((int?)null)">Continue in sequence</MudSelectItem>
-                                                    @foreach (var g in QuestionGroups.Where(qg => CanBranchToGroup(group.GroupNumber, qg.GroupNumber)).OrderBy(x => x.GroupNumber))
-                                                    {
-                                                        <MudSelectItem Value="@((int?)g.GroupNumber)">
-                                                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
-                                                                <span class="@($"group-badge group-badge-{g.GroupNumber % 10}")">Group @g.GroupNumber</span>
-                                                                <span>@(string.IsNullOrWhiteSpace(g.GroupName) ? "" : $"- {g.GroupName}")</span>
-                                                            </MudStack>
-                                                        </MudSelectItem>
-                                                    }
-                                                </MudSelect>
-                                            </MudStack>
-                                        </MudStack>
-                                    }
-                                    else
-                                    {
-                                        var options = question.QuestionType == QuestionType.MultipleChoice 
-                                            ? ((MultipleChoiceQuestionViewModel)question).Options 
-                                            : ((SelectAllThatApplyQuestionViewModel)question).Options;
+                                                @if (question.QuestionType == QuestionType.TrueFalse)
+                                                {
+                                                    <MudStack Spacing="2" Class="ml-4">
+                                                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                                            <MudText>If True, go to:</MudText>
+                                                            <MudSelect T="int?" Label="Group" Value="@TrueBranch[question.Id]"
+                                                                       ValueChanged="@(async (int? value) => { TrueBranch[question.Id] = value; await UpdateTrueFalseBranch((TrueFalseQuestionViewModel)question, value, true); await RefreshDiagram(); })"
+                                                                       Variant="Variant.Outlined" Dense="true" Style="width: 250px;">
+                                                                <MudSelectItem Value="@((int?)null)">Continue in sequence</MudSelectItem>
+                                                                @foreach (var g in QuestionGroups.Where(qg => CanBranchToGroup(group.GroupNumber, qg.GroupNumber)).OrderBy(x => x.GroupNumber))
+                                                                {
+                                                                    <MudSelectItem Value="@((int?)g.GroupNumber)">
+                                                                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                                                                            <span class="@($"group-badge group-badge-{g.GroupNumber % 10}")">Group @g.GroupNumber</span>
+                                                                            <span>@(string.IsNullOrWhiteSpace(g.GroupName) ? "" : $"- {g.GroupName}")</span>
+                                                                        </MudStack>
+                                                                    </MudSelectItem>
+                                                                }
+                                                            </MudSelect>
+                                                        </MudStack>
+                                                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                                            <MudText>If False, go to:</MudText>
+                                                            <MudSelect T="int?" Label="Group" Value="@FalseBranch[question.Id]"
+                                                                       ValueChanged="@(async (int? value) => { FalseBranch[question.Id] = value; await UpdateTrueFalseBranch((TrueFalseQuestionViewModel)question, value, false); await RefreshDiagram(); })"
+                                                                       Variant="Variant.Outlined" Dense="true" Style="width: 250px;">
+                                                                <MudSelectItem Value="@((int?)null)">Continue in sequence</MudSelectItem>
+                                                                @foreach (var g in QuestionGroups.Where(qg => CanBranchToGroup(group.GroupNumber, qg.GroupNumber)).OrderBy(x => x.GroupNumber))
+                                                                {
+                                                                    <MudSelectItem Value="@((int?)g.GroupNumber)">
+                                                                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                                                                            <span class="@($"group-badge group-badge-{g.GroupNumber % 10}")">Group @g.GroupNumber</span>
+                                                                            <span>@(string.IsNullOrWhiteSpace(g.GroupName) ? "" : $"- {g.GroupName}")</span>
+                                                                        </MudStack>
+                                                                    </MudSelectItem>
+                                                                }
+                                                            </MudSelect>
+                                                        </MudStack>
+                                                    </MudStack>
+                                                }
+                                                else
+                                                {
+                                                    var options = question.QuestionType == QuestionType.MultipleChoice
+                                                    ? ((MultipleChoiceQuestionViewModel)question).Options
+                                                    : ((SelectAllThatApplyQuestionViewModel)question).Options;
 
-                                        @foreach (var option in options)
-                                        {
-                                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="ml-4 my-1">
-                                                <MudText Style="width: 200px;">@option.OptionText</MudText>
-                                                <MudIcon Icon="@Icons.Material.Filled.ArrowForward" Size="MudBlazor.Size.Small" />
-                                                <MudSelect T="int?" Label="Branch to Group" Value="@option.BranchToGroupId" 
-                                                          Variant="Variant.Outlined" Dense="true" Style="width: 250px;"
-                                                          ValueChanged="@(async (int? value) => { option.BranchToGroupId = value; await UpdateChoiceOptionBranch(option); await RefreshDiagram(); })">
-                                                    <MudSelectItem Value="@((int?)null)">Continue in sequence</MudSelectItem>
-                                                    @foreach (var g in QuestionGroups.Where(qg => CanBranchToGroup(group.GroupNumber, qg.GroupNumber)).OrderBy(x => x.GroupNumber))
+                                                    @foreach (var option in options)
                                                     {
-                                                        <MudSelectItem Value="@((int?)g.GroupNumber)">
-                                                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
-                                                                <span class="@($"group-badge group-badge-{g.GroupNumber % 10}")">Group @g.GroupNumber</span>
-                                                                <span>@(string.IsNullOrWhiteSpace(g.GroupName) ? "" : $"- {g.GroupName}")</span>
-                                                            </MudStack>
-                                                        </MudSelectItem>
+                                                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="ml-4 my-1">
+                                                            <MudText Style="width: 200px;">@option.OptionText</MudText>
+                                                            <MudIcon Icon="@Icons.Material.Filled.ArrowForward" Size="MudBlazor.Size.Small" />
+                                                            <MudSelect T="int?" Label="Branch to Group" Value="@option.BranchToGroupId"
+                                                                       Variant="Variant.Outlined" Dense="true" Style="width: 250px;"
+                                                                       ValueChanged="@(async (int? value) => { option.BranchToGroupId = value; await UpdateChoiceOptionBranch(option); await RefreshDiagram(); })">
+                                                                <MudSelectItem Value="@((int?)null)">Continue in sequence</MudSelectItem>
+                                                                @foreach (var g in QuestionGroups.Where(qg => CanBranchToGroup(group.GroupNumber, qg.GroupNumber)).OrderBy(x => x.GroupNumber))
+                                                                {
+                                                                    <MudSelectItem Value="@((int?)g.GroupNumber)">
+                                                                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                                                                            <span class="@($"group-badge group-badge-{g.GroupNumber % 10}")">Group @g.GroupNumber</span>
+                                                                            <span>@(string.IsNullOrWhiteSpace(g.GroupName) ? "" : $"- {g.GroupName}")</span>
+                                                                        </MudStack>
+                                                                    </MudSelectItem>
+                                                                }
+                                                            </MudSelect>
+                                                        </MudStack>
                                                     }
-                                                </MudSelect>
-                                            </MudStack>
-                                        }
-                                    }
+                                                }
                                             }
                                         </MudStack>
                                     </MudPaper>
@@ -298,9 +298,9 @@ else
                     }
                 </MudExpansionPanels>
 
-                @if (!Survey.Questions.Any(q => q.QuestionType == QuestionType.MultipleChoice || 
-                                               q.QuestionType == QuestionType.SelectAllThatApply ||
-                                               q.QuestionType == QuestionType.TrueFalse))
+                @if (!Survey.Questions.Any(q => q.QuestionType == QuestionType.MultipleChoice ||
+                            q.QuestionType == QuestionType.SelectAllThatApply ||
+                            q.QuestionType == QuestionType.TrueFalse))
                 {
                     <MudAlert Severity="Severity.Info">
                         No questions with branching capabilities found. Add Multiple Choice, Select All That Apply, or True/False questions to enable conditional branching.
