@@ -429,16 +429,39 @@ namespace JwtIdentity.Client.Pages.Survey
 
         protected async Task RefreshDiagram()
         {
-            BuildSyncfusionDiagram();
-            StateHasChanged();
-
-            // Allow UI to update before triggering layout
-            await Task.Delay(100);
-
             if (diagram != null)
             {
+                // Clear existing diagram elements
+                diagram.Clear();
+            }
+
+            // Build new nodes and connectors
+            BuildSyncfusionDiagram();
+            
+            // Add elements to the diagram using the async method
+            if (diagram != null && (Nodes.Any() || Connectors.Any()))
+            {
+                // Combine nodes and connectors into a single collection
+                var diagramElements = new DiagramObjectCollection<NodeBase>();
+                foreach (var node in Nodes)
+                {
+                    diagramElements.Add(node);
+                }
+                foreach (var connector in Connectors)
+                {
+                    diagramElements.Add(connector);
+                }
+                
+                await diagram.AddDiagramElementsAsync(diagramElements);
+                
+                // Allow UI to update before triggering layout
+                await Task.Delay(100);
+                
+                // Apply layout
                 await diagram.DoLayoutAsync();
             }
+            
+            StateHasChanged();
         }
 
         protected void OnZoomChanged(double newZoom)
