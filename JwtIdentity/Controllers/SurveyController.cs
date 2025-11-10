@@ -718,7 +718,7 @@ namespace JwtIdentity.Controllers
                 if (hasAnswers)
                 {
                     _logger.LogWarning("Cannot unpublish survey {SurveyId} - survey has answers", id);
-                    return BadRequest("Cannot unpublish survey that has responses. Please delete the survey instead.");
+                    return BadRequest("Cannot unpublish survey that has responses.");
                 }
 
                 survey.Published = false;

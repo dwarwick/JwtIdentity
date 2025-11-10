@@ -219,7 +219,7 @@
 
             if (hasResponses)
             {
-                _ = Snackbar.Add("Cannot unpublish survey that has responses. Please delete the survey instead.", Severity.Error);
+                _ = Snackbar.Add("Cannot unpublish survey that has responses.", Severity.Error);
                 return;
             }
 
@@ -235,7 +235,7 @@
                 if (result != null)
                 {
                     _ = Snackbar.Add("Survey unpublished successfully!", Severity.Success);
-                    
+
                     // Update the local survey in the list
                     var survey = UserSurveys.FirstOrDefault(s => s.Id == surveyId);
                     if (survey != null)
