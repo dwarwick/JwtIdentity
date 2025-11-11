@@ -512,6 +512,17 @@ namespace JwtIdentity.Controllers
                 var userName = user?.UserName ?? userId.ToString();
                 var wasPublished = survey.Published;
 
+                // Validate survey before publishing
+                if (surveyViewModel.Published && !wasPublished)
+                {
+                    var (isValid, errorMessage) = await _surveyService.ValidateSurveyForPublishingAsync(surveyViewModel.Id);
+                    if (!isValid)
+                    {
+                        _logger.LogWarning("Survey {SurveyId} validation failed: {ErrorMessage}", surveyViewModel.Id, errorMessage);
+                        return BadRequest(errorMessage);
+                    }
+                }
+
                 // Update basic properties only
                 survey.Title = surveyViewModel.Title;
                 survey.Description = surveyViewModel.Description;

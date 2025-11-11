@@ -435,14 +435,21 @@ namespace JwtIdentity.Client.Pages.Survey
 
             SurveyViewModel publishedSurvey = await ApiService.UpdateAsync(ApiEndpoints.Survey, Survey);
 
-            if (publishedSurvey.Published)
+            if (publishedSurvey != null && publishedSurvey.Published)
             {
                 _ = Snackbar.Add("Survey Published", Severity.Success);
                 Navigation.NavigateTo("/mysurveys/surveysicreated");
             }
             else
             {
-                _ = Snackbar.Add("Unable to publish survey", Severity.Error);
+                // Reset published status if the operation failed
+                Survey.Published = false;
+                
+                if (publishedSurvey != null)
+                {
+                    _ = Snackbar.Add("Unable to publish survey", Severity.Error);
+                }
+                // If publishedSurvey is null, the error was already shown by ApiService
             }
         }
 

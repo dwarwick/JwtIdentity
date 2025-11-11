@@ -36,6 +36,9 @@ namespace JwtIdentity.Tests.ControllerTests
             MockEmailService.Setup(e => e.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(true);
             MockConfiguration.Setup(c => c["EmailSettings:CustomerServiceEmail"]).Returns("admin@example.com");
             MockSurveyService = new Mock<ISurveyService>();
+            // Default: validation passes
+            MockSurveyService.Setup(s => s.ValidateSurveyForPublishingAsync(It.IsAny<int>()))
+                .ReturnsAsync((true, string.Empty));
             var mockQuestionHandlerFactory = new Mock<IQuestionHandlerFactory>();
             var mockQuestionHandler = new Mock<IQuestionHandler>();
             mockQuestionHandler.Setup(h => h.LoadRelatedDataAsync(It.IsAny<List<int>>(), It.IsAny<ApplicationDbContext>()))
@@ -499,6 +502,101 @@ namespace JwtIdentity.Tests.ControllerTests
             var result = await _controller.PostSurvey(surveyVm);
             // Assert
             Assert.That(result.Result, Is.InstanceOf<UnauthorizedResult>());
+        }
+
+        [Test]
+        public async Task PutSurvey_PublishWithOrphanedGroups_ReturnsBadRequest()
+        {
+            // Arrange
+            MockApiAuthService.Setup(a => a.GetUserId(It.IsAny<ClaimsPrincipal>())).Returns(2);
+            MockSurveyService.Setup(s => s.ValidateSurveyForPublishingAsync(It.IsAny<int>()))
+                .ReturnsAsync((false, "Cannot publish survey with unreachable groups: Orphaned Group"));
+
+            var surveyVm = new SurveyViewModel
+            {
+                Id = 2, // Use survey 2 which is unpublished
+                Title = "Survey 2",
+                Description = "Description 2",
+                Published = true
+            };
+
+            // Act
+            var result = await _controller.PutSurvey(surveyVm);
+
+            // Assert
+            Assert.That(result, Is.InstanceOf<BadRequestObjectResult>());
+            var badRequestResult = result as BadRequestObjectResult;
+            Assert.That(badRequestResult.Value, Does.Contain("unreachable group"));
+        }
+
+        [Test]
+        public async Task PutSurvey_PublishWithEmptyGroups_ReturnsBadRequest()
+        {
+            // Arrange
+            MockApiAuthService.Setup(a => a.GetUserId(It.IsAny<ClaimsPrincipal>())).Returns(2);
+            MockSurveyService.Setup(s => s.ValidateSurveyForPublishingAsync(It.IsAny<int>()))
+                .ReturnsAsync((false, "Cannot publish survey with empty groups: Empty Group"));
+
+            var surveyVm = new SurveyViewModel
+            {
+                Id = 2, // Use survey 2 which is unpublished
+                Title = "Survey 2",
+                Description = "Description 2",
+                Published = true
+            };
+
+            // Act
+            var result = await _controller.PutSurvey(surveyVm);
+
+            // Assert
+            Assert.That(result, Is.InstanceOf<BadRequestObjectResult>());
+            var badRequestResult = result as BadRequestObjectResult;
+            Assert.That(badRequestResult.Value, Does.Contain("empty group"));
+        }
+
+        [Test]
+        public async Task PutSurvey_PublishWithValidGroups_ReturnsOk()
+        {
+            // Arrange
+            MockApiAuthService.Setup(a => a.GetUserId(It.IsAny<ClaimsPrincipal>())).Returns(2);
+            MockSurveyService.Setup(s => s.ValidateSurveyForPublishingAsync(It.IsAny<int>()))
+                .ReturnsAsync((true, string.Empty));
+
+            var surveyVm = new SurveyViewModel
+            {
+                Id = 2, // Use survey 2 which is unpublished
+                Title = "Survey 2",
+                Description = "Description 2",
+                Published = true
+            };
+
+            // Act
+            var result = await _controller.PutSurvey(surveyVm);
+
+            // Assert
+            Assert.That(result, Is.InstanceOf<OkObjectResult>());
+        }
+
+        [Test]
+        public async Task PutSurvey_UpdateWithoutPublishing_DoesNotValidate()
+        {
+            // Arrange
+            MockApiAuthService.Setup(a => a.GetUserId(It.IsAny<ClaimsPrincipal>())).Returns(1);
+
+            var surveyVm = new SurveyViewModel
+            {
+                Id = 1,
+                Title = "Updated Survey 1",
+                Description = "Updated Description 1",
+                Published = false // Not publishing
+            };
+
+            // Act
+            var result = await _controller.PutSurvey(surveyVm);
+
+            // Assert
+            Assert.That(result, Is.InstanceOf<OkObjectResult>());
+            MockSurveyService.Verify(s => s.ValidateSurveyForPublishingAsync(It.IsAny<int>()), Times.Never);
         }
     }
 }
