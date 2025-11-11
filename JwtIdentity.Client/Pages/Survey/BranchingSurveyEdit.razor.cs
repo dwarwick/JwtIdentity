@@ -21,9 +21,10 @@ namespace JwtIdentity.Client.Pages.Survey
         protected DiagramConstraints Constraints { get; set; } = DiagramConstraints.Default | DiagramConstraints.Bridging;
         protected ConnectorConstraints ConnectorConstraints { get; set; } = ConnectorConstraints.Default | ConnectorConstraints.Bridging;
 
-        protected SfDiagramComponent diagram;
+        protected SfDiagramComponent diagram { get; set; }
         protected double ZoomLevel { get; set; } = 1.0;
         protected LayoutType DiagramLayoutType { get; set; } = LayoutType.None; // Manual positioning like Azure example
+        protected int DiagramRefreshKey { get; set; } = 0; // Used to force diagram recreation
 
         protected override async Task OnInitializedAsync()
         {
@@ -35,7 +36,11 @@ namespace JwtIdentity.Client.Pages.Survey
         {
             FitOptions options = new FitOptions() { Mode = FitMode.Both, Region = DiagramRegion.Content };
 
-            diagram.FitToPage(options);
+            if (diagram != null)
+            {
+                diagram.FitToPage(options);
+            }
+
         }
 
         private async Task LoadData()
@@ -429,15 +434,25 @@ namespace JwtIdentity.Client.Pages.Survey
 
         protected async Task RefreshDiagram()
         {
+            // Build new nodes and connectors (creates new collection instances)
             BuildSyncfusionDiagram();
-            StateHasChanged();
+            
+            // Increment the key to force diagram component recreation
+            DiagramRefreshKey++;
+            
+            // Force synchronous state update to ensure Blazor processes the change
+            await InvokeAsync(StateHasChanged);
 
-            // Allow UI to update before triggering layout
-            await Task.Delay(100);
+            // Allow UI to fully update before triggering layout
+            await Task.Delay(200);
 
             if (diagram != null)
             {
+                // Apply layout to position elements correctly
                 await diagram.DoLayoutAsync();
+                
+                // Force another state update after layout
+                await InvokeAsync(StateHasChanged);
             }
         }
 
