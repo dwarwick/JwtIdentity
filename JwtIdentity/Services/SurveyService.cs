@@ -138,5 +138,169 @@ namespace JwtIdentity.Services
                 throw;
             }
         }
+
+        public async Task<(bool IsValid, string ErrorMessage)> ValidateSurveyForPublishingAsync(int surveyId)
+        {
+            try
+            {
+                _logger.LogInformation("Validating survey {SurveyId} for publishing", surveyId);
+
+                // Load survey with all related data needed for validation
+                var survey = await _dbContext.Surveys
+                    .Include(s => s.Questions)
+                    .Include(s => s.QuestionGroups)
+                    .FirstOrDefaultAsync(s => s.Id == surveyId);
+
+                if (survey == null)
+                {
+                    return (false, "Survey not found");
+                }
+
+                // If there are no question groups, the survey is valid (backward compatibility)
+                if (survey.QuestionGroups == null || !survey.QuestionGroups.Any())
+                {
+                    _logger.LogInformation("Survey {SurveyId} has no question groups, skipping group validation", surveyId);
+                    return (true, string.Empty);
+                }
+
+                // Load choice options for multiple choice and select-all questions
+                var mcQuestions = survey.Questions.OfType<MultipleChoiceQuestion>().ToList();
+                var satQuestions = survey.Questions.OfType<SelectAllThatApplyQuestion>().ToList();
+                
+                var mcIds = mcQuestions.Select(q => q.Id).ToList();
+                var satIds = satQuestions.Select(q => q.Id).ToList();
+
+                List<ChoiceOption> allOptions = new List<ChoiceOption>();
+                
+                if (mcIds.Any() || satIds.Any())
+                {
+                    allOptions = await _dbContext.ChoiceOptions
+                        .Where(co => 
+                            (co.MultipleChoiceQuestionId.HasValue && mcIds.Contains(co.MultipleChoiceQuestionId.Value)) ||
+                            (co.SelectAllThatApplyQuestionId.HasValue && satIds.Contains(co.SelectAllThatApplyQuestionId.Value)))
+                        .ToListAsync();
+                }
+
+                // Assign loaded options back to questions
+                foreach (var mcQ in mcQuestions)
+                {
+                    mcQ.Options = allOptions.Where(o => o.MultipleChoiceQuestionId == mcQ.Id).ToList();
+                }
+                
+                foreach (var satQ in satQuestions)
+                {
+                    satQ.Options = allOptions.Where(o => o.SelectAllThatApplyQuestionId == satQ.Id).ToList();
+                }
+
+                // Check for empty groups
+                var emptyGroups = survey.QuestionGroups
+                    .Where(g => !survey.Questions.Any(q => q.GroupId == g.Id))
+                    .ToList();
+
+                if (emptyGroups.Any())
+                {
+                    var groupNames = string.Join(", ", emptyGroups.Select(g => 
+                        string.IsNullOrWhiteSpace(g.GroupName) ? $"Group {g.GroupNumber}" : g.GroupName));
+                    _logger.LogWarning("Survey {SurveyId} has empty groups: {Groups}", surveyId, groupNames);
+                    return (false, $"Cannot publish survey with empty groups: {groupNames}. Please add questions to these groups or delete them.");
+                }
+
+                // Find all reachable groups starting from group 0
+                var reachableGroups = new HashSet<int>();
+                var groupsToCheck = new Queue<int>();
+
+                // Start with group 0 (default group) - it's always the entry point
+                var defaultGroup = survey.QuestionGroups.FirstOrDefault(g => g.GroupNumber == 0);
+                if (defaultGroup != null)
+                {
+                    reachableGroups.Add(defaultGroup.Id);
+                    groupsToCheck.Enqueue(defaultGroup.Id);
+                }
+
+                // Traverse all possible paths
+                while (groupsToCheck.Count > 0)
+                {
+                    var currentGroupId = groupsToCheck.Dequeue();
+                    var currentGroup = survey.QuestionGroups.FirstOrDefault(g => g.Id == currentGroupId);
+
+                    if (currentGroup == null)
+                        continue;
+
+                    // Check NextGroupId
+                    if (currentGroup.NextGroupId.HasValue && !reachableGroups.Contains(currentGroup.NextGroupId.Value))
+                    {
+                        reachableGroups.Add(currentGroup.NextGroupId.Value);
+                        groupsToCheck.Enqueue(currentGroup.NextGroupId.Value);
+                    }
+
+                    // Check branching from questions in this group
+                    var questionsInGroup = survey.Questions.Where(q => q.GroupId == currentGroupId).ToList();
+
+                    foreach (var question in questionsInGroup)
+                    {
+                        // Check True/False branching
+                        if (question is TrueFalseQuestion tfQuestion)
+                        {
+                            if (tfQuestion.BranchToGroupIdOnTrue.HasValue && !reachableGroups.Contains(tfQuestion.BranchToGroupIdOnTrue.Value))
+                            {
+                                reachableGroups.Add(tfQuestion.BranchToGroupIdOnTrue.Value);
+                                groupsToCheck.Enqueue(tfQuestion.BranchToGroupIdOnTrue.Value);
+                            }
+
+                            if (tfQuestion.BranchToGroupIdOnFalse.HasValue && !reachableGroups.Contains(tfQuestion.BranchToGroupIdOnFalse.Value))
+                            {
+                                reachableGroups.Add(tfQuestion.BranchToGroupIdOnFalse.Value);
+                                groupsToCheck.Enqueue(tfQuestion.BranchToGroupIdOnFalse.Value);
+                            }
+                        }
+                        // Check Multiple Choice branching
+                        else if (question is MultipleChoiceQuestion mcQuestion && mcQuestion.Options != null)
+                        {
+                            foreach (var option in mcQuestion.Options)
+                            {
+                                if (option.BranchToGroupId.HasValue && !reachableGroups.Contains(option.BranchToGroupId.Value))
+                                {
+                                    reachableGroups.Add(option.BranchToGroupId.Value);
+                                    groupsToCheck.Enqueue(option.BranchToGroupId.Value);
+                                }
+                            }
+                        }
+                        // Check Select All That Apply branching
+                        else if (question is SelectAllThatApplyQuestion satQuestion && satQuestion.Options != null)
+                        {
+                            foreach (var option in satQuestion.Options)
+                            {
+                                if (option.BranchToGroupId.HasValue && !reachableGroups.Contains(option.BranchToGroupId.Value))
+                                {
+                                    reachableGroups.Add(option.BranchToGroupId.Value);
+                                    groupsToCheck.Enqueue(option.BranchToGroupId.Value);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Find orphaned groups (groups that are not reachable)
+                var orphanedGroups = survey.QuestionGroups
+                    .Where(g => g.GroupNumber != 0 && !reachableGroups.Contains(g.Id))
+                    .ToList();
+
+                if (orphanedGroups.Any())
+                {
+                    var groupNames = string.Join(", ", orphanedGroups.Select(g => 
+                        string.IsNullOrWhiteSpace(g.GroupName) ? $"Group {g.GroupNumber}" : g.GroupName));
+                    _logger.LogWarning("Survey {SurveyId} has orphaned groups: {Groups}", surveyId, groupNames);
+                    return (false, $"Cannot publish survey with unreachable groups: {groupNames}. Please add branching rules to connect these groups or delete them.");
+                }
+
+                _logger.LogInformation("Survey {SurveyId} validation passed", surveyId);
+                return (true, string.Empty);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error validating survey {SurveyId} for publishing", surveyId);
+                return (false, "An error occurred while validating the survey");
+            }
+        }
     }
 }
