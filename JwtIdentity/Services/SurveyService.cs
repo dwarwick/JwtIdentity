@@ -194,7 +194,7 @@ namespace JwtIdentity.Services
 
                 // Check for empty groups
                 var emptyGroups = survey.QuestionGroups
-                    .Where(g => !survey.Questions.Any(q => q.GroupId == g.Id))
+                    .Where(g => !survey.Questions.Any(q => q.GroupId == g.GroupNumber))
                     .ToList();
 
                 if (emptyGroups.Any())
@@ -206,51 +206,47 @@ namespace JwtIdentity.Services
                 }
 
                 // Find all reachable groups starting from group 0
-                var reachableGroups = new HashSet<int>();
-                var groupsToCheck = new Queue<int>();
+                var reachableGroupNumbers = new HashSet<int>();
+                var groupNumbersToCheck = new Queue<int>();
 
                 // Start with group 0 (default group) - it's always the entry point
-                var defaultGroup = survey.QuestionGroups.FirstOrDefault(g => g.GroupNumber == 0);
-                if (defaultGroup != null)
-                {
-                    reachableGroups.Add(defaultGroup.Id);
-                    groupsToCheck.Enqueue(defaultGroup.Id);
-                }
+                reachableGroupNumbers.Add(0);
+                groupNumbersToCheck.Enqueue(0);
 
                 // Traverse all possible paths
-                while (groupsToCheck.Count > 0)
+                while (groupNumbersToCheck.Count > 0)
                 {
-                    var currentGroupId = groupsToCheck.Dequeue();
-                    var currentGroup = survey.QuestionGroups.FirstOrDefault(g => g.Id == currentGroupId);
+                    var currentGroupNumber = groupNumbersToCheck.Dequeue();
+                    var currentGroup = survey.QuestionGroups.FirstOrDefault(g => g.GroupNumber == currentGroupNumber);
 
                     if (currentGroup == null)
                         continue;
 
-                    // Check NextGroupId
-                    if (currentGroup.NextGroupId.HasValue && !reachableGroups.Contains(currentGroup.NextGroupId.Value))
+                    // Check NextGroupId (if it stores GroupNumber)
+                    if (currentGroup.NextGroupId.HasValue && !reachableGroupNumbers.Contains(currentGroup.NextGroupId.Value))
                     {
-                        reachableGroups.Add(currentGroup.NextGroupId.Value);
-                        groupsToCheck.Enqueue(currentGroup.NextGroupId.Value);
+                        reachableGroupNumbers.Add(currentGroup.NextGroupId.Value);
+                        groupNumbersToCheck.Enqueue(currentGroup.NextGroupId.Value);
                     }
 
                     // Check branching from questions in this group
-                    var questionsInGroup = survey.Questions.Where(q => q.GroupId == currentGroupId).ToList();
+                    var questionsInGroup = survey.Questions.Where(q => q.GroupId == currentGroupNumber).ToList();
 
                     foreach (var question in questionsInGroup)
                     {
                         // Check True/False branching
                         if (question is TrueFalseQuestion tfQuestion)
                         {
-                            if (tfQuestion.BranchToGroupIdOnTrue.HasValue && !reachableGroups.Contains(tfQuestion.BranchToGroupIdOnTrue.Value))
+                            if (tfQuestion.BranchToGroupIdOnTrue.HasValue && !reachableGroupNumbers.Contains(tfQuestion.BranchToGroupIdOnTrue.Value))
                             {
-                                reachableGroups.Add(tfQuestion.BranchToGroupIdOnTrue.Value);
-                                groupsToCheck.Enqueue(tfQuestion.BranchToGroupIdOnTrue.Value);
+                                reachableGroupNumbers.Add(tfQuestion.BranchToGroupIdOnTrue.Value);
+                                groupNumbersToCheck.Enqueue(tfQuestion.BranchToGroupIdOnTrue.Value);
                             }
 
-                            if (tfQuestion.BranchToGroupIdOnFalse.HasValue && !reachableGroups.Contains(tfQuestion.BranchToGroupIdOnFalse.Value))
+                            if (tfQuestion.BranchToGroupIdOnFalse.HasValue && !reachableGroupNumbers.Contains(tfQuestion.BranchToGroupIdOnFalse.Value))
                             {
-                                reachableGroups.Add(tfQuestion.BranchToGroupIdOnFalse.Value);
-                                groupsToCheck.Enqueue(tfQuestion.BranchToGroupIdOnFalse.Value);
+                                reachableGroupNumbers.Add(tfQuestion.BranchToGroupIdOnFalse.Value);
+                                groupNumbersToCheck.Enqueue(tfQuestion.BranchToGroupIdOnFalse.Value);
                             }
                         }
                         // Check Multiple Choice branching
@@ -258,10 +254,10 @@ namespace JwtIdentity.Services
                         {
                             foreach (var option in mcQuestion.Options)
                             {
-                                if (option.BranchToGroupId.HasValue && !reachableGroups.Contains(option.BranchToGroupId.Value))
+                                if (option.BranchToGroupId.HasValue && !reachableGroupNumbers.Contains(option.BranchToGroupId.Value))
                                 {
-                                    reachableGroups.Add(option.BranchToGroupId.Value);
-                                    groupsToCheck.Enqueue(option.BranchToGroupId.Value);
+                                    reachableGroupNumbers.Add(option.BranchToGroupId.Value);
+                                    groupNumbersToCheck.Enqueue(option.BranchToGroupId.Value);
                                 }
                             }
                         }
@@ -270,10 +266,10 @@ namespace JwtIdentity.Services
                         {
                             foreach (var option in satQuestion.Options)
                             {
-                                if (option.BranchToGroupId.HasValue && !reachableGroups.Contains(option.BranchToGroupId.Value))
+                                if (option.BranchToGroupId.HasValue && !reachableGroupNumbers.Contains(option.BranchToGroupId.Value))
                                 {
-                                    reachableGroups.Add(option.BranchToGroupId.Value);
-                                    groupsToCheck.Enqueue(option.BranchToGroupId.Value);
+                                    reachableGroupNumbers.Add(option.BranchToGroupId.Value);
+                                    groupNumbersToCheck.Enqueue(option.BranchToGroupId.Value);
                                 }
                             }
                         }
@@ -282,7 +278,7 @@ namespace JwtIdentity.Services
 
                 // Find orphaned groups (groups that are not reachable)
                 var orphanedGroups = survey.QuestionGroups
-                    .Where(g => g.GroupNumber != 0 && !reachableGroups.Contains(g.Id))
+                    .Where(g => g.GroupNumber != 0 && !reachableGroupNumbers.Contains(g.GroupNumber))
                     .ToList();
 
                 if (orphanedGroups.Any())

@@ -88,7 +88,7 @@ namespace JwtIdentity.Tests.ServiceTests
                 Published = false,
                 Questions = new System.Collections.Generic.List<Question>
                 {
-                    new TextQuestion { Id = 1, Text = "Q1", QuestionNumber = 1, QuestionType = QuestionType.Text, GroupId = 1 }
+                    new TextQuestion { Id = 1, Text = "Q1", QuestionNumber = 1, QuestionType = QuestionType.Text, GroupId = 0 }
                 },
                 QuestionGroups = new System.Collections.Generic.List<QuestionGroup>
                 {
@@ -120,8 +120,8 @@ namespace JwtIdentity.Tests.ServiceTests
                 Published = false,
                 Questions = new System.Collections.Generic.List<Question>
                 {
-                    new TextQuestion { Id = 1, Text = "Q1", QuestionNumber = 1, QuestionType = QuestionType.Text, GroupId = 1 },
-                    new TextQuestion { Id = 2, Text = "Q2", QuestionNumber = 2, QuestionType = QuestionType.Text, GroupId = 2 }
+                    new TextQuestion { Id = 1, Text = "Q1", QuestionNumber = 1, QuestionType = QuestionType.Text, GroupId = 0 },
+                    new TextQuestion { Id = 2, Text = "Q2", QuestionNumber = 2, QuestionType = QuestionType.Text, GroupId = 1 }
                 },
                 QuestionGroups = new System.Collections.Generic.List<QuestionGroup>
                 {
@@ -153,12 +153,12 @@ namespace JwtIdentity.Tests.ServiceTests
                 Published = false,
                 Questions = new System.Collections.Generic.List<Question>
                 {
-                    new TextQuestion { Id = 1, Text = "Q1", QuestionNumber = 1, QuestionType = QuestionType.Text, GroupId = 1 },
-                    new TextQuestion { Id = 2, Text = "Q2", QuestionNumber = 2, QuestionType = QuestionType.Text, GroupId = 2 }
+                    new TextQuestion { Id = 1, Text = "Q1", QuestionNumber = 1, QuestionType = QuestionType.Text, GroupId = 0 },
+                    new TextQuestion { Id = 2, Text = "Q2", QuestionNumber = 2, QuestionType = QuestionType.Text, GroupId = 1 }
                 },
                 QuestionGroups = new System.Collections.Generic.List<QuestionGroup>
                 {
-                    new QuestionGroup { Id = 1, SurveyId = 1, GroupNumber = 0, GroupName = "Default", NextGroupId = 2 },
+                    new QuestionGroup { Id = 1, SurveyId = 1, GroupNumber = 0, GroupName = "Default", NextGroupId = 1 },
                     new QuestionGroup { Id = 2, SurveyId = 1, GroupNumber = 1, GroupName = "Connected Group" }
                 }
             };
@@ -191,10 +191,10 @@ namespace JwtIdentity.Tests.ServiceTests
                         Text = "Q1", 
                         QuestionNumber = 1, 
                         QuestionType = QuestionType.TrueFalse, 
-                        GroupId = 1,
-                        BranchToGroupIdOnTrue = 2
+                        GroupId = 0,
+                        BranchToGroupIdOnTrue = 1
                     },
-                    new TextQuestion { Id = 2, Text = "Q2", QuestionNumber = 2, QuestionType = QuestionType.Text, GroupId = 2 }
+                    new TextQuestion { Id = 2, Text = "Q2", QuestionNumber = 2, QuestionType = QuestionType.Text, GroupId = 1 }
                 },
                 QuestionGroups = new System.Collections.Generic.List<QuestionGroup>
                 {
@@ -223,7 +223,7 @@ namespace JwtIdentity.Tests.ServiceTests
                 Text = "Q1", 
                 QuestionNumber = 1, 
                 QuestionType = QuestionType.MultipleChoice, 
-                GroupId = 1
+                GroupId = 0
             };
 
             var choiceOption = new ChoiceOption 
@@ -231,7 +231,7 @@ namespace JwtIdentity.Tests.ServiceTests
                 Id = 1, 
                 OptionText = "Option 1", 
                 MultipleChoiceQuestionId = 1, 
-                BranchToGroupId = 2 
+                BranchToGroupId = 1 
             };
 
             var survey = new Survey
@@ -243,7 +243,7 @@ namespace JwtIdentity.Tests.ServiceTests
                 Questions = new System.Collections.Generic.List<Question>
                 {
                     mcQuestion,
-                    new TextQuestion { Id = 2, Text = "Q2", QuestionNumber = 2, QuestionType = QuestionType.Text, GroupId = 2 }
+                    new TextQuestion { Id = 2, Text = "Q2", QuestionNumber = 2, QuestionType = QuestionType.Text, GroupId = 1 }
                 },
                 QuestionGroups = new System.Collections.Generic.List<QuestionGroup>
                 {
