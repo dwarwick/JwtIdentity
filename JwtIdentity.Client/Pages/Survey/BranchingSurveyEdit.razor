@@ -180,25 +180,27 @@ else
                             <MudListItem T="string" Class="@questionColorClass">
                                 <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
                                     <span class="@($"group-badge group-badge-{question.GroupId % 10}")">Group @question.GroupId</span>
+                                    <MudText Style="flex: 1;">Q@(question.QuestionNumber): @question.Text</MudText>
                                     @if (question.IsLastQuestion)
                                     {
                                         <MudChip Size="MudBlazor.Size.Small" Color="Color.Warning" Icon="@Icons.Material.Filled.Flag">Last Question</MudChip>
                                     }
-                                    <MudText Style="flex: 1;">Q@(question.QuestionNumber): @question.Text</MudText>
-                                    <MudSelect T="int" Label="Assign to Group" Value="question.GroupId"
-                                               ValueChanged="@(async value => { await MoveQuestionToGroup(question, value); await RefreshDiagram(); })"
-                                               Variant="Variant.Outlined" Dense="true" Style="width: 250px;"
-                                               Disabled="@question.IsLastQuestion">
-                                        @foreach (var g in QuestionGroups.OrderBy(x => x.GroupNumber))
-                                        {
-                                            <MudSelectItem Value="@g.GroupNumber">
-                                                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
-                                                    <span class="@($"group-badge group-badge-{g.GroupNumber % 10}")">Group @g.GroupNumber</span>
-                                                    <span>@(string.IsNullOrWhiteSpace(g.GroupName) ? "" : $"- {g.GroupName}")</span>
-                                                </MudStack>
-                                            </MudSelectItem>
-                                        }
-                                    </MudSelect>
+                                    else
+                                    {
+                                        <MudSelect T="int" Label="Assign to Group" Value="question.GroupId"
+                                                   ValueChanged="@(async value => { await MoveQuestionToGroup(question, value); await RefreshDiagram(); })"
+                                                   Variant="Variant.Outlined" Dense="true" Style="width: 250px;">
+                                            @foreach (var g in QuestionGroups.OrderBy(x => x.GroupNumber))
+                                            {
+                                                <MudSelectItem Value="@g.GroupNumber">
+                                                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                                                        <span class="@($"group-badge group-badge-{g.GroupNumber % 10}")">Group @g.GroupNumber</span>
+                                                        <span>@(string.IsNullOrWhiteSpace(g.GroupName) ? "" : $"- {g.GroupName}")</span>
+                                                    </MudStack>
+                                                </MudSelectItem>
+                                            }
+                                        </MudSelect>
+                                    }
                                 </MudStack>
                             </MudListItem>
                         }
