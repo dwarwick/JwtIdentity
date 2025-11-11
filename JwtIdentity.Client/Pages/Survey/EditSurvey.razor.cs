@@ -52,6 +52,7 @@ namespace JwtIdentity.Client.Pages.Survey
 
         protected string SelectedQuestionType { get; set; } = Enum.GetName(QuestionType.Text) ?? "Text";
         protected bool IsRequired { get; set; } = true;
+        protected bool IsLastQuestion { get; set; } = false;
 
         protected string QuestionText { get; set; }
 
@@ -293,6 +294,13 @@ namespace JwtIdentity.Client.Pages.Survey
 
         protected async Task AddQuestionToSurvey()
         {
+            // Validation: Only Group 0 questions can be marked as Last Question
+            if (IsLastQuestion && (SelectedQuestion?.GroupId ?? 0) != 0)
+            {
+                _ = Snackbar.Add("Only Group 0 questions can be marked as Last Question", Severity.Warning);
+                return;
+            }
+
             ResetQuestions = true;
 
             switch (SelectedQuestionType.Replace(" ", ""))
@@ -300,7 +308,7 @@ namespace JwtIdentity.Client.Pages.Survey
                 case "Text":
                     if ((SelectedQuestion?.Id ?? 0) == 0)
                     {
-                        Survey.Questions.Add(new TextQuestionViewModel { Text = QuestionText, QuestionType = QuestionType.Text, QuestionNumber = Survey.Questions.Count + 1, IsRequired = IsRequired });
+                        Survey.Questions.Add(new TextQuestionViewModel { Text = QuestionText, QuestionType = QuestionType.Text, QuestionNumber = Survey.Questions.Count + 1, IsRequired = IsRequired, IsLastQuestion = IsLastQuestion });
                     }
                     else
                     {
@@ -309,6 +317,7 @@ namespace JwtIdentity.Client.Pages.Survey
                         {
                             SelectedQuestion.Text = QuestionText;
                             SelectedQuestion.IsRequired = IsRequired;
+                            SelectedQuestion.IsLastQuestion = IsLastQuestion;
                             _ = Survey.Questions.Remove(questionToUpdate);
                             Survey.Questions.Add(SelectedQuestion);
                         }
@@ -317,7 +326,7 @@ namespace JwtIdentity.Client.Pages.Survey
                 case "TrueFalse":
                     if ((SelectedQuestion?.Id ?? 0) == 0)
                     {
-                        Survey.Questions.Add(new TrueFalseQuestionViewModel { Text = QuestionText, QuestionType = QuestionType.TrueFalse, QuestionNumber = Survey.Questions.Count + 1, IsRequired = IsRequired });
+                        Survey.Questions.Add(new TrueFalseQuestionViewModel { Text = QuestionText, QuestionType = QuestionType.TrueFalse, QuestionNumber = Survey.Questions.Count + 1, IsRequired = IsRequired, IsLastQuestion = IsLastQuestion });
                     }
                     else
                     {
@@ -326,6 +335,7 @@ namespace JwtIdentity.Client.Pages.Survey
                         {
                             SelectedQuestion.Text = QuestionText;
                             SelectedQuestion.IsRequired = IsRequired;
+                            SelectedQuestion.IsLastQuestion = IsLastQuestion;
                             _ = Survey.Questions.Remove(questionToUpdate);
                             Survey.Questions.Add(SelectedQuestion);
                         }
@@ -334,7 +344,7 @@ namespace JwtIdentity.Client.Pages.Survey
                 case "Rating1To10":
                     if ((SelectedQuestion?.Id ?? 0) == 0)
                     {
-                        Survey.Questions.Add(new Rating1To10QuestionViewModel { Text = QuestionText, QuestionType = QuestionType.Rating1To10, QuestionNumber = Survey.Questions.Count + 1, IsRequired = IsRequired });
+                        Survey.Questions.Add(new Rating1To10QuestionViewModel { Text = QuestionText, QuestionType = QuestionType.Rating1To10, QuestionNumber = Survey.Questions.Count + 1, IsRequired = IsRequired, IsLastQuestion = IsLastQuestion });
                     }
                     else
                     {
@@ -343,6 +353,7 @@ namespace JwtIdentity.Client.Pages.Survey
                         {
                             SelectedQuestion.Text = QuestionText;
                             SelectedQuestion.IsRequired = IsRequired;
+                            SelectedQuestion.IsLastQuestion = IsLastQuestion;
                             _ = Survey.Questions.Remove(questionToUpdate);
                             Survey.Questions.Add(SelectedQuestion);
                         }
@@ -351,7 +362,7 @@ namespace JwtIdentity.Client.Pages.Survey
                 case "MultipleChoice":
                     if ((SelectedQuestion?.Id ?? 0) == 0)
                     {
-                        Survey.Questions.Add(new MultipleChoiceQuestionViewModel { Text = QuestionText, QuestionType = QuestionType.MultipleChoice, QuestionNumber = Survey.Questions.Count + 1, Options = MultipleChoiceQuestion.Options, IsRequired = IsRequired });
+                        Survey.Questions.Add(new MultipleChoiceQuestionViewModel { Text = QuestionText, QuestionType = QuestionType.MultipleChoice, QuestionNumber = Survey.Questions.Count + 1, Options = MultipleChoiceQuestion.Options, IsRequired = IsRequired, IsLastQuestion = IsLastQuestion });
                     }
                     else
                     {
@@ -360,6 +371,7 @@ namespace JwtIdentity.Client.Pages.Survey
                         {
                             SelectedQuestion.Text = QuestionText;
                             SelectedQuestion.IsRequired = IsRequired;
+                            SelectedQuestion.IsLastQuestion = IsLastQuestion;
                             _ = Survey.Questions.Remove(questionToUpdate);
                             Survey.Questions.Add(SelectedQuestion);
                             SelectedPresetChoice = null; // Reset preset choice when updating a question
@@ -369,7 +381,7 @@ namespace JwtIdentity.Client.Pages.Survey
                 case "SelectAllThatApply":
                     if ((SelectedQuestion?.Id ?? 0) == 0)
                     {
-                        Survey.Questions.Add(new SelectAllThatApplyQuestionViewModel { Text = QuestionText, QuestionType = QuestionType.SelectAllThatApply, QuestionNumber = Survey.Questions.Count + 1, Options = MultipleChoiceQuestion.Options, IsRequired = IsRequired });
+                        Survey.Questions.Add(new SelectAllThatApplyQuestionViewModel { Text = QuestionText, QuestionType = QuestionType.SelectAllThatApply, QuestionNumber = Survey.Questions.Count + 1, Options = MultipleChoiceQuestion.Options, IsRequired = IsRequired, IsLastQuestion = IsLastQuestion });
                     }
                     else
                     {
@@ -378,6 +390,7 @@ namespace JwtIdentity.Client.Pages.Survey
                         {
                             SelectedQuestion.Text = QuestionText;
                             SelectedQuestion.IsRequired = IsRequired;
+                            SelectedQuestion.IsLastQuestion = IsLastQuestion;
                             _ = Survey.Questions.Remove(questionToUpdate);
                             Survey.Questions.Add(SelectedQuestion);
                         }
@@ -492,6 +505,7 @@ namespace JwtIdentity.Client.Pages.Survey
             SelectedQuestionType = Enum.GetName(typeof(QuestionType), SelectedQuestion.QuestionType);
             QuestionText = !string.IsNullOrWhiteSpace(tempQuestionText) ? tempQuestionText : SelectedQuestion.Text;
             IsRequired = SelectedQuestion.IsRequired;
+            IsLastQuestion = SelectedQuestion.IsLastQuestion;
 
             if (SelectedQuestion.QuestionType == QuestionType.MultipleChoice)
             {
@@ -532,6 +546,7 @@ namespace JwtIdentity.Client.Pages.Survey
             QuestionText = null;
             MultipleChoiceQuestion = null;
             IsRequired = true;
+            IsLastQuestion = false;
             ManualQuestionPanelExpanded = true;
             ExistingQuestionPanelExpanded = false;
             tempQuestionText = null;

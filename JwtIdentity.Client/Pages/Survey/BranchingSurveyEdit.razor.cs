@@ -336,6 +336,14 @@ namespace JwtIdentity.Client.Pages.Survey
 
         protected async Task MoveQuestionToGroup(QuestionViewModel question, int targetGroupId)
         {
+            // Validation: Do not allow Last Questions to be moved to another group
+            if (question.IsLastQuestion && targetGroupId != 0)
+            {
+                _ = Snackbar.Add("Last Questions can only be in Group 0", Severity.Warning);
+                StateHasChanged();
+                return;
+            }
+
             try
             {
                 var oldGroupId = question.GroupId;

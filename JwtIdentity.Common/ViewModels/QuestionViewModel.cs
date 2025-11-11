@@ -13,6 +13,7 @@ namespace JwtIdentity.Common.ViewModels
         [JsonPropertyName("questionType")]
         public QuestionType QuestionType { get; set; }
         public int GroupId { get; set; } = 0;
+        public bool IsLastQuestion { get; set; } = false; // Indicates if question should appear last in survey
         public List<AnswerViewModel> Answers { get; set; }
     }
 
