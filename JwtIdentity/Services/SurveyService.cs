@@ -232,49 +232,85 @@ namespace JwtIdentity.Services
                     // Check branching from questions in this group
                     var questionsInGroup = survey.Questions.Where(q => q.GroupId == currentGroupNumber).ToList();
 
+                    _logger.LogInformation("Checking branching for group {GroupNumber}, found {QuestionCount} questions", 
+                        currentGroupNumber, questionsInGroup.Count);
+
                     foreach (var question in questionsInGroup)
                     {
+                        _logger.LogDebug("Question {QuestionId} (type: {QuestionType}) in group {GroupNumber}", 
+                            question.Id, question.GetType().Name, currentGroupNumber);
+
                         // Check True/False branching
                         if (question is TrueFalseQuestion tfQuestion)
                         {
+                            _logger.LogDebug("TrueFalse question {QuestionId}: OnTrue={OnTrue}, OnFalse={OnFalse}", 
+                                tfQuestion.Id, tfQuestion.BranchToGroupIdOnTrue, tfQuestion.BranchToGroupIdOnFalse);
+
                             if (tfQuestion.BranchToGroupIdOnTrue.HasValue && !reachableGroupNumbers.Contains(tfQuestion.BranchToGroupIdOnTrue.Value))
                             {
                                 reachableGroupNumbers.Add(tfQuestion.BranchToGroupIdOnTrue.Value);
                                 groupNumbersToCheck.Enqueue(tfQuestion.BranchToGroupIdOnTrue.Value);
+                                _logger.LogInformation("Added group {GroupNumber} via TrueFalse OnTrue branch", tfQuestion.BranchToGroupIdOnTrue.Value);
                             }
 
                             if (tfQuestion.BranchToGroupIdOnFalse.HasValue && !reachableGroupNumbers.Contains(tfQuestion.BranchToGroupIdOnFalse.Value))
                             {
                                 reachableGroupNumbers.Add(tfQuestion.BranchToGroupIdOnFalse.Value);
                                 groupNumbersToCheck.Enqueue(tfQuestion.BranchToGroupIdOnFalse.Value);
+                                _logger.LogInformation("Added group {GroupNumber} via TrueFalse OnFalse branch", tfQuestion.BranchToGroupIdOnFalse.Value);
                             }
                         }
                         // Check Multiple Choice branching
                         else if (question is MultipleChoiceQuestion mcQuestion && mcQuestion.Options != null)
                         {
+                            _logger.LogDebug("MultipleChoice question {QuestionId}: {OptionCount} options", 
+                                mcQuestion.Id, mcQuestion.Options.Count);
+
                             foreach (var option in mcQuestion.Options)
                             {
+                                if (option.BranchToGroupId.HasValue)
+                                {
+                                    _logger.LogDebug("Option {OptionId} '{OptionText}' branches to group {GroupNumber}", 
+                                        option.Id, option.OptionText, option.BranchToGroupId.Value);
+                                }
+
                                 if (option.BranchToGroupId.HasValue && !reachableGroupNumbers.Contains(option.BranchToGroupId.Value))
                                 {
                                     reachableGroupNumbers.Add(option.BranchToGroupId.Value);
                                     groupNumbersToCheck.Enqueue(option.BranchToGroupId.Value);
+                                    _logger.LogInformation("Added group {GroupNumber} via MultipleChoice option '{OptionText}'", 
+                                        option.BranchToGroupId.Value, option.OptionText);
                                 }
                             }
                         }
                         // Check Select All That Apply branching
                         else if (question is SelectAllThatApplyQuestion satQuestion && satQuestion.Options != null)
                         {
+                            _logger.LogDebug("SelectAllThatApply question {QuestionId}: {OptionCount} options", 
+                                satQuestion.Id, satQuestion.Options.Count);
+
                             foreach (var option in satQuestion.Options)
                             {
+                                if (option.BranchToGroupId.HasValue)
+                                {
+                                    _logger.LogDebug("Option {OptionId} '{OptionText}' branches to group {GroupNumber}", 
+                                        option.Id, option.OptionText, option.BranchToGroupId.Value);
+                                }
+
                                 if (option.BranchToGroupId.HasValue && !reachableGroupNumbers.Contains(option.BranchToGroupId.Value))
                                 {
                                     reachableGroupNumbers.Add(option.BranchToGroupId.Value);
                                     groupNumbersToCheck.Enqueue(option.BranchToGroupId.Value);
+                                    _logger.LogInformation("Added group {GroupNumber} via SelectAllThatApply option '{OptionText}'", 
+                                        option.BranchToGroupId.Value, option.OptionText);
                                 }
                             }
                         }
                     }
                 }
+
+                _logger.LogInformation("Reachable groups for survey {SurveyId}: {ReachableGroups}", 
+                    surveyId, string.Join(", ", reachableGroupNumbers.OrderBy(g => g)));
 
                 // Find orphaned groups (groups that are not reachable)
                 var orphanedGroups = survey.QuestionGroups

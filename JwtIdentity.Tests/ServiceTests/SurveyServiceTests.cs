@@ -263,5 +263,69 @@ namespace JwtIdentity.Tests.ServiceTests
             Assert.That(isValid, Is.True);
             Assert.That(errorMessage, Is.Empty);
         }
+
+        [Test]
+        public async Task ValidateSurveyForPublishing_RealWorldScenario_KitchenReachableViaSelectAll()
+        {
+            // This mimics the real scenario from the screenshots
+            // Default group has multiple questions including a SelectAllThatApply that branches to Kitchen
+            // Kitchen has a question
+            // Bathroom has a question but is orphaned
+            
+            var survey = new Survey
+            {
+                Title = "Customer Satisfaction Survey",
+                Description = "Test",
+                Guid = "test-guid",
+                Published = false,
+                Questions = new System.Collections.Generic.List<Question>
+                {
+                    // Default group questions
+                    new TextQuestion { Id = 1, Text = "Q1", QuestionNumber = 1, QuestionType = QuestionType.Text, GroupId = 0 },
+                    new TextQuestion { Id = 2, Text = "Q2", QuestionNumber = 2, QuestionType = QuestionType.Text, GroupId = 0 },
+                    // Q8 - The last question in default group with branching to Kitchen
+                    new SelectAllThatApplyQuestion 
+                    { 
+                        Id = 8, 
+                        Text = "Q8: Which areas of your home were included in this remodel?", 
+                        QuestionNumber = 8, 
+                        QuestionType = QuestionType.SelectAllThatApply, 
+                        GroupId = 0
+                    },
+                    // Kitchen group question
+                    new TextQuestion { Id = 10, Text = "Q10: What did you have done in the kitchen?", QuestionNumber = 10, QuestionType = QuestionType.Text, GroupId = 1 },
+                    // Bathroom group question (orphaned)
+                    new TextQuestion { Id = 9, Text = "Q9: What did you have done in the Bathroom?", QuestionNumber = 9, QuestionType = QuestionType.Text, GroupId = 2 }
+                },
+                QuestionGroups = new System.Collections.Generic.List<QuestionGroup>
+                {
+                    new QuestionGroup { Id = 1, SurveyId = 1, GroupNumber = 0, GroupName = "Default Group" },
+                    new QuestionGroup { Id = 2, SurveyId = 1, GroupNumber = 1, GroupName = "Kitchen" },
+                    new QuestionGroup { Id = 3, SurveyId = 1, GroupNumber = 2, GroupName = "Bathroom" }
+                }
+            };
+            
+            // Add choice option for Q8 that branches to Kitchen (GroupNumber = 1)
+            var kitchenOption = new ChoiceOption 
+            { 
+                Id = 1, 
+                OptionText = "Kitchen", 
+                SelectAllThatApplyQuestionId = 8, 
+                BranchToGroupId = 1  // Branches to Kitchen group (GroupNumber 1)
+            };
+            
+            MockDbContext.Surveys.Add(survey);
+            MockDbContext.ChoiceOptions.Add(kitchenOption);
+            MockDbContext.SaveChanges();
+
+            // Act
+            var (isValid, errorMessage) = await _service.ValidateSurveyForPublishingAsync(survey.Id);
+
+            // Assert
+            Assert.That(isValid, Is.False, "Should fail because Bathroom is orphaned");
+            Assert.That(errorMessage, Does.Contain("unreachable").IgnoreCase);
+            Assert.That(errorMessage, Does.Contain("Bathroom"), "Should only mention Bathroom, not Kitchen");
+            Assert.That(errorMessage, Does.Not.Contain("Kitchen"), "Kitchen should NOT be in error since it's reachable");
+        }
     }
 }
