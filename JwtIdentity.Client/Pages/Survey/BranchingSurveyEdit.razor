@@ -54,7 +54,8 @@ else
                                       transform-origin: left top;
                                       transition: transform 0.2s ease;">
 
-                            <SfDiagramComponent id="branchingDiagram"
+                            <SfDiagramComponent @key="@DiagramRefreshKey"
+                                                id="branchingDiagram"
                                                 @ref="diagram"
                                                 Created="DiagramCreated"
                                                 Height="100%" Width="100%"

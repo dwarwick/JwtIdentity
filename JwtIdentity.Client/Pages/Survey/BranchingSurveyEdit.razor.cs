@@ -24,6 +24,7 @@ namespace JwtIdentity.Client.Pages.Survey
         protected SfDiagramComponent diagram { get; set; }
         protected double ZoomLevel { get; set; } = 1.0;
         protected LayoutType DiagramLayoutType { get; set; } = LayoutType.None; // Manual positioning like Azure example
+        protected int DiagramRefreshKey { get; set; } = 0; // Used to force diagram recreation
 
         protected override async Task OnInitializedAsync()
         {
@@ -433,51 +434,25 @@ namespace JwtIdentity.Client.Pages.Survey
 
         protected async Task RefreshDiagram()
         {
-            // Clear the existing collections that are bound to the diagram
-            Nodes.Clear();
-            Connectors.Clear();
-
-            // Rebuild nodes and connectors into temporary collections
-            var tempNodes = new DiagramObjectCollection<Node>();
-            var tempConnectors = new DiagramObjectCollection<Connector>();
-            
-            // Store the original collections temporarily
-            var originalNodes = Nodes;
-            var originalConnectors = Connectors;
-            
-            // Build into temporary collections
-            Nodes = tempNodes;
-            Connectors = tempConnectors;
+            // Build new nodes and connectors (creates new collection instances)
             BuildSyncfusionDiagram();
             
-            // Get the built collections
-            tempNodes = Nodes;
-            tempConnectors = Connectors;
+            // Increment the key to force diagram component recreation
+            DiagramRefreshKey++;
             
-            // Restore original collections and populate them
-            Nodes = originalNodes;
-            Connectors = originalConnectors;
-            
-            // Add all nodes first
-            foreach (var node in tempNodes)
-            {
-                Nodes.Add(node);
-            }
-            
-            // Then add all connectors
-            foreach (var connector in tempConnectors)
-            {
-                Connectors.Add(connector);
-            }
+            // Force synchronous state update to ensure Blazor processes the change
+            await InvokeAsync(StateHasChanged);
 
-            StateHasChanged();
-
-            // Allow UI to update before triggering layout
-            await Task.Delay(100);
+            // Allow UI to fully update before triggering layout
+            await Task.Delay(200);
 
             if (diagram != null)
             {
+                // Apply layout to position elements correctly
                 await diagram.DoLayoutAsync();
+                
+                // Force another state update after layout
+                await InvokeAsync(StateHasChanged);
             }
         }
 
