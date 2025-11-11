@@ -101,6 +101,11 @@
                                             {
                                                 <MudText Color="Color.Error" Typo="Typo.caption" Class="RequiredStar">*</MudText>
                                             }
+                                            
+                                            @if (question.IsLastQuestion)
+                                            {
+                                                <MudChip Size="MudBlazor.Size.Small" Color="Color.Warning" Icon="@Icons.Material.Filled.Flag">Last</MudChip>
+                                            }
 
                                         </MudStack>
                                         <div style="height: 2px; background-color: blueviolet; width: 100%;"></div>

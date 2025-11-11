@@ -301,6 +301,38 @@ namespace JwtIdentity.Client.Pages.Survey
                 return;
             }
 
+            // Validation: Last Questions cannot have branching rules defined
+            if (IsLastQuestion && SelectedQuestion != null)
+            {
+                if (SelectedQuestion.QuestionType == QuestionType.MultipleChoice)
+                {
+                    var mcQuestion = SelectedQuestion as MultipleChoiceQuestionViewModel;
+                    if (mcQuestion?.Options?.Any(o => o.BranchToGroupId.HasValue) == true)
+                    {
+                        _ = Snackbar.Add("Cannot mark as Last Question: This question has branching rules defined. Remove branching rules first.", Severity.Warning);
+                        return;
+                    }
+                }
+                else if (SelectedQuestion.QuestionType == QuestionType.SelectAllThatApply)
+                {
+                    var saQuestion = SelectedQuestion as SelectAllThatApplyQuestionViewModel;
+                    if (saQuestion?.Options?.Any(o => o.BranchToGroupId.HasValue) == true)
+                    {
+                        _ = Snackbar.Add("Cannot mark as Last Question: This question has branching rules defined. Remove branching rules first.", Severity.Warning);
+                        return;
+                    }
+                }
+                else if (SelectedQuestion.QuestionType == QuestionType.TrueFalse)
+                {
+                    var tfQuestion = SelectedQuestion as TrueFalseQuestionViewModel;
+                    if (tfQuestion?.BranchToGroupIdOnTrue.HasValue == true || tfQuestion?.BranchToGroupIdOnFalse.HasValue == true)
+                    {
+                        _ = Snackbar.Add("Cannot mark as Last Question: This question has branching rules defined. Remove branching rules first.", Severity.Warning);
+                        return;
+                    }
+                }
+            }
+
             ResetQuestions = true;
 
             switch (SelectedQuestionType.Replace(" ", ""))
