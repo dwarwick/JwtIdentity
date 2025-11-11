@@ -156,6 +156,19 @@ namespace JwtIdentity.Services
                     return (false, "Survey not found");
                 }
 
+                _logger.LogInformation("Loaded survey {SurveyId} with {QuestionCount} questions and {GroupCount} groups",
+                    surveyId, survey.Questions?.Count ?? 0, survey.QuestionGroups?.Count ?? 0);
+
+                // Log question types for debugging
+                if (survey.Questions != null)
+                {
+                    foreach (var q in survey.Questions)
+                    {
+                        _logger.LogDebug("Question {QuestionId}: Type={Type}, GroupId={GroupId}", 
+                            q.Id, q.GetType().Name, q.GroupId);
+                    }
+                }
+
                 // If there are no question groups, the survey is valid (backward compatibility)
                 if (survey.QuestionGroups == null || !survey.QuestionGroups.Any())
                 {
@@ -166,6 +179,9 @@ namespace JwtIdentity.Services
                 // Load choice options for multiple choice and select-all questions
                 var mcQuestions = survey.Questions.OfType<MultipleChoiceQuestion>().ToList();
                 var satQuestions = survey.Questions.OfType<SelectAllThatApplyQuestion>().ToList();
+                
+                _logger.LogInformation("Found {MCCount} MultipleChoice and {SATCount} SelectAllThatApply questions",
+                    mcQuestions.Count, satQuestions.Count);
                 
                 var mcIds = mcQuestions.Select(q => q.Id).ToList();
                 var satIds = satQuestions.Select(q => q.Id).ToList();
@@ -179,6 +195,15 @@ namespace JwtIdentity.Services
                             (co.MultipleChoiceQuestionId.HasValue && mcIds.Contains(co.MultipleChoiceQuestionId.Value)) ||
                             (co.SelectAllThatApplyQuestionId.HasValue && satIds.Contains(co.SelectAllThatApplyQuestionId.Value)))
                         .ToListAsync();
+                    
+                    _logger.LogInformation("Loaded {OptionCount} choice options", allOptions.Count);
+                    
+                    foreach (var opt in allOptions)
+                    {
+                        _logger.LogDebug("Option {OptionId}: '{Text}', BranchToGroupId={BranchTo}, MC={MC}, SAT={SAT}",
+                            opt.Id, opt.OptionText, opt.BranchToGroupId, 
+                            opt.MultipleChoiceQuestionId, opt.SelectAllThatApplyQuestionId);
+                    }
                 }
 
                 // Assign loaded options back to questions
@@ -219,11 +244,16 @@ namespace JwtIdentity.Services
                     var currentGroupNumber = groupNumbersToCheck.Dequeue();
                     var currentGroup = survey.QuestionGroups.FirstOrDefault(g => g.GroupNumber == currentGroupNumber);
 
-                    if (currentGroup == null)
+                    // Group 0 might not exist in QuestionGroups table (it's implicit/default)
+                    // Still process questions in group 0 even if no QuestionGroup record exists
+                    if (currentGroup == null && currentGroupNumber != 0)
+                    {
+                        _logger.LogWarning("Group {GroupNumber} not found in QuestionGroups table", currentGroupNumber);
                         continue;
+                    }
 
-                    // Check NextGroupId (if it stores GroupNumber)
-                    if (currentGroup.NextGroupId.HasValue && !reachableGroupNumbers.Contains(currentGroup.NextGroupId.Value))
+                    // Check NextGroupId (only if group record exists)
+                    if (currentGroup != null && currentGroup.NextGroupId.HasValue && !reachableGroupNumbers.Contains(currentGroup.NextGroupId.Value))
                     {
                         reachableGroupNumbers.Add(currentGroup.NextGroupId.Value);
                         groupNumbersToCheck.Enqueue(currentGroup.NextGroupId.Value);
