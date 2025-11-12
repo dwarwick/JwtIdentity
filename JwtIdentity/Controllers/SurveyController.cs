@@ -73,7 +73,28 @@ namespace JwtIdentity.Controllers
                 }
 
                 _logger.LogInformation("Successfully retrieved survey with GUID {Guid}, title: {Title}", guid, survey.Title);
-                return Ok(_mapper.Map<SurveyViewModel>(survey));
+                
+                var surveyViewModel = _mapper.Map<SurveyViewModel>(survey);
+                
+                // Set CanBeMarkedAsLastQuestion property for each question
+                foreach (var question in surveyViewModel.Questions)
+                {
+                    // A question can only be marked as Last Question if:
+                    // 1. It's in Group 0
+                    // 2. It doesn't have any branching rules defined
+                    bool hasBranchingRules = question.QuestionType switch
+                    {
+                        QuestionType.MultipleChoice => (question as MultipleChoiceQuestionViewModel)?.Options?.Any(o => o.BranchToGroupId.HasValue) ?? false,
+                        QuestionType.SelectAllThatApply => (question as SelectAllThatApplyQuestionViewModel)?.Options?.Any(o => o.BranchToGroupId.HasValue) ?? false,
+                        QuestionType.TrueFalse => ((question as TrueFalseQuestionViewModel)?.BranchToGroupIdOnTrue.HasValue ?? false) 
+                                                   || ((question as TrueFalseQuestionViewModel)?.BranchToGroupIdOnFalse.HasValue ?? false),
+                        _ => false
+                    };
+                    
+                    question.CanBeMarkedAsLastQuestion = question.GroupId == 0 && !hasBranchingRules;
+                }
+                
+                return Ok(surveyViewModel);
             }
             catch (Exception ex)
             {
@@ -294,11 +315,14 @@ namespace JwtIdentity.Controllers
                                     var existingTextQuestion = await _context.Questions.OfType<TextQuestion>().FirstOrDefaultAsync(q => q.Id == passedInQuestion.Id);
 
                                     if (existingTextQuestion != null && (existingTextQuestion.Text != passedInQuestion.Text
-                                            || passedInQuestion.QuestionNumber != existingTextQuestion.QuestionNumber))
+                                            || passedInQuestion.QuestionNumber != existingTextQuestion.QuestionNumber
+                                            || existingTextQuestion.IsRequired != passedInQuestion.IsRequired
+                                            || existingTextQuestion.IsLastQuestion != passedInQuestion.IsLastQuestion))
                                     {
                                         existingTextQuestion.Text = passedInQuestion.Text;
                                         existingTextQuestion.QuestionNumber = passedInQuestion.QuestionNumber;
                                         existingTextQuestion.IsRequired = passedInQuestion.IsRequired;
+                                        existingTextQuestion.IsLastQuestion = passedInQuestion.IsLastQuestion;
 
                                         _ = _context.Questions.Update(existingTextQuestion);
                                     }
@@ -309,6 +333,7 @@ namespace JwtIdentity.Controllers
                                     existingTrueFalseQuestion.Text = passedInQuestion.Text;
                                     existingTrueFalseQuestion.QuestionNumber = passedInQuestion.QuestionNumber;
                                     existingTrueFalseQuestion.IsRequired = passedInQuestion.IsRequired;
+                                    existingTrueFalseQuestion.IsLastQuestion = passedInQuestion.IsLastQuestion;
 
                                     _ = _context.Questions.Update(existingTrueFalseQuestion);
                                     break;
@@ -317,6 +342,7 @@ namespace JwtIdentity.Controllers
                                     existingRatingQuestion.Text = passedInQuestion.Text;
                                     existingRatingQuestion.QuestionNumber = passedInQuestion.QuestionNumber;
                                     existingRatingQuestion.IsRequired = passedInQuestion.IsRequired;
+                                    existingRatingQuestion.IsLastQuestion = passedInQuestion.IsLastQuestion;
 
                                     _ = _context.Questions.Update(existingRatingQuestion);
                                     break;
@@ -327,11 +353,14 @@ namespace JwtIdentity.Controllers
                                         .FirstOrDefaultAsync(q => q.Id == passedInQuestion.Id);
 
                                     if (existingMCQuestion != null && (existingMCQuestion.Text != passedInQuestion.Text
-                                            || passedInQuestion.QuestionNumber != existingMCQuestion.QuestionNumber || existingMCQuestion.IsRequired != passedInQuestion.IsRequired))
+                                            || passedInQuestion.QuestionNumber != existingMCQuestion.QuestionNumber
+                                            || existingMCQuestion.IsRequired != passedInQuestion.IsRequired
+                                            || existingMCQuestion.IsLastQuestion != passedInQuestion.IsLastQuestion))
                                     {
                                         existingMCQuestion.Text = passedInQuestion.Text;
                                         existingMCQuestion.QuestionNumber = passedInQuestion.QuestionNumber;
                                         existingMCQuestion.IsRequired = passedInQuestion.IsRequired;
+                                        existingMCQuestion.IsLastQuestion = passedInQuestion.IsLastQuestion;
 
                                         _ = _context.Questions.Update(existingMCQuestion);
                                     }
@@ -384,11 +413,14 @@ namespace JwtIdentity.Controllers
                                         .FirstOrDefaultAsync(q => q.Id == passedInQuestion.Id);
 
                                     if (existingSAQuestion != null && (existingSAQuestion.Text != passedInQuestion.Text
-                                            || passedInQuestion.QuestionNumber != existingSAQuestion.QuestionNumber || existingSAQuestion.IsRequired != passedInQuestion.IsRequired))
+                                            || passedInQuestion.QuestionNumber != existingSAQuestion.QuestionNumber
+                                            || existingSAQuestion.IsRequired != passedInQuestion.IsRequired
+                                            || existingSAQuestion.IsLastQuestion != passedInQuestion.IsLastQuestion))
                                     {
                                         existingSAQuestion.Text = passedInQuestion.Text;
                                         existingSAQuestion.QuestionNumber = passedInQuestion.QuestionNumber;
                                         existingSAQuestion.IsRequired = passedInQuestion.IsRequired;
+                                        existingSAQuestion.IsLastQuestion = passedInQuestion.IsLastQuestion;
 
                                         _ = _context.Questions.Update(existingSAQuestion);
                                     }

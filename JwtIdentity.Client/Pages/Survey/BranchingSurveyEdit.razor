@@ -143,7 +143,13 @@ else
                                                 @foreach (var question in groupQuestions)
                                                 {
                                                     <MudListItem T="string">
-                                                        <MudText>Q@(question.QuestionNumber): @question.Text</MudText>
+                                                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                                            <MudText>Q@(question.QuestionNumber): @question.Text</MudText>
+                                                            @if (question.IsLastQuestion)
+                                                            {
+                                                                <MudChip Size="MudBlazor.Size.Small" Color="Color.Warning" Icon="@Icons.Material.Filled.Flag">Last</MudChip>
+                                                            }
+                                                        </MudStack>
                                                     </MudListItem>
                                                 }
                                             </MudList>
@@ -175,19 +181,26 @@ else
                                 <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
                                     <span class="@($"group-badge group-badge-{question.GroupId % 10}")">Group @question.GroupId</span>
                                     <MudText Style="flex: 1;">Q@(question.QuestionNumber): @question.Text</MudText>
-                                    <MudSelect T="int" Label="Assign to Group" Value="question.GroupId"
-                                               ValueChanged="@(async value => { await MoveQuestionToGroup(question, value); await RefreshDiagram(); })"
-                                               Variant="Variant.Outlined" Dense="true" Style="width: 250px;">
-                                        @foreach (var g in QuestionGroups.OrderBy(x => x.GroupNumber))
-                                        {
-                                            <MudSelectItem Value="@g.GroupNumber">
-                                                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
-                                                    <span class="@($"group-badge group-badge-{g.GroupNumber % 10}")">Group @g.GroupNumber</span>
-                                                    <span>@(string.IsNullOrWhiteSpace(g.GroupName) ? "" : $"- {g.GroupName}")</span>
-                                                </MudStack>
-                                            </MudSelectItem>
-                                        }
-                                    </MudSelect>
+                                    @if (question.IsLastQuestion)
+                                    {
+                                        <MudChip Size="MudBlazor.Size.Small" Color="Color.Warning" Icon="@Icons.Material.Filled.Flag">Last Question</MudChip>
+                                    }
+                                    else
+                                    {
+                                        <MudSelect T="int" Label="Assign to Group" Value="question.GroupId"
+                                                   ValueChanged="@(async value => { await MoveQuestionToGroup(question, value); await RefreshDiagram(); })"
+                                                   Variant="Variant.Outlined" Dense="true" Style="width: 250px;">
+                                            @foreach (var g in QuestionGroups.OrderBy(x => x.GroupNumber))
+                                            {
+                                                <MudSelectItem Value="@g.GroupNumber">
+                                                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                                                        <span class="@($"group-badge group-badge-{g.GroupNumber % 10}")">Group @g.GroupNumber</span>
+                                                        <span>@(string.IsNullOrWhiteSpace(g.GroupName) ? "" : $"- {g.GroupName}")</span>
+                                                    </MudStack>
+                                                </MudSelectItem>
+                                            }
+                                        </MudSelect>
+                                    }
                                 </MudStack>
                             </MudListItem>
                         }
@@ -199,6 +212,7 @@ else
                     @foreach (var group in QuestionGroups.OrderBy(g => g.GroupNumber))
                     {
                         var groupQuestions = Survey.Questions.Where(q => q.GroupId == group.GroupNumber &&
+                        !q.IsLastQuestion && // Exclude Last Questions from branching configuration
                         (q.QuestionType == QuestionType.MultipleChoice ||
                         q.QuestionType == QuestionType.SelectAllThatApply ||
                         q.QuestionType == QuestionType.TrueFalse)).OrderBy(q => q.QuestionNumber).ToList();
