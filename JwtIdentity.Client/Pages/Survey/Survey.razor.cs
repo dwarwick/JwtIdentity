@@ -55,9 +55,12 @@ namespace JwtIdentity.Client.Pages.Survey
 
                 // In branching mode, we're at the last question only if:
                 // 1. We're at the last question in QuestionsToShow, AND
-                // 2. There are no more groups to visit
+                // 2. There are no more groups to visit, AND
+                // 3. Last Questions have been loaded (if any exist)
+                var hasLastQuestions = Survey?.Questions?.Any(q => q.IsLastQuestion && q.GroupId == 0) ?? false;
                 return CurrentQuestionIndex >= QuestionsToShow.Count - 1 && 
-                       GetNextGroupToVisit() == null;
+                       GetNextGroupToVisit() == null &&
+                       (!hasLastQuestions || _lastQuestionsLoaded);
             }
         }
         protected bool IsFirstQuestion => CurrentQuestionIndex == 0;
@@ -79,7 +82,12 @@ namespace JwtIdentity.Client.Pages.Survey
             // Count questions that are either already shown or will be shown
             // This includes visited groups and groups scheduled to visit
             var allGroupsToConsider = _visitedGroups.Union(_groupsToVisit).ToHashSet();
-            return Survey?.Questions?.Count(q => allGroupsToConsider.Contains(q.GroupId)) ?? 0;
+            var questionsCount = Survey?.Questions?.Count(q => allGroupsToConsider.Contains(q.GroupId) && !q.IsLastQuestion) ?? 0;
+            
+            // Add Last Questions count if they will be shown
+            var lastQuestionsCount = Survey?.Questions?.Count(q => q.IsLastQuestion && q.GroupId == 0) ?? 0;
+            
+            return questionsCount + lastQuestionsCount;
         }
 
         protected override async Task OnInitializedAsync()
@@ -562,10 +570,15 @@ namespace JwtIdentity.Client.Pages.Survey
         // Branching navigation methods
         protected void InitializeBranchingQuestions()
         {
+            _lastQuestionsLoaded = false; // Reset flag when initializing
+            
             if (!HasBranching)
             {
-                // No branching - show all questions
-                QuestionsToShow = Survey.Questions.OrderBy(q => q.QuestionNumber).ToList();
+                // No branching - show all questions except Last Questions
+                // Last Questions will be added at the end
+                var regularQuestions = Survey.Questions.Where(q => !q.IsLastQuestion).OrderBy(q => q.QuestionNumber).ToList();
+                var lastQuestions = Survey.Questions.Where(q => q.IsLastQuestion && q.GroupId == 0).OrderBy(q => q.QuestionNumber).ToList();
+                QuestionsToShow = regularQuestions.Concat(lastQuestions).ToList();
             }
             else
             {
@@ -575,8 +588,8 @@ namespace JwtIdentity.Client.Pages.Survey
                 _visitedGroups.Clear();
                 QuestionsToShow.Clear();
 
-                // Only add group 0 if it has questions
-                var group0Questions = Survey.Questions.Where(q => q.GroupId == 0).ToList();
+                // Only add group 0 if it has questions (excluding Last Questions initially)
+                var group0Questions = Survey.Questions.Where(q => q.GroupId == 0 && !q.IsLastQuestion).ToList();
                 if (group0Questions.Any())
                 {
                     _groupsToVisit.Add(0); // Start with group 0 if it has questions
@@ -601,7 +614,7 @@ namespace JwtIdentity.Client.Pages.Survey
         private void LoadQuestionsForCurrentGroup()
         {
             var groupQuestions = Survey.Questions
-                .Where(q => q.GroupId == _currentGroupId)
+                .Where(q => q.GroupId == _currentGroupId && !q.IsLastQuestion) // Exclude Last Questions
                 .OrderBy(q => q.QuestionNumber)
                 .ToList();
 
@@ -645,6 +658,58 @@ namespace JwtIdentity.Client.Pages.Survey
             _visitedGroups.Add(_currentGroupId);
         }
 
+        private bool _lastQuestionsLoaded = false;
+
+        private void LoadLastQuestions()
+        {
+            // Only load Last Questions once
+            if (_lastQuestionsLoaded) return;
+
+            var lastQuestions = Survey.Questions
+                .Where(q => q.IsLastQuestion && q.GroupId == 0)
+                .OrderBy(q => q.QuestionNumber)
+                .ToList();
+
+            // Initialize SelectedOptions for SelectAllThatApply Last Questions
+            foreach (var question in lastQuestions)
+            {
+                if (question.QuestionType == QuestionType.SelectAllThatApply)
+                {
+                    var saQuestion = question as SelectAllThatApplyQuestionViewModel;
+                    var answer = question.Answers.FirstOrDefault() as SelectAllThatApplyAnswerViewModel;
+                    
+                    if (answer != null && saQuestion != null)
+                    {
+                        // Ensure SelectedOptions list is properly sized
+                        if (answer.SelectedOptions == null)
+                        {
+                            answer.SelectedOptions = new List<bool>();
+                        }
+                        
+                        while (answer.SelectedOptions.Count < saQuestion.Options.Count)
+                        {
+                            answer.SelectedOptions.Add(false);
+                        }
+                        
+                        // Populate based on saved SelectedOptionIds
+                        if (!string.IsNullOrWhiteSpace(answer.SelectedOptionIds))
+                        {
+                            var selectedOptionIds = answer.SelectedOptionIds.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                                .Select(int.Parse).ToList();
+                            
+                            for (int i = 0; i < saQuestion.Options.Count && i < answer.SelectedOptions.Count; i++)
+                            {
+                                answer.SelectedOptions[i] = selectedOptionIds.Contains(saQuestion.Options[i].Id);
+                            }
+                        }
+                    }
+                }
+            }
+
+            QuestionsToShow.AddRange(lastQuestions);
+            _lastQuestionsLoaded = true;
+        }
+
         protected void GoToNextQuestion()
         {
             if (!HasBranching)
@@ -673,6 +738,15 @@ namespace JwtIdentity.Client.Pages.Survey
                     _currentGroupId = nextGroup.Value;
                     LoadQuestionsForCurrentGroup();
                     CurrentQuestionIndex++;
+                }
+                else
+                {
+                    // No more groups to visit, load Last Questions if any
+                    LoadLastQuestions();
+                    if (CurrentQuestionIndex < QuestionsToShow.Count - 1)
+                    {
+                        CurrentQuestionIndex++;
+                    }
                 }
             }
             StateHasChanged();

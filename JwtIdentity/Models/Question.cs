@@ -13,6 +13,7 @@ namespace JwtIdentity.Models
         public bool IsRequired { get; set; } = true; // Indicates if the question is mandatory
         public QuestionType QuestionType { get; set; } // E.g. Text, TrueFalse, MultipleChoice
         public int GroupId { get; set; } = 0; // Question group, default is 0
+        public bool IsLastQuestion { get; set; } = false; // Indicates if question should appear last in survey
         public List<Answer> Answers { get; set; }
     }
 

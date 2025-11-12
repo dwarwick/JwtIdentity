@@ -336,6 +336,14 @@ namespace JwtIdentity.Client.Pages.Survey
 
         protected async Task MoveQuestionToGroup(QuestionViewModel question, int targetGroupId)
         {
+            // Validation: Do not allow Last Questions to be moved to another group
+            if (question.IsLastQuestion && targetGroupId != 0)
+            {
+                _ = Snackbar.Add("Last Questions can only be in Group 0", Severity.Warning);
+                StateHasChanged();
+                return;
+            }
+
             try
             {
                 var oldGroupId = question.GroupId;
@@ -530,6 +538,10 @@ namespace JwtIdentity.Client.Pages.Survey
                     foreach (var question in groupQuestions)
                     {
                         var questionNodeId = $"Question_{question.Id}";
+                        
+                        // Use yellowish color for Last Questions, otherwise use default blue
+                        var questionFillColor = question.IsLastQuestion ? "#fff9c4" : "#e3f2fd";
+                        
                         var questionNode = new Node()
                         {
                             ID = questionNodeId,
@@ -547,7 +559,7 @@ namespace JwtIdentity.Client.Pages.Survey
                             },
                             Style = new ShapeStyle()
                             {
-                                Fill = "#e3f2fd",
+                                Fill = questionFillColor,
                                 StrokeWidth = 2,
                                 StrokeColor = GetGroupColor(group.GroupNumber)
                             }
