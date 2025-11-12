@@ -101,3 +101,160 @@
         </MudList>
     </MudPaper>
 </section>
+
+<section id="question-branching" class="mb-8">
+    <MudText Typo="Typo.h2" Class="mb-3">Configure Question Branching</MudText>
+    <MudPaper Class="pa-4">
+        <MudText Typo="Typo.body1" Class="mb-4">
+            Question branching allows you to create dynamic surveys where the questions shown to respondents depend on their previous answers. This creates personalized survey experiences and more relevant data collection.
+        </MudText>
+
+        <MudText Typo="Typo.h3" Class="mb-2 mt-4">Understanding Question Groups</MudText>
+        <MudText Typo="Typo.body1" Class="mb-2">
+            Question branching is organized using <strong>Question Groups</strong>. Each group contains one or more questions that can be shown together based on branching logic.
+        </MudText>
+        <MudList T="string">
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Folder">
+                You can create up to <strong>10 question groups</strong> per survey (numbered 0-9).
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Home">
+                <strong>Group 0 (Default Group):</strong> All questions are initially placed in the Default Group. Questions in this group are always shown first (except for Last Questions, which are shown at the end).
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Edit">
+                You can <strong>rename question groups</strong> with descriptive names to make your branching logic easier to understand (e.g., "Homeowner Questions", "Renter Questions").
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Rule">
+                Each group must contain <strong>at least 1 question</strong>. Empty groups are not allowed.
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Block">
+                You <strong>cannot branch back to the Default Group (Group 0)</strong> from other groups. The Default Group always appears first in the survey flow.
+            </MudListItem>
+        </MudList>
+
+        <MudText Typo="Typo.h3" Class="mb-2 mt-4">How to Configure Branching</MudText>
+        <MudList T="string">
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Settings">
+                After creating your survey and questions, click <MudChip T="string" Size="@MudBlazor.Size.Small" Color="Color.Primary">Configure Branching</MudChip> on the Edit Survey page.
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.AddCircleOutline">
+                Click <MudChip T="string" Size="@MudBlazor.Size.Small" Color="Color.Success">Add Group</MudChip> to create new question groups.
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.MoveToInbox">
+                Use the dropdown next to each question to <strong>move questions between groups</strong>.
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.AccountTree">
+                For each answer option in Multiple Choice, Select All That Apply, or True/False questions, select which group should be shown next when that option is chosen.
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Visibility">
+                Use the visual branching diagram to see the flow of your survey at a glance.
+            </MudListItem>
+        </MudList>
+
+        <MudText Typo="Typo.h3" Class="mb-2 mt-4">Which Question Types Support Branching?</MudText>
+        <MudList T="string">
+            <MudListItem T="string" Icon="@Icons.Material.Filled.CheckCircle">
+                <strong>Multiple Choice:</strong> Branch based on which option the respondent selects. Each option can lead to a different group.
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.CheckCircle">
+                <strong>Select All That Apply:</strong> Branch based on selected options. If multiple options with different branches are selected, all corresponding groups will be shown.
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.CheckCircle">
+                <strong>True/False:</strong> Branch to different groups based on whether the respondent answers True or False.
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Cancel">
+                <strong>Text:</strong> Text questions <strong>cannot be used for branching</strong> since they contain free-form text with no predefined answers.
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Info">
+                <strong>Rating 1-10:</strong> Rating questions currently do not support branching but can be placed in any question group.
+            </MudListItem>
+        </MudList>
+
+        <MudText Typo="Typo.h3" Class="mb-2 mt-4">Understanding Last Questions</MudText>
+        <MudText Typo="Typo.body1" Class="mb-2">
+            <strong>Last Questions</strong> are a special type of question that always appear at the very end of the survey, regardless of the branching path taken.
+        </MudText>
+        <MudList T="string">
+            <MudListItem T="string" Icon="@Icons.Material.Filled.LastPage">
+                Last Questions <strong>must be in the Default Group (Group 0)</strong>.
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Block">
+                You <strong>cannot branch from a question marked as a Last Question</strong>.
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Schedule">
+                Last Questions are shown <strong>after all other questions</strong>, including questions from branched groups.
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Info">
+                Use Last Questions for demographic information, feedback requests, or follow-up items that should be answered by all respondents regardless of their survey path.
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Edit">
+                Mark a question as a Last Question when creating or editing it in the question editor.
+            </MudListItem>
+        </MudList>
+
+        <MudText Typo="Typo.h3" Class="mb-2 mt-4">Survey Flow with Branching</MudText>
+        <MudText Typo="Typo.body1" Class="mb-2">Understanding how surveys flow with branching helps you design effective surveys:</MudText>
+        <ol style="margin-left: 24px; margin-top: 16px;">
+            <li style="margin-bottom: 12px;">
+                <strong>Step 1:</strong> Respondents start with questions from the <strong>Default Group (Group 0)</strong>, except those marked as Last Questions.
+            </li>
+            <li style="margin-bottom: 12px;">
+                <strong>Step 2:</strong> When a respondent answers a question with branching logic (e.g., selects an option that branches to Group 2), that group is queued to be shown.
+            </li>
+            <li style="margin-bottom: 12px;">
+                <strong>Step 3:</strong> After completing all Default Group questions (except Last Questions), the survey shows questions from the branched groups in numerical order (e.g., Group 1, then Group 2, etc.).
+            </li>
+            <li style="margin-bottom: 12px;">
+                <strong>Step 4:</strong> Branched groups may contain their own branching logic, leading to additional groups being shown.
+            </li>
+            <li style="margin-bottom: 12px;">
+                <strong>Step 5:</strong> After all regular and branched group questions are answered, <strong>Last Questions</strong> from the Default Group are shown.
+            </li>
+            <li style="margin-bottom: 12px;">
+                <strong>Step 6:</strong> The respondent submits the survey.
+            </li>
+        </ol>
+
+        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="mt-4">
+            <MudText Typo="Typo.h6" Class="mb-2">Example Survey Flow</MudText>
+            <MudText Typo="Typo.body2">
+                Imagine a home renovation survey:
+                <ul style="margin-top: 8px;">
+                    <li><strong>Default Group:</strong> "Do you own or rent your home?" (Multiple Choice: Own → Group 1, Rent → Group 2)</li>
+                    <li><strong>Group 1 (Homeowner Questions):</strong> "What renovations have you completed?" → "What is your budget?"</li>
+                    <li><strong>Group 2 (Renter Questions):</strong> "Have you requested improvements from your landlord?"</li>
+                    <li><strong>Last Question (Default Group):</strong> "Would you like to receive our newsletter?" (Shown to everyone at the end)</li>
+                </ul>
+            </MudText>
+            <MudText Typo="Typo.body2" Class="mt-2">
+                Homeowners see: Default question → Group 1 questions → Last Question<br/>
+                Renters see: Default question → Group 2 questions → Last Question
+            </MudText>
+        </MudAlert>
+
+        <MudText Typo="Typo.h3" Class="mb-2 mt-4">Best Practices for Branching</MudText>
+        <MudList T="string">
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Lightbulb">
+                <strong>Keep it simple:</strong> Start with basic branching and add complexity gradually. Too many branches can confuse respondents.
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Label">
+                <strong>Use descriptive group names:</strong> Instead of "Group 1", use names like "Product Users" or "New Customers" to make your logic clear.
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Preview">
+                <strong>Test your survey:</strong> Use the Preview mode to test different answer paths before publishing.
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.ViewList">
+                <strong>Plan your flow:</strong> Sketch out your branching logic on paper or in a diagram before configuring it in SurveyShark.
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.QuestionMark">
+                <strong>Ensure all paths work:</strong> Make sure every possible answer combination leads to a logical conclusion and survey submission.
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.FolderSpecial">
+                <strong>Use Last Questions wisely:</strong> Reserve Last Questions for universal items that every respondent should answer, regardless of their path through the survey.
+            </MudListItem>
+        </MudList>
+
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Class="mt-4">
+            <strong>Important Note:</strong> When branching is configured, respondents see questions one at a time with Previous/Next navigation buttons. Without branching, all questions appear on a single page. This provides a focused experience for complex, branching surveys.
+        </MudAlert>
+    </MudPaper>
+</section>
