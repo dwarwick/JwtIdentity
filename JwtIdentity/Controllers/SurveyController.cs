@@ -73,7 +73,28 @@ namespace JwtIdentity.Controllers
                 }
 
                 _logger.LogInformation("Successfully retrieved survey with GUID {Guid}, title: {Title}", guid, survey.Title);
-                return Ok(_mapper.Map<SurveyViewModel>(survey));
+                
+                var surveyViewModel = _mapper.Map<SurveyViewModel>(survey);
+                
+                // Set CanBeMarkedAsLastQuestion property for each question
+                foreach (var question in surveyViewModel.Questions)
+                {
+                    // A question can only be marked as Last Question if:
+                    // 1. It's in Group 0
+                    // 2. It doesn't have any branching rules defined
+                    bool hasBranchingRules = question.QuestionType switch
+                    {
+                        QuestionType.MultipleChoice => (question as MultipleChoiceQuestionViewModel)?.Options?.Any(o => o.BranchToGroupId.HasValue) ?? false,
+                        QuestionType.SelectAllThatApply => (question as SelectAllThatApplyQuestionViewModel)?.Options?.Any(o => o.BranchToGroupId.HasValue) ?? false,
+                        QuestionType.TrueFalse => ((question as TrueFalseQuestionViewModel)?.BranchToGroupIdOnTrue.HasValue ?? false) 
+                                                   || ((question as TrueFalseQuestionViewModel)?.BranchToGroupIdOnFalse.HasValue ?? false),
+                        _ => false
+                    };
+                    
+                    question.CanBeMarkedAsLastQuestion = question.GroupId == 0 && !hasBranchingRules;
+                }
+                
+                return Ok(surveyViewModel);
             }
             catch (Exception ex)
             {

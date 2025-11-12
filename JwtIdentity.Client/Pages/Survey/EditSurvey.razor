@@ -195,7 +195,7 @@
                                 <MudText Typo="Typo.body2">Scroll down so you can see the choices down below. Click Save Question button to save the question.</MudText>
                             </DemoPopup>
                         <MudCheckBox T="bool" @bind-Value="IsRequired" Label="Is Required?" Color="Color.Primary" Disabled="@AddQuestionToSurveyDisabled" />
-                        @if ((SelectedQuestion?.GroupId ?? 0) == 0)
+                        @if ((SelectedQuestion?.GroupId ?? 0) == 0 && (SelectedQuestion?.CanBeMarkedAsLastQuestion ?? true))
                         {
                             <MudCheckBox T="bool" @bind-Value="IsLastQuestion" Label="Is Last Question?" Color="Color.Primary" Disabled="@AddQuestionToSurveyDisabled" />
                         }

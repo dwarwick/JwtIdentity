@@ -14,6 +14,12 @@ namespace JwtIdentity.Common.ViewModels
         public QuestionType QuestionType { get; set; }
         public int GroupId { get; set; } = 0;
         public bool IsLastQuestion { get; set; } = false; // Indicates if question should appear last in survey
+        
+        // Computed property to determine if this question can be marked as Last Question
+        // A question can be marked as Last Question only if it's in Group 0 and has no branching rules
+        [JsonIgnore]
+        public bool CanBeMarkedAsLastQuestion { get; set; } = true;
+        
         public List<AnswerViewModel> Answers { get; set; }
     }
 
