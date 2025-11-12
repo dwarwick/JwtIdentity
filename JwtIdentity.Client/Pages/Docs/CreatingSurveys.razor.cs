@@ -10,7 +10,8 @@ namespace JwtIdentity.Client.Pages.Docs
                 Toc("create-survey", "Create a new survey shell"),
                 Toc("build-questions", "Build out your questions"),
                 Toc("edit-questions", "Edit existing questions"),
-                Toc("reuse-questions", "Reuse questions from your library")
+                Toc("reuse-questions", "Reuse questions from your library"),
+                Toc("question-branching", "Configure Question Branching")
             };
 
             var breadcrumbs = new[]
