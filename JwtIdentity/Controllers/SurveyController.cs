@@ -294,11 +294,14 @@ namespace JwtIdentity.Controllers
                                     var existingTextQuestion = await _context.Questions.OfType<TextQuestion>().FirstOrDefaultAsync(q => q.Id == passedInQuestion.Id);
 
                                     if (existingTextQuestion != null && (existingTextQuestion.Text != passedInQuestion.Text
-                                            || passedInQuestion.QuestionNumber != existingTextQuestion.QuestionNumber))
+                                            || passedInQuestion.QuestionNumber != existingTextQuestion.QuestionNumber
+                                            || existingTextQuestion.IsRequired != passedInQuestion.IsRequired
+                                            || existingTextQuestion.IsLastQuestion != passedInQuestion.IsLastQuestion))
                                     {
                                         existingTextQuestion.Text = passedInQuestion.Text;
                                         existingTextQuestion.QuestionNumber = passedInQuestion.QuestionNumber;
                                         existingTextQuestion.IsRequired = passedInQuestion.IsRequired;
+                                        existingTextQuestion.IsLastQuestion = passedInQuestion.IsLastQuestion;
 
                                         _ = _context.Questions.Update(existingTextQuestion);
                                     }
@@ -309,6 +312,7 @@ namespace JwtIdentity.Controllers
                                     existingTrueFalseQuestion.Text = passedInQuestion.Text;
                                     existingTrueFalseQuestion.QuestionNumber = passedInQuestion.QuestionNumber;
                                     existingTrueFalseQuestion.IsRequired = passedInQuestion.IsRequired;
+                                    existingTrueFalseQuestion.IsLastQuestion = passedInQuestion.IsLastQuestion;
 
                                     _ = _context.Questions.Update(existingTrueFalseQuestion);
                                     break;
@@ -317,6 +321,7 @@ namespace JwtIdentity.Controllers
                                     existingRatingQuestion.Text = passedInQuestion.Text;
                                     existingRatingQuestion.QuestionNumber = passedInQuestion.QuestionNumber;
                                     existingRatingQuestion.IsRequired = passedInQuestion.IsRequired;
+                                    existingRatingQuestion.IsLastQuestion = passedInQuestion.IsLastQuestion;
 
                                     _ = _context.Questions.Update(existingRatingQuestion);
                                     break;
@@ -327,11 +332,14 @@ namespace JwtIdentity.Controllers
                                         .FirstOrDefaultAsync(q => q.Id == passedInQuestion.Id);
 
                                     if (existingMCQuestion != null && (existingMCQuestion.Text != passedInQuestion.Text
-                                            || passedInQuestion.QuestionNumber != existingMCQuestion.QuestionNumber || existingMCQuestion.IsRequired != passedInQuestion.IsRequired))
+                                            || passedInQuestion.QuestionNumber != existingMCQuestion.QuestionNumber
+                                            || existingMCQuestion.IsRequired != passedInQuestion.IsRequired
+                                            || existingMCQuestion.IsLastQuestion != passedInQuestion.IsLastQuestion))
                                     {
                                         existingMCQuestion.Text = passedInQuestion.Text;
                                         existingMCQuestion.QuestionNumber = passedInQuestion.QuestionNumber;
                                         existingMCQuestion.IsRequired = passedInQuestion.IsRequired;
+                                        existingMCQuestion.IsLastQuestion = passedInQuestion.IsLastQuestion;
 
                                         _ = _context.Questions.Update(existingMCQuestion);
                                     }
@@ -384,11 +392,14 @@ namespace JwtIdentity.Controllers
                                         .FirstOrDefaultAsync(q => q.Id == passedInQuestion.Id);
 
                                     if (existingSAQuestion != null && (existingSAQuestion.Text != passedInQuestion.Text
-                                            || passedInQuestion.QuestionNumber != existingSAQuestion.QuestionNumber || existingSAQuestion.IsRequired != passedInQuestion.IsRequired))
+                                            || passedInQuestion.QuestionNumber != existingSAQuestion.QuestionNumber
+                                            || existingSAQuestion.IsRequired != passedInQuestion.IsRequired
+                                            || existingSAQuestion.IsLastQuestion != passedInQuestion.IsLastQuestion))
                                     {
                                         existingSAQuestion.Text = passedInQuestion.Text;
                                         existingSAQuestion.QuestionNumber = passedInQuestion.QuestionNumber;
                                         existingSAQuestion.IsRequired = passedInQuestion.IsRequired;
+                                        existingSAQuestion.IsLastQuestion = passedInQuestion.IsLastQuestion;
 
                                         _ = _context.Questions.Update(existingSAQuestion);
                                     }
