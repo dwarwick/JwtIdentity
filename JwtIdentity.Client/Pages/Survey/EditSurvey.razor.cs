@@ -86,21 +86,18 @@ namespace JwtIdentity.Client.Pages.Survey
                         if (DemoType == "branching")
                         {
                             // Branching demo - different choices for each question
-                            if (DemoStep == 8 && value == "Excellent to Poor")
+                            // First question uses manual choices, so no preset needed
+                            if (DemoStep == 11 && value == "How Satisfied")
                             {
-                                DemoStep = 9; // First branching question
+                                DemoStep = 12; // Second branching question - customer service
                             }
-                            else if (DemoStep == 11 && value == "How Satisfied")
+                            else if (DemoStep == 14 && value == "How Likely")
                             {
-                                DemoStep = 12; // Second branching question
+                                DemoStep = 15; // Third question - recommendation
                             }
-                            else if (DemoStep == 14 && value == "Yes No Partially")
+                            else if (DemoStep == 17 && value == "Yes No Partially")
                             {
-                                DemoStep = 15; // Third question
-                            }
-                            else if (DemoStep == 17 && value == "Yes No")
-                            {
-                                DemoStep = 18; // Fourth question
+                                DemoStep = 18; // Fourth question - ease of use
                             }
                         }
                         else
@@ -237,25 +234,33 @@ namespace JwtIdentity.Client.Pages.Survey
                         DemoStep = 5;
                         break;
                     case 7:
-                        // First branching question - "Which product did you purchase?"
+                        // First branching question - Which product
                         QuestionText = "Which product did you purchase?";
                         DemoStep = 8;
                         break;
+                    case 8:
+                        // Add product choices manually for first question
+                        MultipleChoiceQuestion.Options.Clear();
+                        MultipleChoiceQuestion.Options.Add(new ChoiceOptionViewModel { OptionText = "Product A", Order = 0 });
+                        MultipleChoiceQuestion.Options.Add(new ChoiceOptionViewModel { OptionText = "Product B", Order = 1 });
+                        MultipleChoiceQuestion.Options.Add(new ChoiceOptionViewModel { OptionText = "Product C", Order = 2 });
+                        DemoStep = 9;
+                        break;
                     case 10:
                         // After adding first branching question, create second
-                        QuestionText = "How would you rate our customer service?";
+                        QuestionText = "How satisfied are you with our customer service?";
                         SelectedQuestionType = "Multiple Choice";
                         DemoStep = 11;
                         break;
                     case 13:
                         // After adding second branching question, create third (for Group 1)
-                        QuestionText = "What features of the product do you use most?";
+                        QuestionText = "Would you recommend this product to others?";
                         SelectedQuestionType = "Multiple Choice";
                         DemoStep = 14;
                         break;
                     case 16:
                         // After adding third question, create fourth (for Group 2)
-                        QuestionText = "What improvements would you suggest for the service?";
+                        QuestionText = "Did you find the product easy to use?";
                         SelectedQuestionType = "Multiple Choice";
                         DemoStep = 17;
                         break;

@@ -241,7 +241,7 @@
                 {
                     <MudPaper>
                         <MudText Typo="Typo.h6" Class="mb-1">Add the Question Choices</MudText>
-                        <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 8 })">
+                        <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 11, 14, 17 })">
                         <MudSelect id="PresetChoices" Label="Preset Choices (Will overwrite existing choices)" T="string" @bind-Value="SelectedPresetChoice" Variant="Variant.Filled" Dense="true">
                             <MudSelectItem T="string" Value=null>-- Select Preset --</MudSelectItem>
                             @foreach (var preset in PresetChoices)
@@ -251,7 +251,26 @@
                         </MudSelect>
                         </DemoBorder>
                             <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 8 })">
-                                <MudText Typo="Typo.body2">Now we will pick appropriate choices for this question. Expand the Preset Choices drop-down and select Yes No Partially.</MudText>
+                                @if (DemoType == "branching")
+                                {
+                                    <MudText Typo="Typo.body2">For this product question, we'll add custom choices. Click Next to add Product A, Product B, and Product C automatically.</MudText>
+                                    <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 8 })" IsButton="true">
+                                        <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
+                                    </DemoBorder>
+                                }
+                                else
+                                {
+                                    <MudText Typo="Typo.body2">Now we will pick appropriate choices for this question. Expand the Preset Choices drop-down and select Yes No Partially.</MudText>
+                                }
+                            </DemoPopup>
+                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 11 })">
+                                <MudText Typo="Typo.body2">For the second question about customer service, select <strong>How Satisfied</strong> from the Preset Choices.</MudText>
+                            </DemoPopup>
+                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 14 })">
+                                <MudText Typo="Typo.body2">For the third question about product recommendation, select <strong>How Likely</strong> from the Preset Choices.</MudText>
+                            </DemoPopup>
+                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 17 })">
+                                <MudText Typo="Typo.body2">For the fourth question about ease of use, select <strong>Yes No Partially</strong> from the Preset Choices.</MudText>
                             </DemoPopup>
                         <MudTextField id="Choice" Label="Choice Text" @bind-Value="NewChoiceOptionText" Variant="Variant.Filled" Lines="1" MaxLines="5" AutoGrow="true" Immediate="true" Counter="50" MaxLength="50" ReadOnly="@IsDemoUser" />
 
