@@ -81,9 +81,36 @@ namespace JwtIdentity.Client.Pages.Survey
                         }
                     }
 
-                    if (IsDemoUser && DemoStep == 8 && value == "Yes No Partially")
+                    if (IsDemoUser)
                     {
-                        DemoStep = 9;
+                        if (DemoType == "branching")
+                        {
+                            // Branching demo - different choices for each question
+                            if (DemoStep == 8 && value == "Excellent to Poor")
+                            {
+                                DemoStep = 9; // First branching question
+                            }
+                            else if (DemoStep == 11 && value == "How Satisfied")
+                            {
+                                DemoStep = 12; // Second branching question
+                            }
+                            else if (DemoStep == 14 && value == "Yes No Partially")
+                            {
+                                DemoStep = 15; // Third question
+                            }
+                            else if (DemoStep == 17 && value == "Yes No")
+                            {
+                                DemoStep = 18; // Fourth question
+                            }
+                        }
+                        else
+                        {
+                            // Linear demo
+                            if (DemoStep == 8 && value == "Yes No Partially")
+                            {
+                                DemoStep = 9;
+                            }
+                        }
                     }
                 }
             }
@@ -190,25 +217,77 @@ namespace JwtIdentity.Client.Pages.Survey
         {
             if (!IsDemoUser) return;
 
-            switch (DemoStep)
+            if (DemoType == "branching")
             {
-                case 2:
-                    if (SelectedQuestion == null || SelectedQuestion.QuestionNumber != 1)
-                    {
-                        DemoStep = 3;
-                    }
-                    else
-                    {
-                        DemoStep = 4;
-                    }
-                    break;
-                case 4:
-                    DemoStep = 5;
-                    break;
-                case 7:
-                    QuestionText = "Did the representative answer all of your questions?";
-                    DemoStep = 8;
-                    break;
+                // Branching demo flow
+                switch (DemoStep)
+                {
+                    case 2:
+                        // After accepting questions, start creating first branching question
+                        if (SelectedQuestion == null || SelectedQuestion.QuestionNumber != 1)
+                        {
+                            DemoStep = 3;
+                        }
+                        else
+                        {
+                            DemoStep = 4;
+                        }
+                        break;
+                    case 4:
+                        DemoStep = 5;
+                        break;
+                    case 7:
+                        // First branching question - "Which product did you purchase?"
+                        QuestionText = "Which product did you purchase?";
+                        DemoStep = 8;
+                        break;
+                    case 10:
+                        // After adding first branching question, create second
+                        QuestionText = "How would you rate our customer service?";
+                        SelectedQuestionType = "Multiple Choice";
+                        DemoStep = 11;
+                        break;
+                    case 13:
+                        // After adding second branching question, create third (for Group 1)
+                        QuestionText = "What features of the product do you use most?";
+                        SelectedQuestionType = "Multiple Choice";
+                        DemoStep = 14;
+                        break;
+                    case 16:
+                        // After adding third question, create fourth (for Group 2)
+                        QuestionText = "What improvements would you suggest for the service?";
+                        SelectedQuestionType = "Multiple Choice";
+                        DemoStep = 17;
+                        break;
+                    case 19:
+                        // After adding fourth question, mark last text question as last
+                        DemoStep = 20;
+                        break;
+                }
+            }
+            else
+            {
+                // Linear demo flow (original)
+                switch (DemoStep)
+                {
+                    case 2:
+                        if (SelectedQuestion == null || SelectedQuestion.QuestionNumber != 1)
+                        {
+                            DemoStep = 3;
+                        }
+                        else
+                        {
+                            DemoStep = 4;
+                        }
+                        break;
+                    case 4:
+                        DemoStep = 5;
+                        break;
+                    case 7:
+                        QuestionText = "Did the representative answer all of your questions?";
+                        DemoStep = 8;
+                        break;
+                }
             }
         }
 
@@ -449,15 +528,52 @@ namespace JwtIdentity.Client.Pages.Survey
             if (await UpdateSurvey())
             {
                 _ = Snackbar.Add("Question Added / Updated", MudBlazor.Severity.Success);
-                if (IsDemoUser && DemoStep == 9)
+                if (IsDemoUser)
                 {
-                    DemoStep = 10;
+                    if (DemoType == "branching")
+                    {
+                        // Branching demo progression
+                        if (DemoStep == 9)
+                        {
+                            DemoStep = 10; // Move to second branching question
+                        }
+                        else if (DemoStep == 12)
+                        {
+                            DemoStep = 13; // Move to third question
+                        }
+                        else if (DemoStep == 15)
+                        {
+                            DemoStep = 16; // Move to fourth question
+                        }
+                        else if (DemoStep == 18)
+                        {
+                            DemoStep = 19; // Move to mark last question
+                        }
+                    }
+                    else
+                    {
+                        // Linear demo progression
+                        if (DemoStep == 9)
+                        {
+                            DemoStep = 10;
+                        }
+                    }
                 }
             }
             else
             {
                 _ = Snackbar.Add("Question Not Added", MudBlazor.Severity.Error);
             }
+        }
+
+        protected void NavigateToBranching()
+        {
+            var branchingUrl = $"/survey/branching/{SurveyId}";
+            if (DemoType == "branching")
+            {
+                branchingUrl += $"?DemoType={DemoType}";
+            }
+            Navigation.NavigateTo(branchingUrl);
         }
 
         protected async Task PublishSurvey()
