@@ -487,7 +487,7 @@ namespace JwtIdentity.Client.Pages.Survey
                 return;
 
             double xPosition = 300;
-            const double groupSpacing = 600;
+            const double groupSpacing = 500;
             const double nodeSpacing = 80;
             const double questionNodeHeight = 60;
             const double optionNodeHeight = 50;
