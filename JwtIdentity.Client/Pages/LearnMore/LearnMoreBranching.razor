@@ -48,16 +48,13 @@
         </MudText>
         <MudList T="string" Dense="true" Class="ml-4 mb-3">
             <MudListItem T="string" Icon="@Icons.Material.Filled.Circle" IconColor="Color.Primary" IconSize="MudBlazor.Size.Small">
-                <strong>Group 0 (Default):</strong> General questions shown to everyone
+                <strong>Group 0 (Default):</strong> General questions shown to everyone, including Last Questions
             </MudListItem>
             <MudListItem T="string" Icon="@Icons.Material.Filled.Circle" IconColor="Color.Info" IconSize="MudBlazor.Size.Small">
                 <strong>Group 1 (Kitchen):</strong> Questions specific to kitchen remodeling
             </MudListItem>
             <MudListItem T="string" Icon="@Icons.Material.Filled.Circle" IconColor="Color.Success" IconSize="MudBlazor.Size.Small">
                 <strong>Group 2 (Bathroom):</strong> Questions specific to bathroom remodeling
-            </MudListItem>
-            <MudListItem T="string" Icon="@Icons.Material.Filled.Circle" IconColor="Color.Warning" IconSize="MudBlazor.Size.Small">
-                <strong>Group 3 (Final Questions):</strong> Closing questions about overall satisfaction
             </MudListItem>
         </MudList>
 
@@ -80,26 +77,46 @@
             </MudListItem>
         </MudList>
         <MudText Typo="Typo.body1" Class="mb-3">
-            If no specific branching rule is defined for an answer, the survey continues sequentially to the next question in the current group, or follows the group's default next group setting.
+            If no specific branching rule is defined for an answer, the survey continues sequentially to the next question in the current group.
         </MudText>
 
         <MudText Typo="Typo.h6" Class="mb-2 mt-4">
             <MudIcon Icon="@Icons.Material.Filled.Flag" Class="mr-2" Color="Color.Primary" />
-            Last Question & Group Completion
+            Last Questions
         </MudText>
         <MudText Typo="Typo.body1" Class="mb-3">
-            Each question group has a <strong>completion behavior</strong> that determines what happens when all questions in that group are answered:
+            <strong>Last Questions</strong> are special questions in Group 0 that are always shown at the very end of the survey, after all other groups have been completed. These are perfect for closing questions like "Do you have anything else to add?" or final rating questions.
+        </MudText>
+        <MudAlert Severity="Severity.Warning" Class="mb-3">
+            <strong>Important:</strong> Last Questions must be in Group 0 (Default) and cannot have branching rules. They are shown to all respondents as the final questions before submission, regardless of which path they took through the survey.
+        </MudAlert>
+        
+        <MudText Typo="Typo.h6" Class="mb-2 mt-4">
+            <MudIcon Icon="@Icons.Material.Filled.Timeline" Class="mr-2" Color="Color.Primary" />
+            Survey Flow
+        </MudText>
+        <MudText Typo="Typo.body1" Class="mb-3">
+            When a respondent takes a survey with branching, the flow works like this:
         </MudText>
         <MudList T="string" Dense="true" Class="ml-4 mb-3">
-            <MudListItem T="string" Icon="@Icons.Material.Filled.Send" IconColor="Color.Success">
-                <strong>Submit Survey:</strong> End the survey and submit responses immediately after this group
+            <MudListItem T="string" Icon="@Icons.Material.Filled.PlayArrow" IconColor="Color.Primary">
+                <strong>Step 1:</strong> Start with Group 0 questions (excluding Last Questions)
             </MudListItem>
-            <MudListItem T="string" Icon="@Icons.Material.Filled.ArrowForward" IconColor="Color.Info">
-                <strong>Branch to Group:</strong> Continue to a specific group after completing the current one
+            <MudListItem T="string" Icon="@Icons.Material.Filled.CompareArrows" IconColor="Color.Info">
+                <strong>Step 2:</strong> As respondents answer questions with branching rules, other groups get "cued" to be shown
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.FastForward" IconColor="Color.Success">
+                <strong>Step 3:</strong> After Group 0 is complete, all cued groups are shown in numerical order
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Flag" IconColor="Color.Warning">
+                <strong>Step 4:</strong> After all cued groups, Last Questions (if any) are shown
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Send" IconColor="Color.Tertiary">
+                <strong>Step 5:</strong> Respondent submits the survey
             </MudListItem>
         </MudList>
         <MudText Typo="Typo.body1">
-            This allows you to create surveys where different respondents may see different ending questions based on their path through the survey. For example, respondents who indicate dissatisfaction might see additional feedback questions before submission.
+            This means different respondents may see different groups based on their answers, but everyone sees the same Group 0 questions and the same Last Questions at the end.
         </MudText>
     </MudPaper>
 
@@ -111,13 +128,9 @@
         </MudText>
         
         <!-- Note: Image needs to be manually added to /JwtIdentity/wwwroot/images/branching_diagram.png -->
-        <!-- Using SVG placeholder until actual image is available -->
-        <MudAlert Severity="Severity.Warning" Class="mb-3">
-            <strong>Note:</strong> The actual branching diagram image from the GitHub issue should replace the placeholder below.
-            Place the image at: <code>/JwtIdentity/wwwroot/images/branching_diagram.png</code>
-        </MudAlert>
+        <!-- Using corrected SVG diagram that accurately reflects the actual branching logic -->
         <div class="text-center mb-4">
-            <MudImage Src="images/branching_diagram_placeholder.svg" Alt="Survey Branching Diagram showing how questions flow based on responses" Elevation="2" Class="rounded" Style="max-width: 100%; height: auto;" />
+            <MudImage Src="images/branching_diagram_corrected.svg" Alt="Survey Branching Diagram showing how questions flow based on responses" Elevation="2" Class="rounded" Style="max-width: 100%; height: auto;" />
         </div>
 
         <MudText Typo="Typo.h6" Class="mb-2 mt-4">Understanding the Diagram:</MudText>
@@ -141,7 +154,7 @@
 
         <MudAlert Severity="Severity.Success" Class="mt-4">
             <MudText Typo="Typo.body2">
-                In this example, Question 4 asks respondents to select which areas were remodeled. If they select "Kitchen," they're shown the Kitchen group questions. If they select "Bathroom," they see the Bathroom group questions. After completing their specific area questions, all respondents proceed to Question 7 (the value rating) and then Question 8 (the final feedback question).
+                In this example, Q4 asks "Which areas of your home were remodeled?" When respondents select "Kitchen", Group 1 (Kitchen) is cued. When they select "Bathroom", Group 2 (Bathroom) is cued. After answering all Group 0 questions (Q1-Q4 and Q7), respondents then see their cued group(s). Finally, Q8 (marked as a Last Question in Group 0) is shown to everyone before they submit.
             </MudText>
         </MudAlert>
     </MudPaper>
@@ -207,11 +220,11 @@
                     Ask respondents which product category interests them, then show detailed questions about only that category. For example:
                 </MudText>
                 <MudList T="string" Dense="true">
-                    <MudListItem T="string">Group 0: "Which product line are you interested in?" → Electronics / Clothing / Home Goods</MudListItem>
+                    <MudListItem T="string">Group 0: "Which product line are you interested in?" → Electronics / Clothing / Home Goods (and general demographic questions)</MudListItem>
                     <MudListItem T="string">Group 1: Detailed questions about electronics features and preferences</MudListItem>
                     <MudListItem T="string">Group 2: Detailed questions about clothing styles and sizes</MudListItem>
                     <MudListItem T="string">Group 3: Detailed questions about home decor preferences</MudListItem>
-                    <MudListItem T="string">Group 4: Final demographic and contact questions</MudListItem>
+                    <MudListItem T="string">Last Question(s) in Group 0: Final comments and contact information (shown to all respondents)</MudListItem>
                 </MudList>
             </MudExpansionPanel>
 
@@ -223,7 +236,7 @@
                     <MudListItem T="string">Group 0: "How satisfied were you with our service?" → Very Satisfied / Satisfied / Neutral / Dissatisfied</MudListItem>
                     <MudListItem T="string">Group 1 (Satisfied path): "What did we do well?" and "Would you recommend us?"</MudListItem>
                     <MudListItem T="string">Group 2 (Dissatisfied path): "What went wrong?" and "How can we make it right?"</MudListItem>
-                    <MudListItem T="string">Group 3: Final thank you and optional contact information</MudListItem>
+                    <MudListItem T="string">Last Question(s) in Group 0: Overall feedback and contact information (shown to all respondents)</MudListItem>
                 </MudList>
             </MudExpansionPanel>
 
@@ -236,7 +249,7 @@
                     <MudListItem T="string">Group 1: Sales-specific questions about targets and support</MudListItem>
                     <MudListItem T="string">Group 2: Engineering-specific questions about tools and processes</MudListItem>
                     <MudListItem T="string">Group 3: Customer Service questions about training and resources</MudListItem>
-                    <MudListItem T="string">Group 4: Company-wide culture and benefits questions</MudListItem>
+                    <MudListItem T="string">Last Question(s) in Group 0: Company-wide culture and suggestions (shown to all respondents)</MudListItem>
                 </MudList>
             </MudExpansionPanel>
 
@@ -249,7 +262,7 @@
                     <MudListItem T="string">Group 1: Detailed pain assessment questions (location, severity, duration)</MudListItem>
                     <MudListItem T="string">Group 2: Illness symptom questions (fever, fatigue, etc.)</MudListItem>
                     <MudListItem T="string">Group 3: Routine checkup history and preventive care questions</MudListItem>
-                    <MudListItem T="string">Group 4: Medical history and current medications</MudListItem>
+                    <MudListItem T="string">Last Question(s) in Group 0: Medical history and medications (shown to all patients)</MudListItem>
                 </MudList>
             </MudExpansionPanel>
 
@@ -262,7 +275,7 @@
                     <MudListItem T="string">Group 1: Computer Science students - questions about coding exercises and labs</MudListItem>
                     <MudListItem T="string">Group 2: Business students - questions about case studies and presentations</MudListItem>
                     <MudListItem T="string">Group 3: Liberal Arts students - questions about reading assignments and discussions</MudListItem>
-                    <MudListItem T="string">Group 4: Overall instructor effectiveness and course recommendations</MudListItem>
+                    <MudListItem T="string">Last Question(s) in Group 0: Instructor effectiveness and recommendations (shown to all students)</MudListItem>
                 </MudList>
             </MudExpansionPanel>
         </MudExpansionPanels>
@@ -289,17 +302,17 @@
             </MudStep>
             <MudStep Title="Organize Questions into Groups">
                 <MudText Typo="Typo.body1" Class="mb-2">
-                    Use the dropdown menus to move questions from the default group (Group 0) into your newly created groups. Group questions by topic or by which respondents should see them.
+                    Use the dropdown menus to move questions from the default group (Group 0) into your newly created groups. Group questions by topic or by which respondents should see them. Keep questions in Group 0 that should be shown to everyone.
                 </MudText>
             </MudStep>
             <MudStep Title="Configure Branching Rules">
                 <MudText Typo="Typo.body1" Class="mb-2">
-                    For Multiple Choice, Select All That Apply, and True/False questions, select which group each answer should branch to. You can have different answers lead to different groups.
+                    For Multiple Choice, Select All That Apply, and True/False questions, select which group each answer should branch to. You can have different answers lead to different groups. When a branching rule is triggered, that group gets "cued" to be shown after Group 0 is complete.
                 </MudText>
             </MudStep>
-            <MudStep Title="Set Group Completion Behavior">
+            <MudStep Title="Mark Last Questions (Optional)">
                 <MudText Typo="Typo.body1" Class="mb-2">
-                    For each group, decide what happens when all questions are answered: either submit the survey immediately, or branch to another specific group.
+                    If you have questions that should always appear at the very end (like "Any additional comments?"), mark them as Last Questions in Group 0. These questions cannot have branching rules and will be shown to all respondents after all other groups are complete.
                 </MudText>
             </MudStep>
             <MudStep Title="Test Your Survey">
@@ -324,10 +337,10 @@
                 <MudText><strong>Test all paths:</strong> Take your survey multiple times, choosing different answers each time to ensure every path works correctly.</MudText>
             </MudListItem>
             <MudListItem Icon="@Icons.Material.Filled.TipsAndUpdates" IconColor="Color.Primary">
-                <MudText><strong>Ensure all paths end:</strong> Make sure every possible path through your survey eventually leads to submission. Avoid creating "dead ends."</MudText>
+                <MudText><strong>Use Last Questions wisely:</strong> Only mark questions as "Last Question" if they truly need to appear at the very end for all respondents. Remember, Last Questions cannot have branching rules.</MudText>
             </MudListItem>
             <MudListItem Icon="@Icons.Material.Filled.TipsAndUpdates" IconColor="Color.Primary">
-                <MudText><strong>Keep Group 0 universal:</strong> Use the default group for questions that should be shown to everyone, regardless of their answers.</MudText>
+                <MudText><strong>Keep Group 0 universal:</strong> Use the default group for questions that should be shown to everyone, regardless of their answers, including Last Questions.</MudText>
             </MudListItem>
             <MudListItem Icon="@Icons.Material.Filled.TipsAndUpdates" IconColor="Color.Primary">
                 <MudText><strong>Consider the respondent experience:</strong> Make sure the flow feels natural and logical from the respondent's perspective, not just from a data collection standpoint.</MudText>
@@ -347,12 +360,16 @@
                     When a respondent takes a survey with branching enabled, they see one question at a time rather than all questions on a single page. As they answer each question:
                 </MudText>
                 <MudList T="string" Dense="true">
-                    <MudListItem T="string">1. Their answer is checked against any branching rules configured for that question</MudListItem>
-                    <MudListItem T="string">2. If a branching rule matches (e.g., they selected an option with a specific branch), they're shown the first question from the target group</MudListItem>
-                    <MudListItem T="string">3. If no branching rule applies, they see the next question in sequence within the current group</MudListItem>
-                    <MudListItem T="string">4. When a group is completed, the group's completion behavior determines the next step</MudListItem>
-                    <MudListItem T="string">5. The process continues until they reach a group configured to submit the survey</MudListItem>
+                    <MudListItem T="string">1. Start with Group 0 questions (excluding Last Questions initially)</MudListItem>
+                    <MudListItem T="string">2. As they answer questions, any branching rules are checked - if a rule matches, that group is "cued" to be shown later</MudListItem>
+                    <MudListItem T="string">3. Continue through all Group 0 questions (skipping Last Questions for now)</MudListItem>
+                    <MudListItem T="string">4. After Group 0 is complete, show all cued groups in numerical order</MudListItem>
+                    <MudListItem T="string">5. After all cued groups are shown, display Last Questions (if any) from Group 0</MudListItem>
+                    <MudListItem T="string">6. Finally, the respondent can submit the survey</MudListItem>
                 </MudList>
+                <MudText Typo="Typo.body2" Class="mt-2">
+                    This means the actual flow is determined dynamically based on the respondent's answers, and different respondents may see different groups based on their choices.
+                </MudText>
             </MudExpansionPanel>
 
             <MudExpansionPanel Text="Backward Compatibility">
