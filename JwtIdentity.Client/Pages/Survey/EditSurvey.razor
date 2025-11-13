@@ -224,7 +224,7 @@
                                 </DemoBorder>
                             </DemoPopup>
                         <MudText Typo="Typo.h6" Class="mt-5">Create a @StringHelper.PascalCaseToWords(SelectedQuestionType) Question</MudText>
-                        <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 4, 7 })">
+                        <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 4, 7, 8 })">
                             <MudTextField id="Text" Label="Question Text" @bind-Value="QuestionText" Variant="Variant.Filled" Lines="1" MaxLines="5" AutoGrow="true" Immediate="true" Counter="500" MaxLength="500" ReadOnly="@IsDemoUser" />
                         </DemoBorder>
                             <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 4 })" AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft">
@@ -242,6 +242,19 @@
                                 <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 7 })" IsButton="true">
                                     <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
                                 </DemoBorder>
+                            </DemoPopup>
+                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 8 })" AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft">
+                                @if (DemoType == "branching")
+                                {
+                                    <MudText Typo="Typo.body2">For this product question, we'll add custom choices. Scroll down and click Next to add Product A, Product B, and Product C automatically.</MudText>
+                                    <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 8 })" IsButton="true">
+                                        <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
+                                    </DemoBorder>
+                                }
+                                else
+                                {
+                                    <MudText Typo="Typo.body2">Now we will pick appropriate choices for this question. Scroll down, expand the Preset Choices drop-down and select Yes No Partially.</MudText>
+                                }
                             </DemoPopup>
                     </MudStack>
 
@@ -274,19 +287,6 @@
                             }
                         </MudSelect>
                         </DemoBorder>
-                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 8 })" AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft">
-                                @if (DemoType == "branching")
-                                {
-                                    <MudText Typo="Typo.body2">For this product question, we'll add custom choices. Click Next to add Product A, Product B, and Product C automatically.</MudText>
-                                    <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 8 })" IsButton="true">
-                                        <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
-                                    </DemoBorder>
-                                }
-                                else
-                                {
-                                    <MudText Typo="Typo.body2">Now we will pick appropriate choices for this question. Expand the Preset Choices drop-down and select Yes No Partially.</MudText>
-                                }
-                            </DemoPopup>
                             <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 11 })">
                                 <MudText Typo="Typo.body2">For the second question about customer service, select <strong>How Satisfied</strong> from the Preset Choices.</MudText>
                             </DemoPopup>

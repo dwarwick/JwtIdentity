@@ -92,32 +92,36 @@ This is a Blazor WebAssembly project with a server-side API. The solution uses .
 ### Test Structure Guidelines
 
 #### bUnit Test Structure
+**All bUnit test classes MUST inherit from `BUnitTestBase`** which provides:
+- Pre-configured `TestContext` with all necessary services
+- Mocked services (AuthService, ApiService, LocalStorage, etc.)
+- MockNavigationManager for navigation testing
+- MudBlazor and Syncfusion services registered
+
 ```csharp
 [TestFixture]
-public class MyComponentTests : IDisposable
+public class MyComponentTests : BUnitTestBase
 {
-    private BunitTestContext _context;
-    private Mock<IApiService> _apiServiceMock;
-    // ... other mocks
-
     [SetUp]
     public void Setup()
     {
-        _context = new BunitTestContext();
-        // Setup mocks and services
-        _context.Services.AddMudServices();
+        // Additional test-specific setup if needed
+        // Context, AuthServiceMock, ApiServiceMock, etc. are available from base class
     }
 
     [Test]
     public void Component_Scenario_ExpectedBehavior()
     {
         // Arrange
+        ApiServiceMock.Setup(x => x.GetAsync<SomeType>(It.IsAny<string>()))
+            .ReturnsAsync(new SomeType());
+        
         // Act
-        var cut = _context.RenderComponent<MyComponent>();
+        var cut = Context.RenderComponent<MyComponent>();
+        
         // Assert
+        Assert.That(cut.Markup, Does.Contain("Expected Text"));
     }
-
-    public void Dispose() => _context?.Dispose();
 }
 ```
 
