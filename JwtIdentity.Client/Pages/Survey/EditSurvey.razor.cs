@@ -9,6 +9,7 @@ namespace JwtIdentity.Client.Pages.Survey
 
         protected bool IsDemoUser { get; set; }
         protected int DemoStep { get; set; }
+        protected string DemoType { get; set; }
         private int _previousDemoStep = -1;
         protected Origin AnchorOrigin { get; set; } = Origin.BottomRight;
         protected Origin TransformOrigin { get; set; } = Origin.TopLeft;
@@ -113,6 +114,18 @@ namespace JwtIdentity.Client.Pages.Survey
             var authState = await AuthStateProvider.GetAuthenticationStateAsync();
             var userName = authState.User.Identity?.Name ?? string.Empty;
             IsDemoUser = userName.StartsWith("DemoUser") && userName.EndsWith("@surveyshark.site");
+
+            // Get demo type and step from query parameters
+            var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
+            var queryParams = QueryHelpers.ParseQuery(uri.Query);
+            if (queryParams.TryGetValue("DemoType", out var demoType))
+            {
+                DemoType = demoType.ToString();
+            }
+            if (queryParams.TryGetValue("DemoStep", out var demoStep) && int.TryParse(demoStep, out var step))
+            {
+                DemoStep = step;
+            }
 
             if (await AuthService.GetUserId() != Survey.CreatedById)
             {
