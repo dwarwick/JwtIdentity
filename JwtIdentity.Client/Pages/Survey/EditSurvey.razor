@@ -88,12 +88,12 @@
                                             @if (question.QuestionNumber == 1)
                                             {
                                                 <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 0, 3, 5, 7 })">
-                                                    <MudListItem id="@($"question_{Survey.Questions.IndexOf(question)}")" Class="ai-style-change-3 ai-style-change-6" Text="@($"{question.QuestionNumber}. {question.Text}")" Value="@question" />
+                                                    <MudListItem T="QuestionViewModel" id="@($"question_{Survey.Questions.IndexOf(question)}")" Class="ai-style-change-3 ai-style-change-6" Text="@($"{question.QuestionNumber}. {question.Text}")" Value="@question" />
                                                 </DemoBorder>
                                             }
                                             else
                                             {
-                                                <MudListItem id="@($"question_{Survey.Questions.IndexOf(question)}")" Class="ai-style-change-3 ai-style-change-6" Text="@($"{question.QuestionNumber}. {question.Text}")" Value="@question" />
+                                                <MudListItem T="QuestionViewModel" id="@($"question_{Survey.Questions.IndexOf(question)}")" Class="ai-style-change-3 ai-style-change-6" Text="@($"{question.QuestionNumber}. {question.Text}")" Value="@question" />
                                             }
 
 
@@ -231,7 +231,7 @@
                                         <MudStack Class=".d-flex.flex-row.gap-3.ai-style-change-1" Row="true" AlignItems="AlignItems.Center">
                                             <MudIconButton Icon="@Icons.Material.Filled.Delete" ButtonType="ButtonType.Button" OnClick="@(() => DeleteChoiceOption(choice))" />
                                             <MudIcon Class="drag-icon ai-style-change-9" Icon="@Icons.Material.Filled.DragIndicator" />
-                                            <MudListItem Class="ai-style-change-3 ai-style-change-6" Text="@choice.OptionText" />
+                                            <MudListItem T="string" Class="ai-style-change-3 ai-style-change-6" Text="@choice.OptionText" />
                                         </MudStack>
                                         <div style="height: 2px; background-color: blueviolet; width: 100%;"></div>
                                     </DragAndDrop>
@@ -259,7 +259,7 @@
                         <MudList T="string" Dense="true">
                             @foreach (var opt in MultipleChoiceQuestion.Options)
                             {
-                                <MudListItem Text="@opt.OptionText" />
+                                <MudListItem T="string" Text="@opt.OptionText" />
                             }
                         </MudList>
                     }
@@ -274,8 +274,8 @@
                     else if (SelectedQuestion.QuestionType == QuestionType.TrueFalse)
                     {
                         <MudList T="string" Dense="true">
-                            <MudListItem Text="True" />
-                            <MudListItem Text="False" />
+                            <MudListItem T="string" Text="True" />
+                            <MudListItem T="string" Text="False" />
                         </MudList>
                     }
                 </MudPaper>
