@@ -199,11 +199,35 @@
                                     Currently, the Question Type is set to Text. Select Multiple Choice for the question type. 
                                     We will create a new Multiple Choice question.</MudText>
                             </DemoPopup>
+                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 10 })">
+                                <MudText Typo="Typo.body2">Great! The first branching question is saved. Now let's create the second question. It will automatically be set up for you. Click Next to continue.</MudText>
+                                <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 10 })" IsButton="true">
+                                    <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
+                                </DemoBorder>
+                            </DemoPopup>
+                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 13 })">
+                                <MudText Typo="Typo.body2">Second question saved! Now let's create the third question. Click Next to continue.</MudText>
+                                <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 13 })" IsButton="true">
+                                    <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
+                                </DemoBorder>
+                            </DemoPopup>
+                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 16 })">
+                                <MudText Typo="Typo.body2">Third question saved! Now let's create the fourth and final branching question. Click Next to continue.</MudText>
+                                <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 16 })" IsButton="true">
+                                    <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
+                                </DemoBorder>
+                            </DemoPopup>
+                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 19 })">
+                                <MudText Typo="Typo.body2">All four branching questions are saved! Now we need to mark the last text question as a "Last Question" so it appears at the end of the survey. Scroll down to find the last text question and mark it. Click Next to continue.</MudText>
+                                <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 19 })" IsButton="true">
+                                    <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
+                                </DemoBorder>
+                            </DemoPopup>
                         <MudText Typo="Typo.h6" Class="mt-5">Create a @StringHelper.PascalCaseToWords(SelectedQuestionType) Question</MudText>
                         <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 4, 7 })">
                             <MudTextField id="Text" Label="Question Text" @bind-Value="QuestionText" Variant="Variant.Filled" Lines="1" MaxLines="5" AutoGrow="true" Immediate="true" Counter="500" MaxLength="500" ReadOnly="@IsDemoUser" />
                         </DemoBorder>
-                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 4 })">
+                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 4 })" AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft">
                                 <MudText Typo="Typo.body2" Style="white-space: pre-line">
                                     Scroll down to preview the <span style="color: var(--mud-palette-success);">Question Text</span> editor.
                                     During the guided demo the <span style="color: var(--mud-palette-success);">Question Text</span> field is read-only, but when you create your own surveys you can type directly here to refine the wording.
@@ -213,7 +237,7 @@
                                     <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
                                 </DemoBorder>
                             </DemoPopup>
-                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 7 })">
+                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 7 })" AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft">
                                 <MudText Typo="Typo.body2">Since this field stays read-only in the demo, we'll insert the question wording for you.</MudText>
                                 <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 7 })" IsButton="true">
                                     <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
@@ -250,7 +274,7 @@
                             }
                         </MudSelect>
                         </DemoBorder>
-                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 8 })">
+                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 8 })" AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft">
                                 @if (DemoType == "branching")
                                 {
                                     <MudText Typo="Typo.body2">For this product question, we'll add custom choices. Click Next to add Product A, Product B, and Product C automatically.</MudText>
