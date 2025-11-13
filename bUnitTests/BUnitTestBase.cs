@@ -81,6 +81,10 @@ namespace JwtIdentity.BunitTests
             
             // Register Syncfusion Blazor services
             Context.Services.AddSyncfusionBlazor();
+            
+            // MudPopoverProvider doesn't wrap child content, so we render it separately
+            // This prevents "Missing <MudPopoverProvider />" errors in components that use popovers
+            Context.RenderComponent<MudBlazor.MudPopoverProvider>();
         }
 
         public void Dispose()

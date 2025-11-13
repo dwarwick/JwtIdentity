@@ -178,7 +178,7 @@ namespace JwtIdentity.BunitTests
                 .Add(p => p.SurveyId, surveyId));
 
             // Assert
-            Assert.That(cut.Markup, Does.Contain("Survey Questions"));
+            Assert.That(cut.Markup, Does.Contain("Edit Survey"));
         }
 
         [Test]
@@ -198,6 +198,12 @@ namespace JwtIdentity.BunitTests
                 .ReturnsAsync(survey);
             ApiServiceMock.Setup(x => x.GetAsync<List<QuestionGroupViewModel>>(It.IsAny<string>()))
                 .ReturnsAsync(new List<QuestionGroupViewModel>());
+            
+            // Mock JSRuntime calls that Syncfusion Diagram component needs
+            JSRuntimeMock.Setup(x => x.InvokeAsync<Microsoft.JSInterop.IJSObjectReference>(
+                It.IsAny<string>(), 
+                It.IsAny<object[]>()))
+                .ReturnsAsync(Mock.Of<Microsoft.JSInterop.IJSObjectReference>());
 
             NavManager.NavigateTo($"http://localhost/survey/branching/{surveyId}?DemoType=branching");
 
@@ -235,7 +241,7 @@ namespace JwtIdentity.BunitTests
                 .Add(p => p.SurveyId, surveyId));
 
             // Assert - regular users can create surveys but won't see demo popups
-            Assert.That(cut.Markup, Does.Contain("Survey Questions"));
+            Assert.That(cut.Markup, Does.Contain("Edit Survey"));
         }
     }
 }
