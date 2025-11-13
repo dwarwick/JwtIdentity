@@ -1,0 +1,100 @@
+<svg width="1300" height="700" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="1300" height="700" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="650" y="30" font-size="24" font-weight="bold" text-anchor="middle" fill="#333">Survey Branching Example: Home Remodeling Survey</text>
+  
+  <!-- Default Group -->
+  <rect x="50" y="60" width="380" height="550" fill="#e0e0e0" stroke="#999" stroke-width="2" rx="8"/>
+  <text x="240" y="85" font-size="18" font-weight="bold" text-anchor="middle" fill="#333">Default Group</text>
+  
+  <rect x="70" y="110" width="340" height="80" fill="#fff" stroke="#666" stroke-width="2" rx="5"/>
+  <text x="240" y="135" font-size="14" text-anchor="middle" fill="#000">Q1: The remodeling project was completed</text>
+  <text x="240" y="155" font-size="14" text-anchor="middle" fill="#000">within the originally agreed timeline.</text>
+  
+  <rect x="70" y="210" width="340" height="80" fill="#fff" stroke="#666" stroke-width="2" rx="5"/>
+  <text x="240" y="235" font-size="14" text-anchor="middle" fill="#000">Q2: The project team communicated</text>
+  <text x="240" y="255" font-size="14" text-anchor="middle" fill="#000">clearly and kept me informed throughout.</text>
+  
+  <rect x="70" y="310" width="340" height="80" fill="#fff" stroke="#666" stroke-width="2" rx="5"/>
+  <text x="240" y="335" font-size="14" text-anchor="middle" fill="#000">Q3: How clear were the written plans</text>
+  <text x="240" y="355" font-size="14" text-anchor="middle" fill="#000">and timelines provided for the project?</text>
+  
+  <rect x="70" y="410" width="340" height="80" fill="#fff" stroke="#666" stroke-width="2" rx="5"/>
+  <text x="240" y="430" font-size="12" font-weight="bold" text-anchor="middle" fill="#000">Q4: Which areas of your home were</text>
+  <text x="240" y="448" font-size="12" font-weight="bold" text-anchor="middle" fill="#000">included in this remodel? (select all that apply)</text>
+  <rect x="90" y="460" width="130" height="20" fill="#4287f5" stroke="#2a5f9e" stroke-width="1" rx="3"/>
+  <text x="155" y="475" font-size="12" font-weight="bold" text-anchor="middle" fill="#fff">Kitchen</text>
+  <rect x="240" y="460" width="130" height="20" fill="#9b59b6" stroke="#6d3f8c" stroke-width="1" rx="3"/>
+  <text x="305" y="475" font-size="12" font-weight="bold" text-anchor="middle" fill="#fff">Bathroom</text>
+  
+  <!-- Kitchen Group -->
+  <rect x="470" y="60" width="380" height="200" fill="#b3d9ff" stroke="#4287f5" stroke-width="3" rx="8"/>
+  <text x="660" y="85" font-size="18" font-weight="bold" text-anchor="middle" fill="#003d7a">Kitchen</text>
+  
+  <rect x="490" y="110" width="340" height="80" fill="#fff" stroke="#4287f5" stroke-width="2" rx="5"/>
+  <text x="660" y="135" font-size="14" text-anchor="middle" fill="#000">Q5: What did you have done</text>
+  <text x="660" y="155" font-size="14" text-anchor="middle" fill="#000">in the kitchen?</text>
+  
+  <!-- Arrow from Q4 Kitchen to Kitchen Group -->
+  <path d="M 430 470 L 470 150" stroke="#4287f5" stroke-width="3" fill="none" marker-end="url(#arrowBlue)"/>
+  
+  <!-- Bathroom Group -->
+  <rect x="870" y="60" width="380" height="200" fill="#e6d5f0" stroke="#9b59b6" stroke-width="3" rx="8"/>
+  <text x="1060" y="85" font-size="18" font-weight="bold" text-anchor="middle" fill="#4a235a">Bathroom</text>
+  
+  <rect x="890" y="110" width="340" height="80" fill="#fff" stroke="#9b59b6" stroke-width="2" rx="5"/>
+  <text x="1060" y="135" font-size="14" text-anchor="middle" fill="#000">Q5: What did you have done</text>
+  <text x="1060" y="155" font-size="14" text-anchor="middle" fill="#000">in the Bathroom?</text>
+  
+  <!-- Arrow from Q4 Bathroom to Bathroom Group -->
+  <path d="M 430 470 L 870 150" stroke="#9b59b6" stroke-width="3" fill="none" marker-end="url(#arrowPurple)"/>
+  
+  <!-- Common Ending Questions -->
+  <rect x="470" y="320" width="380" height="140" fill="#fff" stroke="#666" stroke-width="2" rx="8"/>
+  
+  <rect x="490" y="340" width="340" height="50" fill="#fff" stroke="#28a745" stroke-width="2" rx="5"/>
+  <text x="660" y="360" font-size="14" text-anchor="middle" fill="#000">Q7: How would you rate the value</text>
+  <text x="660" y="378" font-size="14" text-anchor="middle" fill="#000">for money of the remodeling project?</text>
+  
+  <rect x="490" y="400" width="340" height="50" fill="#ffffcc" stroke="#ffc107" stroke-width="2" rx="5"/>
+  <text x="660" y="420" font-size="14" text-anchor="middle" fill="#000">Q8: Do you have anything to add?</text>
+  <text x="660" y="438" font-size="12" font-style="italic" text-anchor="middle" fill="#666">(Last Question)</text>
+  
+  <!-- Arrows to common questions -->
+  <path d="M 660 260 L 660 320" stroke="#4287f5" stroke-width="3" fill="none" marker-end="url(#arrowGreen)"/>
+  <path d="M 1060 260 L 660 320" stroke="#9b59b6" stroke-width="3" fill="none" marker-end="url(#arrowGreen)"/>
+  
+  <!-- Legend -->
+  <text x="50" y="650" font-size="16" font-weight="bold" fill="#333">Key:</text>
+  <rect x="50" y="660" width="30" height="20" fill="#e0e0e0" stroke="#999" stroke-width="1"/>
+  <text x="90" y="675" font-size="12" fill="#333">Default Group - shown to all</text>
+  
+  <rect x="280" y="660" width="30" height="20" fill="#b3d9ff" stroke="#4287f5" stroke-width="1"/>
+  <text x="320" y="675" font-size="12" fill="#333">Kitchen Group - conditional</text>
+  
+  <rect x="510" y="660" width="30" height="20" fill="#e6d5f0" stroke="#9b59b6" stroke-width="1"/>
+  <text x="550" y="675" font-size="12" fill="#333">Bathroom Group - conditional</text>
+  
+  <rect x="770" y="660" width="30" height="20" fill="#ffffcc" stroke="#ffc107" stroke-width="1"/>
+  <text x="810" y="675" font-size="12" fill="#333">Last Question - shown to all</text>
+  
+  <!-- Arrow markers -->
+  <defs>
+    <marker id="arrowBlue" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto">
+      <polygon points="0,0 10,5 0,10" fill="#4287f5"/>
+    </marker>
+    <marker id="arrowPurple" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto">
+      <polygon points="0,0 10,5 0,10" fill="#9b59b6"/>
+    </marker>
+    <marker id="arrowGreen" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto">
+      <polygon points="0,0 10,5 0,10" fill="#28a745"/>
+    </marker>
+  </defs>
+  
+  <!-- Note about actual image -->
+  <text x="1000" y="600" font-size="11" font-style="italic" fill="#666">Note: This is a placeholder diagram.</text>
+  <text x="1000" y="615" font-size="11" font-style="italic" fill="#666">Replace with actual branching_diagram.png</text>
+  <text x="1000" y="630" font-size="11" font-style="italic" fill="#666">from the GitHub issue.</text>
+</svg>
