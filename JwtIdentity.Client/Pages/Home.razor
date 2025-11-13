@@ -26,7 +26,7 @@
 
     <!-- Features Section -->
     <MudGrid Spacing="2" Class="mb-8">
-        <MudItem xs="12" md="4">
+        <MudItem xs="12" md="6">
             <MudCard Elevation="2" Class="h-100 text-center pa-4">
                 <MudIcon Icon="@Icons.Material.Filled.Bolt" Size="MudBlazor.Size.Large" Color="Color.Primary" Class="mb-2" />
                 <MudText Typo="Typo.h6" Class="mb-1">AI-Powered Question Generation</MudText>
@@ -34,7 +34,7 @@
                 <MudButton Href="/learn-more/ai" Variant="Variant.Text" Color="Color.Primary" Size="MudBlazor.Size.Small">Learn More</MudButton>
             </MudCard>
         </MudItem>
-        <MudItem xs="12" md="4">
+        <MudItem xs="12" md="6">
             <MudCard Elevation="2" Class="h-100 text-center pa-4">
                 <MudIcon Icon="@Icons.Material.Filled.Psychology" Size="MudBlazor.Size.Large" Color="Color.Tertiary" Class="mb-2" />
                 <MudText Typo="Typo.h6" Class="mb-1">AI Survey Analysis</MudText>
@@ -42,12 +42,20 @@
                 <MudButton Href="/learn-more/ai-analysis" Variant="Variant.Text" Color="Color.Primary" Size="MudBlazor.Size.Small">Learn More</MudButton>
             </MudCard>
         </MudItem>
-        <MudItem xs="12" md="4">
+        <MudItem xs="12" md="6">
             <MudCard Elevation="2" Class="h-100 text-center pa-4">
                 <MudIcon Icon="@Icons.Material.Filled.Insights" Size="MudBlazor.Size.Large" Color="Color.Info" Class="mb-2" />
                 <MudText Typo="Typo.h6" Class="mb-1">Real-Time Analytics</MudText>
                 <MudText Typo="Typo.body2" Class="mb-2">Visualize responses with charts and grids as soon as they arrive.</MudText>
                 <MudButton Href="/learn-more/analytics" Variant="Variant.Text" Color="Color.Primary" Size="MudBlazor.Size.Small">Learn More</MudButton>
+            </MudCard>
+        </MudItem>
+        <MudItem xs="12" md="6">
+            <MudCard Elevation="2" Class="h-100 text-center pa-4">
+                <MudIcon Icon="@Icons.Material.Filled.AccountTree" Size="MudBlazor.Size.Large" Color="Color.Success" Class="mb-2" />
+                <MudText Typo="Typo.h6" Class="mb-1">Survey Question Branching</MudText>
+                <MudText Typo="Typo.body2" Class="mb-2">Create dynamic surveys that adapt based on respondent answers with conditional logic.</MudText>
+                <MudButton Href="/learn-more/branching" Variant="Variant.Text" Color="Color.Primary" Size="MudBlazor.Size.Small">Learn More</MudButton>
             </MudCard>
         </MudItem>
     </MudGrid>
@@ -56,9 +64,9 @@
     <MudPaper Elevation="1" Class="pa-6 text-center mb-8">
         <MudText Typo="Typo.h5" Class="mb-2">How Survey Shark Works</MudText>
         <MudList T="string" Dense="true" Class="mb-2">
-            <MudListItem Icon="@Icons.Material.Filled.Create" IconColor="Color.Primary">Sign up and create your first survey in seconds</MudListItem>
-            <MudListItem Icon="@Icons.Material.Filled.Bolt" IconColor="Color.Info">Use AI to generate or customize your questions</MudListItem>
-            <MudListItem Icon="@Icons.Material.Filled.Share" IconColor="Color.Success">Share your survey and watch results in real time</MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Create" IconColor="Color.Primary">Sign up and create your first survey in seconds</MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Bolt" IconColor="Color.Info">Use AI to generate or customize your questions</MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Share" IconColor="Color.Success">Share your survey and watch results in real time</MudListItem>
         </MudList>
     </MudPaper>
 

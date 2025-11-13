@@ -1,0 +1,406 @@
+@page "/learn-more/branching"
+@inherits JwtIdentity.Client.Pages.LearnMore.LearnMoreBranchingModel
+@using static Microsoft.AspNetCore.Components.Web.RenderMode
+@rendermode InteractiveWebAssembly
+
+<PageTitle>Survey Question Branching - Survey Shark</PageTitle>
+<HeadContent>
+    <meta name="description" content="Create dynamic, adaptive surveys with Survey Shark's powerful question branching feature. Guide respondents through personalized paths based on their answers." />
+</HeadContent>
+
+<MudContainer Class="mt-6 mb-10">
+    <!-- Hero Section -->
+    <MudPaper Elevation="2" Class="pa-6 mb-8 text-center">
+        <MudText Typo="Typo.h1" Class="mb-2">Survey Question Branching</MudText>
+        <MudText Typo="Typo.subtitle1" Class="mb-4">
+            Create intelligent surveys that adapt to your respondents. Guide them through personalized question paths based on their answers.
+        </MudText>
+        <MudButton Href="/survey/create" Variant="Variant.Filled" Color="Color.Primary" Class="mx-2">Create Survey</MudButton>
+        <MudButton Href="/" Variant="Variant.Outlined" Color="Color.Primary" Class="mx-2">Back to Home</MudButton>
+    </MudPaper>
+
+    <!-- What is Survey Branching? -->
+    <MudPaper Elevation="1" Class="pa-6 mb-8">
+        <MudText Typo="Typo.h4" Class="mb-4">What is Survey Branching?</MudText>
+        <MudText Typo="Typo.body1" Class="mb-3">
+            Survey branching, also known as conditional logic or skip logic, allows you to create dynamic surveys where the questions shown to respondents depend on their previous answers. Instead of showing every respondent the same linear sequence of questions, branching creates personalized paths through your survey.
+        </MudText>
+        <MudText Typo="Typo.body1" Class="mb-3">
+            For example, if you ask "Which areas of your home were remodeled?" and the respondent selects "Kitchen," you can automatically show them kitchen-specific questions next. If they select "Bathroom," they'll see bathroom-specific questions instead. This creates a more relevant, engaging experience for respondents and provides you with cleaner, more organized data.
+        </MudText>
+        <MudAlert Severity="Severity.Info" Class="mt-4">
+            <MudText Typo="Typo.body2">
+                <strong>Pro Tip:</strong> Branching reduces survey fatigue by only showing relevant questions. Respondents complete surveys faster and provide higher quality responses when they don't have to answer irrelevant questions.
+            </MudText>
+        </MudAlert>
+    </MudPaper>
+
+    <!-- Key Concepts -->
+    <MudPaper Elevation="1" Class="pa-6 mb-8">
+        <MudText Typo="Typo.h4" Class="mb-4">Key Concepts</MudText>
+        
+        <MudText Typo="Typo.h6" Class="mb-2 mt-4">
+            <MudIcon Icon="@Icons.Material.Filled.ViewModule" Class="mr-2" Color="Color.Primary" />
+            Question Groups
+        </MudText>
+        <MudText Typo="Typo.body1" Class="mb-3">
+            Questions are organized into <strong>groups</strong>. Every survey has a default group (Group 0) that contains questions shown to all respondents. You can create additional groups to organize related questions together. For example:
+        </MudText>
+        <MudList T="string" Dense="true" Class="ml-4 mb-3">
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Circle" IconColor="Color.Primary" IconSize="MudBlazor.Size.Small">
+                <strong>Group 0 (Default):</strong> General questions shown to everyone, including Last Questions
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Circle" IconColor="Color.Info" IconSize="MudBlazor.Size.Small">
+                <strong>Group 1 (Kitchen):</strong> Questions specific to kitchen remodeling
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Circle" IconColor="Color.Success" IconSize="MudBlazor.Size.Small">
+                <strong>Group 2 (Bathroom):</strong> Questions specific to bathroom remodeling
+            </MudListItem>
+        </MudList>
+
+        <MudText Typo="Typo.h6" Class="mb-2 mt-4">
+            <MudIcon Icon="@Icons.Material.Filled.AccountTree" Class="mr-2" Color="Color.Primary" />
+            Branching Rules
+        </MudText>
+        <MudText Typo="Typo.body1" Class="mb-3">
+            <strong>Branching rules</strong> determine which group to show next based on a respondent's answer. You can configure branching for:
+        </MudText>
+        <MudList T="string" Dense="true" Class="ml-4 mb-3">
+            <MudListItem T="string" Icon="@Icons.Material.Filled.RadioButtonChecked" IconColor="Color.Primary">
+                <strong>Multiple Choice Questions:</strong> Each answer option can branch to a different group
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.CheckBox" IconColor="Color.Primary">
+                <strong>Select All That Apply:</strong> Each selected option can trigger branching logic
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.ToggleOn" IconColor="Color.Primary">
+                <strong>True/False Questions:</strong> Different paths for True vs. False answers
+            </MudListItem>
+        </MudList>
+        <MudText Typo="Typo.body1" Class="mb-3">
+            If no specific branching rule is defined for an answer, the survey continues sequentially to the next question in the current group.
+        </MudText>
+
+        <MudText Typo="Typo.h6" Class="mb-2 mt-4">
+            <MudIcon Icon="@Icons.Material.Filled.Flag" Class="mr-2" Color="Color.Primary" />
+            Last Questions
+        </MudText>
+        <MudText Typo="Typo.body1" Class="mb-3">
+            <strong>Last Questions</strong> are special questions in Group 0 that are always shown at the very end of the survey, after all other groups have been completed. These are perfect for closing questions like "Do you have anything else to add?" or final rating questions.
+        </MudText>
+        <MudAlert Severity="Severity.Warning" Class="mb-3">
+            <strong>Important:</strong> Last Questions must be in Group 0 (Default) and cannot have branching rules. They are shown to all respondents as the final questions before submission, regardless of which path they took through the survey.
+        </MudAlert>
+        
+        <MudText Typo="Typo.h6" Class="mb-2 mt-4">
+            <MudIcon Icon="@Icons.Material.Filled.Timeline" Class="mr-2" Color="Color.Primary" />
+            Survey Flow
+        </MudText>
+        <MudText Typo="Typo.body1" Class="mb-3">
+            When a respondent takes a survey with branching, the flow works like this:
+        </MudText>
+        <MudList T="string" Dense="true" Class="ml-4 mb-3">
+            <MudListItem T="string" Icon="@Icons.Material.Filled.PlayArrow" IconColor="Color.Primary">
+                <strong>Step 1:</strong> Start with Group 0 questions (excluding Last Questions)
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.CompareArrows" IconColor="Color.Info">
+                <strong>Step 2:</strong> As respondents answer questions with branching rules, other groups get "cued" to be shown
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.FastForward" IconColor="Color.Success">
+                <strong>Step 3:</strong> After Group 0 is complete, all cued groups are shown in numerical order
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Flag" IconColor="Color.Warning">
+                <strong>Step 4:</strong> After all cued groups, Last Questions (if any) are shown
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Send" IconColor="Color.Tertiary">
+                <strong>Step 5:</strong> Respondent submits the survey
+            </MudListItem>
+        </MudList>
+        <MudText Typo="Typo.body1">
+            This means different respondents may see different groups based on their answers, but everyone sees the same Group 0 questions and the same Last Questions at the end.
+        </MudText>
+    </MudPaper>
+
+    <!-- Branching Diagram -->
+    <MudPaper Elevation="1" Class="pa-6 mb-8">
+        <MudText Typo="Typo.h4" Class="mb-4">Visual Example: Branching Flow</MudText>
+        <MudText Typo="Typo.body1" Class="mb-4">
+            The diagram below illustrates how survey branching works in practice. In this home remodeling satisfaction survey, respondents see different questions based on which areas they had remodeled:
+        </MudText>
+        
+        <!-- Note: Image needs to be manually added to /JwtIdentity/wwwroot/images/branching_diagram.png -->
+        <!-- Using corrected SVG diagram that accurately reflects the actual branching logic -->
+        <div class="text-center mb-4">
+            <MudImage Src="images/branching_diagram_corrected.svg" Alt="Survey Branching Diagram showing how questions flow based on responses" Elevation="2" Class="rounded" Style="max-width: 100%; height: auto;" />
+        </div>
+
+        <MudText Typo="Typo.h6" Class="mb-2 mt-4">Understanding the Diagram:</MudText>
+        <MudList T="string" Dense="true" Class="ml-4 mb-3">
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Looks" IconColor="Color.Secondary">
+                <strong>Default Group (Gray):</strong> Contains general questions shown to all respondents at the start
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Looks" IconColor="Color.Info">
+                <strong>Kitchen Group (Blue):</strong> Questions specific to kitchen remodeling, shown only if "Kitchen" was selected
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Looks" IconColor="Color.Tertiary">
+                <strong>Bathroom Group (Purple):</strong> Questions specific to bathroom remodeling, shown only if "Bathroom" was selected
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.ArrowForward" IconColor="Color.Success">
+                <strong>Arrows:</strong> Show the branching flow - which groups lead to which based on answers
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.CheckCircle" IconColor="Color.Warning">
+                <strong>Last Question (Yellow):</strong> Final question shown to everyone before submission, regardless of their path
+            </MudListItem>
+        </MudList>
+
+        <MudAlert Severity="Severity.Success" Class="mt-4">
+            <MudText Typo="Typo.body2">
+                In this example, Q4 asks "Which areas of your home were remodeled?" When respondents select "Kitchen", Group 1 (Kitchen) is cued. When they select "Bathroom", Group 2 (Bathroom) is cued. After answering all Group 0 questions (Q1-Q4 and Q7), respondents then see their cued group(s). Finally, Q8 (marked as a Last Question in Group 0) is shown to everyone before they submit.
+            </MudText>
+        </MudAlert>
+    </MudPaper>
+
+    <!-- Benefits -->
+    <MudPaper Elevation="1" Class="pa-6 mb-8">
+        <MudText Typo="Typo.h4" Class="mb-4">Benefits of Survey Branching</MudText>
+        <MudGrid Spacing="2">
+            <MudItem xs="12" md="6">
+                <MudCard Elevation="2" Class="h-100 pa-4">
+                    <MudCardContent>
+                        <MudIcon Icon="@Icons.Material.Filled.Speed" Color="Color.Primary" Size="MudBlazor.Size.Large" Class="mb-2" />
+                        <MudText Typo="Typo.h6" Class="mb-2">Improved Response Rates</MudText>
+                        <MudText Typo="Typo.body2">
+                            Shorter, more relevant surveys keep respondents engaged and reduce abandonment. People are more likely to complete surveys that don't waste their time with irrelevant questions.
+                        </MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudCard Elevation="2" Class="h-100 pa-4">
+                    <MudCardContent>
+                        <MudIcon Icon="@Icons.Material.Filled.HighQuality" Color="Color.Success" Size="MudBlazor.Size.Large" Class="mb-2" />
+                        <MudText Typo="Typo.h6" Class="mb-2">Better Data Quality</MudText>
+                        <MudText Typo="Typo.body2">
+                            Respondents provide more thoughtful, accurate answers when questions are relevant to their situation. Branching eliminates "Not Applicable" responses and confusion.
+                        </MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudCard Elevation="2" Class="h-100 pa-4">
+                    <MudCardContent>
+                        <MudIcon Icon="@Icons.Material.Filled.Person" Color="Color.Info" Size="MudBlazor.Size.Large" Class="mb-2" />
+                        <MudText Typo="Typo.h6" Class="mb-2">Personalized Experience</MudText>
+                        <MudText Typo="Typo.body2">
+                            Make respondents feel heard by showing them questions tailored to their specific situation. This creates a more professional, thoughtful impression of your survey.
+                        </MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudCard Elevation="2" Class="h-100 pa-4">
+                    <MudCardContent>
+                        <MudIcon Icon="@Icons.Material.Filled.Analytics" Color="Color.Tertiary" Size="MudBlazor.Size.Large" Class="mb-2" />
+                        <MudText Typo="Typo.h6" Class="mb-2">Organized Data Collection</MudText>
+                        <MudText Typo="Typo.body2">
+                            Grouping related questions together makes analyzing results easier. You can quickly see responses for specific segments without filtering through irrelevant data.
+                        </MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+
+    <!-- Use Cases -->
+    <MudPaper Elevation="1" Class="pa-6 mb-8">
+        <MudText Typo="Typo.h4" Class="mb-4">Common Use Cases</MudText>
+        
+        <MudExpansionPanels MultiExpansion="true">
+            <MudExpansionPanel Text="Market Research: Product Features">
+                <MudText Typo="Typo.body1" Class="mb-2">
+                    Ask respondents which product category interests them, then show detailed questions about only that category. For example:
+                </MudText>
+                <MudList T="string" Dense="true">
+                    <MudListItem T="string">Group 0: "Which product line are you interested in?" → Electronics / Clothing / Home Goods (and general demographic questions)</MudListItem>
+                    <MudListItem T="string">Group 1: Detailed questions about electronics features and preferences</MudListItem>
+                    <MudListItem T="string">Group 2: Detailed questions about clothing styles and sizes</MudListItem>
+                    <MudListItem T="string">Group 3: Detailed questions about home decor preferences</MudListItem>
+                    <MudListItem T="string">Last Question(s) in Group 0: Final comments and contact information (shown to all respondents)</MudListItem>
+                </MudList>
+            </MudExpansionPanel>
+
+            <MudExpansionPanel Text="Customer Satisfaction: Service Quality">
+                <MudText Typo="Typo.body1" Class="mb-2">
+                    Route satisfied and dissatisfied customers down different paths to gather appropriate feedback:
+                </MudText>
+                <MudList T="string" Dense="true">
+                    <MudListItem T="string">Group 0: "How satisfied were you with our service?" → Very Satisfied / Satisfied / Neutral / Dissatisfied</MudListItem>
+                    <MudListItem T="string">Group 1 (Satisfied path): "What did we do well?" and "Would you recommend us?"</MudListItem>
+                    <MudListItem T="string">Group 2 (Dissatisfied path): "What went wrong?" and "How can we make it right?"</MudListItem>
+                    <MudListItem T="string">Last Question(s) in Group 0: Overall feedback and contact information (shown to all respondents)</MudListItem>
+                </MudList>
+            </MudExpansionPanel>
+
+            <MudExpansionPanel Text="Employee Engagement: Department-Specific">
+                <MudText Typo="Typo.body1" Class="mb-2">
+                    Show employees questions relevant to their role and department:
+                </MudText>
+                <MudList T="string" Dense="true">
+                    <MudListItem T="string">Group 0: General engagement questions + "Which department do you work in?"</MudListItem>
+                    <MudListItem T="string">Group 1: Sales-specific questions about targets and support</MudListItem>
+                    <MudListItem T="string">Group 2: Engineering-specific questions about tools and processes</MudListItem>
+                    <MudListItem T="string">Group 3: Customer Service questions about training and resources</MudListItem>
+                    <MudListItem T="string">Last Question(s) in Group 0: Company-wide culture and suggestions (shown to all respondents)</MudListItem>
+                </MudList>
+            </MudExpansionPanel>
+
+            <MudExpansionPanel Text="Healthcare: Symptom Assessment">
+                <MudText Typo="Typo.body1" Class="mb-2">
+                    Guide patients through relevant symptom questions based on their chief complaint:
+                </MudText>
+                <MudList T="string" Dense="true">
+                    <MudListItem T="string">Group 0: "What brings you in today?" → Pain / Illness / Routine checkup / Other</MudListItem>
+                    <MudListItem T="string">Group 1: Detailed pain assessment questions (location, severity, duration)</MudListItem>
+                    <MudListItem T="string">Group 2: Illness symptom questions (fever, fatigue, etc.)</MudListItem>
+                    <MudListItem T="string">Group 3: Routine checkup history and preventive care questions</MudListItem>
+                    <MudListItem T="string">Last Question(s) in Group 0: Medical history and medications (shown to all patients)</MudListItem>
+                </MudList>
+            </MudExpansionPanel>
+
+            <MudExpansionPanel Text="Education: Course Evaluation by Major">
+                <MudText Typo="Typo.body1" Class="mb-2">
+                    Tailor course evaluation questions based on student's major or program:
+                </MudText>
+                <MudList T="string" Dense="true">
+                    <MudListItem T="string">Group 0: General course questions + "What is your major?"</MudListItem>
+                    <MudListItem T="string">Group 1: Computer Science students - questions about coding exercises and labs</MudListItem>
+                    <MudListItem T="string">Group 2: Business students - questions about case studies and presentations</MudListItem>
+                    <MudListItem T="string">Group 3: Liberal Arts students - questions about reading assignments and discussions</MudListItem>
+                    <MudListItem T="string">Last Question(s) in Group 0: Instructor effectiveness and recommendations (shown to all students)</MudListItem>
+                </MudList>
+            </MudExpansionPanel>
+        </MudExpansionPanels>
+    </MudPaper>
+
+    <!-- How to Set Up Branching -->
+    <MudPaper Elevation="1" Class="pa-6 mb-8">
+        <MudText Typo="Typo.h4" Class="mb-4">How to Set Up Branching</MudText>
+        <MudStepper>
+            <MudStep Title="Create Your Survey">
+                <MudText Typo="Typo.body1" Class="mb-2">
+                    Start by creating your survey and adding all the questions you want to include. Don't worry about branching yet - just get all your questions into the survey.
+                </MudText>
+            </MudStep>
+            <MudStep Title="Access Branching Configuration">
+                <MudText Typo="Typo.body1" Class="mb-2">
+                    In the survey editor, click the <strong>"Configure Branching"</strong> button. This opens the branching interface where you can organize your questions into groups.
+                </MudText>
+            </MudStep>
+            <MudStep Title="Create Question Groups">
+                <MudText Typo="Typo.body1" Class="mb-2">
+                    Click <strong>"Add Group"</strong> to create new groups. Give each group a descriptive name (e.g., "Kitchen Questions", "Dissatisfied Customer Feedback") to help you stay organized.
+                </MudText>
+            </MudStep>
+            <MudStep Title="Organize Questions into Groups">
+                <MudText Typo="Typo.body1" Class="mb-2">
+                    Use the dropdown menus to move questions from the default group (Group 0) into your newly created groups. Group questions by topic or by which respondents should see them. Keep questions in Group 0 that should be shown to everyone.
+                </MudText>
+            </MudStep>
+            <MudStep Title="Configure Branching Rules">
+                <MudText Typo="Typo.body1" Class="mb-2">
+                    For Multiple Choice, Select All That Apply, and True/False questions, select which group each answer should branch to. You can have different answers lead to different groups. When a branching rule is triggered, that group gets "cued" to be shown after Group 0 is complete.
+                </MudText>
+            </MudStep>
+            <MudStep Title="Mark Last Questions (Optional)">
+                <MudText Typo="Typo.body1" Class="mb-2">
+                    If you have questions that should always appear at the very end (like "Any additional comments?"), mark them as Last Questions in Group 0. These questions cannot have branching rules and will be shown to all respondents after all other groups are complete.
+                </MudText>
+            </MudStep>
+            <MudStep Title="Test Your Survey">
+                <MudText Typo="Typo.body1" Class="mb-2">
+                    Before publishing, test your survey by taking it yourself with different answer combinations. Make sure all branches work as expected and all paths lead to submission.
+                </MudText>
+            </MudStep>
+        </MudStepper>
+    </MudPaper>
+
+    <!-- Best Practices -->
+    <MudPaper Elevation="1" Class="pa-6 mb-8">
+        <MudText Typo="Typo.h4" Class="mb-4">Best Practices</MudText>
+        <MudList T="string" Dense="false">
+            <MudListItem T="string" Icon="@Icons.Material.Filled.TipsAndUpdates" IconColor="Color.Primary">
+                <MudText><strong>Keep it simple:</strong> Start with basic branching before creating complex multi-path surveys. Too many branches can be confusing to manage.</MudText>
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.TipsAndUpdates" IconColor="Color.Primary">
+                <MudText><strong>Use clear group names:</strong> Descriptive names like "Kitchen Remodel Questions" are better than "Group 1" for staying organized.</MudText>
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.TipsAndUpdates" IconColor="Color.Primary">
+                <MudText><strong>Test all paths:</strong> Take your survey multiple times, choosing different answers each time to ensure every path works correctly.</MudText>
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.TipsAndUpdates" IconColor="Color.Primary">
+                <MudText><strong>Use Last Questions wisely:</strong> Only mark questions as "Last Question" if they truly need to appear at the very end for all respondents. Remember, Last Questions cannot have branching rules.</MudText>
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.TipsAndUpdates" IconColor="Color.Primary">
+                <MudText><strong>Keep Group 0 universal:</strong> Use the default group for questions that should be shown to everyone, regardless of their answers, including Last Questions.</MudText>
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.TipsAndUpdates" IconColor="Color.Primary">
+                <MudText><strong>Consider the respondent experience:</strong> Make sure the flow feels natural and logical from the respondent's perspective, not just from a data collection standpoint.</MudText>
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.TipsAndUpdates" IconColor="Color.Primary">
+                <MudText><strong>Document your logic:</strong> For complex surveys, keep notes about why you set up branching a certain way. This helps if you need to modify it later.</MudText>
+            </MudListItem>
+        </MudList>
+    </MudPaper>
+
+    <!-- Technical Details -->
+    <MudPaper Elevation="0" Class="pa-6 mb-8">
+        <MudText Typo="Typo.h4" Class="mb-4">Technical Details</MudText>
+        <MudExpansionPanels>
+            <MudExpansionPanel Text="How Branching Works Behind the Scenes">
+                <MudText Typo="Typo.body1" Class="mb-2">
+                    When a respondent takes a survey with branching enabled, they see one question at a time rather than all questions on a single page. As they answer each question:
+                </MudText>
+                <MudList T="string" Dense="true">
+                    <MudListItem T="string">1. Start with Group 0 questions (excluding Last Questions initially)</MudListItem>
+                    <MudListItem T="string">2. As they answer questions, any branching rules are checked - if a rule matches, that group is "cued" to be shown later</MudListItem>
+                    <MudListItem T="string">3. Continue through all Group 0 questions (skipping Last Questions for now)</MudListItem>
+                    <MudListItem T="string">4. After Group 0 is complete, show all cued groups in numerical order</MudListItem>
+                    <MudListItem T="string">5. After all cued groups are shown, display Last Questions (if any) from Group 0</MudListItem>
+                    <MudListItem T="string">6. Finally, the respondent can submit the survey</MudListItem>
+                </MudList>
+                <MudText Typo="Typo.body2" Class="mt-2">
+                    This means the actual flow is determined dynamically based on the respondent's answers, and different respondents may see different groups based on their choices.
+                </MudText>
+            </MudExpansionPanel>
+
+            <MudExpansionPanel Text="Backward Compatibility">
+                <MudText Typo="Typo.body1">
+                    Surveys created before branching was implemented, or surveys that don't use branching, continue to work exactly as before. All questions remain in Group 0 (the default group), and the survey displays all questions on one page. Branching only activates when you explicitly create additional groups and configure branching rules.
+                </MudText>
+            </MudExpansionPanel>
+
+            <MudExpansionPanel Text="Supported Question Types">
+                <MudText Typo="Typo.body1" Class="mb-2">
+                    The following question types support branching logic:
+                </MudText>
+                <MudList T="string" Dense="true">
+                    <MudListItem T="string"><strong>Multiple Choice:</strong> Each answer option can branch to a different group</MudListItem>
+                    <MudListItem T="string"><strong>Select All That Apply:</strong> Each selected option can have its own branching rule</MudListItem>
+                    <MudListItem T="string"><strong>True/False:</strong> Separate branching rules for True and False answers</MudListItem>
+                </MudList>
+                <MudText Typo="Typo.body1" Class="mt-2">
+                    Other question types (Rating Scale, Free Text, Date, Number, etc.) don't support answer-based branching, but they can still be placed in groups and follow group-level branching rules.
+                </MudText>
+            </MudExpansionPanel>
+        </MudExpansionPanels>
+    </MudPaper>
+
+    <!-- Call to Action -->
+    <MudPaper Elevation="2" Class="pa-6 text-center">
+        <MudText Typo="Typo.h4" Class="mb-3">Ready to Create Dynamic Surveys?</MudText>
+        <MudText Typo="Typo.body1" Class="mb-4">
+            Start building surveys that adapt to your respondents with powerful branching logic.
+        </MudText>
+        <MudButton Href="/survey/create" Variant="Variant.Filled" Color="Color.Primary" Size="MudBlazor.Size.Large" Class="mx-2">Create Your First Branching Survey</MudButton>
+        <MudButton Href="/" Variant="Variant.Outlined" Color="Color.Primary" Size="MudBlazor.Size.Large" Class="mx-2">Back to Home</MudButton>
+    </MudPaper>
+</MudContainer>
