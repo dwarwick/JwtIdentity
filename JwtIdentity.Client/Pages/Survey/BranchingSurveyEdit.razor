@@ -8,7 +8,7 @@
 
 <MudStack Row="true" Justify="Justify.SpaceBetween" Class="mb-4">
     <MudText Typo="Typo.h4">Survey Branching: @Survey?.Title</MudText>
-    <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="@(() => Navigation.NavigateTo($"/survey/edit/{SurveyId}"))">
+    <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="@NavigateBackToEdit">
         Back to Edit Survey
     </MudButton>
 </MudStack>
