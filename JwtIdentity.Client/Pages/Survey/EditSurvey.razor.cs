@@ -210,7 +210,7 @@ namespace JwtIdentity.Client.Pages.Survey
             }
         }
 
-        protected void NextDemoStep()
+        protected async Task NextDemoStep()
         {
             if (!IsDemoUser) return;
 
@@ -265,8 +265,27 @@ namespace JwtIdentity.Client.Pages.Survey
                         DemoStep = 17;
                         break;
                     case 19:
-                        // After adding fourth question, mark last text question as last
+                        // After adding fourth MC question, create a 5th text question
+                        QuestionText = "Please share any additional feedback or comments.";
+                        SelectedQuestionType = "Text";
                         DemoStep = 20;
+                        break;
+                    case 22:
+                        // After adding the text question, now mark it as Last Question
+                        // Find the last text question we just added
+                        var lastTextQuestion = Survey.Questions
+                            .Where(q => q.QuestionType == QuestionType.Text)
+                            .OrderByDescending(q => q.QuestionNumber)
+                            .FirstOrDefault();
+                        
+                        if (lastTextQuestion != null)
+                        {
+                            lastTextQuestion.IsLastQuestion = true;
+                            // Save the updated survey
+                            await UpdateSurvey();
+                        }
+                        
+                        DemoStep = 23;
                         break;
                 }
             }
@@ -552,7 +571,11 @@ namespace JwtIdentity.Client.Pages.Survey
                         }
                         else if (DemoStep == 18)
                         {
-                            DemoStep = 19; // Move to mark last question
+                            DemoStep = 19; // Move to create text question
+                        }
+                        else if (DemoStep == 21)
+                        {
+                            DemoStep = 22; // Move to mark text question as last
                         }
                     }
                     else

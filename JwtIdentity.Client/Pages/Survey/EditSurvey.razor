@@ -14,7 +14,7 @@
 
             @if (DemoType == "branching")
             {
-                <DemoBorder Class="ms-auto mt-2" CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 20 })" IsButton="true">
+                <DemoBorder Class="ms-auto mt-2" CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 23 })" IsButton="true">
                     <MudButton Variant="Variant.Filled" Color="Color.Secondary" 
                                 OnClick="@NavigateToBranching"
                                 StartIcon="@Icons.Material.Filled.AccountTree">
@@ -51,7 +51,7 @@
     
     @if (DemoType == "branching")
     {
-        <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 20 })">
+        <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 23 })">
             <MudText Typo="Typo.body2">Now click the Configure Branching button to set up branching rules for your survey.</MudText>
         </DemoPopup>
         <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 30 })">
@@ -212,14 +212,20 @@
                                 </DemoBorder>
                             </DemoPopup>
                             <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 16 })">
-                                <MudText Typo="Typo.body2">Third question saved! Now let's create the fourth and final branching question. Click Next to continue.</MudText>
+                                <MudText Typo="Typo.body2">Third question saved! Now let's create the fourth and final multiple choice question. Click Next to continue.</MudText>
                                 <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 16 })" IsButton="true">
                                     <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
                                 </DemoBorder>
                             </DemoPopup>
                             <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 19 })">
-                                <MudText Typo="Typo.body2">All four branching questions are saved! Now we need to mark the last text question as a "Last Question" so it appears at the end of the survey. Scroll down to find the last text question and mark it. Click Next to continue.</MudText>
+                                <MudText Typo="Typo.body2">All four multiple choice questions saved! Now let's create a fifth text question for additional feedback. Click Next to continue.</MudText>
                                 <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 19 })" IsButton="true">
+                                    <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
+                                </DemoBorder>
+                            </DemoPopup>
+                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 22 })">
+                                <MudText Typo="Typo.body2">Great! The text question is saved. Now we need to mark it as a "Last Question" so it appears at the end of the survey after all branching. Click Next to mark it.</MudText>
+                                <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 22 })" IsButton="true">
                                     <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
                                 </DemoBorder>
                             </DemoPopup>
@@ -259,11 +265,14 @@
                     </MudStack>
 
                     <MudStack Row="true">
-                        <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 9 })" IsButton="true">
+                        <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 9, 21 })" IsButton="true">
                             <MudButton id="SaveQuestionBtn" ButtonType="ButtonType.Button" Variant="Variant.Filled" Color="Color.Primary" OnClick="AddQuestionToSurvey" Disabled="@AddQuestionToSurveyDisabled">Save Question</MudButton>
                         </DemoBorder>
                             <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 9 })">
                                 <MudText Typo="Typo.body2">Scroll down so you can see the choices down below. Click Save Question button to save the question.</MudText>
+                            </DemoPopup>
+                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 21 })">
+                                <MudText Typo="Typo.body2">Now save this text question by clicking the Save Question button.</MudText>
                             </DemoPopup>
                         <MudCheckBox T="bool" @bind-Value="IsRequired" Label="Is Required?" Color="Color.Primary" Disabled="@AddQuestionToSurveyDisabled" />
                         @if ((SelectedQuestion?.GroupId ?? 0) == 0 && (SelectedQuestion?.CanBeMarkedAsLastQuestion ?? true))
