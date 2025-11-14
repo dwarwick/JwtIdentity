@@ -7,12 +7,16 @@ using JwtIdentity.Client.Services.Base;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Moq;
 using MudBlazor;
 using MudBlazor.Services;
 using Syncfusion.Blazor;
 using System;
 using System.Collections.Generic;
+using Syncfusion.Blazor.Diagram;
+using JwtIdentity.Client.Tests.Stubs; // adjust namespace if different
+
 
 namespace JwtIdentity.BunitTests
 {
@@ -32,13 +36,15 @@ namespace JwtIdentity.BunitTests
         protected Mock<IApiService> ApiServiceMock { get; private set; }
         protected Mock<IHttpClientFactory> HttpClientFactoryMock { get; private set; }
         protected Mock<AuthenticationStateProvider> AuthStateProviderMock { get; private set; }
-        protected Mock<Microsoft.JSInterop.IJSRuntime> JSRuntimeMock { get; private set; }
         protected Mock<Microsoft.Extensions.Configuration.IConfiguration> ConfigMock { get; private set; }
         
         public BUnitTestBase()
         {
             // Create test context
             Context = new TestContext();
+
+            // Substitute all SfDiagramComponent instances with our stub
+            Context.ComponentFactories.Add<SfDiagramComponent, SfDiagramComponentStub>();
 
             // Register MockNavigationManager for NavigationManager
             NavManager = new MockNavigationManager();
@@ -57,8 +63,7 @@ namespace JwtIdentity.BunitTests
             ApiServiceMock = new Mock<IApiService>();
             HttpClientFactoryMock = new Mock<IHttpClientFactory>();
             HttpClientFactoryMock.Setup(f => f.CreateClient(It.IsAny<string>())).Returns(new HttpClient());
-            AuthStateProviderMock = new Mock<AuthenticationStateProvider>();
-            JSRuntimeMock = new Mock<Microsoft.JSInterop.IJSRuntime>();
+            AuthStateProviderMock = new Mock<AuthenticationStateProvider>();            
             
             // Register services to the test context
             Context.Services.AddSingleton<IAuthService>(AuthServiceMock.Object);
@@ -68,7 +73,6 @@ namespace JwtIdentity.BunitTests
             Context.Services.AddSingleton<IApiService>(ApiServiceMock.Object);
             Context.Services.AddSingleton<AuthenticationStateProvider>(AuthStateProviderMock.Object);
             Context.Services.AddSingleton<IHttpClientFactory>(HttpClientFactoryMock.Object);
-            Context.Services.AddSingleton<Microsoft.JSInterop.IJSRuntime>(JSRuntimeMock.Object);
 
             // Register a fake for CustomAuthorizationMessageHandler
             Context.Services.AddSingleton<JwtIdentity.Client.Services.CustomAuthorizationMessageHandler>(new FakeCustomAuthorizationMessageHandler());
@@ -78,10 +82,15 @@ namespace JwtIdentity.BunitTests
 
             // Register all MudBlazor services (including InternalMudLocalizer) for bUnit
             Context.Services.AddMudServices();
-            
+
             // Register Syncfusion Blazor services
-            Context.Services.AddSyncfusionBlazor();
-            
+            Context.Services.AddSyncfusionBlazor()
+                .Replace(ServiceDescriptor.Transient<IComponentActivator, SfComponentActivator>());
+            Context.Services.AddOptions();
+
+            Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+
             // MudPopoverProvider doesn't wrap child content, so we render it separately
             // This prevents "Missing <MudPopoverProvider />" errors in components that use popovers
             Context.RenderComponent<MudBlazor.MudPopoverProvider>();

@@ -2,16 +2,18 @@ using Bunit;
 using JwtIdentity.Client.Pages.Demo;
 using JwtIdentity.Client.Pages.Survey;
 using JwtIdentity.Client.Services.Base;
-using JwtIdentity.Common.ViewModels;
 using JwtIdentity.Common.Helpers;
+using JwtIdentity.Common.ViewModels;
+using Microsoft.AspNetCore.Components.Authorization;
+using Moq;
 using NUnit.Framework;
-using System.Threading.Tasks;
+using NUnit.Framework.Legacy;
+using Syncfusion.Blazor.Diagram;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
-using Microsoft.AspNetCore.Components.Authorization;
-using Moq;
+using System.Threading.Tasks;
 
 namespace JwtIdentity.BunitTests
 {
@@ -196,14 +198,15 @@ namespace JwtIdentity.BunitTests
 
             ApiServiceMock.Setup(x => x.GetAsync<SurveyViewModel>(It.IsAny<string>()))
                 .ReturnsAsync(survey);
+
             ApiServiceMock.Setup(x => x.GetAsync<List<QuestionGroupViewModel>>(It.IsAny<string>()))
-                .ReturnsAsync(new List<QuestionGroupViewModel>());
-            
-            // Mock JSRuntime calls that Syncfusion Diagram component needs
-            JSRuntimeMock.Setup(x => x.InvokeAsync<Microsoft.JSInterop.IJSObjectReference>(
-                It.IsAny<string>(), 
-                It.IsAny<object[]>()))
-                .ReturnsAsync(Mock.Of<Microsoft.JSInterop.IJSObjectReference>());
+                .ReturnsAsync(new List<QuestionGroupViewModel>
+                {
+            new QuestionGroupViewModel
+            {
+                Id = 1, 
+                GroupName = "Group 1"            }
+                });
 
             NavManager.NavigateTo($"http://localhost/survey/branching/{surveyId}?DemoType=branching");
 
@@ -214,6 +217,7 @@ namespace JwtIdentity.BunitTests
             // Assert
             Assert.That(cut.Markup, Does.Contain("Survey Branching"));
         }
+
 
         [Test]
         public void EditSurvey_RegularUser_DoesNotShowDemoElements()
