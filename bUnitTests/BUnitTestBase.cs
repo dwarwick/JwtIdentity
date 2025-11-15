@@ -7,10 +7,16 @@ using JwtIdentity.Client.Services.Base;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Moq;
 using MudBlazor;
 using MudBlazor.Services;
+using Syncfusion.Blazor;
 using System;
+using System.Collections.Generic;
+using Syncfusion.Blazor.Diagram;
+using JwtIdentity.Client.Tests.Stubs; // adjust namespace if different
+
 
 namespace JwtIdentity.BunitTests
 {
@@ -20,6 +26,7 @@ namespace JwtIdentity.BunitTests
     public class BUnitTestBase : IDisposable
     {
         protected TestContext Context { get; private set; }
+        protected MockNavigationManager NavManager { get; private set; }
 
         // Core services for tests
         protected Mock<IAuthService> AuthServiceMock { get; private set; }
@@ -28,19 +35,25 @@ namespace JwtIdentity.BunitTests
         protected Mock<IDialogService> DialogServiceMock { get; private set; }
         protected Mock<IApiService> ApiServiceMock { get; private set; }
         protected Mock<IHttpClientFactory> HttpClientFactoryMock { get; private set; }
+        protected Mock<AuthenticationStateProvider> AuthStateProviderMock { get; private set; }
+        protected Mock<Microsoft.Extensions.Configuration.IConfiguration> ConfigMock { get; private set; }
         
         public BUnitTestBase()
         {
             // Create test context
             Context = new TestContext();
 
-            // Register MockNavigationManager for NavigationManager
-            var mockNavMan = new MockNavigationManager();
-            Context.Services.AddSingleton<NavigationManager>(mockNavMan);
+            // Substitute all SfDiagramComponent instances with our stub
+            Context.ComponentFactories.Add<SfDiagramComponent, SfDiagramComponentStub>();
 
-            // Register a mock IConfiguration
-            var mockConfig = new Moq.Mock<Microsoft.Extensions.Configuration.IConfiguration>();
-            Context.Services.AddSingleton<Microsoft.Extensions.Configuration.IConfiguration>(mockConfig.Object);
+            // Register MockNavigationManager for NavigationManager
+            NavManager = new MockNavigationManager();
+            Context.Services.AddSingleton<NavigationManager>(NavManager);
+
+            // Create mock IConfiguration
+            ConfigMock = new Mock<Microsoft.Extensions.Configuration.IConfiguration>();
+            ConfigMock.Setup(c => c["ReCaptcha:SiteKey"]).Returns("test-site-key");
+            Context.Services.AddSingleton<Microsoft.Extensions.Configuration.IConfiguration>(ConfigMock.Object);
 
             // Create core service mocks
             AuthServiceMock = new Mock<IAuthService>();
@@ -50,7 +63,7 @@ namespace JwtIdentity.BunitTests
             ApiServiceMock = new Mock<IApiService>();
             HttpClientFactoryMock = new Mock<IHttpClientFactory>();
             HttpClientFactoryMock.Setup(f => f.CreateClient(It.IsAny<string>())).Returns(new HttpClient());
-            var authStateProviderMock = new Mock<AuthenticationStateProvider>();
+            AuthStateProviderMock = new Mock<AuthenticationStateProvider>();            
             
             // Register services to the test context
             Context.Services.AddSingleton<IAuthService>(AuthServiceMock.Object);
@@ -58,18 +71,29 @@ namespace JwtIdentity.BunitTests
             Context.Services.AddSingleton<ISnackbar>(SnackbarMock.Object);
             Context.Services.AddSingleton<IDialogService>(DialogServiceMock.Object);
             Context.Services.AddSingleton<IApiService>(ApiServiceMock.Object);
-            Context.Services.AddSingleton<AuthenticationStateProvider>(authStateProviderMock.Object);
+            Context.Services.AddSingleton<AuthenticationStateProvider>(AuthStateProviderMock.Object);
             Context.Services.AddSingleton<IHttpClientFactory>(HttpClientFactoryMock.Object);
 
             // Register a fake for CustomAuthorizationMessageHandler
             Context.Services.AddSingleton<JwtIdentity.Client.Services.CustomAuthorizationMessageHandler>(new FakeCustomAuthorizationMessageHandler());
             Context.Services.AddSingleton<System.Net.Http.HttpClient>(new System.Net.Http.HttpClient());
-            Context.Services.AddSingleton<Microsoft.JSInterop.IJSRuntime>(new Moq.Mock<Microsoft.JSInterop.IJSRuntime>().Object);
-            Context.Services.AddSingleton<JwtIdentity.Client.Helpers.IUtility>(new Moq.Mock<JwtIdentity.Client.Helpers.IUtility>().Object);
-            Context.Services.AddSingleton<MudBlazor.IDialogService>(new Moq.Mock<MudBlazor.IDialogService>().Object);
+            Context.Services.AddSingleton<JwtIdentity.Client.Helpers.IUtility>(new Mock<JwtIdentity.Client.Helpers.IUtility>().Object);
+            Context.Services.AddSingleton<MudBlazor.IDialogService>(new Mock<MudBlazor.IDialogService>().Object);
 
             // Register all MudBlazor services (including InternalMudLocalizer) for bUnit
             Context.Services.AddMudServices();
+
+            // Register Syncfusion Blazor services
+            Context.Services.AddSyncfusionBlazor()
+                .Replace(ServiceDescriptor.Transient<IComponentActivator, SfComponentActivator>());
+            Context.Services.AddOptions();
+
+            Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+
+            // MudPopoverProvider doesn't wrap child content, so we render it separately
+            // This prevents "Missing <MudPopoverProvider />" errors in components that use popovers
+            Context.RenderComponent<MudBlazor.MudPopoverProvider>();
         }
 
         public void Dispose()

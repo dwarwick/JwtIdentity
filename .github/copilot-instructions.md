@@ -67,15 +67,110 @@ This is a Blazor WebAssembly project with a server-side API. The solution uses .
 - **bUnit**: Blazor component tests
 - **Playwright**: End-to-end browser tests
 
+### Testing Requirements
+**IMPORTANT**: When making code changes, always create or update appropriate tests:
+
+#### When to Create bUnit Tests
+- New Blazor components or pages
+- Updates to existing component behavior
+- Demo functionality changes
+- UI interaction logic
+- Component state management
+
+#### When to Create Unit Tests
+- New API controllers or endpoints
+- Service layer logic
+- Business logic in helpers or utilities
+- Data access layer changes
+- AutoMapper configurations
+
+#### When to Create Playwright Tests (Optional)
+- Critical end-to-end user workflows
+- Multi-page interactions
+- Only in local development environment (not automated CI/CD)
+
+### Test Structure Guidelines
+
+#### bUnit Test Structure
+**All bUnit test classes MUST inherit from `BUnitTestBase`** which provides:
+- Pre-configured `TestContext` with all necessary services
+- Mocked services (AuthService, ApiService, LocalStorage, etc.)
+- MockNavigationManager for navigation testing
+- MudBlazor and Syncfusion services registered
+
+```csharp
+[TestFixture]
+public class MyComponentTests : BUnitTestBase
+{
+    [SetUp]
+    public void Setup()
+    {
+        // Additional test-specific setup if needed
+        // Context, AuthServiceMock, ApiServiceMock, etc. are available from base class
+    }
+
+    [Test]
+    public void Component_Scenario_ExpectedBehavior()
+    {
+        // Arrange
+        ApiServiceMock.Setup(x => x.GetAsync<SomeType>(It.IsAny<string>()))
+            .ReturnsAsync(new SomeType());
+        
+        // Act
+        var cut = Context.RenderComponent<MyComponent>();
+        
+        // Assert
+        Assert.That(cut.Markup, Does.Contain("Expected Text"));
+    }
+}
+```
+
+#### Unit Test Structure
+```csharp
+[TestFixture]
+public class MyServiceTests
+{
+    private MyService _service;
+    private Mock<IDependency> _dependencyMock;
+
+    [SetUp]
+    public void Setup()
+    {
+        _dependencyMock = new Mock<IDependency>();
+        _service = new MyService(_dependencyMock.Object);
+    }
+
+    [Test]
+    public async Task Method_Scenario_ExpectedResult()
+    {
+        // Arrange
+        // Act
+        var result = await _service.MethodAsync();
+        // Assert
+        Assert.That(result, Is.Not.Null);
+    }
+}
+```
+
 ### Running Tests
-bash
-# Run all tests
-dotnet test
+```bash
+# Run all tests (excluding Playwright)
+dotnet test --filter "FullyQualifiedName!~Playwright"
 
 # Run specific test project
 dotnet test JwtIdentity.Tests
 dotnet test JwtIdentity.BunitTests
-dotnet test JwtIdentity.PlaywrightTests
+dotnet test JwtIdentity.PlaywrightTests  # Local only
+
+# Run tests with coverage
+dotnet test --collect:"XPlat Code Coverage"
+```
+
+### Test Coverage Expectations
+- Aim for >80% coverage on new code
+- All critical paths must have tests
+- Demo functionality must have comprehensive bUnit tests
+- API endpoints must have unit tests
 
 ## Testing Environment Restrictions
 

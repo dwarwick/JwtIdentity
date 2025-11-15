@@ -7,6 +7,7 @@
 
         protected bool IsDemoUser { get; set; }
         protected int DemoStep { get; set; }
+        protected string DemoType { get; set; }
 
         protected Origin AnchorOrigin { get; set; } = Origin.BottomRight;
         protected Origin TransformOrigin { get; set; } = Origin.TopLeft;
@@ -16,6 +17,14 @@
             var authState = await AuthStateProvider.GetAuthenticationStateAsync();
             var userName = authState.User.Identity?.Name ?? string.Empty;
             IsDemoUser = userName.StartsWith("DemoUser") && userName.EndsWith("@surveyshark.site");
+
+            // Get demo type from query parameter
+            var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
+            var queryParams = QueryHelpers.ParseQuery(uri.Query);
+            if (queryParams.TryGetValue("DemoType", out var demoType))
+            {
+                DemoType = demoType.ToString();
+            }
         }
 
         protected bool ShowDemoStep(int step) => IsDemoUser && DemoStep == step;
@@ -72,7 +81,13 @@
                 if (response != null && response.Id > 0)
                 {
                     _ = Snackbar.Add("Survey Created", MudBlazor.Severity.Success);
-                    Navigation.NavigateTo($"/survey/edit/{response.Guid}");
+                    // Pass demo type to edit page
+                    var editUrl = $"/survey/edit/{response.Guid}";
+                    if (!string.IsNullOrWhiteSpace(DemoType))
+                    {
+                        editUrl += $"?DemoType={DemoType}";
+                    }
+                    Navigation.NavigateTo(editUrl);
                 }
                 else
                 {

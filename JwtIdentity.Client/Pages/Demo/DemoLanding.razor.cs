@@ -2,7 +2,8 @@ namespace JwtIdentity.Client.Pages.Demo
 {
     public class DemoLandingModel : BlazorBase
     {
-        protected bool IsStartingDemo { get; set; }
+        protected bool IsStartingLinearDemo { get; set; }
+        protected bool IsStartingBranchingDemo { get; set; }
 
         protected AppSettings AppSettings { get; set; } = new();
 
@@ -15,14 +16,14 @@ namespace JwtIdentity.Client.Pages.Demo
             AppSettings = await ApiService.GetPublicAsync<AppSettings>("/api/appsettings");
         }
 
-        protected async Task BeginDemo()
+        protected async Task BeginLinearDemo()
         {
-            if (IsStartingDemo)
+            if (IsStartingLinearDemo)
             {
                 return;
             }
 
-            IsStartingDemo = true;
+            IsStartingLinearDemo = true;
 
             try
             {
@@ -30,7 +31,7 @@ namespace JwtIdentity.Client.Pages.Demo
 
                 if (loginResponse.Success)
                 {
-                    Navigation.NavigateTo("/survey/create");
+                    Navigation.NavigateTo("/survey/create?DemoType=linear");
                 }
                 else
                 {
@@ -39,7 +40,35 @@ namespace JwtIdentity.Client.Pages.Demo
             }
             finally
             {
-                IsStartingDemo = false;
+                IsStartingLinearDemo = false;
+            }
+        }
+
+        protected async Task BeginBranchingDemo()
+        {
+            if (IsStartingBranchingDemo)
+            {
+                return;
+            }
+
+            IsStartingBranchingDemo = true;
+
+            try
+            {
+                Response<ApplicationUserViewModel> loginResponse = await AuthService.StartDemo();
+
+                if (loginResponse.Success)
+                {
+                    Navigation.NavigateTo("/survey/create?DemoType=branching");
+                }
+                else
+                {
+                    _ = Snackbar.Add("Unable to start the demo right now. Please try again.", MudBlazor.Severity.Error);
+                }
+            }
+            finally
+            {
+                IsStartingBranchingDemo = false;
             }
         }
     }

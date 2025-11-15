@@ -11,6 +11,10 @@ namespace JwtIdentity.Client.Pages.Survey
         protected List<QuestionGroupViewModel> QuestionGroups { get; set; } = new();
         protected bool Loading { get; set; } = true;
 
+        protected bool IsDemoUser { get; set; }
+        protected int DemoStep { get; set; }
+        protected string DemoType { get; set; }
+
         // Track True/False branching separately since TrueFalse doesn't have options
         protected Dictionary<int, int?> TrueBranch { get; set; } = new();
         protected Dictionary<int, int?> FalseBranch { get; set; } = new();
@@ -28,7 +32,26 @@ namespace JwtIdentity.Client.Pages.Survey
 
         protected override async Task OnInitializedAsync()
         {
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            var userName = authState.User.Identity?.Name ?? string.Empty;
+            IsDemoUser = userName.StartsWith("DemoUser") && userName.EndsWith("@surveyshark.site");
+
+            // Get demo type from query parameters
+            var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
+            var queryParams = QueryHelpers.ParseQuery(uri.Query);
+            if (queryParams.TryGetValue("DemoType", out var demoType))
+            {
+                DemoType = demoType.ToString();
+            }
+
             await LoadData();
+
+            // If this is a branching demo and we don't have groups yet, create them automatically
+            if (IsDemoUser && DemoType == "branching" && QuestionGroups.Count == 1)
+            {
+                await InitializeBranchingDemo();
+            }
+
             BuildSyncfusionDiagram();
         }
 
@@ -144,6 +167,115 @@ namespace JwtIdentity.Client.Pages.Survey
             {
                 Loading = false;
                 StateHasChanged();
+            }
+        }
+
+        protected async Task InitializeBranchingDemo()
+        {
+            try
+            {
+                // Step 1: Create two question groups (Group 1 and Group 2)
+                var group1 = new QuestionGroupViewModel
+                {
+                    SurveyId = Survey.Id,
+                    GroupNumber = 1,
+                    GroupName = "Product Feedback",
+                    SubmitAfterGroup = true
+                };
+                var response1 = await ApiService.PostAsync(ApiEndpoints.QuestionGroup, group1);
+                if (response1 != null)
+                {
+                    QuestionGroups.Add(response1);
+                    DemoStep = 1;
+                }
+
+                var group2 = new QuestionGroupViewModel
+                {
+                    SurveyId = Survey.Id,
+                    GroupNumber = 2,
+                    GroupName = "Service Improvement",
+                    SubmitAfterGroup = true
+                };
+                var response2 = await ApiService.PostAsync(ApiEndpoints.QuestionGroup, group2);
+                if (response2 != null)
+                {
+                    QuestionGroups.Add(response2);
+                    DemoStep = 2;
+                }
+
+                // Step 2: Move questions to appropriate groups
+                // Find the branching questions (the last 4 questions should be the ones we created)
+                var allQuestions = Survey.Questions.OrderByDescending(q => q.QuestionNumber).ToList();
+                if (allQuestions.Count >= 4)
+                {
+                    // Move 3rd branching question (second-to-last) to Group 1
+                    var questionForGroup1 = allQuestions[1];
+                    await MoveQuestionToGroup(questionForGroup1, 1);
+                    DemoStep = 3;
+
+                    // Move 4th branching question (last) to Group 2
+                    var questionForGroup2 = allQuestions[0];
+                    await MoveQuestionToGroup(questionForGroup2, 2);
+                    DemoStep = 4;
+                }
+
+                // Step 3: Mark the last text question as IsLastQuestion
+                var lastTextQuestion = Survey.Questions
+                    .Where(q => q.QuestionType == QuestionType.Text && q.GroupId == 0)
+                    .OrderByDescending(q => q.QuestionNumber)
+                    .FirstOrDefault();
+                
+                if (lastTextQuestion != null && !lastTextQuestion.IsLastQuestion)
+                {
+                    await ApiService.PostAsync<object, object>($"{ApiEndpoints.Question}/UpdateIsLastQuestion", new
+                    {
+                        QuestionId = lastTextQuestion.Id,
+                        IsLastQuestion = true
+                    });
+                    lastTextQuestion.IsLastQuestion = true;
+                    DemoStep = 5;
+                }
+
+                // Step 4: Create branching rules
+                // Find the first two branching questions in Group 0 (multiple choice questions we created)
+                var branchingQuestions = Survey.Questions
+                    .Where(q => q.GroupId == 0 && q.QuestionType == QuestionType.MultipleChoice)
+                    .OrderBy(q => q.QuestionNumber)
+                    .Take(2)
+                    .Cast<MultipleChoiceQuestionViewModel>()
+                    .ToList();
+
+                if (branchingQuestions.Count >= 2)
+                {
+                    // First branching question - branch first option to Group 1
+                    var firstQuestion = branchingQuestions[0];
+                    if (firstQuestion.Options != null && firstQuestion.Options.Count > 0)
+                    {
+                        var firstOption = firstQuestion.Options.First();
+                        firstOption.BranchToGroupId = 1;
+                        await UpdateChoiceOptionBranch(firstOption);
+                        DemoStep = 6;
+                    }
+
+                    // Second branching question - branch first option to Group 2
+                    var secondQuestion = branchingQuestions[1];
+                    if (secondQuestion.Options != null && secondQuestion.Options.Count > 0)
+                    {
+                        var firstOption = secondQuestion.Options.First();
+                        firstOption.BranchToGroupId = 2;
+                        await UpdateChoiceOptionBranch(firstOption);
+                        DemoStep = 7;
+                    }
+                }
+
+                _ = Snackbar.Add("Branching demo initialized", Severity.Success);
+                await LoadData(); // Reload to refresh everything
+                DemoStep = 8; // Ready to return to edit page
+            }
+            catch (Exception ex)
+            {
+                Logger?.LogError(ex, "Error initializing branching demo");
+                _ = Snackbar.Add("Error initializing branching demo", Severity.Error);
             }
         }
 
@@ -462,6 +594,17 @@ namespace JwtIdentity.Client.Pages.Survey
                 // Force another state update after layout
                 await InvokeAsync(StateHasChanged);
             }
+        }
+
+        protected void NavigateBackToEdit()
+        {
+            var editUrl = $"/survey/edit/{SurveyId}";
+            if (DemoType == "branching")
+            {
+                // Return to edit page with demo step 30 (publish step)
+                editUrl += $"?DemoType={DemoType}&DemoStep=30";
+            }
+            Navigation.NavigateTo(editUrl);
         }
 
         protected void OnZoomChanged(double newZoom)
