@@ -4,6 +4,8 @@ using Bunit.TestDoubles;
 using JwtIdentity.Client.Pages.Auth;
 using JwtIdentity.Client.Services;
 using JwtIdentity.Client.Services.Base;
+using JwtIdentity.Common.ViewModels;
+using JwtIdentity.Common.Helpers;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,6 +16,7 @@ using MudBlazor.Services;
 using Syncfusion.Blazor;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Syncfusion.Blazor.Diagram;
 using JwtIdentity.Client.Tests.Stubs; // adjust namespace if different
 
@@ -99,6 +102,47 @@ namespace JwtIdentity.BunitTests
         public void Dispose()
         {
             Context?.Dispose();
+        }
+
+        /// <summary>
+        /// Helper method to setup standard mocks for survey and question loading.
+        /// This includes mocking the survey, question groups, and QuestionAndOptions API calls.
+        /// </summary>
+        /// <param name="survey">The survey to use for mocking</param>
+        /// <param name="groups">The question groups to use for mocking</param>
+        protected void SetupSurveyMocks(SurveyViewModel survey, List<QuestionGroupViewModel> groups)
+        {
+            ApiServiceMock.Setup(x => x.GetAsync<SurveyViewModel>(It.IsAny<string>()))
+                .ReturnsAsync(survey);
+            ApiServiceMock.Setup(x => x.GetAsync<List<QuestionGroupViewModel>>(It.IsAny<string>()))
+                .ReturnsAsync(groups);
+            
+            // Mock QuestionAndOptions API calls for each multiple choice question
+            foreach (var question in survey.Questions.Where(q => q.QuestionType == QuestionType.MultipleChoice))
+            {
+                var mcQuestion = question as MultipleChoiceQuestionViewModel;
+                ApiServiceMock.Setup(x => x.GetAsync<MultipleChoiceQuestionViewModel>(
+                    It.Is<string>(s => s.Contains($"/QuestionAndOptions/{question.Id}"))))
+                    .ReturnsAsync(mcQuestion);
+            }
+            
+            // Mock QuestionAndOptions API calls for SelectAllThatApply questions
+            foreach (var question in survey.Questions.Where(q => q.QuestionType == QuestionType.SelectAllThatApply))
+            {
+                var saQuestion = question as SelectAllThatApplyQuestionViewModel;
+                ApiServiceMock.Setup(x => x.GetAsync<SelectAllThatApplyQuestionViewModel>(
+                    It.Is<string>(s => s.Contains($"/QuestionAndOptions/{question.Id}"))))
+                    .ReturnsAsync(saQuestion);
+            }
+            
+            // Mock QuestionAndOptions API calls for TrueFalse questions
+            foreach (var question in survey.Questions.Where(q => q.QuestionType == QuestionType.TrueFalse))
+            {
+                var tfQuestion = question as TrueFalseQuestionViewModel;
+                ApiServiceMock.Setup(x => x.GetAsync<TrueFalseQuestionViewModel>(
+                    It.Is<string>(s => s.Contains($"/QuestionAndOptions/{question.Id}"))))
+                    .ReturnsAsync(tfQuestion);
+            }
         }
 
         // Fake implementation for DI
