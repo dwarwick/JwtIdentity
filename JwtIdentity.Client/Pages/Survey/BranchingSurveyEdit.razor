@@ -119,7 +119,7 @@ else
                 <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-3">
                     <MudText Typo="Typo.subtitle1" Class="font-weight-bold">Question Groups</MudText>
                     <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 1, 5 })" IsButton="true">
-                        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AddQuestionGroup" StartIcon="@Icons.Material.Filled.Add" Disabled="@IsAddGroupDisabled()">
+                        <MudButton id="AddGroupButton" Variant="Variant.Filled" Color="Color.Primary" OnClick="AddQuestionGroup" StartIcon="@Icons.Material.Filled.Add" Disabled="@IsAddGroupDisabled()">
                             Add Group
                         </MudButton>
                     </DemoBorder>
@@ -136,7 +136,8 @@ else
                     @foreach (var group in QuestionGroups.OrderBy(g => g.GroupNumber))
                     {
                         var colorClass = $"group-color-{group.GroupNumber % 10}";
-                        <MudExpansionPanel Class="mb-3">
+                        var panelId = $"Group{group.GroupNumber}Panel";
+                        <MudExpansionPanel id="@panelId" Class="mb-3">
                             <TitleContent>
                                 <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Style="width: 100%;">
                                     <span class="@($"group-badge group-badge-{group.GroupNumber % 10}")">Group @group.GroupNumber</span>
@@ -157,7 +158,7 @@ else
                                             @if (group.GroupNumber == 1)
                                             {
                                                 <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 2, 3 })">
-                                                    <MudTextField Label="Group Name" Value="@group.GroupName"
+                                                    <MudTextField id="Group1NameField" Label="Group Name" Value="@group.GroupName"
                                                                   Variant="Variant.Outlined"
                                                                   HelperText="Optional: Give this group a descriptive name"
                                                                   ReadOnly="@IsGroupNameReadOnly(group.GroupNumber)"
@@ -180,7 +181,7 @@ else
                                             else if (group.GroupNumber == 2)
                                             {
                                                 <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 6, 7 })">
-                                                    <MudTextField Label="Group Name" Value="@group.GroupName"
+                                                    <MudTextField id="Group2NameField" Label="Group Name" Value="@group.GroupName"
                                                                   Variant="Variant.Outlined"
                                                                   HelperText="Optional: Give this group a descriptive name"
                                                                   ReadOnly="@IsGroupNameReadOnly(group.GroupNumber)"
