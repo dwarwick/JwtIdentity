@@ -6,28 +6,27 @@
 
 <PageTitle>Survey Shark - Survey Branching</PageTitle>
 
-<DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 0 })" AnchorOrigin="AnchorOrigin" TransformOrigin="TransformOrigin">
-    <MudText Typo="Typo.h5" Class="mb-2">Welcome to Branching Configuration!</MudText>
-    <MudText Typo="Typo.body2" Class="mb-2">In this guided demo, you'll learn how to:</MudText>
-    <MudList T="string" Dense="true" Class="ml-4">
-        <MudListItem T="string">• Create question groups to organize your survey</MudListItem>
-        <MudListItem T="string">• Move questions to different groups</MudListItem>
-        <MudListItem T="string">• Configure conditional branching rules</MudListItem>
-        <MudListItem T="string">• Visualize your survey flow</MudListItem>
-    </MudList>
-    <MudText Typo="Typo.body2" Class="mt-2">Let's get started!</MudText>
-    <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 0 })" IsButton="true" Class="mt-3">
-        <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
-    </DemoBorder>
-</DemoPopup>
-
 <MudStack Row="true" Justify="Justify.SpaceBetween" Class="mb-4">
     <MudText Typo="Typo.h4">Survey Branching: @Survey?.Title</MudText>
-    <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 17 })" IsButton="true">
+    <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 0, 17 })" IsButton="true">
         <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="@NavigateBackToEdit">
             Back to Edit Survey
         </MudButton>
     </DemoBorder>
+    <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 0 })" AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft">
+        <MudText Typo="Typo.h5" Class="mb-2">Welcome to Branching Configuration!</MudText>
+        <MudText Typo="Typo.body2" Class="mb-2">In this guided demo, you'll learn how to:</MudText>
+        <MudList T="string" Dense="true" Class="ml-4">
+            <MudListItem T="string">• Create question groups to organize your survey</MudListItem>
+            <MudListItem T="string">• Move questions to different groups</MudListItem>
+            <MudListItem T="string">• Configure conditional branching rules</MudListItem>
+            <MudListItem T="string">• Visualize your survey flow</MudListItem>
+        </MudList>
+        <MudText Typo="Typo.body2" Class="mt-2">Let's get started!</MudText>
+        <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 0 })" IsButton="true" Class="mt-3">
+            <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
+        </DemoBorder>
+    </DemoPopup>
     <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 17 })" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
         <MudText Typo="Typo.h6" Class="mb-2">Excellent work!</MudText>
         <MudText Typo="Typo.body2" Class="mb-2">You've successfully configured branching for your survey. The flow diagram above shows how your survey will branch based on user responses.</MudText>
