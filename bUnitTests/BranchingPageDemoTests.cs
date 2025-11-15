@@ -155,10 +155,10 @@ namespace JwtIdentity.BunitTests
             // Wait for component to render (check for survey title in markup)
             cut.WaitForState(() => cut.Markup.Contains("Branching Demo Survey"), timeout: TimeSpan.FromSeconds(5));
 
-            // Assert - Component loaded successfully and demo is active
-            Assert.That(cut.Markup, Does.Contain("Survey Branching"));
-            // Verify the page rendered without errors
-            Assert.That(cut.Markup, Does.Contain("Configure Branching Rules"));
+            // Assert - Welcome popup should be visible at step 0
+            AssertPopoverText("Welcome to Branching Configuration!");
+            AssertPopoverText("In this guided demo, you'll learn how to:");
+            AssertPopoverText("Create question groups to organize your survey");
         }
 
         [Test]
@@ -223,8 +223,9 @@ namespace JwtIdentity.BunitTests
             // Wait for loading
             cut.WaitForState(() => cut.Markup.Contains("Add Group"), timeout: TimeSpan.FromSeconds(5));
 
-            // Assert - At step 1, Add Group button should be present with demo border
-            Assert.That(cut.Markup, Does.Contain("Add Group"));
+            // Assert - At step 1, popup should prompt to add first group
+            AssertPopoverText("First, let's create a new question group.");
+            AssertPopoverText("Click \"Add Group\" to create your first group.");
             Assert.That(cut.Markup, Does.Contain("demo-primary-border")); // Demo border shows it's active
         }
 
@@ -266,10 +267,9 @@ namespace JwtIdentity.BunitTests
             // Wait for loading
             cut.WaitForState(() => cut.Markup.Contains("Assign to Group"), timeout: TimeSpan.FromSeconds(5));
 
-            // Assert - At step 9, only Q3 should be enabled
-            // The helper method IsQuestionGroupSelectorDisabled is called internally
-            // We verify it's working by checking the rendered output
-            Assert.That(cut.Markup, Does.Contain("Assign to Group"));
+            // Assert - At step 9, popup should instruct to move Q3 to Group 1
+            AssertPopoverText("Now let's organize questions into groups.");
+            AssertPopoverText("Find Question 3 and move it to Group 1 using the dropdown selector.");
         }
 
         [Test]
@@ -287,9 +287,10 @@ namespace JwtIdentity.BunitTests
             // Wait for loading
             cut.WaitForState(() => cut.Markup.Contains("Back to Edit Survey"), timeout: TimeSpan.FromSeconds(5));
 
-            // Assert - Component loaded successfully and "Back to Edit Survey" button is present
-            Assert.That(cut.Markup, Does.Contain("Back to Edit Survey"));
-            Assert.That(cut.Markup, Does.Contain("Survey Branching"));
+            // Assert - Completion popup should show success message
+            AssertPopoverText("Excellent work!");
+            AssertPopoverText("You've successfully configured branching for your survey.");
+            AssertPopoverText("Click \"Back to Edit Survey\" to continue with the demo.");
         }
 
         [Test]
