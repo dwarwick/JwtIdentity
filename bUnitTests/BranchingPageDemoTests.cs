@@ -188,8 +188,9 @@ namespace JwtIdentity.BunitTests
             // Wait for loading to complete
             cut.WaitForState(() => cut.Markup.Contains("Add Group"), timeout: TimeSpan.FromSeconds(5));
 
-            // Assert - Prompt to add first group at step 1
+            // Assert - At step 1, Add Group button should be present and enabled (has demo-primary-border class)
             Assert.That(cut.Markup, Does.Contain("Add Group"));
+            Assert.That(cut.Markup, Does.Contain("demo-primary-border")); // Demo border shows it's the active step
         }
 
         [Test]
@@ -219,10 +220,9 @@ namespace JwtIdentity.BunitTests
             // Wait for loading
             cut.WaitForState(() => cut.Markup.Contains("Add Group"), timeout: TimeSpan.FromSeconds(5));
 
-            // Assert - Should have Add Group button
+            // Assert - At step 1, Add Group button should be present with demo border
             Assert.That(cut.Markup, Does.Contain("Add Group"));
-            // Verify component loaded successfully
-            Assert.That(cut.Markup, Does.Contain("Survey Branching"));
+            Assert.That(cut.Markup, Does.Contain("demo-primary-border")); // Demo border shows it's active
         }
 
         [Test]

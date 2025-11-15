@@ -14,6 +14,7 @@ namespace JwtIdentity.Client.Pages.Survey
         protected bool IsDemoUser { get; set; }
         protected int DemoStep { get; set; }
         protected string DemoType { get; set; }
+        private int _previousDemoStep = -1;
         protected Origin AnchorOrigin { get; set; } = Origin.BottomRight;
         protected Origin TransformOrigin { get; set; } = Origin.TopLeft;
         protected bool ShowDemoStep(int step) => IsDemoUser && DemoType == "branching" && DemoStep == step;
@@ -60,6 +61,57 @@ namespace JwtIdentity.Client.Pages.Survey
             }
 
             BuildSyncfusionDiagram();
+        }
+
+        protected override async Task OnAfterRenderAsync(bool firstRender)
+        {
+            if (firstRender)
+            {
+                var isMobile = await JSRuntime.InvokeAsync<bool>("isMobile");
+                if (isMobile)
+                {
+                    AnchorOrigin = Origin.BottomCenter;
+                    TransformOrigin = Origin.TopCenter;
+                }
+                StateHasChanged();
+            }
+
+            // Scroll to the current demo step when it changes
+            if (IsDemoUser && DemoStep != _previousDemoStep)
+            {
+                await ScrollToCurrentDemoStep();
+                _previousDemoStep = DemoStep;
+            }
+        }
+
+        private async Task ScrollToCurrentDemoStep()
+        {
+            var id = DemoStep switch
+            {
+                1 => "AddGroupButton",      // Step 1: Add first group
+                2 => "Group1Panel",          // Step 2: Group 1 created, ready to name
+                3 => "Group1NameField",      // Step 3: Name Group 1
+                5 => "AddGroupButton",       // Step 5: Add second group
+                6 => "Group2Panel",          // Step 6: Group 2 created, ready to name
+                7 => "Group2NameField",      // Step 7: Name Group 2
+                9 => "QuestionGroupSelector_Q3",  // Step 9: Move Q3 to Group 1
+                11 => "QuestionGroupSelector_Q4", // Step 11: Move Q4 to Group 2
+                13 => "BranchingSelector_Q1",     // Step 13: Configure Q1 branching
+                15 => "BranchingSelector_Q2",     // Step 15: Configure Q2 branching
+                _ => null
+            };
+
+            if (!string.IsNullOrEmpty(id))
+            {
+                await JSRuntime.InvokeVoidAsync(
+                    "scrollToElement",
+                    id,
+                    new { behavior = "smooth", block = "center", headerOffset = 0 }
+                );
+
+                // Ensure any demo popover tied to the element renders after the scroll
+                StateHasChanged();
+            }
         }
 
         protected void DiagramCreated()
