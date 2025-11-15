@@ -51,16 +51,16 @@
     
     @if (DemoType == "branching")
     {
-        <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 23 })">
+        <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 23 })" TransformOrigin="Origin.TopLeft" AnchorOrigin="Origin.BottomLeft">
             <MudText Typo="Typo.body2">Now click the Configure Branching button to set up branching rules for your survey.</MudText>
         </DemoPopup>
-        <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 30 })">
+        <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 30 })" TransformOrigin="Origin.TopLeft" AnchorOrigin="Origin.BottomLeft">
             <MudText Typo="Typo.body2">Now click the Publish Survey button to publish the survey.</MudText>
         </DemoPopup>
     }
     else
     {
-        <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 10 })">
+        <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 10 })" TransformOrigin="Origin.TopLeft" AnchorOrigin="Origin.BottomLeft">
             <MudText Typo="Typo.body2">Now click the Publish Survey button to publish the survey.</MudText>
         </DemoPopup>
     }
@@ -85,7 +85,7 @@
                 <MudButton id="AcceptQuestionsBtn" Variant="Variant.Filled" Color="Color.Primary" OnClick="AcceptQuestions">Accept Questions</MudButton>
             </DemoBorder>
         </MudStack>
-        <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 1 })">
+        <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 1 })" TransformOrigin="Origin.TopLeft" AnchorOrigin="Origin.BottomLeft">
             <MudText Typo="Typo.body2" Style="white-space: pre-line">Click each question then scroll down to inspect it.
                 Regenerate the AI-generated questions, or accept them if you're satisfied.</MudText>
         </DemoPopup>
@@ -163,10 +163,10 @@
                     <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
                 </DemoBorder>
             </DemoPopup>
-            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 3 })">
+            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 3 })" TransformOrigin="Origin.TopLeft" AnchorOrigin="Origin.BottomLeft">
                 <MudText Typo="Typo.body2">Click question number 1 to select it. The question text will turn blue when it is selected.</MudText>
             </DemoPopup>
-            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 5 })">
+            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 5 })" TransformOrigin="Origin.TopLeft" AnchorOrigin="Origin.BottomLeft">
                 <MudText Typo="Typo.body2">Click the selected question to deselect it.</MudText>
             </DemoPopup>
         }
@@ -194,42 +194,42 @@
                                 }
                             </MudSelect>
                         </DemoBorder>
-                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 6 })">
+                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 6 })" TransformOrigin="Origin.TopLeft" AnchorOrigin="Origin.BottomLeft">
                                 <MudText Style="white-space: pre-line" Typo="Typo.body2">Now we will see how to create a new question.
                                     Currently, the Question Type is set to Text. Select Multiple Choice for the question type. 
                                     We will create a new Multiple Choice question.</MudText>
                             </DemoPopup>
-                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 10 })">
+                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 10 })" TransformOrigin="Origin.TopLeft" AnchorOrigin="Origin.BottomLeft">
                                 <MudText Typo="Typo.body2">Great! The first branching question is saved. Now let's create the second question. It will automatically be set up for you. Click Next to continue.</MudText>
                                 <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 10 })" IsButton="true">
                                     <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
                                 </DemoBorder>
                             </DemoPopup>
-                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 13 })">
+                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 13 })" TransformOrigin="Origin.TopLeft" AnchorOrigin="Origin.BottomLeft">
                                 <MudText Typo="Typo.body2">Second question saved! Now let's create the third question. Click Next to continue.</MudText>
                                 <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 13 })" IsButton="true">
                                     <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
                                 </DemoBorder>
                             </DemoPopup>
-                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 16 })">
+                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 16 })" TransformOrigin="Origin.TopLeft" AnchorOrigin="Origin.BottomLeft">
                                 <MudText Typo="Typo.body2">Third question saved! Now let's create the fourth and final multiple choice question. Click Next to continue.</MudText>
                                 <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 16 })" IsButton="true">
                                     <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
                                 </DemoBorder>
                             </DemoPopup>
-                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 19 })">
+                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 19 })" TransformOrigin="Origin.TopLeft" AnchorOrigin="Origin.BottomLeft">
                                 <MudText Typo="Typo.body2">All four multiple choice questions saved! Now let's create a fifth text question for additional feedback. Click Next to continue.</MudText>
                                 <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 19 })" IsButton="true">
                                     <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
                                 </DemoBorder>
                             </DemoPopup>
-                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 20 })">
+                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 20 })" TransformOrigin="Origin.TopLeft" AnchorOrigin="Origin.BottomLeft">
                                 <MudText Typo="Typo.body2">The question type has been set to Text. Now let's set the question text. Click Next to add the question text.</MudText>
                                 <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 20 })" IsButton="true">
                                     <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
                                 </DemoBorder>
                             </DemoPopup>
-                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 22 })">
+                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 22 })" TransformOrigin="Origin.TopLeft" AnchorOrigin="Origin.BottomLeft">
                                 <MudText Typo="Typo.body2">Great! The text question is saved. Now we need to mark it as a "Last Question" so it appears at the end of the survey after all branching. Click Next to mark it.</MudText>
                                 <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 22 })" IsButton="true">
                                     <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
@@ -274,19 +274,19 @@
                         <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 9, 12, 15, 18, 21 })" IsButton="true">
                             <MudButton id="SaveQuestionBtn" ButtonType="ButtonType.Button" Variant="Variant.Filled" Color="Color.Primary" OnClick="AddQuestionToSurvey" Disabled="@AddQuestionToSurveyDisabled">Save Question</MudButton>
                         </DemoBorder>
-                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 9 })">
+                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 9 })" TransformOrigin="Origin.TopLeft" AnchorOrigin="Origin.BottomLeft">
                                 <MudText Typo="Typo.body2">Scroll down so you can see the choices down below. Click Save Question button to save the question.</MudText>
                             </DemoPopup>
-                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 12 })">
+                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 12 })" TransformOrigin="Origin.TopLeft" AnchorOrigin="Origin.BottomLeft">
                                 <MudText Typo="Typo.body2">Perfect! The choices have been added. Now scroll up and click the <strong>Save Question</strong> button above.</MudText>
                             </DemoPopup>
-                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 15 })">
+                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 15 })" TransformOrigin="Origin.TopLeft" AnchorOrigin="Origin.BottomLeft">
                                 <MudText Typo="Typo.body2">Excellent! Now scroll up and click the <strong>Save Question</strong> button above.</MudText>
                             </DemoPopup>
-                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 18 })">
+                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 18 })" TransformOrigin="Origin.TopLeft" AnchorOrigin="Origin.BottomLeft">
                                 <MudText Typo="Typo.body2">Great! Now scroll up and click the <strong>Save Question</strong> button above.</MudText>
                             </DemoPopup>
-                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 21 })">
+                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 21 })" TransformOrigin="Origin.TopLeft" AnchorOrigin="Origin.BottomLeft">
                                 <MudText Typo="Typo.body2">Now save this text question by clicking the Save Question button.</MudText>
                             </DemoPopup>
                         <MudCheckBox T="bool" @bind-Value="IsRequired" Label="Is Required?" Color="Color.Primary" Disabled="@AddQuestionToSurveyDisabled" />
@@ -311,13 +311,13 @@
                             }
                         </MudSelect>
                         </DemoBorder>
-                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 11 })">
+                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 11 })" TransformOrigin="Origin.TopLeft" AnchorOrigin="Origin.BottomLeft">
                                 <MudText Typo="Typo.body2">For the second question about customer service, select <strong>How Satisfied</strong> from the Preset Choices.</MudText>
                             </DemoPopup>
-                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 14 })">
+                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 14 })" TransformOrigin="Origin.TopLeft" AnchorOrigin="Origin.BottomLeft">
                                 <MudText Typo="Typo.body2">For the third question about product recommendation, select <strong>How Likely</strong> from the Preset Choices.</MudText>
                             </DemoPopup>
-                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 17 })">
+                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 17 })" TransformOrigin="Origin.TopLeft" AnchorOrigin="Origin.BottomLeft">
                                 <MudText Typo="Typo.body2">For the fourth question about ease of use, select <strong>Yes No Partially</strong> from the Preset Choices.</MudText>
                             </DemoPopup>
                         <MudTextField id="Choice" Label="Choice Text" @bind-Value="NewChoiceOptionText" Variant="Variant.Filled" Lines="1" MaxLines="5" AutoGrow="true" Immediate="true" Counter="50" MaxLength="50" ReadOnly="@IsDemoUser" />
