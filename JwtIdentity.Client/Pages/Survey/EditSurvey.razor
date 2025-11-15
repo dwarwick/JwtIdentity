@@ -223,6 +223,12 @@
                                     <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
                                 </DemoBorder>
                             </DemoPopup>
+                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 20 })">
+                                <MudText Typo="Typo.body2">The question type has been set to Text. Now let's set the question text. Click Next to add the question text.</MudText>
+                                <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 20 })" IsButton="true">
+                                    <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
+                                </DemoBorder>
+                            </DemoPopup>
                             <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 22 })">
                                 <MudText Typo="Typo.body2">Great! The text question is saved. Now we need to mark it as a "Last Question" so it appears at the end of the survey after all branching. Click Next to mark it.</MudText>
                                 <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 22 })" IsButton="true">

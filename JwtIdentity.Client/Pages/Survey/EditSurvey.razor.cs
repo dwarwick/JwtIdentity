@@ -266,9 +266,13 @@ namespace JwtIdentity.Client.Pages.Survey
                         break;
                     case 19:
                         // After adding fourth MC question, create a 5th text question
-                        QuestionText = "Please share any additional feedback or comments.";
                         SelectedQuestionType = "Text";
                         DemoStep = 20;
+                        break;
+                    case 20:
+                        // Set the text question prompt
+                        QuestionText = "Please share any additional feedback or comments.";
+                        DemoStep = 21;
                         break;
                     case 22:
                         // After adding the text question, now mark it as Last Question

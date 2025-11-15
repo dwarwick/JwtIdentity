@@ -285,20 +285,37 @@ namespace JwtIdentity.BunitTests
         [Test]
         public void BranchingDemo_AfterTextQuestion_CanSave()
         {
-            // Arrange
+            // Arrange - Set up survey at step 21 (ready to save text question)
             _testSurvey.AiQuestionsApproved = true;
-            _testSurvey.Questions.Add(new TextQuestionViewModel { Id = 6, Text = "Text Q", QuestionNumber = 5 });
+            _testSurvey.Questions.Add(new TextQuestionViewModel { Id = 1, Text = "Q1", QuestionNumber = 1 });
+            _testSurvey.Questions.Add(new TextQuestionViewModel { Id = 2, Text = "Q2", QuestionNumber = 2 });
+            _testSurvey.Questions.Add(new TextQuestionViewModel { Id = 3, Text = "Q3", QuestionNumber = 3 });
+            _testSurvey.Questions.Add(new TextQuestionViewModel { Id = 4, Text = "Q4", QuestionNumber = 4 });
+            _testSurvey.Questions.Add(new TextQuestionViewModel { Id = 5, Text = "Q5", QuestionNumber = 5 });
+            
+            var updatedSurvey = new SurveyViewModel 
+            { 
+                Id = 2, 
+                Title = "Test Survey", 
+                AiQuestionsApproved = true,
+                Questions = _testSurvey.Questions
+            };
+            
             ApiServiceMock.Setup(x => x.GetAsync<SurveyViewModel>(It.IsAny<string>()))
                 .ReturnsAsync(_testSurvey);
+            ApiServiceMock.Setup(x => x.UpdateAsync<SurveyViewModel>(It.IsAny<string>(), It.IsAny<SurveyViewModel>()))
+                .ReturnsAsync(updatedSurvey);
 
-            // Act
-            NavManager.NavigateTo("/survey/edit/2?DemoType=branching");
+            // Act - Navigate to step 21
+            NavManager.NavigateTo("/survey/edit/2?DemoType=branching&DemoStep=21");
             var cut = Context.RenderComponent<EditSurvey>(parameters => parameters
                 .Add(p => p.SurveyId, "2")
                 );
 
-            // Assert
-            Assert.That(cut.Markup, Does.Contain("Select the Question Type"));
+            // Assert - At step 21, should show save question button
+            Assert.That(cut.Markup, Does.Contain("id=\"SaveQuestionBtn\""));
+            // The question text field should be present
+            Assert.That(cut.Markup, Does.Contain("Question Text"));
         }
 
         [Test]
