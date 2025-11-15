@@ -299,11 +299,20 @@
                             <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 11 })">
                                 <MudText Typo="Typo.body2">For the second question about customer service, select <strong>How Satisfied</strong> from the Preset Choices.</MudText>
                             </DemoPopup>
+                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 12 })">
+                                <MudText Typo="Typo.body2">Perfect! The choices have been added. Now click the <strong>Add Question to Survey</strong> button to save this question.</MudText>
+                            </DemoPopup>
                             <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 14 })">
                                 <MudText Typo="Typo.body2">For the third question about product recommendation, select <strong>How Likely</strong> from the Preset Choices.</MudText>
                             </DemoPopup>
+                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 15 })">
+                                <MudText Typo="Typo.body2">Excellent! Now click the <strong>Add Question to Survey</strong> button to save the third question.</MudText>
+                            </DemoPopup>
                             <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 17 })">
                                 <MudText Typo="Typo.body2">For the fourth question about ease of use, select <strong>Yes No Partially</strong> from the Preset Choices.</MudText>
+                            </DemoPopup>
+                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 18 })">
+                                <MudText Typo="Typo.body2">Great! Now click the <strong>Add Question to Survey</strong> button to save the fourth multiple choice question.</MudText>
                             </DemoPopup>
                         <MudTextField id="Choice" Label="Choice Text" @bind-Value="NewChoiceOptionText" Variant="Variant.Filled" Lines="1" MaxLines="5" AutoGrow="true" Immediate="true" Counter="50" MaxLength="50" ReadOnly="@IsDemoUser" />
 
