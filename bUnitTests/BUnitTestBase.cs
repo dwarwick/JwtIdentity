@@ -1,10 +1,7 @@
 using Blazored.LocalStorage;
 using Bunit;
-using Bunit.TestDoubles;
-using JwtIdentity.Client.Pages.Auth;
 using JwtIdentity.Client.Services;
-using JwtIdentity.Client.Services.Base;
-using JwtIdentity.Client.Tests.Stubs; // adjust namespace if different
+using JwtIdentity.Client.Tests.Stubs; 
 using JwtIdentity.Common.Helpers;
 using JwtIdentity.Common.ViewModels;
 using Microsoft.AspNetCore.Components;
@@ -17,10 +14,6 @@ using MudBlazor.Services;
 using NUnit.Framework;
 using Syncfusion.Blazor;
 using Syncfusion.Blazor.Diagram;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
 
 namespace JwtIdentity.BunitTests
 {
