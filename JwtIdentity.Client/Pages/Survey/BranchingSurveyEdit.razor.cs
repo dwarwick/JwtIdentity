@@ -39,18 +39,22 @@ namespace JwtIdentity.Client.Pages.Survey
             var userName = authState.User.Identity?.Name ?? string.Empty;
             IsDemoUser = userName.StartsWith("DemoUser") && userName.EndsWith("@surveyshark.site");
 
-            // Get demo type from query parameters
+            // Get demo type and step from query parameters
             var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
             var queryParams = QueryHelpers.ParseQuery(uri.Query);
             if (queryParams.TryGetValue("DemoType", out var demoType))
             {
                 DemoType = demoType.ToString();
             }
+            if (queryParams.TryGetValue("DemoStep", out var demoStep) && int.TryParse(demoStep, out var step))
+            {
+                DemoStep = step;
+            }
 
             await LoadData();
 
-            // If this is a branching demo and we don't have groups yet, create them automatically
-            if (IsDemoUser && DemoType == "branching" && QuestionGroups.Count == 1)
+            // If this is a branching demo and we don't have groups yet, initialize demo
+            if (IsDemoUser && DemoType == "branching" && QuestionGroups.Count == 1 && DemoStep == 0)
             {
                 InitializeBranchingDemo();
             }
