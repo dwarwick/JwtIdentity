@@ -4,8 +4,9 @@ using Bunit.TestDoubles;
 using JwtIdentity.Client.Pages.Auth;
 using JwtIdentity.Client.Services;
 using JwtIdentity.Client.Services.Base;
-using JwtIdentity.Common.ViewModels;
+using JwtIdentity.Client.Tests.Stubs; // adjust namespace if different
 using JwtIdentity.Common.Helpers;
+using JwtIdentity.Common.ViewModels;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,12 +14,12 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Moq;
 using MudBlazor;
 using MudBlazor.Services;
+using NUnit.Framework;
 using Syncfusion.Blazor;
+using Syncfusion.Blazor.Diagram;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Syncfusion.Blazor.Diagram;
-using JwtIdentity.Client.Tests.Stubs; // adjust namespace if different
 
 
 namespace JwtIdentity.BunitTests
@@ -28,9 +29,11 @@ namespace JwtIdentity.BunitTests
     /// </summary>
     public class BUnitTestBase : IDisposable
     {
-        protected TestContext Context { get; private set; }
-        protected MockNavigationManager NavManager { get; private set; }
+        private IRenderedComponent<MudPopoverProvider> popoverProvider;
 
+        protected Bunit.TestContext Context { get; private set; }
+        protected MockNavigationManager NavManager { get; private set; }
+        
         // Core services for tests
         protected Mock<IAuthService> AuthServiceMock { get; private set; }
         protected Mock<ILocalStorageService> LocalStorageMock { get; private set; }
@@ -44,7 +47,7 @@ namespace JwtIdentity.BunitTests
         public BUnitTestBase()
         {
             // Create test context
-            Context = new TestContext();
+            Context = new Bunit.TestContext();
 
             // Substitute all SfDiagramComponent instances with our stub
             Context.ComponentFactories.Add<SfDiagramComponent, SfDiagramComponentStub>();
@@ -83,8 +86,11 @@ namespace JwtIdentity.BunitTests
             Context.Services.AddSingleton<JwtIdentity.Client.Helpers.IUtility>(new Mock<JwtIdentity.Client.Helpers.IUtility>().Object);
             Context.Services.AddSingleton<MudBlazor.IDialogService>(new Mock<MudBlazor.IDialogService>().Object);
 
+            // Let unconfigured JS calls return default values instead of throwing
+            Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
             // Register all MudBlazor services (including InternalMudLocalizer) for bUnit
-            Context.Services.AddMudServices();
+            Context.Services.AddMudServices();            
 
             // Register Syncfusion Blazor services
             Context.Services.AddSyncfusionBlazor()
@@ -93,10 +99,8 @@ namespace JwtIdentity.BunitTests
 
             Context.JSInterop.Mode = JSRuntimeMode.Loose;
 
-
-            // MudPopoverProvider doesn't wrap child content, so we render it separately
-            // This prevents "Missing <MudPopoverProvider />" errors in components that use popovers
-            Context.RenderComponent<MudBlazor.MudPopoverProvider>();
+            // 2. Render the global popover provider
+            popoverProvider = Context.RenderComponent<MudPopoverProvider>();
         }
 
         public void Dispose()
@@ -143,6 +147,19 @@ namespace JwtIdentity.BunitTests
                     It.Is<string>(s => s.Contains($"/QuestionAndOptions/{question.Id}"))))
                     .ReturnsAsync(tfQuestion);
             }
+        }
+
+        protected void AssertPopoverText(string expectedText)
+        {
+            // Wait for the popover to show up in the provider
+            popoverProvider.WaitForAssertion(() =>
+            {
+                Assert.That(
+                    popoverProvider.Markup,
+                    Does.Contain(expectedText)
+                );
+            }, timeout: TimeSpan.FromSeconds(5));
+
         }
 
         // Fake implementation for DI

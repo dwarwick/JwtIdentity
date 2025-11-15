@@ -46,11 +46,11 @@ namespace JwtIdentity.BunitTests
                     // AI-generated text question
                     new TextQuestionViewModel { Id = 1, Text = "AI Q1", QuestionNumber = 1, GroupId = 0 },
                     // 4 Multiple Choice questions
-                    new MultipleChoiceQuestionViewModel 
-                    { 
-                        Id = 2, 
-                        Text = "Which product did you purchase?", 
-                        QuestionNumber = 2, 
+                    new MultipleChoiceQuestionViewModel
+                    {
+                        Id = 2,
+                        Text = "Which product did you purchase?",
+                        QuestionNumber = 2,
                         GroupId = 0,
                         QuestionType = QuestionType.MultipleChoice,
                         Options = new List<ChoiceOptionViewModel>
@@ -60,11 +60,11 @@ namespace JwtIdentity.BunitTests
                             new() { Id = 3, OptionText = "Product C", Order = 2 }
                         }
                     },
-                    new MultipleChoiceQuestionViewModel 
-                    { 
-                        Id = 3, 
-                        Text = "How satisfied are you with our customer service?", 
-                        QuestionNumber = 3, 
+                    new MultipleChoiceQuestionViewModel
+                    {
+                        Id = 3,
+                        Text = "How satisfied are you with our customer service?",
+                        QuestionNumber = 3,
                         GroupId = 0,
                         QuestionType = QuestionType.MultipleChoice,
                         Options = new List<ChoiceOptionViewModel>
@@ -76,11 +76,11 @@ namespace JwtIdentity.BunitTests
                             new() { Id = 8, OptionText = "Very Dissatisfied", Order = 4 }
                         }
                     },
-                    new MultipleChoiceQuestionViewModel 
-                    { 
-                        Id = 4, 
-                        Text = "Would you recommend this product to others?", 
-                        QuestionNumber = 4, 
+                    new MultipleChoiceQuestionViewModel
+                    {
+                        Id = 4,
+                        Text = "Would you recommend this product to others?",
+                        QuestionNumber = 4,
                         GroupId = 0,
                         QuestionType = QuestionType.MultipleChoice,
                         Options = new List<ChoiceOptionViewModel>
@@ -92,11 +92,11 @@ namespace JwtIdentity.BunitTests
                             new() { Id = 13, OptionText = "Definitely not", Order = 4 }
                         }
                     },
-                    new MultipleChoiceQuestionViewModel 
-                    { 
-                        Id = 5, 
-                        Text = "Did you find the product easy to use?", 
-                        QuestionNumber = 5, 
+                    new MultipleChoiceQuestionViewModel
+                    {
+                        Id = 5,
+                        Text = "Did you find the product easy to use?",
+                        QuestionNumber = 5,
                         GroupId = 0,
                         QuestionType = QuestionType.MultipleChoice,
                         Options = new List<ChoiceOptionViewModel>
@@ -107,11 +107,11 @@ namespace JwtIdentity.BunitTests
                         }
                     },
                     // Last text question
-                    new TextQuestionViewModel 
-                    { 
-                        Id = 6, 
-                        Text = "Please share any additional feedback or comments.", 
-                        QuestionNumber = 6, 
+                    new TextQuestionViewModel
+                    {
+                        Id = 6,
+                        Text = "Please share any additional feedback or comments.",
+                        QuestionNumber = 6,
                         GroupId = 0,
                         IsLastQuestion = true
                     }
@@ -166,7 +166,7 @@ namespace JwtIdentity.BunitTests
         {
             // Arrange
             SetupStandardMocks();
-            
+
             var newGroup = new QuestionGroupViewModel
             {
                 Id = 1,
@@ -184,10 +184,13 @@ namespace JwtIdentity.BunitTests
             var cut = Context.RenderComponent<BranchingSurveyEdit>(parameters => parameters
                 .Add(p => p.SurveyId, "2")
             );
-            
+
             // Wait for loading to complete
             cut.WaitForState(() => cut.Markup.Contains("Add Group"), timeout: TimeSpan.FromSeconds(5));
 
+            // Wait for the popover to show up in the provider
+            AssertPopoverText("First, let's create a new question group. Groups allow you to organize questions that will be shown together based on branching logic.");
+            
             // Assert - Prompt to add first group at step 1
             Assert.That(cut.Markup, Does.Contain("Add Group"));
         }
@@ -197,7 +200,7 @@ namespace JwtIdentity.BunitTests
         {
             // Arrange
             SetupStandardMocks();
-            
+
             var newGroup = new QuestionGroupViewModel
             {
                 Id = 1,
@@ -215,7 +218,7 @@ namespace JwtIdentity.BunitTests
             var cut = Context.RenderComponent<BranchingSurveyEdit>(parameters => parameters
                 .Add(p => p.SurveyId, "2")
             );
-            
+
             // Wait for loading
             cut.WaitForState(() => cut.Markup.Contains("Add Group"), timeout: TimeSpan.FromSeconds(5));
 
@@ -303,7 +306,7 @@ namespace JwtIdentity.BunitTests
             var cut = Context.RenderComponent<BranchingSurveyEdit>(parameters => parameters
                 .Add(p => p.SurveyId, "2")
             );
-            
+
             var backButton = cut.FindAll("button").FirstOrDefault(b => b.TextContent.Contains("Back to Edit Survey"));
             backButton?.Click();
 
@@ -363,7 +366,7 @@ namespace JwtIdentity.BunitTests
             }, "TestAuth"));
             var authState = new AuthenticationState(regularUser);
             AuthStateProviderMock.Setup(x => x.GetAuthenticationStateAsync()).ReturnsAsync(authState);
-            
+
             ApiServiceMock.Setup(x => x.GetAsync<SurveyViewModel>(It.IsAny<string>()))
                 .ReturnsAsync(_testSurvey);
             ApiServiceMock.Setup(x => x.GetAsync<List<QuestionGroupViewModel>>(It.IsAny<string>()))
@@ -397,7 +400,7 @@ namespace JwtIdentity.BunitTests
                     SubmitAfterGroup = true
                 }
             };
-            
+
             ApiServiceMock.Setup(x => x.GetAsync<SurveyViewModel>(It.IsAny<string>()))
                 .ReturnsAsync(_testSurvey);
             ApiServiceMock.Setup(x => x.GetAsync<List<QuestionGroupViewModel>>(It.IsAny<string>()))
