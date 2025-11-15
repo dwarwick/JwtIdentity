@@ -14,6 +14,9 @@ namespace JwtIdentity.Client.Pages.Survey
         protected bool IsDemoUser { get; set; }
         protected int DemoStep { get; set; }
         protected string DemoType { get; set; }
+        protected Origin AnchorOrigin { get; set; } = Origin.BottomRight;
+        protected Origin TransformOrigin { get; set; } = Origin.TopLeft;
+        protected bool ShowDemoStep(int step) => IsDemoUser && DemoType == "branching" && DemoStep == step;
 
         // Track True/False branching separately since TrueFalse doesn't have options
         protected Dictionary<int, int?> TrueBranch { get; set; } = new();
@@ -49,7 +52,7 @@ namespace JwtIdentity.Client.Pages.Survey
             // If this is a branching demo and we don't have groups yet, create them automatically
             if (IsDemoUser && DemoType == "branching" && QuestionGroups.Count == 1)
             {
-                await InitializeBranchingDemo();
+                InitializeBranchingDemo();
             }
 
             BuildSyncfusionDiagram();
@@ -170,107 +173,14 @@ namespace JwtIdentity.Client.Pages.Survey
             }
         }
 
-        protected async Task InitializeBranchingDemo()
+        protected void InitializeBranchingDemo()
         {
             try
             {
-                // Step 1: Create two question groups (Group 1 and Group 2)
-                var group1 = new QuestionGroupViewModel
-                {
-                    SurveyId = Survey.Id,
-                    GroupNumber = 1,
-                    GroupName = "Product Feedback",
-                    SubmitAfterGroup = true
-                };
-                var response1 = await ApiService.PostAsync(ApiEndpoints.QuestionGroup, group1);
-                if (response1 != null)
-                {
-                    QuestionGroups.Add(response1);
-                    DemoStep = 1;
-                }
-
-                var group2 = new QuestionGroupViewModel
-                {
-                    SurveyId = Survey.Id,
-                    GroupNumber = 2,
-                    GroupName = "Service Improvement",
-                    SubmitAfterGroup = true
-                };
-                var response2 = await ApiService.PostAsync(ApiEndpoints.QuestionGroup, group2);
-                if (response2 != null)
-                {
-                    QuestionGroups.Add(response2);
-                    DemoStep = 2;
-                }
-
-                // Step 2: Move questions to appropriate groups
-                // Find the branching questions (the last 4 questions should be the ones we created)
-                var allQuestions = Survey.Questions.OrderByDescending(q => q.QuestionNumber).ToList();
-                if (allQuestions.Count >= 4)
-                {
-                    // Move 3rd branching question (second-to-last) to Group 1
-                    var questionForGroup1 = allQuestions[1];
-                    await MoveQuestionToGroup(questionForGroup1, 1);
-                    DemoStep = 3;
-
-                    // Move 4th branching question (last) to Group 2
-                    var questionForGroup2 = allQuestions[0];
-                    await MoveQuestionToGroup(questionForGroup2, 2);
-                    DemoStep = 4;
-                }
-
-                // Step 3: Mark the last text question as IsLastQuestion
-                var lastTextQuestion = Survey.Questions
-                    .Where(q => q.QuestionType == QuestionType.Text && q.GroupId == 0)
-                    .OrderByDescending(q => q.QuestionNumber)
-                    .FirstOrDefault();
-                
-                if (lastTextQuestion != null && !lastTextQuestion.IsLastQuestion)
-                {
-                    await ApiService.PostAsync<object, object>($"{ApiEndpoints.Question}/UpdateIsLastQuestion", new
-                    {
-                        QuestionId = lastTextQuestion.Id,
-                        IsLastQuestion = true
-                    });
-                    lastTextQuestion.IsLastQuestion = true;
-                    DemoStep = 5;
-                }
-
-                // Step 4: Create branching rules
-                // Find the first two branching questions in Group 0 (multiple choice questions we created)
-                var branchingQuestions = Survey.Questions
-                    .Where(q => q.GroupId == 0 && q.QuestionType == QuestionType.MultipleChoice)
-                    .OrderBy(q => q.QuestionNumber)
-                    .Take(2)
-                    .Cast<MultipleChoiceQuestionViewModel>()
-                    .ToList();
-
-                if (branchingQuestions.Count >= 2)
-                {
-                    // First branching question - branch first option to Group 1
-                    var firstQuestion = branchingQuestions[0];
-                    if (firstQuestion.Options != null && firstQuestion.Options.Count > 0)
-                    {
-                        var firstOption = firstQuestion.Options.First();
-                        firstOption.BranchToGroupId = 1;
-                        await UpdateChoiceOptionBranch(firstOption);
-                        DemoStep = 6;
-                    }
-
-                    // Second branching question - branch first option to Group 2
-                    var secondQuestion = branchingQuestions[1];
-                    if (secondQuestion.Options != null && secondQuestion.Options.Count > 0)
-                    {
-                        var firstOption = secondQuestion.Options.First();
-                        firstOption.BranchToGroupId = 2;
-                        await UpdateChoiceOptionBranch(firstOption);
-                        DemoStep = 7;
-                    }
-                }
-
-                _ = Snackbar.Add("Branching demo initialized", Severity.Success);
-                await LoadData(); // Reload to refresh everything
-                DemoStep = 8; // Ready to return to edit page
+                // For the guided demo, we just start at step 0
+                // The user will be guided through the process
+                DemoStep = 0;
+                StateHasChanged();
             }
             catch (Exception ex)
             {
@@ -298,6 +208,20 @@ namespace JwtIdentity.Client.Pages.Survey
                     QuestionGroups.Add(response);
                     _ = Snackbar.Add($"Added Group {newGroup.GroupNumber}", Severity.Success);
                     await RefreshDiagram();
+                    
+                    // Advance demo step
+                    if (IsDemoUser && DemoType == "branching")
+                    {
+                        if (DemoStep == 1)
+                        {
+                            DemoStep = 2; // First group created
+                        }
+                        else if (DemoStep == 5)
+                        {
+                            DemoStep = 6; // Second group created
+                        }
+                    }
+                    
                     StateHasChanged();
                 }
                 else
@@ -453,6 +377,19 @@ namespace JwtIdentity.Client.Pages.Survey
                 {
                     _ = Snackbar.Add("Group updated", Severity.Success);
                     await RefreshDiagram();
+                    
+                    // Advance demo step when groups are named appropriately
+                    if (IsDemoUser && DemoType == "branching")
+                    {
+                        if (DemoStep == 3 && group.GroupNumber == 1 && !string.IsNullOrWhiteSpace(group.GroupName))
+                        {
+                            DemoStep = 4; // First group named
+                        }
+                        else if (DemoStep == 7 && group.GroupNumber == 2 && !string.IsNullOrWhiteSpace(group.GroupName))
+                        {
+                            DemoStep = 8; // Second group named
+                        }
+                    }
                 }
                 else
                 {
@@ -492,6 +429,45 @@ namespace JwtIdentity.Client.Pages.Survey
                 {
                     _ = Snackbar.Add($"Moved question to Group {targetGroupId}", Severity.Success);
                     await RefreshDiagram();
+                    
+                    // Advance demo step when appropriate questions are moved
+                    if (IsDemoUser && DemoType == "branching")
+                    {
+                        // Get the questions by question number to identify which one was moved
+                        var movedQuestion = Survey.Questions.FirstOrDefault(q => q.Id == question.Id);
+                        if (movedQuestion != null)
+                        {
+                            // Check if this is the 3rd MC question (Q3) being moved to Group 1
+                            if (DemoStep == 9 && targetGroupId == 1 && 
+                                movedQuestion.QuestionType == QuestionType.MultipleChoice)
+                            {
+                                var mcQuestions = Survey.Questions
+                                    .Where(q => q.QuestionType == QuestionType.MultipleChoice)
+                                    .OrderBy(q => q.QuestionNumber)
+                                    .ToList();
+                                // Check if this is the 3rd MC question
+                                if (mcQuestions.Count >= 3 && mcQuestions[2].Id == question.Id)
+                                {
+                                    DemoStep = 10; // Q3 moved to Group 1
+                                }
+                            }
+                            // Check if this is the 4th MC question (Q4) being moved to Group 2
+                            else if (DemoStep == 11 && targetGroupId == 2 && 
+                                movedQuestion.QuestionType == QuestionType.MultipleChoice)
+                            {
+                                var mcQuestions = Survey.Questions
+                                    .Where(q => q.QuestionType == QuestionType.MultipleChoice)
+                                    .OrderBy(q => q.QuestionNumber)
+                                    .ToList();
+                                // Check if this is the 4th MC question
+                                if (mcQuestions.Count >= 4 && mcQuestions[3].Id == question.Id)
+                                {
+                                    DemoStep = 12; // Q4 moved to Group 2
+                                }
+                            }
+                        }
+                    }
+                    
                     StateHasChanged();
                 }
                 else
@@ -520,6 +496,48 @@ namespace JwtIdentity.Client.Pages.Survey
                 {
                     _ = Snackbar.Add("Branching updated", Severity.Success);
                     await RefreshDiagram();
+                    
+                    // Advance demo step when appropriate branching rules are configured
+                    if (IsDemoUser && DemoType == "branching")
+                    {
+                        // Find which question this option belongs to
+                        foreach (var question in Survey.Questions)
+                        {
+                            if (question.QuestionType == QuestionType.MultipleChoice)
+                            {
+                                var mcQuestion = question as MultipleChoiceQuestionViewModel;
+                                if (mcQuestion?.Options != null && mcQuestion.Options.Any(o => o.Id == option.Id))
+                                {
+                                    var mcQuestions = Survey.Questions
+                                        .Where(q => q.QuestionType == QuestionType.MultipleChoice && q.GroupId == 0)
+                                        .OrderBy(q => q.QuestionNumber)
+                                        .ToList();
+                                    
+                                    // Check if this is Q1 (first MC question in Group 0) being configured to branch to Group 1
+                                    if (DemoStep == 13 && mcQuestions.Count >= 1 && mcQuestions[0].Id == question.Id &&
+                                        option.BranchToGroupId == 1)
+                                    {
+                                        DemoStep = 14; // Q1 branching configured
+                                    }
+                                    // Check if this is Q2 (second MC question in Group 0) being configured to branch to Group 2
+                                    else if (DemoStep == 15 && mcQuestions.Count >= 2 && mcQuestions[1].Id == question.Id &&
+                                        option.BranchToGroupId == 2)
+                                    {
+                                        DemoStep = 16; // Q2 branching configured
+                                    }
+                                    break;
+                                }
+                            }
+                            else if (question.QuestionType == QuestionType.SelectAllThatApply)
+                            {
+                                var saQuestion = question as SelectAllThatApplyQuestionViewModel;
+                                if (saQuestion?.Options != null && saQuestion.Options.Any(o => o.Id == option.Id))
+                                {
+                                    break;
+                                }
+                            }
+                        }
+                    }
                 }
                 else
                 {
@@ -593,6 +611,51 @@ namespace JwtIdentity.Client.Pages.Survey
                 
                 // Force another state update after layout
                 await InvokeAsync(StateHasChanged);
+            }
+        }
+
+        protected void NextDemoStep()
+        {
+            if (!IsDemoUser || DemoType != "branching") return;
+
+            switch (DemoStep)
+            {
+                case 0:
+                    // After initial welcome, prompt to create first group
+                    DemoStep = 1;
+                    break;
+                case 2:
+                    // After creating first group, prompt to name it
+                    DemoStep = 3;
+                    break;
+                case 4:
+                    // After naming first group, prompt to create second group
+                    DemoStep = 5;
+                    break;
+                case 6:
+                    // After creating second group, prompt to name it
+                    DemoStep = 7;
+                    break;
+                case 8:
+                    // After naming second group, prompt to move first MC question to Group 1
+                    DemoStep = 9;
+                    break;
+                case 10:
+                    // After moving first question, prompt to move second MC question to Group 2
+                    DemoStep = 11;
+                    break;
+                case 12:
+                    // After moving second question, prompt to configure branching for Q1
+                    DemoStep = 13;
+                    break;
+                case 14:
+                    // After configuring first branching rule, prompt to configure Q2
+                    DemoStep = 15;
+                    break;
+                case 16:
+                    // After configuring second branching rule, we're done! Go back to Edit page
+                    DemoStep = 17;
+                    break;
             }
         }
 
@@ -967,6 +1030,104 @@ namespace JwtIdentity.Client.Pages.Survey
 
             // From non-default groups, cannot branch back to Group 0
             return toGroupNumber != 0;
+        }
+
+        /// <summary>
+        /// Determines if the "Add Group" button should be disabled for the demo.
+        /// </summary>
+        protected bool IsAddGroupDisabled()
+        {
+            if (!IsDemoUser || DemoType != "branching") return false;
+            
+            // Allow at steps 1 (create first group) and 5 (create second group)
+            return DemoStep != 1 && DemoStep != 5;
+        }
+
+        /// <summary>
+        /// Determines if a group name field should be read-only for the demo.
+        /// </summary>
+        protected bool IsGroupNameReadOnly(int groupNumber)
+        {
+            if (!IsDemoUser || DemoType != "branching") return false;
+            
+            // Allow editing Group 1 at step 3, Group 2 at step 7
+            if (groupNumber == 1 && DemoStep == 3) return false;
+            if (groupNumber == 2 && DemoStep == 7) return false;
+            
+            return true;
+        }
+
+        /// <summary>
+        /// Determines if a question's group selector should be disabled for the demo.
+        /// </summary>
+        protected bool IsQuestionGroupSelectorDisabled(QuestionViewModel question)
+        {
+            if (!IsDemoUser || DemoType != "branching") return false;
+            if (question.IsLastQuestion) return true; // Always disabled for last questions
+            
+            var mcQuestions = Survey.Questions
+                .Where(q => q.QuestionType == QuestionType.MultipleChoice)
+                .OrderBy(q => q.QuestionNumber)
+                .ToList();
+            
+            // At step 9, only allow moving Q3 (3rd MC question)
+            if (DemoStep == 9 && mcQuestions.Count >= 3 && mcQuestions[2].Id == question.Id)
+                return false;
+            
+            // At step 11, only allow moving Q4 (4th MC question)
+            if (DemoStep == 11 && mcQuestions.Count >= 4 && mcQuestions[3].Id == question.Id)
+                return false;
+            
+            return true;
+        }
+
+        /// <summary>
+        /// Determines if a branching rule selector should be disabled for the demo.
+        /// </summary>
+        protected bool IsBranchingSelectorDisabled(QuestionViewModel question, ChoiceOptionViewModel option)
+        {
+            if (!IsDemoUser || DemoType != "branching") return false;
+            
+            var mcQuestions = Survey.Questions
+                .Where(q => q.QuestionType == QuestionType.MultipleChoice && q.GroupId == 0)
+                .OrderBy(q => q.QuestionNumber)
+                .ToList();
+            
+            // At step 13, only allow configuring first option of Q1 (first MC question in Group 0)
+            if (DemoStep == 13 && mcQuestions.Count >= 1 && mcQuestions[0].Id == question.Id)
+            {
+                var mcQuestion = question as MultipleChoiceQuestionViewModel;
+                return mcQuestion?.Options?.FirstOrDefault()?.Id != option.Id;
+            }
+            
+            // At step 15, only allow configuring first option of Q2 (second MC question in Group 0)
+            if (DemoStep == 15 && mcQuestions.Count >= 2 && mcQuestions[1].Id == question.Id)
+            {
+                var mcQuestion = question as MultipleChoiceQuestionViewModel;
+                return mcQuestion?.Options?.FirstOrDefault()?.Id != option.Id;
+            }
+            
+            return true;
+        }
+
+        /// <summary>
+        /// Determines if expansion panels should be expanded for the demo.
+        /// </summary>
+        protected bool ShouldExpandPanel(string panelName)
+        {
+            if (!IsDemoUser || DemoType != "branching") return false;
+            
+            switch (panelName)
+            {
+                case "Groups":
+                    // Expand for group creation and naming steps
+                    return DemoStep >= 1 && DemoStep <= 8;
+                case "Branching":
+                    // Expand for question movement and branching configuration steps
+                    return DemoStep >= 9;
+                default:
+                    return false;
+            }
         }
     }
 }
