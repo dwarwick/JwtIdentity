@@ -59,10 +59,11 @@ namespace JwtIdentity.BunitTests
 
             // Act
             var cut = Context.RenderComponent<EditSurvey>(parameters => parameters
-                .Add(p => p.SurveyId, "11111111-1111-1111-1111-111111111111"));
+                .Add(p => p.SurveyId, "1"));
 
-            // Assert - Step 0: Initial page load with questions panel
-            Assert.That(cut.Markup, Does.Contain("Click each question then scroll down to inspect it"));
+            // Assert - Step 0/1: Shows review alert with Accept Questions button
+            Assert.That(cut.Markup, Does.Contain("Please review the AI generated questions"));
+            Assert.That(cut.Markup, Does.Contain("Accept Questions"));
         }
 
         [Test]
@@ -80,15 +81,16 @@ namespace JwtIdentity.BunitTests
                 });
 
             var cut = Context.RenderComponent<EditSurvey>(parameters => parameters
-                .Add(p => p.SurveyId, "11111111-1111-1111-1111-111111111111"));
+                .Add(p => p.SurveyId, "1"));
 
             // Act - Click Accept Questions button
             var acceptButton = cut.Find("#AcceptQuestionsBtn");
             await acceptButton.ClickAsync(new Microsoft.AspNetCore.Components.Web.MouseEventArgs());
             cut.WaitForState(() => !cut.Markup.Contains("Please review the AI generated questions"), timeout: TimeSpan.FromSeconds(5));
 
-            // Assert - Step 2: Questions accepted, can now add questions
+            // Assert - Step 2: Questions accepted, review alert no longer shows
             Assert.That(cut.Markup, Does.Not.Contain("Please review the AI generated questions"));
+            Assert.That(cut.Markup, Does.Contain("Select the Question Type"));
         }
 
         [Test]
@@ -102,17 +104,11 @@ namespace JwtIdentity.BunitTests
 
             // Act
             var cut = Context.RenderComponent<EditSurvey>(parameters => parameters
-                .Add(p => p.SurveyId, "11111111-1111-1111-1111-111111111111"));
+                .Add(p => p.SurveyId, "1"));
 
-            // Click a question to select it (simulating step 2 → 3 transition)
-            var questionElements = cut.FindAll(".question-panel");
-            if (questionElements.Count > 0)
-            {
-                questionElements[0].Click();
-            }
-
-            // Assert - Questions can be interacted with
+            // Assert - Can create new question
             Assert.That(cut.Markup, Does.Contain("Select the Question Type"));
+            Assert.That(cut.Markup, Does.Contain("Multiple Choice"));
         }
 
         [Test]
@@ -126,7 +122,7 @@ namespace JwtIdentity.BunitTests
 
             // Act
             var cut = Context.RenderComponent<EditSurvey>(parameters => parameters
-                .Add(p => p.SurveyId, "11111111-1111-1111-1111-111111111111"));
+                .Add(p => p.SurveyId, "1"));
 
             // Assert - Can create new question
             Assert.That(cut.Markup, Does.Contain("Select the Question Type"));
@@ -155,7 +151,7 @@ namespace JwtIdentity.BunitTests
 
             // Act
             var cut = Context.RenderComponent<EditSurvey>(parameters => parameters
-                .Add(p => p.SurveyId, "11111111-1111-1111-1111-111111111111"));
+                .Add(p => p.SurveyId, "1"));
 
             // Assert - Publish button should be visible
             Assert.That(cut.Markup, Does.Contain("Publish Survey"));
@@ -171,7 +167,7 @@ namespace JwtIdentity.BunitTests
 
             // Act
             var cut = Context.RenderComponent<EditSurvey>(parameters => parameters
-                .Add(p => p.SurveyId, "11111111-1111-1111-1111-111111111111"));
+                .Add(p => p.SurveyId, "1"));
 
             // Assert - Configure Branching button should NOT be highlighted in linear demo
             Assert.That(cut.Markup, Does.Contain("Configure Branching"));

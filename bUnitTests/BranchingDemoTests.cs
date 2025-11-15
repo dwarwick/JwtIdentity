@@ -56,10 +56,10 @@ namespace JwtIdentity.BunitTests
 
             // Act
             var cut = Context.RenderComponent<EditSurvey>(parameters => parameters
-                .Add(p => p.SurveyId, "22222222-2222-2222-2222-222222222222"));
+                .Add(p => p.SurveyId, "2"));
 
             // Assert - Step 0/1: Review AI questions
-            Assert.That(cut.Markup, Does.Contain("Click each question then scroll down to inspect it"));
+            Assert.That(cut.Markup, Does.Contain("Please review the AI generated questions"));
         }
 
         [Test]
@@ -77,7 +77,7 @@ namespace JwtIdentity.BunitTests
                 });
 
             var cut = Context.RenderComponent<EditSurvey>(parameters => parameters
-                .Add(p => p.SurveyId, "22222222-2222-2222-2222-222222222222"));
+                .Add(p => p.SurveyId, "2"));
 
             // Act - Accept questions
             var acceptButton = cut.Find("#AcceptQuestionsBtn");
@@ -86,6 +86,7 @@ namespace JwtIdentity.BunitTests
 
             // Assert - Move to step 2
             Assert.That(cut.Markup, Does.Not.Contain("Please review the AI generated questions"));
+            Assert.That(cut.Markup, Does.Contain("Select the Question Type"));
         }
 
         [Test]
