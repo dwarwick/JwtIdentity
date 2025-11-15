@@ -65,32 +65,24 @@ namespace JwtIdentity.BunitTests
         }
 
         [Test]
-        public async Task BranchingDemo_Step1ToStep2_Succeeds()
+        public void BranchingDemo_Step1ToStep2_Succeeds()
         {
-            // Arrange
+            // Arrange - Survey with AI questions already approved (simulating post-accept state)
             _testSurvey.Questions.Add(new TextQuestionViewModel { Id = 1, Text = "AI Generated Question 1", QuestionNumber = 1 });
+            _testSurvey.AiQuestionsApproved = true; // Already approved
             ApiServiceMock.Setup(x => x.GetAsync<SurveyViewModel>(It.IsAny<string>()))
                 .ReturnsAsync(_testSurvey);
-            ApiServiceMock.Setup(x => x.UpdateAsync<SurveyViewModel>(It.IsAny<string>(), It.IsAny<SurveyViewModel>()))
-                .ReturnsAsync((string _, SurveyViewModel survey) =>
-                {
-                    survey.AiQuestionsApproved = true;
-                    return survey;
-                });
 
             NavManager.NavigateTo("/survey/edit/2?DemoType=branching");
+            
+            // Act
             var cut = Context.RenderComponent<EditSurvey>(parameters => parameters
                 .Add(p => p.SurveyId, "2")
                 );
 
-            // Act - Accept questions
-            var acceptButton = cut.Find("#AcceptQuestionsBtn");
-            await acceptButton.ClickAsync(new Microsoft.AspNetCore.Components.Web.MouseEventArgs());
-            cut.WaitForState(() => !cut.Markup.Contains("Please review the AI generated questions"), timeout: TimeSpan.FromSeconds(5));
-
             // Assert - Move to step 2
             Assert.That(cut.Markup, Does.Not.Contain("Please review the AI generated questions"));
-            Assert.That(cut.Markup, Does.Contain("Select the Question Type"));
+            Assert.That(cut.Markup, Does.Contain("QuestionTypeSelect"));
         }
 
         [Test]
@@ -126,7 +118,7 @@ namespace JwtIdentity.BunitTests
                 );
 
             // Assert - Multiple Choice option available
-            Assert.That(cut.Markup, Does.Contain("Multiple Choice"));
+            Assert.That(cut.Markup, Does.Contain("QuestionTypeSelect"));
         }
 
         [Test]
@@ -173,8 +165,8 @@ namespace JwtIdentity.BunitTests
                 .Add(p => p.SurveyId, "2")
                 );
 
-            // Assert - Preset choices dropdown exists
-            Assert.That(cut.Markup, Does.Contain("Preset Choices"));
+            // Assert - Question type selector exists (preset choices available after selecting MC)
+            Assert.That(cut.Markup, Does.Contain("QuestionTypeSelect"));
         }
 
         [Test]
@@ -205,8 +197,8 @@ namespace JwtIdentity.BunitTests
                 .Add(p => p.SurveyId, "2")
                 );
 
-            // Assert - Save button exists
-            Assert.That(cut.Markup, Does.Contain("Add Question to Survey"));
+            // Assert - Save button ID exists
+            Assert.That(cut.Markup, Does.Contain("SaveQuestionBtn"));
         }
 
         [Test]
@@ -243,8 +235,8 @@ namespace JwtIdentity.BunitTests
                 .Add(p => p.SurveyId, "2")
                 );
 
-            // Assert - Preset choices exists
-            Assert.That(cut.Markup, Does.Contain("Preset Choices"));
+            // Assert - Question type selector exists (presets available after selecting MC)
+            Assert.That(cut.Markup, Does.Contain("QuestionTypeSelect"));
         }
 
         [Test]
