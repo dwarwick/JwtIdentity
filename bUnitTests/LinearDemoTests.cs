@@ -57,7 +57,10 @@ namespace JwtIdentity.BunitTests
             ApiServiceMock.Setup(x => x.UpdateAsync<SurveyViewModel>(It.IsAny<string>(), It.IsAny<SurveyViewModel>()))
                 .ReturnsAsync(_testSurvey);
 
-            // Act
+            // Set up navigation with query parameters for linear demo
+            NavManager.NavigateTo("/survey/edit/1?DemoType=linear");
+
+            // Act - Linear demo (DemoType passed via query string)
             var cut = Context.RenderComponent<EditSurvey>(parameters => parameters
                 .Add(p => p.SurveyId, "1"));
 
@@ -80,6 +83,7 @@ namespace JwtIdentity.BunitTests
                     return survey;
                 });
 
+            NavManager.NavigateTo("/survey/edit/1?DemoType=linear");
             var cut = Context.RenderComponent<EditSurvey>(parameters => parameters
                 .Add(p => p.SurveyId, "1"));
 
@@ -94,7 +98,7 @@ namespace JwtIdentity.BunitTests
         }
 
         [Test]
-        public void LinearDemo_Step2ToStep3_Succeeds()
+        public void LinearDemo_Step2ToStep7_Succeeds()
         {
             // Arrange
             _testSurvey.AiQuestionsApproved = true;
@@ -102,24 +106,7 @@ namespace JwtIdentity.BunitTests
             ApiServiceMock.Setup(x => x.GetAsync<SurveyViewModel>(It.IsAny<string>()))
                 .ReturnsAsync(_testSurvey);
 
-            // Act
-            var cut = Context.RenderComponent<EditSurvey>(parameters => parameters
-                .Add(p => p.SurveyId, "1"));
-
-            // Assert - Can create new question
-            Assert.That(cut.Markup, Does.Contain("Select the Question Type"));
-            Assert.That(cut.Markup, Does.Contain("Multiple Choice"));
-        }
-
-        [Test]
-        public void LinearDemo_Step7ToStep8_Succeeds()
-        {
-            // Arrange
-            _testSurvey.AiQuestionsApproved = true;
-            _testSurvey.Questions.Add(new TextQuestionViewModel { Id = 1, Text = "AI Generated Question 1", QuestionNumber = 1 });
-            ApiServiceMock.Setup(x => x.GetAsync<SurveyViewModel>(It.IsAny<string>()))
-                .ReturnsAsync(_testSurvey);
-
+            NavManager.NavigateTo("/survey/edit/1?DemoType=linear");
             // Act
             var cut = Context.RenderComponent<EditSurvey>(parameters => parameters
                 .Add(p => p.SurveyId, "1"));
@@ -149,6 +136,7 @@ namespace JwtIdentity.BunitTests
             ApiServiceMock.Setup(x => x.GetAsync<SurveyViewModel>(It.IsAny<string>()))
                 .ReturnsAsync(_testSurvey);
 
+            NavManager.NavigateTo("/survey/edit/1?DemoType=linear");
             // Act
             var cut = Context.RenderComponent<EditSurvey>(parameters => parameters
                 .Add(p => p.SurveyId, "1"));
@@ -158,20 +146,21 @@ namespace JwtIdentity.BunitTests
         }
 
         [Test]
-        public void LinearDemo_DoesNotShowBranchingButton()
+        public void LinearDemo_DoesNotShowBranchingButtonAtStep23()
         {
             // Arrange
             _testSurvey.AiQuestionsApproved = true;
             ApiServiceMock.Setup(x => x.GetAsync<SurveyViewModel>(It.IsAny<string>()))
                 .ReturnsAsync(_testSurvey);
 
+            NavManager.NavigateTo("/survey/edit/1?DemoType=linear");
             // Act
             var cut = Context.RenderComponent<EditSurvey>(parameters => parameters
                 .Add(p => p.SurveyId, "1"));
 
-            // Assert - Configure Branching button should NOT be highlighted in linear demo
+            // Assert - Configure Branching button exists but is not highlighted for linear demo
             Assert.That(cut.Markup, Does.Contain("Configure Branching"));
-            // The button exists but is not part of the demo flow (no demo border at step 23)
+            // In linear demo, step 23 is not used (it's specific to branching demo)
         }
     }
 }

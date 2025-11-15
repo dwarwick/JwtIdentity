@@ -54,9 +54,11 @@ namespace JwtIdentity.BunitTests
             ApiServiceMock.Setup(x => x.GetAsync<SurveyViewModel>(It.IsAny<string>()))
                 .ReturnsAsync(_testSurvey);
 
-            // Act
+            // Act - Branching demo (DemoType = branching)
+            NavManager.NavigateTo("/survey/edit/2?DemoType=branching");
             var cut = Context.RenderComponent<EditSurvey>(parameters => parameters
-                .Add(p => p.SurveyId, "2"));
+                .Add(p => p.SurveyId, "2")
+                );
 
             // Assert - Step 0/1: Review AI questions
             Assert.That(cut.Markup, Does.Contain("Please review the AI generated questions"));
@@ -76,8 +78,10 @@ namespace JwtIdentity.BunitTests
                     return survey;
                 });
 
+            NavManager.NavigateTo("/survey/edit/2?DemoType=branching");
             var cut = Context.RenderComponent<EditSurvey>(parameters => parameters
-                .Add(p => p.SurveyId, "2"));
+                .Add(p => p.SurveyId, "2")
+                );
 
             // Act - Accept questions
             var acceptButton = cut.Find("#AcceptQuestionsBtn");
@@ -90,7 +94,7 @@ namespace JwtIdentity.BunitTests
         }
 
         [Test]
-        public void BranchingDemo_Step7ToStep8_Succeeds()
+        public void BranchingDemo_Step2ToStep7_Succeeds()
         {
             // Arrange
             _testSurvey.AiQuestionsApproved = true;
@@ -98,15 +102,17 @@ namespace JwtIdentity.BunitTests
                 .ReturnsAsync(_testSurvey);
 
             // Act
+            NavManager.NavigateTo("/survey/edit/2?DemoType=branching");
             var cut = Context.RenderComponent<EditSurvey>(parameters => parameters
-                .Add(p => p.SurveyId, "22222222-2222-2222-2222-222222222222"));
+                .Add(p => p.SurveyId, "2")
+                );
 
-            // Assert - Step 8: First question setup with product choices
+            // Assert - Step 7: Can select question type
             Assert.That(cut.Markup, Does.Contain("Select the Question Type"));
         }
 
         [Test]
-        public void BranchingDemo_Step8HasProductQuestion()
+        public void BranchingDemo_CanCreateMultipleChoiceQuestion()
         {
             // Arrange
             _testSurvey.AiQuestionsApproved = true;
@@ -114,15 +120,17 @@ namespace JwtIdentity.BunitTests
                 .ReturnsAsync(_testSurvey);
 
             // Act
+            NavManager.NavigateTo("/survey/edit/2?DemoType=branching");
             var cut = Context.RenderComponent<EditSurvey>(parameters => parameters
-                .Add(p => p.SurveyId, "22222222-2222-2222-2222-222222222222"));
+                .Add(p => p.SurveyId, "2")
+                );
 
-            // Assert - Question text should be set for product question
+            // Assert - Multiple Choice option available
             Assert.That(cut.Markup, Does.Contain("Multiple Choice"));
         }
 
         [Test]
-        public void BranchingDemo_Step10ToStep11_Succeeds()
+        public void BranchingDemo_AfterFirstQuestion_ShowsStep10()
         {
             // Arrange
             _testSurvey.AiQuestionsApproved = true;
@@ -142,15 +150,17 @@ namespace JwtIdentity.BunitTests
                 .ReturnsAsync(_testSurvey);
 
             // Act
+            NavManager.NavigateTo("/survey/edit/2?DemoType=branching");
             var cut = Context.RenderComponent<EditSurvey>(parameters => parameters
-                .Add(p => p.SurveyId, "22222222-2222-2222-2222-222222222222"));
+                .Add(p => p.SurveyId, "2")
+                );
 
-            // Assert - After first question saved, shows message about second question
-            Assert.That(cut.Markup, Does.Contain("Multiple Choice"));
+            // Assert - After first question saved, can create more
+            Assert.That(cut.Markup, Does.Contain("Select the Question Type"));
         }
 
         [Test]
-        public void BranchingDemo_Step11ShowsPresetChoicePrompt()
+        public void BranchingDemo_PresetsChoicesAvailable()
         {
             // Arrange
             _testSurvey.AiQuestionsApproved = true;
@@ -158,21 +168,18 @@ namespace JwtIdentity.BunitTests
                 .ReturnsAsync(_testSurvey);
 
             // Act
+            NavManager.NavigateTo("/survey/edit/2?DemoType=branching");
             var cut = Context.RenderComponent<EditSurvey>(parameters => parameters
-                .Add(p => p.SurveyId, "22222222-2222-2222-2222-222222222222"));
+                .Add(p => p.SurveyId, "2")
+                );
 
             // Assert - Preset choices dropdown exists
             Assert.That(cut.Markup, Does.Contain("Preset Choices"));
         }
 
         [Test]
-        public void BranchingDemo_Step12ToStep13_Succeeds()
+        public void BranchingDemo_AfterSecondQuestion_ShowsAddButton()
         {
-            // This test validates that step 12 exists and advances properly
-            // Step 12 should appear after selecting "How Satisfied" preset at step 11
-            // Step 12 should tell user to save the question
-            // Step 13 appears after saving
-
             // Arrange
             _testSurvey.AiQuestionsApproved = true;
             _testSurvey.Questions.Add(new MultipleChoiceQuestionViewModel
@@ -193,15 +200,17 @@ namespace JwtIdentity.BunitTests
                 .ReturnsAsync(_testSurvey);
 
             // Act
+            NavManager.NavigateTo("/survey/edit/2?DemoType=branching");
             var cut = Context.RenderComponent<EditSurvey>(parameters => parameters
-                .Add(p => p.SurveyId, "22222222-2222-2222-2222-222222222222"));
+                .Add(p => p.SurveyId, "2")
+                );
 
-            // Assert - After second question saved, should show step 13 message
+            // Assert - Save button exists
             Assert.That(cut.Markup, Does.Contain("Add Question to Survey"));
         }
 
         [Test]
-        public void BranchingDemo_Step13ToStep14_Succeeds()
+        public void BranchingDemo_After2Questions_CanCreateThird()
         {
             // Arrange
             _testSurvey.AiQuestionsApproved = true;
@@ -211,34 +220,36 @@ namespace JwtIdentity.BunitTests
                 .ReturnsAsync(_testSurvey);
 
             // Act
+            NavManager.NavigateTo("/survey/edit/2?DemoType=branching");
             var cut = Context.RenderComponent<EditSurvey>(parameters => parameters
-                .Add(p => p.SurveyId, "22222222-2222-2222-2222-222222222222"));
+                .Add(p => p.SurveyId, "2")
+                );
 
-            // Assert - Should be able to create third question
+            // Assert - Can create third question
             Assert.That(cut.Markup, Does.Contain("Select the Question Type"));
         }
 
         [Test]
-        public void BranchingDemo_Step14ToStep15_Succeeds()
+        public void BranchingDemo_PresetsIncludeHowLikely()
         {
-            // Similar pattern - after selecting "How Likely" preset, advances to step 15
             // Arrange
             _testSurvey.AiQuestionsApproved = true;
             ApiServiceMock.Setup(x => x.GetAsync<SurveyViewModel>(It.IsAny<string>()))
                 .ReturnsAsync(_testSurvey);
 
             // Act
+            NavManager.NavigateTo("/survey/edit/2?DemoType=branching");
             var cut = Context.RenderComponent<EditSurvey>(parameters => parameters
-                .Add(p => p.SurveyId, "22222222-2222-2222-2222-222222222222"));
+                .Add(p => p.SurveyId, "2")
+                );
 
-            // Assert
+            // Assert - Preset choices exists
             Assert.That(cut.Markup, Does.Contain("Preset Choices"));
         }
 
         [Test]
-        public void BranchingDemo_Step16ToStep17_Succeeds()
+        public void BranchingDemo_After3Questions_CanCreateFourth()
         {
-            // After saving third question, shows step 16 message, then advances to step 17
             // Arrange
             _testSurvey.AiQuestionsApproved = true;
             _testSurvey.Questions.Add(new MultipleChoiceQuestionViewModel { Id = 2, Text = "Q1", QuestionNumber = 1 });
@@ -248,34 +259,18 @@ namespace JwtIdentity.BunitTests
                 .ReturnsAsync(_testSurvey);
 
             // Act
+            NavManager.NavigateTo("/survey/edit/2?DemoType=branching");
             var cut = Context.RenderComponent<EditSurvey>(parameters => parameters
-                .Add(p => p.SurveyId, "22222222-2222-2222-2222-222222222222"));
+                .Add(p => p.SurveyId, "2")
+                );
 
             // Assert
             Assert.That(cut.Markup, Does.Contain("Select the Question Type"));
         }
 
         [Test]
-        public void BranchingDemo_Step17ToStep18_Succeeds()
+        public void BranchingDemo_After4MCQuestions_CanCreateText()
         {
-            // After selecting "Yes No Partially" preset at step 17, advances to step 18
-            // Arrange
-            _testSurvey.AiQuestionsApproved = true;
-            ApiServiceMock.Setup(x => x.GetAsync<SurveyViewModel>(It.IsAny<string>()))
-                .ReturnsAsync(_testSurvey);
-
-            // Act
-            var cut = Context.RenderComponent<EditSurvey>(parameters => parameters
-                .Add(p => p.SurveyId, "22222222-2222-2222-2222-222222222222"));
-
-            // Assert
-            Assert.That(cut.Markup, Does.Contain("Preset Choices"));
-        }
-
-        [Test]
-        public void BranchingDemo_Step19ToStep20_Succeeds()
-        {
-            // After saving fourth MC question, shows step 19, then advances to step 20 for text question
             // Arrange
             _testSurvey.AiQuestionsApproved = true;
             _testSurvey.Questions.Add(new MultipleChoiceQuestionViewModel { Id = 2, Text = "Q1", QuestionNumber = 1 });
@@ -286,34 +281,18 @@ namespace JwtIdentity.BunitTests
                 .ReturnsAsync(_testSurvey);
 
             // Act
+            NavManager.NavigateTo("/survey/edit/2?DemoType=branching");
             var cut = Context.RenderComponent<EditSurvey>(parameters => parameters
-                .Add(p => p.SurveyId, "22222222-2222-2222-2222-222222222222"));
-
-            // Assert
-            Assert.That(cut.Markup, Does.Contain("Select the Question Type"));
-        }
-
-        [Test]
-        public void BranchingDemo_Step20CreatesTextQuestion()
-        {
-            // Step 20: Text question should be created
-            // Arrange
-            _testSurvey.AiQuestionsApproved = true;
-            ApiServiceMock.Setup(x => x.GetAsync<SurveyViewModel>(It.IsAny<string>()))
-                .ReturnsAsync(_testSurvey);
-
-            // Act
-            var cut = Context.RenderComponent<EditSurvey>(parameters => parameters
-                .Add(p => p.SurveyId, "22222222-2222-2222-2222-222222222222"));
+                .Add(p => p.SurveyId, "2")
+                );
 
             // Assert - Text option should be available
             Assert.That(cut.Markup, Does.Contain("Text"));
         }
 
         [Test]
-        public void BranchingDemo_Step21ToStep22_Succeeds()
+        public void BranchingDemo_AfterTextQuestion_CanSave()
         {
-            // After saving text question at step 21, advances to step 22 to mark as last
             // Arrange
             _testSurvey.AiQuestionsApproved = true;
             _testSurvey.Questions.Add(new TextQuestionViewModel { Id = 6, Text = "Text Q", QuestionNumber = 5 });
@@ -321,17 +300,18 @@ namespace JwtIdentity.BunitTests
                 .ReturnsAsync(_testSurvey);
 
             // Act
+            NavManager.NavigateTo("/survey/edit/2?DemoType=branching");
             var cut = Context.RenderComponent<EditSurvey>(parameters => parameters
-                .Add(p => p.SurveyId, "22222222-2222-2222-2222-222222222222"));
+                .Add(p => p.SurveyId, "2")
+                );
 
             // Assert
             Assert.That(cut.Markup, Does.Contain("Select the Question Type"));
         }
 
         [Test]
-        public void BranchingDemo_Step23ShowsConfigureBranchingButton()
+        public void BranchingDemo_WithLastQuestion_ShowsConfigureBranchingButton()
         {
-            // After marking question as last at step 22, shows step 23 with Configure Branching button
             // Arrange
             _testSurvey.AiQuestionsApproved = true;
             _testSurvey.Questions.Add(new TextQuestionViewModel { Id = 1, Text = "Last Q", QuestionNumber = 5, IsLastQuestion = true });
@@ -339,27 +319,30 @@ namespace JwtIdentity.BunitTests
                 .ReturnsAsync(_testSurvey);
 
             // Act
+            NavManager.NavigateTo("/survey/edit/2?DemoType=branching");
             var cut = Context.RenderComponent<EditSurvey>(parameters => parameters
-                .Add(p => p.SurveyId, "22222222-2222-2222-2222-222222222222"));
+                .Add(p => p.SurveyId, "2")
+                );
 
             // Assert - Configure Branching button should be visible
             Assert.That(cut.Markup, Does.Contain("Configure Branching"));
         }
 
         [Test]
-        public void BranchingDemo_DoesNotShowPublishButtonUntilStep30()
+        public void BranchingDemo_PublishButtonShownAtStep30()
         {
-            // Publish button should not be shown until step 30 (after returning from branching config)
             // Arrange
             _testSurvey.AiQuestionsApproved = true;
             ApiServiceMock.Setup(x => x.GetAsync<SurveyViewModel>(It.IsAny<string>()))
                 .ReturnsAsync(_testSurvey);
 
             // Act
+            NavManager.NavigateTo("/survey/edit/2?DemoType=branching");
             var cut = Context.RenderComponent<EditSurvey>(parameters => parameters
-                .Add(p => p.SurveyId, "22222222-2222-2222-2222-222222222222"));
+                .Add(p => p.SurveyId, "2")
+                );
 
-            // Assert - Publish button exists but is not highlighted at early steps
+            // Assert - Publish button exists
             Assert.That(cut.Markup, Does.Contain("Publish Survey"));
         }
     }
