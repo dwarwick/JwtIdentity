@@ -173,14 +173,15 @@ namespace JwtIdentity.Client.Pages.Survey
             }
 
             if (IsDemoUser && DemoStep != _previousDemoStep)
-            {
+            {                
                 await ScrollToCurrentDemoStep();
-                _previousDemoStep = DemoStep;
+                _previousDemoStep = DemoStep;                
             }
         }
 
         private async Task ScrollToCurrentDemoStep()
         {
+Console.WriteLine($"Scrolling to demo step {DemoStep}");
             var id = DemoStep switch
             {
                 0 => "QuestionsPanel",
@@ -193,7 +194,8 @@ namespace JwtIdentity.Client.Pages.Survey
                 7 => "Text",
                 8 => "PresetChoices",
                 9 => "SaveQuestionBtn",
-                10 => "PublishSurveyBtn",
+                10 => "SaveQuestionBtn",
+                23 => "PublishSurveyBtn",
                 _ => null
             };
 
