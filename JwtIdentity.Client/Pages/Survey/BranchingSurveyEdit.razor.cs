@@ -89,15 +89,13 @@ namespace JwtIdentity.Client.Pages.Survey
             var id = DemoStep switch
             {
                 1 => "AddGroupButton",      // Step 1: Add first group
-                2 => "Group1Panel",          // Step 2: Group 1 created, ready to name
-                3 => "Group1NameField",      // Step 3: Name Group 1
-                5 => "AddGroupButton",       // Step 5: Add second group
-                6 => "Group2Panel",          // Step 6: Group 2 created, ready to name
-                7 => "Group2NameField",      // Step 7: Name Group 2
-                9 => "QuestionGroupSelector_Q3",  // Step 9: Move Q3 to Group 1
-                11 => "QuestionGroupSelector_Q4", // Step 11: Move Q4 to Group 2
-                13 => "BranchingSelector_Q1",     // Step 13: Configure Q1 branching
-                15 => "BranchingSelector_Q2",     // Step 15: Configure Q2 branching
+                2 => "DiagramAccordion",     // Step 2: Group 1 created (auto-named)
+                3 => "AddGroupButton",       // Step 3: Add second group
+                4 => "DiagramAccordion",     // Step 4: Group 2 created (auto-named)
+                6 => "QuestionGroupSelector_Q3",  // Step 6: Move Q3 to Group 1
+                8 => "QuestionGroupSelector_Q4", // Step 8: Move Q4 to Group 2
+                10 => "BranchingSelector_Q1",     // Step 10: Configure Q1 branching
+                12 => "BranchingSelector_Q2",     // Step 12: Configure Q2 branching
                 _ => null
             };
 
@@ -250,11 +248,23 @@ namespace JwtIdentity.Client.Pages.Survey
             try
             {
                 var maxGroupNumber = QuestionGroups.Any() ? QuestionGroups.Max(g => g.GroupNumber) : 0;
+                var newGroupNumber = maxGroupNumber + 1;
+                
+                // Auto-name groups for demo
+                string groupName = $"Group {newGroupNumber}";
+                if (IsDemoUser && DemoType == "branching")
+                {
+                    if (newGroupNumber == 1)
+                        groupName = "Satisfied Customers";
+                    else if (newGroupNumber == 2)
+                        groupName = "Unsatisfied Customers";
+                }
+                
                 var newGroup = new QuestionGroupViewModel
                 {
                     SurveyId = Survey.Id,
-                    GroupNumber = maxGroupNumber + 1,
-                    GroupName = $"Group {maxGroupNumber + 1}",
+                    GroupNumber = newGroupNumber,
+                    GroupName = groupName,
                     SubmitAfterGroup = true
                 };
 
@@ -270,11 +280,11 @@ namespace JwtIdentity.Client.Pages.Survey
                     {
                         if (DemoStep == 1)
                         {
-                            DemoStep = 2; // First group created
+                            DemoStep = 2; // First group created (skip naming step)
                         }
-                        else if (DemoStep == 5)
+                        else if (DemoStep == 3)
                         {
-                            DemoStep = 6; // Second group created
+                            DemoStep = 4; // Second group created (skip naming step)
                         }
                     }
                     
@@ -434,18 +444,7 @@ namespace JwtIdentity.Client.Pages.Survey
                     _ = Snackbar.Add("Group updated", Severity.Success);
                     await RefreshDiagram();
                     
-                    // Advance demo step when groups are named appropriately
-                    if (IsDemoUser && DemoType == "branching")
-                    {
-                        if (DemoStep == 3 && group.GroupNumber == 1 && !string.IsNullOrWhiteSpace(group.GroupName))
-                        {
-                            DemoStep = 4; // First group named
-                        }
-                        else if (DemoStep == 7 && group.GroupNumber == 2 && !string.IsNullOrWhiteSpace(group.GroupName))
-                        {
-                            DemoStep = 8; // Second group named
-                        }
-                    }
+                    // Groups are auto-named in demo, so no advancement needed here
                 }
                 else
                 {
@@ -494,7 +493,7 @@ namespace JwtIdentity.Client.Pages.Survey
                         if (movedQuestion != null)
                         {
                             // Check if this is the 3rd MC question (Q3) being moved to Group 1
-                            if (DemoStep == 9 && targetGroupId == 1 && 
+                            if (DemoStep == 6 && targetGroupId == 1 && 
                                 movedQuestion.QuestionType == QuestionType.MultipleChoice)
                             {
                                 var mcQuestions = Survey.Questions
@@ -504,11 +503,11 @@ namespace JwtIdentity.Client.Pages.Survey
                                 // Check if this is the 3rd MC question
                                 if (mcQuestions.Count >= 3 && mcQuestions[2].Id == question.Id)
                                 {
-                                    DemoStep = 10; // Q3 moved to Group 1
+                                    DemoStep = 7; // Q3 moved to Group 1
                                 }
                             }
                             // Check if this is the 4th MC question (Q4) being moved to Group 2
-                            else if (DemoStep == 11 && targetGroupId == 2 && 
+                            else if (DemoStep == 8 && targetGroupId == 2 && 
                                 movedQuestion.QuestionType == QuestionType.MultipleChoice)
                             {
                                 var mcQuestions = Survey.Questions
@@ -518,7 +517,7 @@ namespace JwtIdentity.Client.Pages.Survey
                                 // Check if this is the 4th MC question
                                 if (mcQuestions.Count >= 4 && mcQuestions[3].Id == question.Id)
                                 {
-                                    DemoStep = 12; // Q4 moved to Group 2
+                                    DemoStep = 9; // Q4 moved to Group 2
                                 }
                             }
                         }
@@ -570,16 +569,16 @@ namespace JwtIdentity.Client.Pages.Survey
                                         .ToList();
                                     
                                     // Check if this is Q1 (first MC question in Group 0) being configured to branch to Group 1
-                                    if (DemoStep == 13 && mcQuestions.Count >= 1 && mcQuestions[0].Id == question.Id &&
+                                    if (DemoStep == 10 && mcQuestions.Count >= 1 && mcQuestions[0].Id == question.Id &&
                                         option.BranchToGroupId == 1)
                                     {
-                                        DemoStep = 14; // Q1 branching configured
+                                        DemoStep = 11; // Q1 branching configured
                                     }
                                     // Check if this is Q2 (second MC question in Group 0) being configured to branch to Group 2
-                                    else if (DemoStep == 15 && mcQuestions.Count >= 2 && mcQuestions[1].Id == question.Id &&
+                                    else if (DemoStep == 12 && mcQuestions.Count >= 2 && mcQuestions[1].Id == question.Id &&
                                         option.BranchToGroupId == 2)
                                     {
-                                        DemoStep = 16; // Q2 branching configured
+                                        DemoStep = 13; // Q2 branching configured, demo complete
                                     }
                                     break;
                                 }
@@ -1095,21 +1094,19 @@ namespace JwtIdentity.Client.Pages.Survey
         {
             if (!IsDemoUser || DemoType != "branching") return false;
             
-            // Allow at steps 1 (create first group) and 5 (create second group)
-            return DemoStep != 1 && DemoStep != 5;
+            // Allow at steps 1 (create first group) and 3 (create second group)
+            return DemoStep != 1 && DemoStep != 3;
         }
 
         /// <summary>
         /// Determines if a group name field should be read-only for the demo.
+        /// Groups are now auto-named, so they're always read-only during demo.
         /// </summary>
         protected bool IsGroupNameReadOnly(int groupNumber)
         {
             if (!IsDemoUser || DemoType != "branching") return false;
             
-            // Allow editing Group 1 at step 3, Group 2 at step 7
-            if (groupNumber == 1 && DemoStep == 3) return false;
-            if (groupNumber == 2 && DemoStep == 7) return false;
-            
+            // Groups are auto-named in the demo, so always read-only
             return true;
         }
 
@@ -1126,12 +1123,12 @@ namespace JwtIdentity.Client.Pages.Survey
                 .OrderBy(q => q.QuestionNumber)
                 .ToList();
             
-            // At step 9, only allow moving Q3 (3rd MC question)
-            if (DemoStep == 9 && mcQuestions.Count >= 3 && mcQuestions[2].Id == question.Id)
+            // At step 6, only allow moving Q3 (3rd MC question)
+            if (DemoStep == 6 && mcQuestions.Count >= 3 && mcQuestions[2].Id == question.Id)
                 return false;
             
-            // At step 11, only allow moving Q4 (4th MC question)
-            if (DemoStep == 11 && mcQuestions.Count >= 4 && mcQuestions[3].Id == question.Id)
+            // At step 8, only allow moving Q4 (4th MC question)
+            if (DemoStep == 8 && mcQuestions.Count >= 4 && mcQuestions[3].Id == question.Id)
                 return false;
             
             return true;
@@ -1149,15 +1146,15 @@ namespace JwtIdentity.Client.Pages.Survey
                 .OrderBy(q => q.QuestionNumber)
                 .ToList();
             
-            // At step 13, only allow configuring first option of Q1 (first MC question in Group 0)
-            if (DemoStep == 13 && mcQuestions.Count >= 1 && mcQuestions[0].Id == question.Id)
+            // At step 10, only allow configuring first option of Q1 (first MC question in Group 0)
+            if (DemoStep == 10 && mcQuestions.Count >= 1 && mcQuestions[0].Id == question.Id)
             {
                 var mcQuestion = question as MultipleChoiceQuestionViewModel;
                 return mcQuestion?.Options?.FirstOrDefault()?.Id != option.Id;
             }
             
-            // At step 15, only allow configuring first option of Q2 (second MC question in Group 0)
-            if (DemoStep == 15 && mcQuestions.Count >= 2 && mcQuestions[1].Id == question.Id)
+            // At step 12, only allow configuring first option of Q2 (second MC question in Group 0)
+            if (DemoStep == 12 && mcQuestions.Count >= 2 && mcQuestions[1].Id == question.Id)
             {
                 var mcQuestion = question as MultipleChoiceQuestionViewModel;
                 return mcQuestion?.Options?.FirstOrDefault()?.Id != option.Id;
@@ -1176,11 +1173,11 @@ namespace JwtIdentity.Client.Pages.Survey
             switch (panelName)
             {
                 case "Groups":
-                    // Expand for group creation and naming steps
-                    return DemoStep >= 1 && DemoStep <= 8;
+                    // Expand for group creation steps
+                    return DemoStep >= 1 && DemoStep <= 4;
                 case "Branching":
                     // Expand for question movement and branching configuration steps
-                    return DemoStep >= 9;
+                    return DemoStep >= 5;
                 default:
                     return false;
             }

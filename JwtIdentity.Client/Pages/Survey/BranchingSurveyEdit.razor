@@ -8,7 +8,7 @@
 
 <MudStack Row="true" Justify="Justify.SpaceBetween" Class="mb-4">
     <MudText Typo="Typo.h4">Survey Branching: @Survey?.Title</MudText>
-    <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 0, 17 })" IsButton="true">
+    <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 0, 13 })" IsButton="true">
         <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="@NavigateBackToEdit">
             Back to Edit Survey
         </MudButton>
@@ -27,11 +27,11 @@
             <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
         </DemoBorder>
     </DemoPopup>
-    <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 17 })" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
+    <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 13 })" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
         <MudText Typo="Typo.h6" Class="mb-2">Excellent work!</MudText>
         <MudText Typo="Typo.body2" Class="mb-2">You've successfully configured branching for your survey. The flow diagram above shows how your survey will branch based on user responses.</MudText>
         <MudText Typo="Typo.body2">Click "Back to Edit Survey" to continue with the demo.</MudText>
-        <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 17 })" IsButton="true" Class="mt-3">
+        <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 13 })" IsButton="true" Class="mt-3">
             <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Got it!</MudButton>
         </DemoBorder>
     </DemoPopup>
@@ -44,7 +44,7 @@
 else
 {
     <MudExpansionPanels MultiExpansion="true" Elevation="2">
-        <MudExpansionPanel Class="mb-3" Style="min-height:0;" Expanded="true">
+        <MudExpansionPanel id="DiagramAccordion" Class="mb-3" Style="min-height:0;" Expanded="true">
             <TitleContent>
                 <div class="d-flex align-center">
                     <MudIcon Icon="@Icons.Material.Filled.Visibility" Class="mr-3"></MudIcon>
@@ -107,6 +107,21 @@ else
                 }
             </ChildContent>
         </MudExpansionPanel>
+        <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 2, 4 })" AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft">
+            @if (DemoStep == 2)
+            {
+                <MudText Typo="Typo.body2" Class="mb-2">Excellent! You've created Group 1.</MudText>
+                <MudText Typo="Typo.body2">Group 1 has been automatically named "Satisfied Customers" to organize questions for satisfied customers.</MudText>
+            }
+            else if (DemoStep == 4)
+            {
+                <MudText Typo="Typo.body2" Class="mb-2">Great! You've created Group 2.</MudText>
+                <MudText Typo="Typo.body2">Group 2 has been automatically named "Unsatisfied Customers" to organize questions for unsatisfied customers.</MudText>
+            }
+            <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 2, 4 })" IsButton="true" Class="mt-3">
+                <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
+            </DemoBorder>
+        </DemoPopup>
 
         <MudExpansionPanel Class="mb-3" Expanded="@ShouldExpandPanel("Groups")">
             <TitleContent>
@@ -118,7 +133,7 @@ else
             <ChildContent>
                 <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-3">
                     <MudText Typo="Typo.subtitle1" Class="font-weight-bold">Question Groups</MudText>
-                    <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 1, 5 })" IsButton="true">
+                    <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 1, 3 })" IsButton="true">
                         <MudButton id="AddGroupButton" Variant="Variant.Filled" Color="Color.Primary" OnClick="AddQuestionGroup" StartIcon="@Icons.Material.Filled.Add" Disabled="@IsAddGroupDisabled()">
                             Add Group
                         </MudButton>
@@ -127,7 +142,7 @@ else
                         <MudText Typo="Typo.body2" Class="mb-2">First, let's create a new question group. Groups allow you to organize questions that will be shown together based on branching logic.</MudText>
                         <MudText Typo="Typo.body2">Click "Add Group" to create your first group.</MudText>
                     </DemoPopup>
-                    <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 5 })" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
+                    <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 3 })" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
                         <MudText Typo="Typo.body2">Great! Now create a second group. Click "Add Group" again.</MudText>
                     </DemoPopup>
                 </MudStack>
@@ -157,49 +172,19 @@ else
                                         <div>
                                             @if (group.GroupNumber == 1)
                                             {
-                                                <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 2, 3 })">
-                                                    <MudTextField id="Group1NameField" Label="Group Name" Value="@group.GroupName"
-                                                                  Variant="Variant.Outlined"
-                                                                  HelperText="Optional: Give this group a descriptive name"
-                                                                  ReadOnly="@IsGroupNameReadOnly(group.GroupNumber)"
-                                                                  ValueChanged="@(async (string value) => { group.GroupName = value; await UpdateQuestionGroup(group); await RefreshDiagram(); })" />
-                                                </DemoBorder>
-                                                <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 2 })" AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft">
-                                                    <MudText Typo="Typo.body2" Class="mb-2">Excellent! You've created Group 1. Now let's give it a meaningful name.</MudText>
-                                                    <MudText Typo="Typo.body2">Update the group name to help describe what questions will go in this group.</MudText>
-                                                    <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 2 })" IsButton="true" Class="mt-3">
-                                                        <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Skip</MudButton>
-                                                    </DemoBorder>
-                                                </DemoPopup>
-                                                <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 3 })" AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft">
-                                                    <MudText Typo="Typo.body2">Perfect! Your group now has a descriptive name.</MudText>
-                                                    <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 3 })" IsButton="true" Class="mt-3">
-                                                        <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
-                                                    </DemoBorder>
-                                                </DemoPopup>
+                                                <MudTextField id="Group1NameField" Label="Group Name" Value="@group.GroupName"
+                                                              Variant="Variant.Outlined"
+                                                              HelperText="Optional: Give this group a descriptive name"
+                                                              ReadOnly="@IsGroupNameReadOnly(group.GroupNumber)"
+                                                              ValueChanged="@(async (string value) => { group.GroupName = value; await UpdateQuestionGroup(group); await RefreshDiagram(); })" />
                                             }
                                             else if (group.GroupNumber == 2)
                                             {
-                                                <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 6, 7 })">
-                                                    <MudTextField id="Group2NameField" Label="Group Name" Value="@group.GroupName"
-                                                                  Variant="Variant.Outlined"
-                                                                  HelperText="Optional: Give this group a descriptive name"
-                                                                  ReadOnly="@IsGroupNameReadOnly(group.GroupNumber)"
-                                                                  ValueChanged="@(async (string value) => { group.GroupName = value; await UpdateQuestionGroup(group); await RefreshDiagram(); })" />
-                                                </DemoBorder>
-                                                <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 6 })" AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft">
-                                                    <MudText Typo="Typo.body2" Class="mb-2">Great! Now name Group 2.</MudText>
-                                                    <MudText Typo="Typo.body2">Give it a descriptive name for the second branch of questions.</MudText>
-                                                    <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 6 })" IsButton="true" Class="mt-3">
-                                                        <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Skip</MudButton>
-                                                    </DemoBorder>
-                                                </DemoPopup>
-                                                <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 7 })" AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft">
-                                                    <MudText Typo="Typo.body2">Excellent! Both groups are now named.</MudText>
-                                                    <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 7 })" IsButton="true" Class="mt-3">
-                                                        <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
-                                                    </DemoBorder>
-                                                </DemoPopup>
+                                                 <MudTextField id="Group2NameField" Label="Group Name" Value="@group.GroupName"
+                                                               Variant="Variant.Outlined"
+                                                               HelperText="Optional: Give this group a descriptive name"
+                                                               ReadOnly="@IsGroupNameReadOnly(group.GroupNumber)"
+                                                               ValueChanged="@(async (string value) => { group.GroupName = value; await UpdateQuestionGroup(group); await RefreshDiagram(); })" />
                                             }
                                             else
                                             {
@@ -258,17 +243,17 @@ else
             </TitleContent>
             <ChildContent>
                 <MudText Typo="Typo.subtitle1" Class="mb-3 font-weight-bold">Assign Questions to Groups:</MudText>
-                <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 8, 9 })" AnchorOrigin="AnchorOrigin" TransformOrigin="TransformOrigin">
+                <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 5, 6 })" AnchorOrigin="AnchorOrigin" TransformOrigin="TransformOrigin">
                     <MudText Typo="Typo.body2" Class="mb-2">Now let's organize questions into groups. We'll move some questions to Group 1 and Group 2 based on survey logic.</MudText>
                     <MudText Typo="Typo.body2">Find Question 3 and move it to Group 1 using the dropdown selector.</MudText>
-                    <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 8 })" IsButton="true" Class="mt-3">
+                    <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 5 })" IsButton="true" Class="mt-3">
                         <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Skip</MudButton>
                     </DemoBorder>
                 </DemoPopup>
-                <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 10, 11 })" AnchorOrigin="AnchorOrigin" TransformOrigin="TransformOrigin">
+                <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 7, 8 })" AnchorOrigin="AnchorOrigin" TransformOrigin="TransformOrigin">
                     <MudText Typo="Typo.body2" Class="mb-2">Great! Question 3 is now in Group 1.</MudText>
                     <MudText Typo="Typo.body2">Now find Question 4 and move it to Group 2.</MudText>
-                    <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 10 })" IsButton="true" Class="mt-3">
+                    <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 7 })" IsButton="true" Class="mt-3">
                         <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Skip</MudButton>
                     </DemoBorder>
                 </DemoPopup>
@@ -295,7 +280,7 @@ else
                                     else
                                     {
                                         <div>
-                                            <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(isQ3 ? new List<int>() { 9 } : isQ4 ? new List<int>() { 11 } : new List<int>())">
+                                            <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(isQ3 ? new List<int>() { 6 } : isQ4 ? new List<int>() { 8 } : new List<int>())">
                                                 <MudSelect T="int" Label="Assign to Group" Value="question.GroupId"
                                                            ValueChanged="@(async value => { await MoveQuestionToGroup(question, value); await RefreshDiagram(); })"
                                                            Variant="Variant.Outlined" Dense="true" Style="width: 250px;"
@@ -320,17 +305,17 @@ else
                 </MudPaper>
 
                 <MudText Typo="Typo.subtitle1" Class="mb-3 font-weight-bold">Configure Conditional Branching:</MudText>
-                <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 12, 13 })" AnchorOrigin="AnchorOrigin" TransformOrigin="TransformOrigin">
+                <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 9, 10 })" AnchorOrigin="AnchorOrigin" TransformOrigin="TransformOrigin">
                     <MudText Typo="Typo.body2" Class="mb-2">Perfect! Now let's configure branching rules. This determines where users go based on their answers.</MudText>
                     <MudText Typo="Typo.body2">Find Question 1 (in Group 0) and set the first option to branch to Group 1.</MudText>
-                    <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 12 })" IsButton="true" Class="mt-3">
+                    <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 9 })" IsButton="true" Class="mt-3">
                         <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Skip</MudButton>
                     </DemoBorder>
                 </DemoPopup>
-                <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 14, 15 })" AnchorOrigin="AnchorOrigin" TransformOrigin="TransformOrigin">
+                <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 11, 12 })" AnchorOrigin="AnchorOrigin" TransformOrigin="TransformOrigin">
                     <MudText Typo="Typo.body2" Class="mb-2">Excellent! Question 1 now branches to Group 1 for that option.</MudText>
                     <MudText Typo="Typo.body2">Now set Question 2's first option to branch to Group 2.</MudText>
-                    <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 14 })" IsButton="true" Class="mt-3">
+                    <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 11 })" IsButton="true" Class="mt-3">
                         <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Skip</MudButton>
                     </DemoBorder>
                 </DemoPopup>
@@ -413,7 +398,7 @@ else
                                                         <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="ml-4 my-1">
                                                             <MudText Style="width: 200px;">@option.OptionText</MudText>
                                                             <MudIcon Icon="@Icons.Material.Filled.ArrowForward" Size="MudBlazor.Size.Small" />
-                                                            <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(IsBranchingSelectorDisabled(question, option) ? new List<int>() : new List<int>() { 13, 15 })">
+                                                            <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(IsBranchingSelectorDisabled(question, option) ? new List<int>() : new List<int>() { 10, 12 })">
                                                                 <MudSelect T="int?" Label="Branch to Group" Value="@option.BranchToGroupId"
                                                                            Variant="Variant.Outlined" Dense="true" Style="width: 250px;"
                                                                            Disabled="@IsBranchingSelectorDisabled(question, option)"
