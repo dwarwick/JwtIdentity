@@ -247,16 +247,10 @@ else
                 <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 5, 6 })" AnchorOrigin="AnchorOrigin" TransformOrigin="TransformOrigin">
                     <MudText Typo="Typo.body2" Class="mb-2">Now let's organize questions into groups. We'll move some questions to Group 1 and Group 2 based on survey logic.</MudText>
                     <MudText Typo="Typo.body2">Find Question 3 and move it to Group 1 using the dropdown selector.</MudText>
-                    <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 5 })" IsButton="true" Class="mt-3">
-                        <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Skip</MudButton>
-                    </DemoBorder>
                 </DemoPopup>
                 <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 7, 8 })" AnchorOrigin="AnchorOrigin" TransformOrigin="TransformOrigin">
                     <MudText Typo="Typo.body2" Class="mb-2">Great! Question 3 is now in Group 1.</MudText>
                     <MudText Typo="Typo.body2">Now find Question 4 and move it to Group 2.</MudText>
-                    <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 7 })" IsButton="true" Class="mt-3">
-                        <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Skip</MudButton>
-                    </DemoBorder>
                 </DemoPopup>
                 <MudPaper Class="pa-4 mb-4">
                     <MudList T="string" Dense="true">
@@ -281,7 +275,7 @@ else
                                     else
                                     {
                                         <div>
-                                            <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(isQ3 ? new List<int>() { 6 } : isQ4 ? new List<int>() { 8 } : new List<int>())">
+                                            <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(isQ3 ? new List<int>() { 5, 6 } : isQ4 ? new List<int>() { 7, 8 } : new List<int>())">
                                                 <MudSelect T="int" Label="Assign to Group" Value="question.GroupId"
                                                            ValueChanged="@(async value => { await MoveQuestionToGroup(question, value); await RefreshDiagram(); })"
                                                            Variant="Variant.Outlined" Dense="true" Style="width: 250px;"
@@ -309,16 +303,10 @@ else
                 <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 9, 10 })" AnchorOrigin="AnchorOrigin" TransformOrigin="TransformOrigin">
                     <MudText Typo="Typo.body2" Class="mb-2">Perfect! Now let's configure branching rules. This determines where users go based on their answers.</MudText>
                     <MudText Typo="Typo.body2">Find Question 1 (in Group 0) and set the first option to branch to Group 1.</MudText>
-                    <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 9 })" IsButton="true" Class="mt-3">
-                        <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Skip</MudButton>
-                    </DemoBorder>
                 </DemoPopup>
                 <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 11, 12 })" AnchorOrigin="AnchorOrigin" TransformOrigin="TransformOrigin">
                     <MudText Typo="Typo.body2" Class="mb-2">Excellent! Question 1 now branches to Group 1 for that option.</MudText>
                     <MudText Typo="Typo.body2">Now set Question 2's first option to branch to Group 2.</MudText>
-                    <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 11 })" IsButton="true" Class="mt-3">
-                        <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Skip</MudButton>
-                    </DemoBorder>
                 </DemoPopup>
                 <MudExpansionPanels MultiExpansion="true">
                     @foreach (var group in QuestionGroups.OrderBy(g => g.GroupNumber))
@@ -399,7 +387,7 @@ else
                                                         <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="ml-4 my-1">
                                                             <MudText Style="width: 200px;">@option.OptionText</MudText>
                                                             <MudIcon Icon="@Icons.Material.Filled.ArrowForward" Size="MudBlazor.Size.Small" />
-                                                            <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(IsBranchingSelectorDisabled(question, option) ? new List<int>() : new List<int>() { 10, 12 })">
+                                                            <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(IsBranchingSelectorDisabled(question, option) ? new List<int>() : new List<int>() { 9, 10, 11, 12 })">
                                                                 <MudSelect T="int?" Label="Branch to Group" Value="@option.BranchToGroupId"
                                                                            Variant="Variant.Outlined" Dense="true" Style="width: 250px;"
                                                                            Disabled="@IsBranchingSelectorDisabled(question, option)"
