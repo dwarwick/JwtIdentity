@@ -15,7 +15,7 @@ namespace JwtIdentity.Client.Pages.Survey
         protected int DemoStep { get; set; }
         protected string DemoType { get; set; }
         private int _previousDemoStep = -1;
-        protected Origin AnchorOrigin { get; set; } = Origin.BottomRight;
+        protected Origin AnchorOrigin { get; set; } = Origin.BottomLeft;
         protected Origin TransformOrigin { get; set; } = Origin.TopLeft;
         protected bool ShowDemoStep(int step) => IsDemoUser && DemoType == "branching" && DemoStep == step;
 
@@ -493,7 +493,7 @@ namespace JwtIdentity.Client.Pages.Survey
                         if (movedQuestion != null)
                         {
                             // Check if this is the 3rd MC question (Q3) being moved to Group 1
-                            if (DemoStep == 6 && targetGroupId == 1 && 
+                            if ((DemoStep == 5 || DemoStep == 6) && targetGroupId == 1 && 
                                 movedQuestion.QuestionType == QuestionType.MultipleChoice)
                             {
                                 var mcQuestions = Survey.Questions
@@ -507,7 +507,7 @@ namespace JwtIdentity.Client.Pages.Survey
                                 }
                             }
                             // Check if this is the 4th MC question (Q4) being moved to Group 2
-                            else if (DemoStep == 8 && targetGroupId == 2 && 
+                            else if ((DemoStep == 7 || DemoStep == 8) && targetGroupId == 2 && 
                                 movedQuestion.QuestionType == QuestionType.MultipleChoice)
                             {
                                 var mcQuestions = Survey.Questions
@@ -569,13 +569,13 @@ namespace JwtIdentity.Client.Pages.Survey
                                         .ToList();
                                     
                                     // Check if this is Q1 (first MC question in Group 0) being configured to branch to Group 1
-                                    if (DemoStep == 10 && mcQuestions.Count >= 1 && mcQuestions[0].Id == question.Id &&
+                                    if ((DemoStep == 9 || DemoStep == 10) && mcQuestions.Count >= 1 && mcQuestions[0].Id == question.Id &&
                                         option.BranchToGroupId == 1)
                                     {
                                         DemoStep = 11; // Q1 branching configured
                                     }
                                     // Check if this is Q2 (second MC question in Group 0) being configured to branch to Group 2
-                                    else if (DemoStep == 12 && mcQuestions.Count >= 2 && mcQuestions[1].Id == question.Id &&
+                                    else if ((DemoStep == 11 || DemoStep == 12) && mcQuestions.Count >= 2 && mcQuestions[1].Id == question.Id &&
                                         option.BranchToGroupId == 2)
                                     {
                                         DemoStep = 13; // Q2 branching configured, demo complete
@@ -1123,12 +1123,12 @@ namespace JwtIdentity.Client.Pages.Survey
                 .OrderBy(q => q.QuestionNumber)
                 .ToList();
             
-            // At step 6, only allow moving Q3 (3rd MC question)
-            if (DemoStep == 6 && mcQuestions.Count >= 3 && mcQuestions[2].Id == question.Id)
+            // At steps 5-6, only allow moving Q3 (3rd MC question)
+            if ((DemoStep == 5 || DemoStep == 6) && mcQuestions.Count >= 3 && mcQuestions[2].Id == question.Id)
                 return false;
             
-            // At step 8, only allow moving Q4 (4th MC question)
-            if (DemoStep == 8 && mcQuestions.Count >= 4 && mcQuestions[3].Id == question.Id)
+            // At steps 7-8, only allow moving Q4 (4th MC question)
+            if ((DemoStep == 7 || DemoStep == 8) && mcQuestions.Count >= 4 && mcQuestions[3].Id == question.Id)
                 return false;
             
             return true;
@@ -1146,15 +1146,15 @@ namespace JwtIdentity.Client.Pages.Survey
                 .OrderBy(q => q.QuestionNumber)
                 .ToList();
             
-            // At step 10, only allow configuring first option of Q1 (first MC question in Group 0)
-            if (DemoStep == 10 && mcQuestions.Count >= 1 && mcQuestions[0].Id == question.Id)
+            // At steps 9-10, only allow configuring first option of Q1 (first MC question in Group 0)
+            if ((DemoStep == 9 || DemoStep == 10) && mcQuestions.Count >= 1 && mcQuestions[0].Id == question.Id)
             {
                 var mcQuestion = question as MultipleChoiceQuestionViewModel;
                 return mcQuestion?.Options?.FirstOrDefault()?.Id != option.Id;
             }
             
-            // At step 12, only allow configuring first option of Q2 (second MC question in Group 0)
-            if (DemoStep == 12 && mcQuestions.Count >= 2 && mcQuestions[1].Id == question.Id)
+            // At steps 11-12, only allow configuring first option of Q2 (second MC question in Group 0)
+            if ((DemoStep == 11 || DemoStep == 12) && mcQuestions.Count >= 2 && mcQuestions[1].Id == question.Id)
             {
                 var mcQuestion = question as MultipleChoiceQuestionViewModel;
                 return mcQuestion?.Options?.FirstOrDefault()?.Id != option.Id;
