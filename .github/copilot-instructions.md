@@ -1,7 +1,7 @@
 # JwtIdentity - Copilot Instructions
 
 ## Project Overview
-This is a Blazor WebAssembly project with a server-side API. The solution uses .NET 9 and follows a clean architecture pattern with separated concerns.
+This is a Blazor WebAssembly project with a server-side API. The solution uses .NET 10 and follows a clean architecture pattern with separated concerns.
 
 ### Solution Structure
 - **JwtIdentity**: ASP.NET Core server project providing the API and hosting the Blazor app
@@ -12,7 +12,7 @@ This is a Blazor WebAssembly project with a server-side API. The solution uses .
 - **JwtIdentity.PlaywrightTests**: End-to-end tests using Playwright and NUnit
 
 ## Technology Stack
-- **.NET 9**: Latest .NET framework features and libraries
+- **.NET 10**: Latest .NET framework features and libraries
 - **Blazor WebAssembly**: Client-side SPA framework
 - **Entity Framework Core**: ORM for SQL Server database
 - **AutoMapper**: Object-to-object mapping
