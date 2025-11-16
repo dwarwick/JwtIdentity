@@ -97,6 +97,18 @@ This is a Blazor WebAssembly project with a server-side API. The solution uses .
 - Mocked services (AuthService, ApiService, LocalStorage, etc.)
 - MockNavigationManager for navigation testing
 - MudBlazor and Syncfusion services registered
+- `AssertPopoverText(string expectedText)` helper method for verifying demo popup content
+
+**IMPORTANT: Demo Popup Testing**
+When testing demo functionality with `DemoPopup` components:
+- **ALWAYS** use the `AssertPopoverText(string expectedText)` method to verify popup content
+- This method checks that the expected text appears in the MudPopoverProvider markup
+- Call it after rendering the component and waiting for the demo step to be active
+- Example:
+  ```csharp
+  AssertPopoverText("Welcome to Branching Configuration!");
+  AssertPopoverText("Click the button to continue");
+  ```
 
 ```csharp
 [TestFixture]

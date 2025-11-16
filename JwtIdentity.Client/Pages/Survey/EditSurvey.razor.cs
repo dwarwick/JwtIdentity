@@ -173,9 +173,9 @@ namespace JwtIdentity.Client.Pages.Survey
             }
 
             if (IsDemoUser && DemoStep != _previousDemoStep)
-            {
+            {                
                 await ScrollToCurrentDemoStep();
-                _previousDemoStep = DemoStep;
+                _previousDemoStep = DemoStep;                
             }
         }
 
@@ -193,7 +193,8 @@ namespace JwtIdentity.Client.Pages.Survey
                 7 => "Text",
                 8 => "PresetChoices",
                 9 => "SaveQuestionBtn",
-                10 => "PublishSurveyBtn",
+                10 => "SaveQuestionBtn",
+                23 => "PublishSurveyBtn",
                 _ => null
             };
 
