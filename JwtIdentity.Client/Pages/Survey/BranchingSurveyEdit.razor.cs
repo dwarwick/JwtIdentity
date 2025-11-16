@@ -493,33 +493,17 @@ namespace JwtIdentity.Client.Pages.Survey
                         var movedQuestion = Survey.Questions.FirstOrDefault(q => q.Id == question.Id);
                         if (movedQuestion != null)
                         {
-                            // Check if this is the 3rd MC question (Q3) being moved to Group 1
+                            // Check if Q3 (QuestionNumber 3) is being moved to Group 1
                             if ((DemoStep == 5 || DemoStep == 6) && targetGroupId == 1 && 
-                                movedQuestion.QuestionType == QuestionType.MultipleChoice)
+                                movedQuestion.QuestionNumber == 3)
                             {
-                                var mcQuestions = Survey.Questions
-                                    .Where(q => q.QuestionType == QuestionType.MultipleChoice)
-                                    .OrderBy(q => q.QuestionNumber)
-                                    .ToList();
-                                // Check if this is the 3rd MC question
-                                if (mcQuestions.Count >= 3 && mcQuestions[2].Id == question.Id)
-                                {
-                                    DemoStep = 7; // Q3 moved to Group 1
-                                }
+                                DemoStep = 7; // Q3 moved to Group 1
                             }
-                            // Check if this is the 4th MC question (Q4) being moved to Group 2
+                            // Check if Q4 (QuestionNumber 4) is being moved to Group 2
                             else if ((DemoStep == 7 || DemoStep == 8) && targetGroupId == 2 && 
-                                movedQuestion.QuestionType == QuestionType.MultipleChoice)
+                                movedQuestion.QuestionNumber == 4)
                             {
-                                var mcQuestions = Survey.Questions
-                                    .Where(q => q.QuestionType == QuestionType.MultipleChoice)
-                                    .OrderBy(q => q.QuestionNumber)
-                                    .ToList();
-                                // Check if this is the 4th MC question
-                                if (mcQuestions.Count >= 4 && mcQuestions[3].Id == question.Id)
-                                {
-                                    DemoStep = 9; // Q4 moved to Group 2
-                                }
+                                DemoStep = 9; // Q4 moved to Group 2
                             }
                         }
                     }
@@ -1119,17 +1103,12 @@ namespace JwtIdentity.Client.Pages.Survey
             if (!IsDemoUser || DemoType != "branching") return false;
             if (question.IsLastQuestion) return true; // Always disabled for last questions
             
-            var mcQuestions = Survey.Questions
-                .Where(q => q.QuestionType == QuestionType.MultipleChoice)
-                .OrderBy(q => q.QuestionNumber)
-                .ToList();
-            
-            // At steps 5-6, only allow moving Q3 (3rd MC question)
-            if ((DemoStep == 5 || DemoStep == 6) && mcQuestions.Count >= 3 && mcQuestions[2].Id == question.Id)
+            // At steps 5-6, only allow moving Q3 (QuestionNumber 3)
+            if ((DemoStep == 5 || DemoStep == 6) && question.QuestionNumber == 3)
                 return false;
             
-            // At steps 7-8, only allow moving Q4 (4th MC question)
-            if ((DemoStep == 7 || DemoStep == 8) && mcQuestions.Count >= 4 && mcQuestions[3].Id == question.Id)
+            // At steps 7-8, only allow moving Q4 (QuestionNumber 4)
+            if ((DemoStep == 7 || DemoStep == 8) && question.QuestionNumber == 4)
                 return false;
             
             return true;
