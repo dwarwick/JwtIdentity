@@ -105,23 +105,24 @@ else
                         No question groups defined yet. Add groups to create a branching flow.
                     </MudAlert>
                 }
+                <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 2, 4 })" AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft">
+                    @if (DemoStep == 2)
+                    {
+                        <MudText Typo="Typo.body2" Class="mb-2">Excellent! You've created Group 1.</MudText>
+                        <MudText Typo="Typo.body2">Group 1 has been automatically named "Satisfied Customers" to organize questions for satisfied customers.</MudText>
+                    }
+                    else if (DemoStep == 4)
+                    {
+                        <MudText Typo="Typo.body2" Class="mb-2">Great! You've created Group 2.</MudText>
+                        <MudText Typo="Typo.body2">Group 2 has been automatically named "Unsatisfied Customers" to organize questions for unsatisfied customers.</MudText>
+                    }
+                    <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 2, 4 })" IsButton="true" Class="mt-3">
+                        <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
+                    </DemoBorder>
+                </DemoPopup>
             </ChildContent>
         </MudExpansionPanel>
-        <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 2, 4 })" AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft">
-            @if (DemoStep == 2)
-            {
-                <MudText Typo="Typo.body2" Class="mb-2">Excellent! You've created Group 1.</MudText>
-                <MudText Typo="Typo.body2">Group 1 has been automatically named "Satisfied Customers" to organize questions for satisfied customers.</MudText>
-            }
-            else if (DemoStep == 4)
-            {
-                <MudText Typo="Typo.body2" Class="mb-2">Great! You've created Group 2.</MudText>
-                <MudText Typo="Typo.body2">Group 2 has been automatically named "Unsatisfied Customers" to organize questions for unsatisfied customers.</MudText>
-            }
-            <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 2, 4 })" IsButton="true" Class="mt-3">
-                <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
-            </DemoBorder>
-        </DemoPopup>
+        
 
         <MudExpansionPanel Class="mb-3" Expanded="@ShouldExpandPanel("Groups")">
             <TitleContent>
