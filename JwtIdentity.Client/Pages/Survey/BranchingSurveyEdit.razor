@@ -8,29 +8,33 @@
 
 <MudStack Row="true" Justify="Justify.SpaceBetween" Class="mb-4">
     <MudText Typo="Typo.h4">Survey Branching: @Survey?.Title</MudText>
-    <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 0, 13 })" IsButton="true">
+    <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 13 })" IsButton="true">
         <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="@NavigateBackToEdit">
             Back to Edit Survey
         </MudButton>
     </DemoBorder>
-    <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 0 })" AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft">
-        <MudText Typo="Typo.h5" Class="mb-2">Welcome to Branching Configuration!</MudText>
-        <MudText Typo="Typo.body2" Class="mb-2">In this guided demo, you'll learn how to:</MudText>
-        <MudList T="string" Dense="true" Class="ml-4">
-            <MudListItem T="string">• Create question groups to organize your survey</MudListItem>
-            <MudListItem T="string">• Move questions to different groups</MudListItem>
-            <MudListItem T="string">• Configure conditional branching rules</MudListItem>
-            <MudListItem T="string">• Visualize your survey flow</MudListItem>
-        </MudList>
-        <MudText Typo="Typo.body2" Class="mt-2">Let's get started!</MudText>
-        <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 0 })" IsButton="true" Class="mt-3">
-            <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
-        </DemoBorder>
-    </DemoPopup>
+    @if (Survey != null)
+    {
+        <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 0 })" AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft">
+            <MudText Typo="Typo.h5" Class="mb-2">Welcome to Branching Configuration!</MudText>
+            <MudText Typo="Typo.body2" Class="mb-2">In this guided demo, you'll learn how to:</MudText>
+            <MudList T="string" Dense="true" Class="ml-4">
+                <MudListItem T="string">• Create question groups to organize your survey</MudListItem>
+                <MudListItem T="string">• Move questions to different groups</MudListItem>
+                <MudListItem T="string">• Configure conditional branching rules</MudListItem>
+                <MudListItem T="string">• Visualize your survey flow</MudListItem>
+            </MudList>
+            <MudText Typo="Typo.body2" Class="mt-2">Let's get started!</MudText>
+            <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 0 })" IsButton="true" Class="mt-3">
+                <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
+            </DemoBorder>
+        </DemoPopup>
+    }
+
     <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 13 })" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
         <MudText Typo="Typo.h6" Class="mb-2">Excellent work!</MudText>
         <MudText Typo="Typo.body2" Class="mb-2">You've successfully configured branching for your survey. The flow diagram above shows how your survey will branch based on user responses.</MudText>
-        <MudText Typo="Typo.body2">Click "Back to Edit Survey" to continue with the demo.</MudText>        
+        <MudText Typo="Typo.body2">Click "Back to Edit Survey" to continue with the demo.</MudText>
     </DemoPopup>
 </MudStack>
 
@@ -71,9 +75,9 @@ else
 
                     <div style="width:100%; height:600px; overflow:auto; border:1px solid #ddd; position:relative;">
                         <div style="height:0px; width:100%;
-                                      transform: scale(@ZoomLevel);
-                                      transform-origin: left top;
-                                      transition: transform 0.2s ease;">
+                                              transform: scale(@ZoomLevel);
+                                              transform-origin: left top;
+                                              transition: transform 0.2s ease;">
 
                             <SfDiagramComponent @key="@DiagramRefreshKey"
                                                 id="branchingDiagram"
@@ -119,7 +123,7 @@ else
                 </DemoPopup>
             </ChildContent>
         </MudExpansionPanel>
-        
+
 
         <MudExpansionPanel Class="mb-3" Expanded="@ShouldExpandPanel("Groups")">
             <TitleContent>
@@ -178,11 +182,11 @@ else
                                             }
                                             else if (group.GroupNumber == 2)
                                             {
-                                                 <MudTextField id="Group2NameField" Label="Group Name" Value="@group.GroupName"
-                                                               Variant="Variant.Outlined"
-                                                               HelperText="Optional: Give this group a descriptive name"
-                                                               ReadOnly="@IsGroupNameReadOnly(group.GroupNumber)"
-                                                               ValueChanged="@(async (string value) => { group.GroupName = value; await UpdateQuestionGroup(group); await RefreshDiagram(); })" />
+                                                <MudTextField id="Group2NameField" Label="Group Name" Value="@group.GroupName"
+                                                              Variant="Variant.Outlined"
+                                                              HelperText="Optional: Give this group a descriptive name"
+                                                              ReadOnly="@IsGroupNameReadOnly(group.GroupNumber)"
+                                                              ValueChanged="@(async (string value) => { group.GroupName = value; await UpdateQuestionGroup(group); await RefreshDiagram(); })" />
                                             }
                                             else
                                             {
@@ -255,12 +259,12 @@ else
                         {
                             var questionColorClass = $"group-color-{question.GroupId % 10}";
                             var mcQuestions = Survey.Questions
-                                .Where(q => q.QuestionType == QuestionType.MultipleChoice)
-                                .OrderBy(q => q.QuestionNumber)
-                                .ToList();
-                            var isQ3 = mcQuestions.Count >= 3 && mcQuestions[2].Id == question.Id;
-                            var isQ4 = mcQuestions.Count >= 4 && mcQuestions[3].Id == question.Id;
-                            
+                            .Where(q => q.QuestionType == QuestionType.MultipleChoice)
+                            .OrderBy(q => q.QuestionNumber)
+                            .ToList();
+                            var isQ3 = mcQuestions.Count >= 3 && question.QuestionNumber == 3;
+                            var isQ4 = mcQuestions.Count >= 4 && question.QuestionNumber == 4;
+
                             <MudListItem T="string" Class="@questionColorClass">
                                 <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
                                     <span class="@($"group-badge group-badge-{question.GroupId % 10}")">Group @question.GroupId</span>
@@ -272,7 +276,7 @@ else
                                     else
                                     {
                                         <div>
-                                            <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(isQ3 ? new List<int>() { 5, 6 } : isQ4 ? new List<int>() { 7, 8 } : new List<int>())">
+                                            <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(question.QuestionNumber == 3 ? new List<int>() { 5, 6 } : question.QuestionNumber == 4 ? new List<int>() { 7, 8 } : new List<int>())">
                                                 <MudSelect T="int" Label="Assign to Group" Value="question.GroupId"
                                                            ValueChanged="@(async value => { await MoveQuestionToGroup(question, value); await RefreshDiagram(); })"
                                                            Variant="Variant.Outlined" Dense="true" Style="width: 250px;"
@@ -317,7 +321,7 @@ else
                         if (groupQuestions.Any())
                         {
                             var colorClass = $"group-color-{group.GroupNumber % 10}";
-                            <MudExpansionPanel Class="mb-3">
+                            <MudExpansionPanel Class="mb-3" Expanded=@(ShouldExpandPanel("Rules") && group.GroupNumber == 0) >
                                 <TitleContent>
                                     <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
                                         <span class="@($"group-badge group-badge-{group.GroupNumber % 10}")">Group @group.GroupNumber</span>

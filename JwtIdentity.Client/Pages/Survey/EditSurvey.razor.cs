@@ -181,7 +181,6 @@ namespace JwtIdentity.Client.Pages.Survey
 
         private async Task ScrollToCurrentDemoStep()
         {
-Console.WriteLine($"Scrolling to demo step {DemoStep}");
             var id = DemoStep switch
             {
                 0 => "QuestionsPanel",
