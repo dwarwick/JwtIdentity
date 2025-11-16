@@ -9,7 +9,7 @@
 <MudStack Row="true" Justify="Justify.SpaceBetween" Class="mb-4">
     <MudText Typo="Typo.h4">Survey Branching: @Survey?.Title</MudText>
     <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 13 })" IsButton="true">
-        <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="@NavigateBackToEdit">
+        <MudButton id="BackToEdit_button" Variant="Variant.Outlined" Color="Color.Primary" OnClick="@NavigateBackToEdit">
             Back to Edit Survey
         </MudButton>
     </DemoBorder>
@@ -262,8 +262,6 @@ else
                             .Where(q => q.QuestionType == QuestionType.MultipleChoice)
                             .OrderBy(q => q.QuestionNumber)
                             .ToList();
-                            var isQ3 = mcQuestions.Count >= 3 && question.QuestionNumber == 3;
-                            var isQ4 = mcQuestions.Count >= 4 && question.QuestionNumber == 4;
 
                             <MudListItem T="string" Class="@questionColorClass">
                                 <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
@@ -300,15 +298,8 @@ else
                     </MudList>
                 </MudPaper>
 
-                <MudText Typo="Typo.subtitle1" Class="mb-3 font-weight-bold">Configure Conditional Branching:</MudText>
-                <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 9, 10 })" AnchorOrigin="AnchorOrigin" TransformOrigin="TransformOrigin">
-                    <MudText Typo="Typo.body2" Class="mb-2">Perfect! Now let's configure branching rules. This determines where users go based on their answers.</MudText>
-                    <MudText Typo="Typo.body2">Find Question 1 (in Group 0) and set the first option to branch to Group 1.</MudText>
-                </DemoPopup>
-                <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 11, 12 })" AnchorOrigin="AnchorOrigin" TransformOrigin="TransformOrigin">
-                    <MudText Typo="Typo.body2" Class="mb-2">Excellent! Question 1 now branches to Group 1 for that option.</MudText>
-                    <MudText Typo="Typo.body2">Now set Question 2's first option to branch to Group 2.</MudText>
-                </DemoPopup>
+                <MudText Typo="Typo.subtitle1" Class="mb-3 font-weight-bold">Configure Conditional Branching:</MudText>                
+                
                 <MudExpansionPanels MultiExpansion="true">
                     @foreach (var group in QuestionGroups.OrderBy(g => g.GroupNumber))
                     {
@@ -321,7 +312,7 @@ else
                         if (groupQuestions.Any())
                         {
                             var colorClass = $"group-color-{group.GroupNumber % 10}";
-                            <MudExpansionPanel Class="mb-3" Expanded=@(ShouldExpandPanel("Rules") && group.GroupNumber == 0) >
+                            <MudExpansionPanel id=@($"Rules_{group.GroupNumber}_panel") Class="mb-3" Expanded=@(ShouldExpandPanel("Rules") && group.GroupNumber == 0) >
                                 <TitleContent>
                                     <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
                                         <span class="@($"group-badge group-badge-{group.GroupNumber % 10}")">Group @group.GroupNumber</span>
@@ -330,6 +321,14 @@ else
                                 </TitleContent>
                                 <ChildContent>
                                     <MudPaper Elevation="2" Class="@($"pa-4 {colorClass}")">
+                                        <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 9, 10 })" AnchorOrigin="AnchorOrigin" TransformOrigin="TransformOrigin">
+                                            <MudText Typo="Typo.body2" Class="mb-2">Perfect! Now let's configure branching rules. This determines where users go based on their answers.</MudText>
+                                            <MudText Typo="Typo.body2">Find Question 1 (in Group 0) and set the first option to branch to Group 1.</MudText>
+                                        </DemoPopup>
+                                        <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 11, 12 })" AnchorOrigin="AnchorOrigin" TransformOrigin="TransformOrigin">
+                                            <MudText Typo="Typo.body2" Class="mb-2">Excellent! Question 1 now branches to Group 1 for that option.</MudText>
+                                            <MudText Typo="Typo.body2">Now set Question 2's first option to branch to Group 2.</MudText>
+                                        </DemoPopup>
                                         <MudStack Spacing="2">
                                             @foreach (var question in groupQuestions)
                                             {

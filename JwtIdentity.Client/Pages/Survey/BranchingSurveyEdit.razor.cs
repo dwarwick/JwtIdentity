@@ -86,7 +86,6 @@ namespace JwtIdentity.Client.Pages.Survey
 
         private async Task ScrollToCurrentDemoStep()
         {
-            Console.WriteLine($"DemoStep: {DemoStep}");
             var id = DemoStep switch
             {
                 1 => "AddGroupButton",      // Step 1: Add first group
@@ -95,8 +94,10 @@ namespace JwtIdentity.Client.Pages.Survey
                 4 => "AddGroupButton",     // Step 4: Group 2 created (auto-named)
                 6 => "QuestionGroupSelector_Q3",  // Step 6: Move Q3 to Group 1
                 8 => "QuestionGroupSelector_Q4", // Step 8: Move Q4 to Group 2
-                10 => "BranchingSelector_Q1",     // Step 10: Configure Q1 branching
+                9 => "Rules_0_panel",      // Step 9: Configure Q1 branching
+                10 => "Rules_0_panel",     // Step 10: Configure Q1 branching
                 12 => "BranchingSelector_Q2",     // Step 12: Configure Q2 branching
+                13 => "BackToEdit_button",     // Step 13: Survey Configured
                 _ => null
             };
 
@@ -1157,10 +1158,10 @@ namespace JwtIdentity.Client.Pages.Survey
                     return DemoStep >= 1 && DemoStep <= 4;
                 case "Branching":
                     // Expand for question movement and branching configuration steps
-                    return DemoStep >= 5 && DemoStep <9;
+                    return DemoStep >= 5;
 
                 case "Rules":
-                    return DemoStep == 9;
+                    return DemoStep == 9 || DemoStep == 11;
                 default:
                     return false;
             }
