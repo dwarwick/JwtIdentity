@@ -103,6 +103,7 @@
     string _theme = "light";
     bool _cookiesAccepted = false;
     bool _showCookieBanner = false;
+    string _cookiesMode = string.Empty; // "AllCookies" | "EssentialOnly" | ""
 
     MudTheme MyCustomLightTheme = new MudTheme()
     {
@@ -162,9 +163,10 @@
             }
             await SetTheme();
 
-            // Check if cookies have been accepted
-            var cookiesAccepted = await LocalStorage.GetItemAsync<bool>("cookiesAccepted");
-            _cookiesAccepted = cookiesAccepted;
+            // Read cookie preference state
+            _cookiesAccepted = await LocalStorage.GetItemAsync<bool>("cookiesAccepted");
+            _cookiesMode = await LocalStorage.GetItemAsStringAsync("cookiesMode") ?? string.Empty;
+
             if (!_cookiesAccepted)
             {
                 // Add a small delay to show the banner after the page loads
@@ -174,11 +176,12 @@
             }
 
             bool consentGiven = await JSRuntime.InvokeAsync<bool>("userHasThirdPartyConsent");
+#if !DEBUG
             if (consentGiven)
             {
                 await JSRuntime.InvokeVoidAsync("loadGoogleAds");
             }
-
+#endif
             StateHasChanged();
         }
         catch (Exception ex)
@@ -228,51 +231,78 @@
     
     private async Task AcceptAllCookies()
     {
-        // Save cookie acceptance to local storage
-        await LocalStorage.SetItemAsync("cookiesAccepted", true);
-        _cookiesAccepted = true;
-        _showCookieBanner = false;
-        
-        // Call our JavaScript function to set the cookie with the API
-        await JSRuntime.InvokeVoidAsync("acceptAllCookies");
-        
-        // Load Google Ads once consent is given
-        await JSRuntime.InvokeVoidAsync("loadGoogleAds");
-        
-        StateHasChanged();
+        try
+        {
+            // Save cookie acceptance to local storage first
+            await LocalStorage.SetItemAsync("cookiesAccepted", true);
+            await LocalStorage.SetItemAsStringAsync("cookiesMode", "AllCookies");
+            _cookiesAccepted = true;
+            _cookiesMode = "AllCookies";
+            _showCookieBanner = false;
+            
+            // Persist server-side and then (prod) load ads
+            await JSRuntime.InvokeVoidAsync("acceptAllCookies");
+#if !DEBUG
+            await JSRuntime.InvokeVoidAsync("loadGoogleAds");
+#endif
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"AcceptAllCookies failed: {ex}");
+        }
+        finally
+        {
+            StateHasChanged();
+        }
     }
     
     private async Task RejectThirdPartyCookies()
     {
-        // First perform a complete cleanup of all third-party services
-        await JSRuntime.InvokeVoidAsync("clearThirdPartyServicesCompletely");
-        
-        // Save cookie acceptance to local storage
-        await LocalStorage.SetItemAsync("cookiesAccepted", true);
-        _cookiesAccepted = true;
-        _showCookieBanner = false;
-        
-        // Call our JavaScript function to set cookie rejection
-        await JSRuntime.InvokeVoidAsync("rejectThirdPartyCookies");
-        
-        // Force page reload to ensure a clean state
-        await JSRuntime.InvokeVoidAsync("eval", "location.reload()");
-        
-        // Note: The state change below will likely not execute due to the page reload
-        StateHasChanged();
+        try
+        {
+            // Persist choice to local storage first to survive any JS errors/reloads
+            await LocalStorage.SetItemAsync("cookiesAccepted", true);
+            await LocalStorage.SetItemAsStringAsync("cookiesMode", "EssentialOnly");
+            _cookiesAccepted = true;
+            _cookiesMode = "EssentialOnly";
+            _showCookieBanner = false;
+
+            // Best-effort cleanup and server notification
+            try { await JSRuntime.InvokeVoidAsync("clearThirdPartyServicesCompletely"); } catch {}
+            try { await JSRuntime.InvokeVoidAsync("rejectThirdPartyCookies"); } catch {}
+
+            // Force page reload to ensure a clean state
+            try { await JSRuntime.InvokeVoidAsync("eval", "location.reload()"); } catch {}
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"RejectThirdPartyCookies failed: {ex}");
+        }
+        finally
+        {
+            StateHasChanged();
+        }
     }
     
     private async Task OpenCookieSettings()
     {
-        // Clear existing cookie consent from localStorage
-        await LocalStorage.RemoveItemAsync("cookiesAccepted");
-        _cookiesAccepted = false;
-        
-        // Call JavaScript to clear the third-party cookies and consent cookie
-        await JSRuntime.InvokeVoidAsync("clearCookieConsent");
-        
-        // Show the cookie banner again
-        _showCookieBanner = true;
-        StateHasChanged();
+        try
+        {
+            // Clear existing cookie consent from localStorage
+            await LocalStorage.RemoveItemAsync("cookiesAccepted");
+            await LocalStorage.RemoveItemAsync("cookiesMode");
+            _cookiesAccepted = false;
+            _cookiesMode = string.Empty;
+            
+            // Call JavaScript to clear the third-party cookies and consent cookie
+            try { await JSRuntime.InvokeVoidAsync("clearCookieConsent"); } catch {}
+
+            // Show the cookie banner again
+            _showCookieBanner = true;
+        }
+        finally
+        {
+            StateHasChanged();
+        }
     }
 }
