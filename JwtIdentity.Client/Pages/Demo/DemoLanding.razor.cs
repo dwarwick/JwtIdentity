@@ -11,10 +11,61 @@ namespace JwtIdentity.Client.Pages.Demo
 
         protected string YoutubeEmbedCode => AppSettings.Youtube?.HomePageCode ?? string.Empty;
 
+        protected bool HasThirdPartyConsent { get; set; }
+        protected bool InlinePlaybackEnabled { get; set; }
+
         protected override async Task OnInitializedAsync()
         {
             AppSettings = await ApiService.GetPublicAsync<AppSettings>("/api/appsettings");
         }
+
+        protected override async Task OnAfterRenderAsync(bool firstRender)
+        {
+            if (!firstRender)
+            {
+                return;
+            }
+
+            try
+            {
+                HasThirdPartyConsent = await JSRuntime.InvokeAsync<bool>("userHasThirdPartyConsent");
+#if !DEBUG
+                // In non-DEBUG (production) automatically enable inline playback once consent exists
+                if (HasThirdPartyConsent)
+                {
+                    InlinePlaybackEnabled = true;
+                }
+#endif
+                await InvokeAsync(StateHasChanged);
+            }
+            catch
+            {
+                // ignore JS interop failures during prerender or debug
+            }
+        }
+
+        protected async Task EnableVideoAsync()
+        {
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("setThirdPartyCookieConsent", "AllCookies");
+                HasThirdPartyConsent = true;
+#if !DEBUG
+                // Auto-enable inline playback in production immediately after consent
+                InlinePlaybackEnabled = true;
+#endif
+                await InvokeAsync(StateHasChanged);
+            }
+            catch { }
+        }
+
+#if DEBUG
+        protected Task EnableInlinePlaybackAsync()
+        {
+            InlinePlaybackEnabled = true;
+            return InvokeAsync(StateHasChanged);
+        }
+#endif
 
         protected async Task BeginLinearDemo()
         {

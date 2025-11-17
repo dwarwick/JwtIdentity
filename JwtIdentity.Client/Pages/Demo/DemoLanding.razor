@@ -122,14 +122,70 @@
 
     <MudPaper Elevation="1" Class="pa-5 mt-6">
         <MudText Typo="Typo.h5" Class="mb-3">Watch the Survey Shark Demo Walkthrough</MudText>
-       
+ 
+        @{
+#if DEBUG
+        if (HasThirdPartyConsent && InlinePlaybackEnabled)
+        {
             <iframe class="video-container"
-                    src="https://www.youtube.com/embed/v0XqRue1aAM"
+                    src="https://www.youtube-nocookie.com/embed/v0XqRue1aAM?rel=0&modestbranding=1&playsinline=1"
                     title="Survey Shark Demo Video"
-                    frameborder="0"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    referrerpolicy="strict-origin-when-cross-origin"
+                    loading="lazy"
                     allowfullscreen>
             </iframe>
+            <div class="mt-2">
+                <MudButton Variant="Variant.Outlined" Color="Color.Primary" Href="https://www.youtube.com/watch?v=v0XqRue1aAM" Target="_blank" Rel="noopener noreferrer">
+                    Open on YouTube
+                </MudButton>
+            </div>
+        }
+        else
+        {
+            if (!HasThirdPartyConsent)
+            {
+                <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="mb-2">
+                    To watch this video, enable third-party cookies.
+                </MudAlert>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="EnableVideoAsync">Enable video</MudButton>
+            }
+            else
+            {
+                <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="mb-2">
+                    Third-party cookies enabled. To avoid debug-time script errors, open externally or choose inline playback below.
+                </MudAlert>
+                <MudStack Spacing="1">
+                    <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Href="https://www.youtube.com/watch?v=v0XqRue1aAM" Target="_blank" Rel="noopener noreferrer">
+                        Open on YouTube instead
+                    </MudButton>
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="EnableInlinePlaybackAsync">
+                        Play inline (may trigger third-party scripts)
+                    </MudButton>
+                </MudStack>
+            }
+        }
+#else
+        if (HasThirdPartyConsent)
+        {
+            <iframe class="video-container"
+                    src="https://www.youtube-nocookie.com/embed/v0XqRue1aAM?rel=0&modestbranding=1&playsinline=1"
+                    title="Survey Shark Demo Video"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    referrerpolicy="strict-origin-when-cross-origin"
+                    loading="lazy"
+                    allowfullscreen>
+            </iframe>
+        }
+        else
+        {
+            <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="mb-2">
+                To watch this video, enable third-party cookies.
+            </MudAlert>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="EnableVideoAsync">Enable video</MudButton>
+        }
+#endif
+}
 
     </MudPaper>
 </MudContainer>
