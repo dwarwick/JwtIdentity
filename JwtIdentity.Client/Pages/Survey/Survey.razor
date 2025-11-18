@@ -85,7 +85,7 @@
                                     {
                                         var answer = CurrentQuestion.Answers.FirstOrDefault() as MultipleChoiceAnswerViewModel;
                                         <MudPaper Elevation="0" Class="pa-2">
-                                            <MudRadioGroup @key="CurrentQuestion" T="int" Value="answer.SelectedOptionId" ValueChanged="@((v) => HandleAnswerQuestion(answer, v))" Disabled="@((Preview && !IsDemoUser) || (IsAnonymousUser && !AgreedToTerms))">
+                                            <MudRadioGroup @key="CurrentQuestion" T="int" Value="answer.SelectedOptionId" ValueChanged="@((v) => HandleAnswerQuestion(answer, v))" Disabled="@(IsAnonymousUser && !AgreedToTerms)">
                                                 <MudStack Spacing="2">
                                                     @foreach (var option in ((MultipleChoiceQuestionViewModel)CurrentQuestion).Options.OrderBy(o => o.Order))
                                                     {
@@ -99,7 +99,7 @@
                                     {
                                         var answer = CurrentQuestion.Answers.FirstOrDefault() as Rating1To10AnswerViewModel;
                                         <MudPaper Elevation="0" Class="pa-2">
-                                            <MudRadioGroup @key="CurrentQuestion" T="int" Value="answer.SelectedOptionId" ValueChanged="@((v) => HandleAnswerQuestion(answer, v))" Disabled="@((Preview && !IsDemoUser) || (IsAnonymousUser && !AgreedToTerms))">
+                                            <MudRadioGroup @key="CurrentQuestion" T="int" Value="answer.SelectedOptionId" ValueChanged="@((v) => HandleAnswerQuestion(answer, v))" Disabled="@(IsAnonymousUser && !AgreedToTerms)">
                                                 <div class="rating-options">
                                                     <MudPaper Class="rating-option" Elevation="0">
                                                         @for (int i = 1; i <= 10; i++)
@@ -115,13 +115,13 @@
                                     {
                                         var answer = CurrentQuestion.Answers.FirstOrDefault() as TextAnswerViewModel;
                                         <MudTextField @key="CurrentQuestion" T="string" Value="answer.Text" ValueChanged="@((t) => HandleAnswerQuestion(answer, t))"
-                                                      Label="Your answer" Variant="Variant.Outlined" Lines="3" Disabled="@((Preview && !IsDemoUser) || (IsAnonymousUser && !AgreedToTerms))" />
+                                                      Label="Your answer" Variant="Variant.Outlined" Lines="3" Disabled="@(IsAnonymousUser && !AgreedToTerms)" />
                                     }
                                     else if (CurrentQuestion.QuestionType == QuestionType.TrueFalse)
                                     {
                                         var answer = CurrentQuestion.Answers.FirstOrDefault() as TrueFalseAnswerViewModel;
                                         <MudPaper Elevation="0" Class="pa-2">
-                                            <MudRadioGroup @key="CurrentQuestion" T="bool?" Value="@answer.Value" ValueChanged="@((v) => HandleAnswerQuestion(answer, v))" Disabled="@((Preview && !IsDemoUser) || (IsAnonymousUser && !AgreedToTerms))">
+                                            <MudRadioGroup @key="CurrentQuestion" T="bool?" Value="@answer.Value" ValueChanged="@((v) => HandleAnswerQuestion(answer, v))" Disabled="@(IsAnonymousUser && !AgreedToTerms)">
                                                 <MudStack Spacing="2">
                                                     <MudRadio T="bool?" Color="Color.Primary" Label="True" Value="@((bool?)true)" />
                                                     <MudRadio T="bool?" Color="Color.Primary" Label="False" Value="@((bool?)false)" />
@@ -141,7 +141,7 @@
                                                     var option = saQuestion.Options[index];
                                                     <MudCheckBox @key="option" T="bool" Value="@answer.SelectedOptions[index]"
                                                                 ValueChanged="@((bool isChecked) => HandleSelectAllThatApplyOption(answer, index, isChecked, option.Id))"
-                                                                Label="@option.OptionText" Color="Color.Primary" Disabled="@((Preview && !IsDemoUser) || (IsAnonymousUser && !AgreedToTerms))" />
+                                                                Label="@option.OptionText" Color="Color.Primary" Disabled="@(IsAnonymousUser && !AgreedToTerms)" />
                                                 }
                                             </MudStack>
                                         </MudPaper>
@@ -194,7 +194,7 @@ The survey automatically loaded the appropriate branch based on your response. C
                         {
                             <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 3 })" IsButton="true">
                                 <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => SubmitSurvey())"
-                                           Disabled="@((Preview && !IsDemoUser) || !IsCurrentQuestionAnswered() || (IsAnonymousUser && !AgreedToTerms))">
+                                           Disabled="@(!IsCurrentQuestionAnswered() || (IsAnonymousUser && !AgreedToTerms))">
                                     Submit Survey
                                 </MudButton>
                             </DemoBorder>

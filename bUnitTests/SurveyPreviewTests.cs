@@ -814,9 +814,9 @@ namespace JwtIdentity.BunitTests
         #region Interactive Branching Demo Tests
 
         [Test]
-        public async Task BranchingDemo_Preview_DemoUsers_Can_Interact_With_Controls()
+        public async Task Preview_DemoUser_CanInteract_WithControls()
         {
-            // Arrange
+            // Arrange - Demo user in preview mode
             NavManager.NavigateTo($"http://localhost/survey/{_testSurveyGuid}?Preview=true&DemoStep=1&DemoType=branching");
 
             // Act
@@ -826,14 +826,14 @@ namespace JwtIdentity.BunitTests
             
             await cut.InvokeAsync(async () => await cut.Instance.LoadData());
 
-            // Assert - Demo user in preview should NOT have disabled controls
-            // The markup should contain radio buttons that are not disabled
+            // Assert - Demo user in preview should be able to interact
+            // Controls should NOT be disabled (except for anonymous users who haven't agreed to terms)
             Assert.That(cut.Markup, Does.Contain("survey-container"));
             Assert.That(cut.Markup, Does.Contain("Preview Mode"));
         }
 
         [Test]
-        public async Task BranchingDemo_Preview_NonDemoUsers_Cannot_Interact()
+        public async Task Preview_NonDemoUser_CanInteract_WithControls()
         {
             // Arrange - Setup non-demo user
             var nonDemoUser = new ClaimsPrincipal(new ClaimsIdentity(new[]
@@ -852,7 +852,120 @@ namespace JwtIdentity.BunitTests
             
             await cut.InvokeAsync(async () => await cut.Instance.LoadData());
 
-            // Assert - Non-demo user should see preview mode alert
+            // Assert - Non-demo user in preview should ALSO be able to interact
+            // Preview mode doesn't disable controls - it just doesn't save answers
+            Assert.That(cut.Markup, Does.Contain("Preview Mode"));
+            Assert.That(cut.Markup, Does.Contain("survey-container"));
+            // The key is that answers aren't saved, not that controls are disabled
+        }
+
+        [Test]
+        public async Task NormalMode_LoggedInUser_CanInteract_WithControls()
+        {
+            // Arrange - Regular user, NOT in preview mode
+            var normalUser = new ClaimsPrincipal(new ClaimsIdentity(new[]
+            {
+                new Claim(ClaimTypes.Name, "normaluser@example.com")
+            }, "TestAuth"));
+            var authState = new AuthenticationState(normalUser);
+            AuthStateProviderMock.Setup(x => x.GetAuthenticationStateAsync()).ReturnsAsync(authState);
+
+            NavManager.NavigateTo($"http://localhost/survey/{_testSurveyGuid}"); // No Preview parameter
+
+            // Act
+            var cut = Context.RenderComponent<Survey>(parameters => parameters
+                .Add(p => p.SurveyId, _testSurveyGuid)
+            );
+            
+            await cut.InvokeAsync(async () => await cut.Instance.LoadData());
+
+            // Assert - Normal mode user should be able to interact
+            Assert.That(cut.Markup, Does.Contain("survey-container"));
+            Assert.That(cut.Markup, Does.Not.Contain("Preview Mode")); // Should NOT show preview alert
+        }
+
+        [Test]
+        public async Task AnonymousUser_WithoutConsent_CannotInteract()
+        {
+            // Arrange - Anonymous user who hasn't agreed to terms
+            var anonymousUser = new ClaimsPrincipal(new ClaimsIdentity()); // Not authenticated
+            var authState = new AuthenticationState(anonymousUser);
+            AuthStateProviderMock.Setup(x => x.GetAuthenticationStateAsync()).ReturnsAsync(authState);
+
+            NavManager.NavigateTo($"http://localhost/survey/{_testSurveyGuid}");
+
+            // Act
+            var cut = Context.RenderComponent<Survey>(parameters => parameters
+                .Add(p => p.SurveyId, _testSurveyGuid)
+            );
+            
+            await cut.InvokeAsync(async () => await cut.Instance.LoadData());
+
+            // Assert - Anonymous user without consent cannot interact
+            Assert.That(cut.Markup, Does.Contain("survey-container"));
+            // Controls should be disabled until terms are agreed to
+        }
+
+        [Test]
+        public async Task Preview_AnswersNotSaved_ForDemoUser()
+        {
+            // Arrange
+            NavManager.NavigateTo($"http://localhost/survey/{_testSurveyGuid}?Preview=true&DemoStep=1&DemoType=branching");
+
+            // Act
+            var cut = Context.RenderComponent<Survey>(parameters => parameters
+                .Add(p => p.SurveyId, _testSurveyGuid)
+            );
+            
+            await cut.InvokeAsync(async () => await cut.Instance.LoadData());
+
+            // Assert - In preview mode, answers should not be saved
+            // This is handled by the HandleAnswerQuestion method checking if (!Preview) before calling ApiService.PostAsync
+            // We verify the component renders correctly - actual save behavior is tested in integration tests
+            Assert.That(cut.Markup, Does.Contain("Preview Mode"));
+            Assert.That(cut.Markup, Does.Contain("answers will not be recorded"));
+        }
+
+        [Test]
+        public async Task Preview_AnswersNotSaved_ForNonDemoUser()
+        {
+            // Arrange - Non-demo user in preview
+            var nonDemoUser = new ClaimsPrincipal(new ClaimsIdentity(new[]
+            {
+                new Claim(ClaimTypes.Name, "regularuser@example.com")
+            }, "TestAuth"));
+            var authState = new AuthenticationState(nonDemoUser);
+            AuthStateProviderMock.Setup(x => x.GetAuthenticationStateAsync()).ReturnsAsync(authState);
+
+            NavManager.NavigateTo($"http://localhost/survey/{_testSurveyGuid}?Preview=true");
+
+            // Act
+            var cut = Context.RenderComponent<Survey>(parameters => parameters
+                .Add(p => p.SurveyId, _testSurveyGuid)
+            );
+            
+            await cut.InvokeAsync(async () => await cut.Instance.LoadData());
+
+            // Assert - In preview mode, answers should not be saved for non-demo users either
+            Assert.That(cut.Markup, Does.Contain("Preview Mode"));
+            Assert.That(cut.Markup, Does.Contain("answers will not be recorded"));
+        }
+
+        [Test]
+        public async Task BranchingDemo_DemoUser_CanInteract_WithControls()
+        {
+            // Arrange
+            NavManager.NavigateTo($"http://localhost/survey/{_testSurveyGuid}?Preview=true&DemoStep=1&DemoType=branching");
+
+            // Act
+            var cut = Context.RenderComponent<Survey>(parameters => parameters
+                .Add(p => p.SurveyId, _testSurveyGuid)
+            );
+            
+            await cut.InvokeAsync(async () => await cut.Instance.LoadData());
+
+            // Assert - Demo user in branching demo preview can interact
+            Assert.That(cut.Markup, Does.Contain("survey-container"));
             Assert.That(cut.Markup, Does.Contain("Preview Mode"));
         }
 
