@@ -650,7 +650,7 @@ namespace JwtIdentity.Client.Pages.Survey
                 var surveysUrl = "/mysurveys/surveysicreated";
                 if (IsDemoUser && DemoType == "branching")
                 {
-                    surveysUrl += $"?DemoType={DemoType}&DemoStep=1";
+                    surveysUrl += $"?DemoType={DemoType}";
                 }
                 
                 Navigation.NavigateTo(surveysUrl);
