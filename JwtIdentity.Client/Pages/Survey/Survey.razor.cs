@@ -6,6 +6,8 @@ namespace JwtIdentity.Client.Pages.Survey
     public class SurveyModel : BlazorBase, IAsyncDisposable
     {
         private int _previousDemoStep = -1;
+        
+        private bool _initialized;
 
         [Parameter]
         public Guid SurveyId { get; set; }
@@ -109,7 +111,6 @@ namespace JwtIdentity.Client.Pages.Survey
             var authState = await AuthStateProvider.GetAuthenticationStateAsync();
             var userName = authState.User.Identity?.Name ?? string.Empty;
             IsDemoUser = userName.StartsWith("DemoUser") && userName.EndsWith("@surveyshark.site");
-
             isCaptchaVerified = IsDemoUser;
 
             var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
@@ -133,28 +134,30 @@ namespace JwtIdentity.Client.Pages.Survey
             {
                 DemoType = demoType.ToString();
             }
+
+            // NEW: do the heavy lifting here so it also runs in bUnit
+            await EnsureInitializedAsync();
         }
+
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
+            // We still only want the JS bits on the first browser render
             if (!firstRender || !OperatingSystem.IsBrowser())
             {
                 return;
             }
 
-            await HandleLoggingInUser();
-            await LoadData();
-
-            if (Survey != null && Survey.Id > 0)
+            // Captcha JS – only if we actually need it
+            if (Survey != null && Survey.Id > 0 && !Preview && !ViewAnswers && !isCaptchaVerified)
             {
+                objRef ??= DotNetObjectReference.Create(this);
                 await JSRuntime.InvokeVoidAsync("registerCaptchaCallback", objRef);
                 await JSRuntime.InvokeVoidAsync("renderReCaptcha", "captcha-container", Configuration["ReCaptcha:SiteKey"]);
             }
 
-            Loading = false;
-            StateHasChanged();
-
-            if (IsDemoUser && DemoStep != _previousDemoStep && Loading == false)
+            // Demo scroll
+            if (IsDemoUser && DemoStep != _previousDemoStep && !Loading)
             {
                 await ScrollToCurrentDemoStep();
                 _previousDemoStep = DemoStep;
@@ -163,8 +166,6 @@ namespace JwtIdentity.Client.Pages.Survey
 
         internal async Task HandleLoggingInUser()
         {
-            objRef = DotNetObjectReference.Create(this);
-
             var authState = await AuthStateProvider.GetAuthenticationStateAsync();
             ClaimsPrincipal user = authState.User;
 
@@ -172,7 +173,13 @@ namespace JwtIdentity.Client.Pages.Survey
 
             if (IsAnonymousUser)
             {
-                Response<ApplicationUserViewModel> loginResponse = await AuthService.Login(new ApplicationUserViewModel() { UserName = "logmeinanonymoususer", Password = "123" });
+                Response<ApplicationUserViewModel> loginResponse =
+                    await AuthService.Login(new ApplicationUserViewModel
+                    {
+                        UserName = "logmeinanonymoususer",
+                        Password = "123"
+                    });
+
                 if (!loginResponse.Success)
                 {
                     Navigation.NavigateTo("/");
@@ -989,6 +996,18 @@ namespace JwtIdentity.Client.Pages.Survey
             ProcessBranchingForCurrentQuestion();
             StateHasChanged();
             return Task.CompletedTask;
+        }
+
+        private async Task EnsureInitializedAsync()
+        {
+            if (_initialized)
+                return;
+
+            _initialized = true;
+
+            await HandleLoggingInUser();
+            await LoadData();
+            Loading = false;
         }
     }
 }
