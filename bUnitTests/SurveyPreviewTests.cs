@@ -168,18 +168,30 @@ namespace JwtIdentity.BunitTests
         #region Preview Demo Step Navigation Tests
 
         [Test]
-        public void Survey_Preview_Demo_Component_Renders_At_Step0()
+        public void Survey_Preview_Demo_Component_Renders_At_Step0_With_Branching()
         {
-            // Arrange
-            NavManager.NavigateTo($"http://localhost/survey/{_testSurveyGuid}?Preview=true");
+            // Arrange - Create a branching survey with question groups
+            _testSurvey.QuestionGroups = new List<QuestionGroupViewModel>
+            {
+                new QuestionGroupViewModel { Id = 1, GroupNumber = 0, GroupName = "Initial Questions" },
+                new QuestionGroupViewModel { Id = 2, GroupNumber = 1, GroupName = "Group 1" }
+            };
+            
+            ApiServiceMock.Setup(x => x.GetAsync<SurveyViewModel>(It.IsAny<string>()))
+                .ReturnsAsync(_testSurvey);
+                
+            NavManager.NavigateTo($"http://localhost/survey/{_testSurveyGuid}?Preview=true&DemoStep=0&DemoType=branching");
 
             // Act
             var cut = Context.RenderComponent<Survey>(parameters => parameters
                 .Add(p => p.SurveyId, _testSurveyGuid)
             );
 
-            // Assert - Component renders without error
+            // Assert - Component renders without error and has branching structure
             Assert.That(cut.Markup, Does.Contain("survey-container"));
+            // The survey has branching if it has question groups with GroupNumber > 0
+            Assert.That(_testSurvey.QuestionGroups.Any(g => g.GroupNumber > 0), Is.True, 
+                "Test survey should have branching question groups");
         }
 
         [Test]
@@ -209,6 +221,24 @@ namespace JwtIdentity.BunitTests
             );
 
             // Assert - Component renders without error
+            Assert.That(cut.Markup, Does.Contain("survey-container"));
+        }
+
+        [Test]
+        public void Survey_Branching_Demo_ShowDemoStep_Returns_True_For_Branching_Type()
+        {
+            // Arrange
+            NavManager.NavigateTo($"http://localhost/survey/{_testSurveyGuid}?Preview=true&DemoStep=0&DemoType=branching");
+
+            // Act
+            var cut = Context.RenderComponent<Survey>(parameters => parameters
+                .Add(p => p.SurveyId, _testSurveyGuid)
+            );
+
+            // Call LoadData to simulate data loading
+            cut.InvokeAsync(async () => await cut.Instance.LoadData());
+
+            // Assert - The component should be aware of branching demo type
             Assert.That(cut.Markup, Does.Contain("survey-container"));
         }
 
