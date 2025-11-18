@@ -17,7 +17,38 @@ namespace JwtIdentity.Client.Pages.Survey
         private int _previousDemoStep = -1;
         protected Origin AnchorOrigin { get; set; } = Origin.BottomLeft;
         protected Origin TransformOrigin { get; set; } = Origin.TopLeft;
-        protected bool ShowDemoStep(int step) => IsDemoUser && DemoType == "branching" && DemoStep == step;
+        
+        protected bool ShowDemoStep(int step)
+        {
+            if (!IsDemoUser) return false;
+            if (DemoStep != step) return false;
+            
+            // If QuestionGroups is not loaded yet, show demo by default
+            if (QuestionGroups == null || !QuestionGroups.Any())
+            {
+                return true;
+            }
+            
+            // Check if this is a branching survey
+            bool isBranchingSurvey = QuestionGroups.Any(g => g.GroupNumber > 0);
+            
+            if (string.IsNullOrEmpty(DemoType))
+            {
+                // No DemoType specified - show demo for any survey type
+                return true;
+            }
+            
+            if (DemoType == "branching")
+            {
+                // Branching demo - only show for branching surveys
+                return isBranchingSurvey;
+            }
+            else
+            {
+                // Linear or other demo type - only show for non-branching surveys
+                return !isBranchingSurvey;
+            }
+        }
 
         // Track True/False branching separately since TrueFalse doesn't have options
         protected Dictionary<int, int?> TrueBranch { get; set; } = new();

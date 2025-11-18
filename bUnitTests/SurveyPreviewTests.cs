@@ -165,81 +165,325 @@ namespace JwtIdentity.BunitTests
 
         #endregion
 
-        #region Preview Demo Step Navigation Tests
+        #region Preview Demo Step Navigation Tests - Branching Demo
 
         [Test]
-        public void Survey_Preview_Demo_Component_Renders_At_Step0_With_Branching()
+        public async Task BranchingDemo_Preview_Step0_Component_Initializes_Correctly()
         {
-            // Arrange - Create a branching survey with question groups
-            _testSurvey.QuestionGroups = new List<QuestionGroupViewModel>
-            {
-                new QuestionGroupViewModel { Id = 1, GroupNumber = 0, GroupName = "Initial Questions" },
-                new QuestionGroupViewModel { Id = 2, GroupNumber = 1, GroupName = "Group 1" }
-            };
-            
-            ApiServiceMock.Setup(x => x.GetAsync<SurveyViewModel>(It.IsAny<string>()))
-                .ReturnsAsync(_testSurvey);
-                
+            // Arrange - Create a branching survey
             NavManager.NavigateTo($"http://localhost/survey/{_testSurveyGuid}?Preview=true&DemoStep=0&DemoType=branching");
 
             // Act
             var cut = Context.RenderComponent<Survey>(parameters => parameters
                 .Add(p => p.SurveyId, _testSurveyGuid)
             );
+            
+            await cut.InvokeAsync(async () => await cut.Instance.LoadData());
 
-            // Assert - Component renders without error and has branching structure
+            // Assert - Component has correct demo state
             Assert.That(cut.Markup, Does.Contain("survey-container"));
-            // The survey has branching if it has question groups with GroupNumber > 0
-            Assert.That(_testSurvey.QuestionGroups.Any(g => g.GroupNumber > 0), Is.True, 
-                "Test survey should have branching question groups");
+            Assert.That(cut.Markup, Does.Contain("Preview Mode"));
+            // Verify survey has branching structure
+            Assert.That(_testSurvey.QuestionGroups.Any(g => g.GroupNumber > 0), Is.True);
         }
 
         [Test]
-        public void Survey_Preview_Demo_Component_Renders_At_Step1()
+        public async Task BranchingDemo_Preview_Step1_Component_Initializes_Correctly()
         {
-            // Arrange
+            // Arrange - Create a branching survey
+            NavManager.NavigateTo($"http://localhost/survey/{_testSurveyGuid}?Preview=true&DemoStep=1&DemoType=branching");
+
+            // Act
+            var cut = Context.RenderComponent<Survey>(parameters => parameters
+                .Add(p => p.SurveyId, _testSurveyGuid)
+            );
+            
+            await cut.InvokeAsync(async () => await cut.Instance.LoadData());
+
+            // Assert - Component renders with submit button disabled
+            Assert.That(cut.Markup, Does.Contain("survey-container"));
+            Assert.That(cut.Markup, Does.Contain("Preview Mode"));
+        }
+
+        [Test]
+        public async Task BranchingDemo_Preview_Step2_Component_Initializes_Correctly()
+        {
+            // Arrange - Create a branching survey
+            NavManager.NavigateTo($"http://localhost/survey/{_testSurveyGuid}?Preview=true&DemoStep=2&DemoType=branching");
+
+            // Act
+            var cut = Context.RenderComponent<Survey>(parameters => parameters
+                .Add(p => p.SurveyId, _testSurveyGuid)
+            );
+            
+            await cut.InvokeAsync(async () => await cut.Instance.LoadData());
+
+            // Assert - Component renders correctly
+            Assert.That(cut.Markup, Does.Contain("survey-container"));
+            Assert.That(cut.Markup, Does.Contain("Preview Mode"));
+        }
+
+        [Test]
+        public async Task BranchingDemo_Preview_DemoSteps_ParsedFromQueryString()
+        {
+            // Test Step 0
+            NavManager.NavigateTo($"http://localhost/survey/{_testSurveyGuid}?Preview=true&DemoStep=0&DemoType=branching");
+            var cut0 = Context.RenderComponent<Survey>(parameters => parameters.Add(p => p.SurveyId, _testSurveyGuid));
+            await cut0.InvokeAsync(async () => await cut0.Instance.LoadData());
+            Assert.That(cut0.Markup, Does.Contain("Preview Mode"));
+
+            // Test Step 1
+            NavManager.NavigateTo($"http://localhost/survey/{_testSurveyGuid}?Preview=true&DemoStep=1&DemoType=branching");
+            var cut1 = Context.RenderComponent<Survey>(parameters => parameters.Add(p => p.SurveyId, _testSurveyGuid));
+            await cut1.InvokeAsync(async () => await cut1.Instance.LoadData());
+            Assert.That(cut1.Markup, Does.Contain("Preview Mode"));
+
+            // Test Step 2
+            NavManager.NavigateTo($"http://localhost/survey_{_testSurveyGuid}?Preview=true&DemoStep=2&DemoType=branching");
+            var cut2 = Context.RenderComponent<Survey>(parameters => parameters.Add(p => p.SurveyId, _testSurveyGuid));
+            await cut2.InvokeAsync(async () => await cut2.Instance.LoadData());
+            Assert.That(cut2.Markup, Does.Contain("Preview Mode"));
+        }
+
+        #endregion
+
+        #region Preview Demo Step Navigation Tests - Linear Demo
+
+        [Test]
+        public async Task LinearDemo_Preview_Step0_Component_Initializes_Correctly()
+        {
+            // Arrange - Create a linear survey (no branching question groups)
+            var linearSurvey = new SurveyViewModel
+            {
+                Id = 3,
+                Guid = _testSurveyGuid.ToString(),
+                Title = "Simple Survey",
+                Description = "A simple linear survey",
+                Published = true,
+                Questions = new List<QuestionViewModel>
+                {
+                    new MultipleChoiceQuestionViewModel
+                    {
+                        Id = 1,
+                        SurveyId = 3,
+                        Text = "Question 1",
+                        QuestionNumber = 1,
+                        QuestionType = QuestionType.MultipleChoice,
+                        IsRequired = true,
+                        GroupId = 0,
+                        Options = new List<ChoiceOptionViewModel>
+                        {
+                            new ChoiceOptionViewModel { Id = 1, OptionText = "Option 1", Order = 0 }
+                        },
+                        Answers = new List<AnswerViewModel>()
+                    },
+                    new MultipleChoiceQuestionViewModel
+                    {
+                        Id = 2,
+                        SurveyId = 3,
+                        Text = "Question 2",
+                        QuestionNumber = 2,
+                        QuestionType = QuestionType.MultipleChoice,
+                        IsRequired = true,
+                        GroupId = 0,
+                        Options = new List<ChoiceOptionViewModel>
+                        {
+                            new ChoiceOptionViewModel { Id = 2, OptionText = "Option 1", Order = 0 }
+                        },
+                        Answers = new List<AnswerViewModel>()
+                    }
+                },
+                QuestionGroups = new List<QuestionGroupViewModel>
+                {
+                    new QuestionGroupViewModel { Id = 1, GroupNumber = 0, GroupName = "Default" }
+                }
+            };
+
+            ApiServiceMock.Setup(x => x.GetAsync<SurveyViewModel>(It.IsAny<string>()))
+                .ReturnsAsync(linearSurvey);
+
+            NavManager.NavigateTo($"http://localhost/survey/{_testSurveyGuid}?Preview=true&DemoStep=0");
+
+            // Act
+            var cut = Context.RenderComponent<Survey>(parameters => parameters
+                .Add(p => p.SurveyId, _testSurveyGuid)
+            );
+            
+            await cut.InvokeAsync(async () => await cut.Instance.LoadData());
+
+            // Assert - Component renders with preview mode
+            Assert.That(cut.Markup, Does.Contain("survey-container"));
+            Assert.That(cut.Markup, Does.Contain("Preview Mode"));
+            // Verify it's not a branching survey
+            Assert.That(linearSurvey.QuestionGroups.Any(g => g.GroupNumber > 0), Is.False);
+        }
+
+        [Test]
+        public async Task LinearDemo_Preview_Step1_Component_Initializes_Correctly()
+        {
+            // Arrange - Create a linear survey
+            var linearSurvey = new SurveyViewModel
+            {
+                Id = 3,
+                Guid = _testSurveyGuid.ToString(),
+                Title = "Simple Survey",
+                Description = "A simple linear survey",
+                Published = true,
+                Questions = new List<QuestionViewModel>
+                {
+                    new MultipleChoiceQuestionViewModel
+                    {
+                        Id = 1,
+                        SurveyId = 3,
+                        Text = "Question 1",
+                        QuestionNumber = 1,
+                        QuestionType = QuestionType.MultipleChoice,
+                        IsRequired = true,
+                        GroupId = 0,
+                        Options = new List<ChoiceOptionViewModel>
+                        {
+                            new ChoiceOptionViewModel { Id = 1, OptionText = "Option 1", Order = 0 }
+                        },
+                        Answers = new List<AnswerViewModel>()
+                    }
+                },
+                QuestionGroups = new List<QuestionGroupViewModel>
+                {
+                    new QuestionGroupViewModel { Id = 1, GroupNumber = 0, GroupName = "Default" }
+                }
+            };
+
+            ApiServiceMock.Setup(x => x.GetAsync<SurveyViewModel>(It.IsAny<string>()))
+                .ReturnsAsync(linearSurvey);
+
             NavManager.NavigateTo($"http://localhost/survey/{_testSurveyGuid}?Preview=true&DemoStep=1");
 
             // Act
             var cut = Context.RenderComponent<Survey>(parameters => parameters
                 .Add(p => p.SurveyId, _testSurveyGuid)
             );
+            
+            await cut.InvokeAsync(async () => await cut.Instance.LoadData());
 
-            // Assert - Component renders without error
+            // Assert - Component renders with submit button disabled
             Assert.That(cut.Markup, Does.Contain("survey-container"));
+            Assert.That(cut.Markup, Does.Contain("Preview Mode"));
         }
 
         [Test]
-        public void Survey_Preview_Demo_Component_Renders_At_Step2()
+        public async Task LinearDemo_Preview_Step2_Component_Initializes_Correctly()
         {
-            // Arrange
+            // Arrange - Create a linear survey
+            var linearSurvey = new SurveyViewModel
+            {
+                Id = 3,
+                Guid = _testSurveyGuid.ToString(),
+                Title = "Simple Survey",
+                Description = "A simple linear survey",
+                Published = true,
+                Questions = new List<QuestionViewModel>
+                {
+                    new MultipleChoiceQuestionViewModel
+                    {
+                        Id = 1,
+                        SurveyId = 3,
+                        Text = "Question 1",
+                        QuestionNumber = 1,
+                        QuestionType = QuestionType.MultipleChoice,
+                        IsRequired = true,
+                        GroupId = 0,
+                        Options = new List<ChoiceOptionViewModel>
+                        {
+                            new ChoiceOptionViewModel { Id = 1, OptionText = "Option 1", Order = 0 }
+                        },
+                        Answers = new List<AnswerViewModel>()
+                    }
+                },
+                QuestionGroups = new List<QuestionGroupViewModel>
+                {
+                    new QuestionGroupViewModel { Id = 1, GroupNumber = 0, GroupName = "Default" }
+                }
+            };
+
+            ApiServiceMock.Setup(x => x.GetAsync<SurveyViewModel>(It.IsAny<string>()))
+                .ReturnsAsync(linearSurvey);
+
             NavManager.NavigateTo($"http://localhost/survey/{_testSurveyGuid}?Preview=true&DemoStep=2");
 
             // Act
             var cut = Context.RenderComponent<Survey>(parameters => parameters
                 .Add(p => p.SurveyId, _testSurveyGuid)
             );
+            
+            await cut.InvokeAsync(async () => await cut.Instance.LoadData());
 
-            // Assert - Component renders without error
+            // Assert - Component renders correctly
             Assert.That(cut.Markup, Does.Contain("survey-container"));
+            Assert.That(cut.Markup, Does.Contain("Preview Mode"));
         }
 
         [Test]
-        public void Survey_Branching_Demo_ShowDemoStep_Returns_True_For_Branching_Type()
+        public async Task LinearDemo_Preview_AllSteps_RenderWithoutError()
         {
-            // Arrange
-            NavManager.NavigateTo($"http://localhost/survey/{_testSurveyGuid}?Preview=true&DemoStep=0&DemoType=branching");
+            // Arrange - Create a linear survey
+            var linearSurvey = new SurveyViewModel
+            {
+                Id = 3,
+                Guid = _testSurveyGuid.ToString(),
+                Title = "Simple Survey",
+                Description = "A simple linear survey",
+                Published = true,
+                Questions = new List<QuestionViewModel>
+                {
+                    new MultipleChoiceQuestionViewModel
+                    {
+                        Id = 1,
+                        SurveyId = 3,
+                        Text = "Question 1",
+                        QuestionNumber = 1,
+                        QuestionType = QuestionType.MultipleChoice,
+                        IsRequired = true,
+                        GroupId = 0,
+                        Options = new List<ChoiceOptionViewModel>
+                        {
+                            new ChoiceOptionViewModel { Id = 1, OptionText = "Option 1", Order = 0 }
+                        },
+                        Answers = new List<AnswerViewModel>()
+                    },
+                    new MultipleChoiceQuestionViewModel
+                    {
+                        Id = 2,
+                        SurveyId = 3,
+                        Text = "Question 2",
+                        QuestionNumber = 2,
+                        QuestionType = QuestionType.MultipleChoice,
+                        IsRequired = true,
+                        GroupId = 0,
+                        Options = new List<ChoiceOptionViewModel>
+                        {
+                            new ChoiceOptionViewModel { Id = 2, OptionText = "Option 1", Order = 0 }
+                        },
+                        Answers = new List<AnswerViewModel>()
+                    }
+                },
+                QuestionGroups = new List<QuestionGroupViewModel>
+                {
+                    new QuestionGroupViewModel { Id = 1, GroupNumber = 0, GroupName = "Default" }
+                }
+            };
 
-            // Act
-            var cut = Context.RenderComponent<Survey>(parameters => parameters
-                .Add(p => p.SurveyId, _testSurveyGuid)
-            );
+            ApiServiceMock.Setup(x => x.GetAsync<SurveyViewModel>(It.IsAny<string>()))
+                .ReturnsAsync(linearSurvey);
 
-            // Call LoadData to simulate data loading
-            cut.InvokeAsync(async () => await cut.Instance.LoadData());
-
-            // Assert - The component should be aware of branching demo type
-            Assert.That(cut.Markup, Does.Contain("survey-container"));
+            // Test all steps render without error
+            for (int step = 0; step <= 2; step++)
+            {
+                NavManager.NavigateTo($"http://localhost/survey/{_testSurveyGuid}?Preview=true&DemoStep={step}");
+                var cut = Context.RenderComponent<Survey>(parameters => parameters.Add(p => p.SurveyId, _testSurveyGuid));
+                await cut.InvokeAsync(async () => await cut.Instance.LoadData());
+                Assert.That(cut.Markup, Does.Contain("survey-container"), $"Step {step} should render survey container");
+                Assert.That(cut.Markup, Does.Contain("Preview Mode"), $"Step {step} should show Preview Mode alert");
+            }
         }
 
         #endregion

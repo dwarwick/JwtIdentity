@@ -14,7 +14,38 @@ namespace JwtIdentity.Client.Pages.Survey
         protected Origin AnchorOrigin { get; set; } = Origin.BottomRight;
         protected Origin TransformOrigin { get; set; } = Origin.TopLeft;
         protected bool QuestionsPanelExpanded { get; set; }
-        protected bool ShowDemoStep(int step) => IsDemoUser && DemoStep == step;
+        
+        protected bool ShowDemoStep(int step)
+        {
+            if (!IsDemoUser) return false;
+            if (DemoStep != step) return false;
+            
+            // If Survey is not loaded yet, show demo by default
+            if (Survey == null || Survey.QuestionGroups == null)
+            {
+                return true;
+            }
+            
+            // Check if this is a branching survey
+            bool isBranchingSurvey = Survey.QuestionGroups.Any(g => g.GroupNumber > 0);
+            
+            if (string.IsNullOrEmpty(DemoType))
+            {
+                // No DemoType specified - show demo for any survey type
+                return true;
+            }
+            
+            if (DemoType == "branching")
+            {
+                // Branching demo - only show for branching surveys
+                return isBranchingSurvey;
+            }
+            else
+            {
+                // Linear or other demo type - only show for non-branching surveys
+                return !isBranchingSurvey;
+            }
+        }
 
         [Parameter]
         public string SurveyId { get; set; }

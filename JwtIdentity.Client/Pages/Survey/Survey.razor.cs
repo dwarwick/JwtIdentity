@@ -45,14 +45,34 @@ namespace JwtIdentity.Client.Pages.Survey
             if (!IsDemoUser) return false;
             if (DemoStep != step) return false;
             
-            // For branching demos, only show if DemoType is "branching"
-            // For linear demos or when DemoType is not set, show demo steps
-            if (!string.IsNullOrEmpty(DemoType))
+            // If Survey is not loaded yet, we can't determine if it's branching
+            // In that case, check DemoType to decide
+            if (Survey == null)
             {
-                return DemoType == "branching";
+                // If DemoType is explicitly "branching", show the demo
+                // Otherwise, show for linear demo
+                return true; // Show by default until survey loads
             }
             
-            return true;
+            // Survey is loaded - check if demo type matches survey type
+            bool isBranchingSurvey = HasBranching;
+            
+            if (string.IsNullOrEmpty(DemoType))
+            {
+                // No DemoType specified - show demo for any survey type
+                return true;
+            }
+            
+            if (DemoType == "branching")
+            {
+                // Branching demo - only show for branching surveys
+                return isBranchingSurvey;
+            }
+            else
+            {
+                // Linear or other demo type - only show for non-branching surveys
+                return !isBranchingSurvey;
+            }
         }
 
         // Branching-related properties
