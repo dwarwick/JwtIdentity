@@ -319,7 +319,9 @@ Feel free to click around. Responses aren't saved in preview mode." : "Go ahead 
                         </DemoBorder>
                         @{
                             string demoText = DemoStep == 1 ? @"The submit survey button is disabled in preview mode. 
-It becomes active once all required questions are answered in a real survey." : DemoStep == 2 ? "Click Next to continue the demo." : "";
+It becomes active once all required questions are answered in a real survey." : DemoStep == 2 ? @"Click Next to continue the demo.
+
+If you don't like what you see in the preview, you can unpublish the survey and make changes as long as there are no responses." : "";
                         }
                         <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(Preview ? new List<int>() { 1, 2 } : new List<int>() { })" TransformOrigin="Origin.TopLeft" AnchorOrigin="Origin.BottomLeft">
                             <MudText Typo="Typo.body2" Style="white-space: pre-line;">@demoText</MudText>
