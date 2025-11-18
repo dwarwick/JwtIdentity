@@ -109,6 +109,11 @@ namespace JwtIdentity.Client.Pages.Survey
             {
                 ViewAnswers = bool.Parse(viewAnswers);
             }
+
+            if (queryParams.TryGetValue("DemoStep", out var demoStep) && int.TryParse(demoStep, out var step))
+            {
+                DemoStep = step;
+            }
         }
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
