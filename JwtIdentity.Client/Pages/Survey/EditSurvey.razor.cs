@@ -645,7 +645,15 @@ namespace JwtIdentity.Client.Pages.Survey
             if (publishedSurvey != null && publishedSurvey.Published)
             {
                 _ = Snackbar.Add("Survey Published", Severity.Success);
-                Navigation.NavigateTo("/mysurveys/surveysicreated");
+                
+                // Pass DemoType when navigating if in demo mode
+                var surveysUrl = "/mysurveys/surveysicreated";
+                if (IsDemoUser && DemoType == "branching")
+                {
+                    surveysUrl += $"?DemoType={DemoType}&DemoStep=1";
+                }
+                
+                Navigation.NavigateTo(surveysUrl);
             }
             else
             {

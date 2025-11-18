@@ -36,8 +36,22 @@ namespace JwtIdentity.Client.Pages.Survey
 
         protected bool IsDemoUser { get; set; }
         protected int DemoStep { get; set; }
+        protected string DemoType { get; set; }
 
-        protected bool ShowDemoStep(int step) => IsDemoUser && DemoStep == step;
+        protected bool ShowDemoStep(int step)
+        {
+            if (!IsDemoUser) return false;
+            if (DemoStep != step) return false;
+            
+            // For branching demos, only show if DemoType is "branching"
+            // For linear demos or when DemoType is not set, show demo steps
+            if (!string.IsNullOrEmpty(DemoType))
+            {
+                return DemoType == "branching";
+            }
+            
+            return true;
+        }
 
         // Branching-related properties
         protected bool HasBranching => Survey?.QuestionGroups?.Any(g => g.GroupNumber > 0) ?? false;
@@ -113,6 +127,11 @@ namespace JwtIdentity.Client.Pages.Survey
             if (queryParams.TryGetValue("DemoStep", out var demoStep) && int.TryParse(demoStep, out var step))
             {
                 DemoStep = step;
+            }
+
+            if (queryParams.TryGetValue("DemoType", out var demoType))
+            {
+                DemoType = demoType.ToString();
             }
         }
 

@@ -8,6 +8,9 @@
         [SupplyParameterFromQuery]
         public int DemoStep { get; set; }
 
+        [SupplyParameterFromQuery]
+        public string DemoType { get; set; }
+
         public List<SurveyViewModel> UserSurveys { get; set; } = new();
 
         protected bool IsAdmin => ((CustomAuthStateProvider)AuthStateProvider).CurrentUser?.Roles.Contains("Admin") ?? false;
@@ -109,7 +112,19 @@
         {
             if (IsDemoUser && DemoStep != 0) return;
 
-            await JSRuntime.InvokeVoidAsync("open", $"/survey/{guid}?Preview=true", "_blank");
+            var previewUrl = $"/survey/{guid}?Preview=true";
+            
+            // Pass DemoType and DemoStep if in demo mode
+            if (IsDemoUser)
+            {
+                previewUrl += "&DemoStep=0";
+                if (!string.IsNullOrEmpty(DemoType))
+                {
+                    previewUrl += $"&DemoType={DemoType}";
+                }
+            }
+            
+            await JSRuntime.InvokeVoidAsync("open", previewUrl, "_blank");
         }
 
         protected void AddEditQuestions(string guid, bool published)
