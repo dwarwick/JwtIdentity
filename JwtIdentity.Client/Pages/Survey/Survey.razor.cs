@@ -376,6 +376,13 @@ namespace JwtIdentity.Client.Pages.Survey
 
                 // Process branching logic after answer is saved
                 await OnQuestionAnswered();
+                
+                // In branching demo, auto-advance to step 2 after first question is answered
+                if (IsDemoUser && Preview && DemoType == "branching" && DemoStep == 1 && CurrentQuestionIndex == 0)
+                {
+                    DemoStep = 2;
+                    StateHasChanged();
+                }
             }
         }
 

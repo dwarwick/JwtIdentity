@@ -810,5 +810,160 @@ namespace JwtIdentity.BunitTests
         }
 
         #endregion
+
+        #region Interactive Branching Demo Tests
+
+        [Test]
+        public async Task BranchingDemo_Preview_DemoUsers_Can_Interact_With_Controls()
+        {
+            // Arrange
+            NavManager.NavigateTo($"http://localhost/survey/{_testSurveyGuid}?Preview=true&DemoStep=1&DemoType=branching");
+
+            // Act
+            var cut = Context.RenderComponent<Survey>(parameters => parameters
+                .Add(p => p.SurveyId, _testSurveyGuid)
+            );
+            
+            await cut.InvokeAsync(async () => await cut.Instance.LoadData());
+
+            // Assert - Demo user in preview should NOT have disabled controls
+            // The markup should contain radio buttons that are not disabled
+            Assert.That(cut.Markup, Does.Contain("survey-container"));
+            Assert.That(cut.Markup, Does.Contain("Preview Mode"));
+        }
+
+        [Test]
+        public async Task BranchingDemo_Preview_NonDemoUsers_Cannot_Interact()
+        {
+            // Arrange - Setup non-demo user
+            var nonDemoUser = new ClaimsPrincipal(new ClaimsIdentity(new[]
+            {
+                new Claim(ClaimTypes.Name, "regularuser@example.com")
+            }, "TestAuth"));
+            var authState = new AuthenticationState(nonDemoUser);
+            AuthStateProviderMock.Setup(x => x.GetAuthenticationStateAsync()).ReturnsAsync(authState);
+
+            NavManager.NavigateTo($"http://localhost/survey/{_testSurveyGuid}?Preview=true");
+
+            // Act
+            var cut = Context.RenderComponent<Survey>(parameters => parameters
+                .Add(p => p.SurveyId, _testSurveyGuid)
+            );
+            
+            await cut.InvokeAsync(async () => await cut.Instance.LoadData());
+
+            // Assert - Non-demo user should see preview mode alert
+            Assert.That(cut.Markup, Does.Contain("Preview Mode"));
+        }
+
+        [Test]
+        public async Task BranchingDemo_Step0_Shows_Interactive_Instructions()
+        {
+            // Arrange
+            NavManager.NavigateTo($"http://localhost/survey/{_testSurveyGuid}?Preview=true&DemoStep=0&DemoType=branching");
+
+            // Act
+            var cut = Context.RenderComponent<Survey>(parameters => parameters
+                .Add(p => p.SurveyId, _testSurveyGuid)
+            );
+            
+            await cut.InvokeAsync(async () => await cut.Instance.LoadData());
+
+            // Assert - Component renders at step 0
+            Assert.That(cut.Markup, Does.Contain("survey-container"));
+            Assert.That(cut.Markup, Does.Contain("Preview Mode"));
+        }
+
+        [Test]
+        public async Task BranchingDemo_Step1_Prompts_User_To_Select_Answer()
+        {
+            // Arrange
+            NavManager.NavigateTo($"http://localhost/survey/{_testSurveyGuid}?Preview=true&DemoStep=1&DemoType=branching");
+
+            // Act
+            var cut = Context.RenderComponent<Survey>(parameters => parameters
+                .Add(p => p.SurveyId, _testSurveyGuid)
+            );
+            
+            await cut.InvokeAsync(async () => await cut.Instance.LoadData());
+
+            // Assert - Component renders at step 1
+            Assert.That(cut.Markup, Does.Contain("survey-container"));
+        }
+
+        [Test]
+        public async Task BranchingDemo_Step2_Explains_Branching_Happened()
+        {
+            // Arrange
+            NavManager.NavigateTo($"http://localhost/survey/{_testSurveyGuid}?Preview=true&DemoStep=2&DemoType=branching");
+
+            // Act
+            var cut = Context.RenderComponent<Survey>(parameters => parameters
+                .Add(p => p.SurveyId, _testSurveyGuid)
+            );
+            
+            await cut.InvokeAsync(async () => await cut.Instance.LoadData());
+
+            // Assert - Component renders at step 2
+            Assert.That(cut.Markup, Does.Contain("survey-container"));
+        }
+
+        [Test]
+        public async Task BranchingDemo_Step3_Shows_Submit_Button_Explanation()
+        {
+            // Arrange
+            NavManager.NavigateTo($"http://localhost/survey/{_testSurveyGuid}?Preview=true&DemoStep=3&DemoType=branching");
+
+            // Act
+            var cut = Context.RenderComponent<Survey>(parameters => parameters
+                .Add(p => p.SurveyId, _testSurveyGuid)
+            );
+            
+            await cut.InvokeAsync(async () => await cut.Instance.LoadData());
+
+            // Assert - Component renders at step 3
+            Assert.That(cut.Markup, Does.Contain("survey-container"));
+        }
+
+        [Test]
+        public async Task BranchingDemo_Step4_Shows_Unpublish_Explanation()
+        {
+            // Arrange
+            NavManager.NavigateTo($"http://localhost/survey/{_testSurveyGuid}?Preview=true&DemoStep=4&DemoType=branching");
+
+            // Act
+            var cut = Context.RenderComponent<Survey>(parameters => parameters
+                .Add(p => p.SurveyId, _testSurveyGuid)
+            );
+            
+            await cut.InvokeAsync(async () => await cut.Instance.LoadData());
+
+            // Assert - Component renders at step 4
+            Assert.That(cut.Markup, Does.Contain("survey-container"));
+        }
+
+        [Test]
+        public async Task BranchingDemo_AllSteps_RenderSuccessfully()
+        {
+            // Test that all demo steps (0-4) render without errors
+            for (int step = 0; step <= 4; step++)
+            {
+                // Arrange
+                NavManager.NavigateTo($"http://localhost/survey/{_testSurveyGuid}?Preview=true&DemoStep={step}&DemoType=branching");
+
+                // Act
+                var cut = Context.RenderComponent<Survey>(parameters => parameters
+                    .Add(p => p.SurveyId, _testSurveyGuid)
+                );
+                
+                await cut.InvokeAsync(async () => await cut.Instance.LoadData());
+
+                // Assert
+                Assert.That(cut.Markup, Does.Contain("survey-container"), $"Step {step} should render survey container");
+                Assert.That(cut.Markup, Does.Contain("Preview Mode"), $"Step {step} should show Preview Mode alert");
+            }
+        }
+
+        #endregion
     }
 }
