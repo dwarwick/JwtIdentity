@@ -150,37 +150,132 @@
                             }
                         </div>
                         
-                        @if (Preview && CurrentQuestionIndex == 0)
+                        @if (Preview && DemoType == "branching")
                         {
-                            string Step0Text = @"This is what the survey will look like.
+                            @* Step 0: Introduction *@
+                            @if (CurrentQuestionIndex == 0 && DemoStep == 0)
+                            {
+                                string Step0Text = @"Welcome to the Branching Survey Demo!
 
-In this branching demo, select an answer to see how the survey adapts based on your choices. Different answers will lead to different follow-up questions.";
-                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 0 })" AnchorOrigin="Origin.TopLeft" TransformOrigin="Origin.TopLeft">
-                                <MudText Typo="Typo.body2" Style="white-space:pre-line">@Step0Text</MudText>
-                                <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 0 })" IsButton="true">
-                                    <MudButton id="DemoNext_button" OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success" aria-role="button">Next</MudButton>
-                                </DemoBorder>
-                            </DemoPopup>
+In this demo, you'll see how survey branching works. Based on your answers, different follow-up questions will appear. This creates a personalized survey experience.";
+                                <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 0 })" AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft">
+                                    <MudText Typo="Typo.body2" Style="white-space:pre-line">@Step0Text</MudText>
+                                    <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 0 })" IsButton="true">
+                                        <MudButton id="DemoNext_button" OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success" aria-role="button">Next</MudButton>
+                                    </DemoBorder>
+                                </DemoPopup>
+                            }
                             
-                            string Step1Text = @"Select an answer to this question. 
+                            @* Step 1: Instruct to select first option on Q1 *@
+                            @if (CurrentQuestionIndex == 0 && DemoStep == 1)
+                            {
+                                string Step1Text = @"Select the FIRST option in this question.
 
-Based on your choice, you'll be taken to different follow-up questions. This is branching in action!";
-                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 1 })" AnchorOrigin="Origin.TopLeft" TransformOrigin="Origin.TopLeft">
-                                <MudText Typo="Typo.body2" Style="white-space:pre-line">@Step1Text</MudText>
-                                <MudText Typo="Typo.caption" Class="mt-2" Style="font-style: italic;">
-                                    The Next button will appear after you select an answer.
-                                </MudText>
-                            </DemoPopup>
+This option has been configured to branch to a specific group of follow-up questions. Your choice determines which questions you'll see next!";
+                                <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 1 })" AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft">
+                                    <MudText Typo="Typo.body2" Style="white-space:pre-line">@Step1Text</MudText>
+                                    <MudText Typo="Typo.caption" Class="mt-2" Style="font-style: italic; color: #666;">
+                                        After you select it, we'll automatically advance the demo.
+                                    </MudText>
+                                </DemoPopup>
+                            }
                             
-                            string Step2Text = @"Great! You selected an answer. 
+                            @* Step 2: After selecting Q1, show explanation before Q2 *@
+                            @if (CurrentQuestionIndex == 1 && DemoStep == 2)
+                            {
+                                string Step2Text = @"Great choice! You've queued up a branch.
 
-The survey automatically loaded the appropriate branch based on your response. Click 'Next' to continue through the branched questions.";
-                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 2 })" AnchorOrigin="Origin.TopLeft" TransformOrigin="Origin.TopLeft">
-                                <MudText Typo="Typo.body2" Style="white-space:pre-line">@Step2Text</MudText>
-                                <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 2 })" IsButton="true">
-                                    <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
-                                </DemoBorder>
-                            </DemoPopup>
+Notice we're still in the main survey (Group 0). Branched question groups appear AFTER all questions in Group 0 are answered. Let's continue...";
+                                <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 2 })" AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft">
+                                    <MudText Typo="Typo.body2" Style="white-space:pre-line">@Step2Text</MudText>
+                                    <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 2 })" IsButton="true">
+                                        <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
+                                    </DemoBorder>
+                                </DemoPopup>
+                            }
+                            
+                            @* Step 3: Instruct to select first option on Q2 *@
+                            @if (CurrentQuestionIndex == 1 && DemoStep == 3)
+                            {
+                                string Step3Text = @"Now select the FIRST option here too.
+
+This will queue up a SECOND branching group. You'll see how multiple branches can be triggered in the same survey!";
+                                <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 3 })" AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft">
+                                    <MudText Typo="Typo.body2" Style="white-space:pre-line">@Step3Text</MudText>
+                                    <MudText Typo="Typo.caption" Class="mt-2" Style="font-style: italic; color: #666;">
+                                        We'll advance automatically after you select it.
+                                    </MudText>
+                                </DemoPopup>
+                            }
+                            
+                            @* Step 4: Explain how branching groups queue up *@
+                            @if (DemoStep == 4 && CurrentQuestion?.GroupId == 0 && CurrentQuestionIndex > 1)
+                            {
+                                string Step4Text = @"Perfect! You've now queued up TWO branching groups.
+
+Here's how it works:
+1. First, you answer all questions in Group 0 (the main survey)
+2. Then, branched groups appear in order (Group 1, then Group 2)
+3. Finally, any 'Last Questions' appear at the very end
+
+Click Next to continue through the remaining Group 0 questions.";
+                                <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 4 })" AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft">
+                                    <MudText Typo="Typo.body2" Style="white-space:pre-line">@Step4Text</MudText>
+                                    <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 4 })" IsButton="true">
+                                        <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
+                                    </DemoBorder>
+                                </DemoPopup>
+                            }
+                            
+                            @* Step 5: First question in Group 1 *@
+                            @if (DemoStep == 5 && CurrentQuestion?.GroupId == 1 && IsFirstQuestionInGroup())
+                            {
+                                string Step5Text = @"🎯 Welcome to Group 1!
+
+You're seeing this question because you selected the first option in Question 1. This is branching in action - your earlier answer determined you'd see this group.
+
+Answer the questions on your own. The demo will continue when you reach Group 2.";
+                                <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 5 })" AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft">
+                                    <MudText Typo="Typo.body2" Style="white-space:pre-line">@Step5Text</MudText>
+                                    <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 5 })" IsButton="true">
+                                        <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Got it!</MudButton>
+                                    </DemoBorder>
+                                </DemoPopup>
+                            }
+                            
+                            @* Step 6: First question in Group 2 *@
+                            @if (DemoStep == 6 && CurrentQuestion?.GroupId == 2 && IsFirstQuestionInGroup())
+                            {
+                                string Step6Text = @"🎯 Now you're in Group 2!
+
+You're seeing this question because you selected the first option in Question 2. Notice how the survey adapts to your choices!
+
+Continue answering. The demo will resume at the last question.";
+                                <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 6 })" AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft">
+                                    <MudText Typo="Typo.body2" Style="white-space:pre-line">@Step6Text</MudText>
+                                    <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 6 })" IsButton="true">
+                                        <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Got it!</MudButton>
+                                    </DemoBorder>
+                                </DemoPopup>
+                            }
+                            
+                            @* Step 7: Last Question explanation *@
+                            @if (DemoStep == 7 && CurrentQuestion?.IsLastQuestion == true)
+                            {
+                                string Step7Text = @"📝 This is a 'Last Question'
+
+This question is marked as a 'Last Question', which means it always appears at the END of the survey, regardless of branching.
+
+Last Questions are perfect for open-ended feedback like 'Is there anything else you'd like to share with us?'
+
+Notice how all other Group 0 questions were skipped and shown at the end!";
+                                <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 7 })" AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft">
+                                    <MudText Typo="Typo.body2" Style="white-space:pre-line">@Step7Text</MudText>
+                                    <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 7 })" IsButton="true">
+                                        <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
+                                    </DemoBorder>
+                                </DemoPopup>
+                            }
                         }
                     </DemoBorder>
 
@@ -192,24 +287,47 @@ The survey automatically loaded the appropriate branch based on your response. C
 
                         @if (IsLastQuestion)
                         {
-                            <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 3 })" IsButton="true">
+                            <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(DemoType == "branching" ? new List<int>() { 8 } : new List<int>() { 1 })" IsButton="true">
                                 <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => SubmitSurvey())"
                                            Disabled="@(!IsCurrentQuestionAnswered() || (IsAnonymousUser && !AgreedToTerms))">
                                     Submit Survey
                                 </MudButton>
                             </DemoBorder>
                             
-                            string demoText = DemoStep == 3 ? @"The submit survey button is disabled in preview mode. 
-It becomes active once all required questions are answered in a real survey." : DemoStep == 4 ? @"Click Next to continue the demo.
+                            @if (DemoType == "branching")
+                            {
+                                string branchingDemoText = DemoStep == 8 ? @"🎉 Demo Complete!
+
+You've seen how branching surveys work:
+• Answers trigger specific question groups
+• Groups appear after Group 0 questions
+• Last Questions always appear at the end
+
+Branching creates engaging, personalized surveys that adapt to each respondent!
+
+In preview mode, you can't submit, but in a real survey, users would click Submit here." : "";
+                                
+                                <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(Preview ? new List<int>() { 8 } : new List<int>() { })" TransformOrigin="Origin.TopLeft" AnchorOrigin="Origin.BottomLeft">
+                                    <MudText Typo="Typo.body2" Style="white-space: pre-line;">@branchingDemoText</MudText>
+                                    <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 8 })" IsButton="true">
+                                        <MudButton OnClick="CompleteBranchingDemo" Variant="Variant.Filled" Color="Color.Success">Return to My Surveys</MudButton>
+                                    </DemoBorder>
+                                </DemoPopup>
+                            }
+                            else
+                            {
+                                string linearDemoText = DemoStep == 1 ? @"The submit survey button is disabled in preview mode. 
+It becomes active once all required questions are answered in a real survey." : DemoStep == 2 ? @"Click Next to continue the demo.
 
 If you don't like what you see in the preview, you can unpublish the survey and make changes as long as there are no responses." : "";
-                            
-                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(Preview ? new List<int>() { 3, 4 } : new List<int>() { })" TransformOrigin="Origin.TopLeft" AnchorOrigin="Origin.BottomLeft">
-                                <MudText Typo="Typo.body2" Style="white-space: pre-line;">@demoText</MudText>
-                                <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 3, 4 })" IsButton="true">
-                                    <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
-                                </DemoBorder>
-                            </DemoPopup>
+                                
+                                <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(Preview ? new List<int>() { 1, 2 } : new List<int>() { })" TransformOrigin="Origin.TopLeft" AnchorOrigin="Origin.BottomLeft">
+                                    <MudText Typo="Typo.body2" Style="white-space: pre-line;">@linearDemoText</MudText>
+                                    <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 1, 2 })" IsButton="true">
+                                        <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
+                                    </DemoBorder>
+                                </DemoPopup>
+                            }
                         }
                         else
                         {

@@ -377,11 +377,22 @@ namespace JwtIdentity.Client.Pages.Survey
                 // Process branching logic after answer is saved
                 await OnQuestionAnswered();
                 
-                // In branching demo, auto-advance to step 2 after first question is answered
-                if (IsDemoUser && Preview && DemoType == "branching" && DemoStep == 1 && CurrentQuestionIndex == 0)
+                // Branching demo auto-advance logic
+                if (IsDemoUser && Preview && DemoType == "branching")
                 {
-                    DemoStep = 2;
-                    StateHasChanged();
+                    // Step 1: After selecting first option on Q1, advance to step 2
+                    if (DemoStep == 1 && CurrentQuestionIndex == 0)
+                    {
+                        DemoStep = 2;
+                        GoToNextQuestion();
+                        StateHasChanged();
+                    }
+                    // Step 3: After selecting first option on Q2, advance to step 4
+                    else if (DemoStep == 3 && CurrentQuestionIndex == 1)
+                    {
+                        DemoStep = 4;
+                        StateHasChanged();
+                    }
                 }
             }
         }
@@ -781,6 +792,10 @@ namespace JwtIdentity.Client.Pages.Survey
                 return;
             }
 
+            // Store previous group and question to detect transitions
+            var previousGroupId = CurrentQuestion?.GroupId;
+            var wasLastQuestion = CurrentQuestion?.IsLastQuestion;
+
             // Branching mode - check if we need to add more groups
             if (CurrentQuestionIndex < QuestionsToShow.Count - 1)
             {
@@ -807,6 +822,35 @@ namespace JwtIdentity.Client.Pages.Survey
                     }
                 }
             }
+
+            // Branching demo: detect group transitions and advance demo steps
+            if (IsDemoUser && Preview && DemoType == "branching")
+            {
+                var currentGroupId = CurrentQuestion?.GroupId;
+                var isNowLastQuestion = CurrentQuestion?.IsLastQuestion == true;
+
+                // Transition to Group 1 - advance to step 5
+                if (DemoStep == 4 && currentGroupId == 1 && previousGroupId == 0 && !isNowLastQuestion)
+                {
+                    DemoStep = 5;
+                }
+                // Transition to Group 2 - advance to step 6
+                else if (DemoStep == 5 && currentGroupId == 2 && previousGroupId == 1)
+                {
+                    DemoStep = 6;
+                }
+                // Transition to Last Question - advance to step 7
+                else if ((DemoStep == 5 || DemoStep == 6) && isNowLastQuestion && wasLastQuestion != true)
+                {
+                    DemoStep = 7;
+                }
+                // At last question, advance to step 8 (final step)
+                else if (DemoStep == 7 && IsLastQuestion)
+                {
+                    DemoStep = 8;
+                }
+            }
+
             StateHasChanged();
         }
 
@@ -1023,6 +1067,26 @@ namespace JwtIdentity.Client.Pages.Survey
             ProcessBranchingForCurrentQuestion();
             StateHasChanged();
             return Task.CompletedTask;
+        }
+
+        protected bool IsFirstQuestionInGroup()
+        {
+            if (CurrentQuestion == null || QuestionsToShow == null || QuestionsToShow.Count == 0)
+                return false;
+
+            var currentGroupId = CurrentQuestion.GroupId;
+            var groupQuestions = QuestionsToShow.Where(q => q.GroupId == currentGroupId).ToList();
+            
+            if (groupQuestions.Count == 0)
+                return false;
+
+            return CurrentQuestion.Id == groupQuestions.First().Id;
+        }
+
+        protected void CompleteBranchingDemo()
+        {
+            // Navigate back to SurveysICreated with demo step after Preview button
+            Navigation.NavigateTo($"/surveys/created?DemoType=branching&DemoStep=1");
         }
 
         private async Task EnsureInitializedAsync()
