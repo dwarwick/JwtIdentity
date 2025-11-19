@@ -1364,5 +1364,224 @@ namespace JwtIdentity.BunitTests
         }
 
         #endregion
+        
+        #region Actual Survey Demo Tests
+        
+        [Test]
+        public void BranchingDemo_ActualSurvey_Step10_ShowsIntroduction()
+        {
+            // Arrange - NOT in preview mode, with DemoStep=10 and DemoType=branching
+            NavManager.NavigateTo($"http://localhost/survey/{_testSurveyGuid}?DemoStep=10&DemoType=branching");
+            Context.JSInterop.Mode = JSRuntimeMode.Loose;
+            var cut = Context.RenderComponent<Survey>(parameters => parameters
+                .Add(p => p.SurveyId, _testSurveyGuid));
+
+            // Act - Wait for component to initialize
+            cut.WaitForState(() => cut.Instance.LoadData != null, TimeSpan.FromSeconds(5));
+
+            // Assert - Component renders successfully at demo step 10
+            Assert.That(cut.Instance.DemoStep, Is.EqualTo(10));
+            Assert.That(cut.Instance.IsDemoUser, Is.True);
+        }
+        
+        [Test]
+        public void LinearDemo_ActualSurvey_Step10_ShowsIntroduction()
+        {
+            // Arrange - NOT in preview mode, with DemoStep=10, linear survey (no DemoType)
+            var linearSurvey = CreateLinearSurvey();
+            ApiServiceMock.Setup(x => x.GetAsync<SurveyViewModel>(It.IsAny<string>()))
+                .ReturnsAsync(linearSurvey);
+            
+            NavManager.NavigateTo($"http://localhost/survey/{_testSurveyGuid}?DemoStep=10");
+            Context.JSInterop.Mode = JSRuntimeMode.Loose;
+            var cut = Context.RenderComponent<Survey>(parameters => parameters
+                .Add(p => p.SurveyId, _testSurveyGuid));
+
+            // Act - Wait for component to initialize
+            cut.WaitForState(() => cut.Instance.LoadData != null, TimeSpan.FromSeconds(5));
+
+            // Assert - Component renders successfully at demo step 10
+            Assert.That(cut.Instance.DemoStep, Is.EqualTo(10));
+            Assert.That(cut.Instance.IsDemoUser, Is.True);
+        }
+        
+        [Test]
+        public void BranchingDemo_ActualSurvey_Step11_ShowsSubmitInstructions()
+        {
+            // Arrange - NOT in preview mode, at last question with DemoStep=11
+            NavManager.NavigateTo($"http://localhost/survey/{_testSurveyGuid}?DemoStep=11&DemoType=branching");
+            Context.JSInterop.Mode = JSRuntimeMode.Loose;
+            var cut = Context.RenderComponent<Survey>(parameters => parameters
+                .Add(p => p.SurveyId, _testSurveyGuid));
+
+            // Act - Wait for component to initialize
+            cut.WaitForState(() => cut.Instance.LoadData != null, TimeSpan.FromSeconds(5));
+
+            // Assert - Component renders successfully at demo step 11
+            Assert.That(cut.Instance.DemoStep, Is.EqualTo(11));
+            Assert.That(cut.Instance.IsDemoUser, Is.True);
+        }
+        
+        [Test]
+        public void LinearDemo_ActualSurvey_Step11_ShowsSubmitInstructions()
+        {
+            // Arrange - NOT in preview mode, at last question with DemoStep=11
+            var linearSurvey = CreateLinearSurvey();
+            ApiServiceMock.Setup(x => x.GetAsync<SurveyViewModel>(It.IsAny<string>()))
+                .ReturnsAsync(linearSurvey);
+            
+            NavManager.NavigateTo($"http://localhost/survey/{_testSurveyGuid}?DemoStep=11");
+            Context.JSInterop.Mode = JSRuntimeMode.Loose;
+            var cut = Context.RenderComponent<Survey>(parameters => parameters
+                .Add(p => p.SurveyId, _testSurveyGuid));
+
+            // Act - Wait for component to initialize
+            cut.WaitForState(() => cut.Instance.LoadData != null, TimeSpan.FromSeconds(5));
+
+            // Assert - Component renders successfully at demo step 11
+            Assert.That(cut.Instance.DemoStep, Is.EqualTo(11));
+            Assert.That(cut.Instance.IsDemoUser, Is.True);
+        }
+        
+        [Test]
+        public void BranchingDemo_ActualSurvey_Step10_AdvancesToStep11()
+        {
+            // Arrange
+            NavManager.NavigateTo($"http://localhost/survey/{_testSurveyGuid}?DemoStep=10&DemoType=branching");
+            Context.JSInterop.Mode = JSRuntimeMode.Loose;
+            var cut = Context.RenderComponent<Survey>(parameters => parameters
+                .Add(p => p.SurveyId, _testSurveyGuid));
+
+            cut.WaitForState(() => cut.Instance.LoadData != null, TimeSpan.FromSeconds(5));
+            Assert.That(cut.Instance.DemoStep, Is.EqualTo(10));
+
+            // Act - Advance demo step
+            cut.Instance.NextDemoStep();
+            cut.Render();
+
+            // Assert - Should advance to step 11
+            Assert.That(cut.Instance.DemoStep, Is.EqualTo(11));
+        }
+        
+        [Test]
+        public void LinearDemo_ActualSurvey_Step10_AdvancesToStep11()
+        {
+            // Arrange
+            var linearSurvey = CreateLinearSurvey();
+            ApiServiceMock.Setup(x => x.GetAsync<SurveyViewModel>(It.IsAny<string>()))
+                .ReturnsAsync(linearSurvey);
+            
+            NavManager.NavigateTo($"http://localhost/survey/{_testSurveyGuid}?DemoStep=10");
+            Context.JSInterop.Mode = JSRuntimeMode.Loose;
+            var cut = Context.RenderComponent<Survey>(parameters => parameters
+                .Add(p => p.SurveyId, _testSurveyGuid));
+
+            cut.WaitForState(() => cut.Instance.LoadData != null, TimeSpan.FromSeconds(5));
+            Assert.That(cut.Instance.DemoStep, Is.EqualTo(10));
+
+            // Act - Advance demo step
+            cut.Instance.NextDemoStep();
+            cut.Render();
+
+            // Assert - Should advance to step 11
+            Assert.That(cut.Instance.DemoStep, Is.EqualTo(11));
+        }
+        
+        [Test]
+        public async Task BranchingDemo_ActualSurvey_AnswersSaved()
+        {
+            // Arrange - NOT in preview mode
+            NavManager.NavigateTo($"http://localhost/survey/{_testSurveyGuid}?DemoStep=11&DemoType=branching");
+            Context.JSInterop.Mode = JSRuntimeMode.Loose;
+            ApiServiceMock.Setup(x => x.PostAsync<AnswerViewModel>(It.IsAny<string>(), It.IsAny<AnswerViewModel>()))
+                .ReturnsAsync((string endpoint, AnswerViewModel answer) => answer);
+            
+            var cut = Context.RenderComponent<Survey>(parameters => parameters
+                .Add(p => p.SurveyId, _testSurveyGuid));
+
+            cut.WaitForState(() => cut.Instance.LoadData != null, TimeSpan.FromSeconds(5));
+            await cut.Instance.LoadData();
+
+            // Act - Answer a question
+            var question = _testSurvey.Questions.First();
+            var answer = question.Answers.First() as MultipleChoiceAnswerViewModel;
+            await cut.Instance.HandleAnswerQuestion(answer, 1);
+
+            // Assert - API should be called to save answer (NOT in preview)
+            ApiServiceMock.Verify(x => x.PostAsync<AnswerViewModel>(It.IsAny<string>(), It.IsAny<AnswerViewModel>()), Times.Once);
+        }
+        
+        [Test]
+        public async Task LinearDemo_ActualSurvey_AnswersSaved()
+        {
+            // Arrange - NOT in preview mode
+            var linearSurvey = CreateLinearSurvey();
+            ApiServiceMock.Setup(x => x.GetAsync<SurveyViewModel>(It.IsAny<string>()))
+                .ReturnsAsync(linearSurvey);
+            ApiServiceMock.Setup(x => x.PostAsync<AnswerViewModel>(It.IsAny<string>(), It.IsAny<AnswerViewModel>()))
+                .ReturnsAsync((string endpoint, AnswerViewModel answer) => answer);
+            
+            NavManager.NavigateTo($"http://localhost/survey/{_testSurveyGuid}?DemoStep=11");
+            Context.JSInterop.Mode = JSRuntimeMode.Loose;
+            var cut = Context.RenderComponent<Survey>(parameters => parameters
+                .Add(p => p.SurveyId, _testSurveyGuid));
+
+            cut.WaitForState(() => cut.Instance.LoadData != null, TimeSpan.FromSeconds(5));
+            await cut.Instance.LoadData();
+
+            // Act - Answer a question
+            var question = linearSurvey.Questions.First();
+            var answer = question.Answers.First() as MultipleChoiceAnswerViewModel;
+            await cut.Instance.HandleAnswerQuestion(answer, 1);
+
+            // Assert - API should be called to save answer (NOT in preview)
+            ApiServiceMock.Verify(x => x.PostAsync<AnswerViewModel>(It.IsAny<string>(), It.IsAny<AnswerViewModel>()), Times.Once);
+        }
+        
+        [Test]
+        public void BranchingDemo_ActualSurvey_AllSteps_AdvanceSequentially()
+        {
+            // Arrange
+            NavManager.NavigateTo($"http://localhost/survey/{_testSurveyGuid}?DemoStep=10&DemoType=branching");
+            Context.JSInterop.Mode = JSRuntimeMode.Loose;
+            var cut = Context.RenderComponent<Survey>(parameters => parameters
+                .Add(p => p.SurveyId, _testSurveyGuid));
+
+            cut.WaitForState(() => cut.Instance.LoadData != null, TimeSpan.FromSeconds(5));
+
+            // Assert initial state
+            Assert.That(cut.Instance.DemoStep, Is.EqualTo(10));
+
+            // Act & Assert - Step 10 -> 11
+            cut.Instance.NextDemoStep();
+            cut.Render();
+            Assert.That(cut.Instance.DemoStep, Is.EqualTo(11));
+        }
+        
+        [Test]
+        public void LinearDemo_ActualSurvey_AllSteps_AdvanceSequentially()
+        {
+            // Arrange
+            var linearSurvey = CreateLinearSurvey();
+            ApiServiceMock.Setup(x => x.GetAsync<SurveyViewModel>(It.IsAny<string>()))
+                .ReturnsAsync(linearSurvey);
+            
+            NavManager.NavigateTo($"http://localhost/survey/{_testSurveyGuid}?DemoStep=10");
+            Context.JSInterop.Mode = JSRuntimeMode.Loose;
+            var cut = Context.RenderComponent<Survey>(parameters => parameters
+                .Add(p => p.SurveyId, _testSurveyGuid));
+
+            cut.WaitForState(() => cut.Instance.LoadData != null, TimeSpan.FromSeconds(5));
+
+            // Assert initial state
+            Assert.That(cut.Instance.DemoStep, Is.EqualTo(10));
+
+            // Act & Assert - Step 10 -> 11
+            cut.Instance.NextDemoStep();
+            cut.Render();
+            Assert.That(cut.Instance.DemoStep, Is.EqualTo(11));
+        }
+        
+        #endregion
     }
 }

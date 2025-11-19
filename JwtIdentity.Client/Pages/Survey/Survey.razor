@@ -67,7 +67,7 @@
                         <MudProgressLinear Color="Color.Primary" Value="@((double)(CurrentQuestionIndex + 1) / CalculateTotalQuestions() * 100)" Class="my-2" />
                     </div>
 
-                    <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(Preview && CurrentQuestionIndex == 0 ? new List<int>() { 0 } : new List<int>())">
+                    <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(Preview && CurrentQuestionIndex == 0 ? new List<int>() { 0 } : !Preview && CurrentQuestionIndex == 0 ? new List<int>() { 10 } : new List<int>())">
                         <div class="question-container">
                             <MudText>
                                 @if (CurrentQuestion.IsRequired == true)
@@ -277,6 +277,46 @@ Notice how all other Group 0 questions were skipped and shown at the end!";
                                 </DemoPopup>
                             }
                         }
+                        
+                        @* Actual Survey Demo Steps (not preview) *@
+                        @if (!Preview && DemoType == "branching")
+                        {
+                            @* Step 10: Introduction to actual survey *@
+                            @if (CurrentQuestionIndex == 0 && DemoStep == 10)
+                            {
+                                string Step10Text = @"Now you'll actually answer the survey!
+
+Unlike preview mode, your answers WILL be saved this time. You'll go through the same branching flow, but this time you're submitting real responses.
+
+Answer the questions as you did in the preview. Your responses will be recorded.";
+                                <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 10 })" AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft">
+                                    <MudText Typo="Typo.body2" Style="white-space:pre-line">@Step10Text</MudText>
+                                    <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 10 })" IsButton="true">
+                                        <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Start Survey</MudButton>
+                                    </DemoBorder>
+                                </DemoPopup>
+                            }
+                        }
+                        
+                        @* Actual Survey Demo for Linear *@
+                        @if (!Preview && string.IsNullOrEmpty(DemoType))
+                        {
+                            @* Step 10: Introduction to actual survey (Linear) *@
+                            @if (Survey?.Questions?.FirstOrDefault()?.Id == CurrentQuestion?.Id && DemoStep == 10)
+                            {
+                                string Step10LinearText = @"Now you'll actually answer the survey!
+
+Unlike preview mode, your answers WILL be saved this time. Fill out the survey and submit it.
+
+Your responses will be recorded in the database.";
+                                <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 10 })" AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft">
+                                    <MudText Typo="Typo.body2" Style="white-space:pre-line">@Step10LinearText</MudText>
+                                    <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 10 })" IsButton="true">
+                                        <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Start Survey</MudButton>
+                                    </DemoBorder>
+                                </DemoPopup>
+                            }
+                        }
                     </DemoBorder>
 
                     <!-- Navigation Buttons -->
@@ -287,14 +327,14 @@ Notice how all other Group 0 questions were skipped and shown at the end!";
 
                         @if (IsLastQuestion)
                         {
-                            <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(DemoType == "branching" ? new List<int>() { 8 } : new List<int>() { 1 })" IsButton="true">
+                            <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(DemoType == "branching" && Preview ? new List<int>() { 8 } : DemoType == "branching" && !Preview ? new List<int>() { 11 } : Preview ? new List<int>() { 1 } : !Preview ? new List<int>() { 11 } : new List<int>())" IsButton="true">
                                 <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => SubmitSurvey())"
                                            Disabled="@(!IsCurrentQuestionAnswered() || (IsAnonymousUser && !AgreedToTerms))">
                                     Submit Survey
                                 </MudButton>
                             </DemoBorder>
                             
-                            @if (DemoType == "branching")
+                            @if (DemoType == "branching" && Preview)
                             {
                                 string branchingDemoText = DemoStep == 8 ? @"🎉 Demo Complete!
 
@@ -307,14 +347,26 @@ Branching creates engaging, personalized surveys that adapt to each respondent!
 
 In preview mode, you can't submit, but in a real survey, users would click Submit here." : "";
                                 
-                                <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(Preview ? new List<int>() { 8 } : new List<int>() { })" TransformOrigin="Origin.TopLeft" AnchorOrigin="Origin.BottomLeft">
+                                <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 8 })" TransformOrigin="Origin.TopLeft" AnchorOrigin="Origin.BottomLeft">
                                     <MudText Typo="Typo.body2" Style="white-space: pre-line;">@branchingDemoText</MudText>
                                     <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 8 })" IsButton="true">
                                         <MudButton OnClick="CompleteBranchingDemo" Variant="Variant.Filled" Color="Color.Success">Return to My Surveys</MudButton>
                                     </DemoBorder>
                                 </DemoPopup>
                             }
-                            else
+                            else if (DemoType == "branching" && !Preview)
+                            {
+                                string actualSurveyText = DemoStep == 11 ? @"📝 Ready to Submit!
+
+You've answered all the survey questions. Your responses have been saved as you went through the survey.
+
+Click 'Submit Survey' to complete the survey and return to My Surveys page." : "";
+                                
+                                <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 11 })" TransformOrigin="Origin.TopLeft" AnchorOrigin="Origin.BottomLeft">
+                                    <MudText Typo="Typo.body2" Style="white-space: pre-line;">@actualSurveyText</MudText>
+                                </DemoPopup>
+                            }
+                            else if (Preview)
                             {
                                 string linearDemoText = DemoStep == 1 ? @"The submit survey button is disabled in preview mode. 
 It becomes active once all required questions are answered in a real survey." : DemoStep == 2 ? @"Click Next to continue the demo.
@@ -473,7 +525,7 @@ Feel free to click around. Responses aren't saved in preview mode." : "Go ahead 
                 @if (!ViewAnswers && !HasBranching)
                 {
                     <div class="text-center">
-                        <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 1 })" IsButton="true">
+                        <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(Preview ? new List<int>() { 1 } : new List<int>() { 11 })" IsButton="true">
                             <MudButton Variant="Variant.Filled"
                                        Color="Color.Primary"
                                        Size="MudBlazor.Size.Large"
@@ -485,14 +537,16 @@ Feel free to click around. Responses aren't saved in preview mode." : "Go ahead 
                             </MudButton>
                         </DemoBorder>
                         @{
-                            string demoText = DemoStep == 1 ? @"The submit survey button is disabled in preview mode. 
-It becomes active once all required questions are answered in a real survey." : DemoStep == 2 ? @"Click Next to continue the demo.
+                            string demoText = (Preview && DemoStep == 1) ? @"The submit survey button is disabled in preview mode. 
+It becomes active once all required questions are answered in a real survey." : (Preview && DemoStep == 2) ? @"Click Next to continue the demo.
 
-If you don't like what you see in the preview, you can unpublish the survey and make changes as long as there are no responses." : "";
+If you don't like what you see in the preview, you can unpublish the survey and make changes as long as there are no responses." : (!Preview && DemoStep == 11) ? @"📝 Ready to Submit!
+
+You've answered all the survey questions. Click 'Submit Survey' to complete and return to My Surveys page." : "";
                         }
-                        <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(Preview ? new List<int>() { 1, 2 } : new List<int>() { })" TransformOrigin="Origin.TopLeft" AnchorOrigin="Origin.BottomLeft">
+                        <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(Preview ? new List<int>() { 1, 2 } : new List<int>() { 11 })" TransformOrigin="Origin.TopLeft" AnchorOrigin="Origin.BottomLeft">
                             <MudText Typo="Typo.body2" Style="white-space: pre-line;">@demoText</MudText>
-                            <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 1, 2 })" IsButton="true">
+                            <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(Preview ? new List<int>() { 1, 2 } : new List<int>())" IsButton="true">
                                 <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
                             </DemoBorder>
                         </DemoPopup>

@@ -292,7 +292,14 @@
             switch (DemoStep)
             {
                 case 3:
-                    await JSRuntime.InvokeVoidAsync("open", $"/survey/{guid}", "_blank");
+                    // Open survey for actual answering (not preview)
+                    // Pass DemoType and DemoStep=10 (start of actual survey demo)
+                    var surveyUrl = $"/survey/{guid}?DemoStep=10";
+                    if (!string.IsNullOrEmpty(DemoType))
+                    {
+                        surveyUrl += $"&DemoType={DemoType}";
+                    }
+                    await JSRuntime.InvokeVoidAsync("open", surveyUrl, "_blank");
                     break;
             }
         }
