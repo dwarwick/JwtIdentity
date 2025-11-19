@@ -24,7 +24,6 @@
     <PackageReference Include="Syncfusion.Blazor.Themes" Version="31.2.2" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.14.0" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.0" />
-    <PackageReference Include="System.Text.Encodings.Web" Version="10.0.0" />
   </ItemGroup>
 
   <ItemGroup>

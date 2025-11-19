@@ -6,6 +6,8 @@ namespace JwtIdentity.Client.Pages.Survey
     public class SurveyModel : BlazorBase, IAsyncDisposable
     {
         private int _previousDemoStep = -1;
+        
+        private bool _initialized;
 
         [Parameter]
         public Guid SurveyId { get; set; }
@@ -34,10 +36,44 @@ namespace JwtIdentity.Client.Pages.Survey
 
         protected bool AgreedToTerms { get; set; }
 
-        protected bool IsDemoUser { get; set; }
-        protected int DemoStep { get; set; }
+        internal bool IsDemoUser { get; set; }
+        internal int DemoStep { get; set; }
+        protected string DemoType { get; set; }
 
-        protected bool ShowDemoStep(int step) => IsDemoUser && DemoStep == step;
+        protected bool ShowDemoStep(int step)
+        {
+            if (!IsDemoUser) return false;
+            if (DemoStep != step) return false;
+            
+            // If Survey is not loaded yet, we can't determine if it's branching
+            // In that case, check DemoType to decide
+            if (Survey == null)
+            {
+                // If DemoType is explicitly "branching", show the demo
+                // Otherwise, show for linear demo
+                return true; // Show by default until survey loads
+            }
+            
+            // Survey is loaded - check if demo type matches survey type
+            bool isBranchingSurvey = HasBranching;
+            
+            if (string.IsNullOrEmpty(DemoType))
+            {
+                // No DemoType specified - show demo for any survey type
+                return true;
+            }
+            
+            if (DemoType == "branching")
+            {
+                // Branching demo - only show for branching surveys
+                return isBranchingSurvey;
+            }
+            else
+            {
+                // Linear or other demo type - only show for non-branching surveys
+                return !isBranchingSurvey;
+            }
+        }
 
         // Branching-related properties
         protected bool HasBranching => Survey?.QuestionGroups?.Any(g => g.GroupNumber > 0) ?? false;
@@ -95,7 +131,6 @@ namespace JwtIdentity.Client.Pages.Survey
             var authState = await AuthStateProvider.GetAuthenticationStateAsync();
             var userName = authState.User.Identity?.Name ?? string.Empty;
             IsDemoUser = userName.StartsWith("DemoUser") && userName.EndsWith("@surveyshark.site");
-
             isCaptchaVerified = IsDemoUser;
 
             var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
@@ -109,28 +144,40 @@ namespace JwtIdentity.Client.Pages.Survey
             {
                 ViewAnswers = bool.Parse(viewAnswers);
             }
+
+            if (queryParams.TryGetValue("DemoStep", out var demoStep) && int.TryParse(demoStep, out var step))
+            {
+                DemoStep = step;
+            }
+
+            if (queryParams.TryGetValue("DemoType", out var demoType))
+            {
+                DemoType = demoType.ToString();
+            }
+
+            // NEW: do the heavy lifting here so it also runs in bUnit
+            await EnsureInitializedAsync();
         }
+
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
+            // We still only want the JS bits on the first browser render
             if (!firstRender || !OperatingSystem.IsBrowser())
             {
                 return;
             }
 
-            await HandleLoggingInUser();
-            await LoadData();
-
-            if (Survey != null && Survey.Id > 0)
+            // Captcha JS – only if we actually need it
+            if (Survey != null && Survey.Id > 0 && !Preview && !ViewAnswers && !isCaptchaVerified)
             {
+                objRef ??= DotNetObjectReference.Create(this);
                 await JSRuntime.InvokeVoidAsync("registerCaptchaCallback", objRef);
                 await JSRuntime.InvokeVoidAsync("renderReCaptcha", "captcha-container", Configuration["ReCaptcha:SiteKey"]);
             }
 
-            Loading = false;
-            StateHasChanged();
-
-            if (IsDemoUser && DemoStep != _previousDemoStep && Loading == false)
+            // Demo scroll
+            if (IsDemoUser && DemoStep != _previousDemoStep && !Loading)
             {
                 await ScrollToCurrentDemoStep();
                 _previousDemoStep = DemoStep;
@@ -139,8 +186,6 @@ namespace JwtIdentity.Client.Pages.Survey
 
         internal async Task HandleLoggingInUser()
         {
-            objRef = DotNetObjectReference.Create(this);
-
             var authState = await AuthStateProvider.GetAuthenticationStateAsync();
             ClaimsPrincipal user = authState.User;
 
@@ -148,7 +193,13 @@ namespace JwtIdentity.Client.Pages.Survey
 
             if (IsAnonymousUser)
             {
-                Response<ApplicationUserViewModel> loginResponse = await AuthService.Login(new ApplicationUserViewModel() { UserName = "logmeinanonymoususer", Password = "123" });
+                Response<ApplicationUserViewModel> loginResponse =
+                    await AuthService.Login(new ApplicationUserViewModel
+                    {
+                        UserName = "logmeinanonymoususer",
+                        Password = "123"
+                    });
+
                 if (!loginResponse.Success)
                 {
                     Navigation.NavigateTo("/");
@@ -280,7 +331,7 @@ namespace JwtIdentity.Client.Pages.Survey
             }
         }
 
-        protected async Task HandleAnswerQuestion(AnswerViewModel answer, object selectedAnswer)
+        internal async Task HandleAnswerQuestion(AnswerViewModel answer, object selectedAnswer)
         {
             AnswerViewModel response = null;
 
@@ -325,6 +376,24 @@ namespace JwtIdentity.Client.Pages.Survey
 
                 // Process branching logic after answer is saved
                 await OnQuestionAnswered();
+                
+                // Branching demo auto-advance logic
+                if (IsDemoUser && Preview && DemoType == "branching")
+                {
+                    // Step 1: After selecting first option on Q1, advance to step 2
+                    if (DemoStep == 1 && CurrentQuestionIndex == 0)
+                    {
+                        DemoStep = 2;
+                        GoToNextQuestion();
+                        StateHasChanged();
+                    }
+                    // Step 3: After selecting first option on Q2, advance to step 4
+                    else if (DemoStep == 3 && CurrentQuestionIndex == 1)
+                    {
+                        DemoStep = 4;
+                        StateHasChanged();
+                    }
+                }
             }
         }
 
@@ -424,8 +493,19 @@ namespace JwtIdentity.Client.Pages.Survey
 
                 _ = Snackbar.Add("Survey submitted successfully", Severity.Success);
 
-                if (IsDemoUser)
+                if (IsDemoUser && DemoStep >= 10)
                 {
+                    // Demo user completing actual survey demo - return to SurveysICreated
+                    var returnUrl = "/mysurveys/surveysicreated?DemoStep=4";
+                    if (!string.IsNullOrEmpty(DemoType))
+                    {
+                        returnUrl += $"&DemoType={DemoType}";
+                    }
+                    Navigation.NavigateTo(returnUrl);
+                }
+                else if (IsDemoUser)
+                {
+                    // Old demo flow (shouldn't reach here with new flow)
                     Navigation.NavigateTo("/mysurveys/surveysicreated?DemoStep=3");
                 }
                 else
@@ -538,12 +618,14 @@ namespace JwtIdentity.Client.Pages.Survey
             StateHasChanged();
         }
 
-        protected void NextDemoStep()
+        internal void NextDemoStep()
         {
             if (!IsDemoUser) return;
             DemoStep++;
 
-            if (DemoStep == 3 && Preview)
+            // Linear demo navigation: Step 3 returns to SurveysICreated
+            // Branching demo navigation: Step 9 returns to SurveysICreated (handled in CompleteBranchingDemo)
+            if (Preview && DemoType != "branching" && DemoStep == 3)
             {
                 Navigation.NavigateTo("/mysurveys/surveysicreated?DemoStep=1");
             }
@@ -710,7 +792,7 @@ namespace JwtIdentity.Client.Pages.Survey
             _lastQuestionsLoaded = true;
         }
 
-        protected void GoToNextQuestion()
+        internal void GoToNextQuestion()
         {
             if (!HasBranching)
             {
@@ -722,6 +804,10 @@ namespace JwtIdentity.Client.Pages.Survey
                 StateHasChanged();
                 return;
             }
+
+            // Store previous group and question to detect transitions
+            var previousGroupId = CurrentQuestion?.GroupId;
+            var wasLastQuestion = CurrentQuestion?.IsLastQuestion;
 
             // Branching mode - check if we need to add more groups
             if (CurrentQuestionIndex < QuestionsToShow.Count - 1)
@@ -749,6 +835,35 @@ namespace JwtIdentity.Client.Pages.Survey
                     }
                 }
             }
+
+            // Branching demo: detect group transitions and advance demo steps
+            if (IsDemoUser && Preview && DemoType == "branching")
+            {
+                var currentGroupId = CurrentQuestion?.GroupId;
+                var isNowLastQuestion = CurrentQuestion?.IsLastQuestion == true;
+
+                // Transition to Group 1 - advance to step 5
+                if (DemoStep == 4 && currentGroupId == 1 && previousGroupId == 0 && !isNowLastQuestion)
+                {
+                    DemoStep = 5;
+                }
+                // Transition to Group 2 - advance to step 6
+                else if (DemoStep == 5 && currentGroupId == 2 && previousGroupId == 1)
+                {
+                    DemoStep = 6;
+                }
+                // Transition to Last Question - advance to step 7
+                else if ((DemoStep == 5 || DemoStep == 6) && isNowLastQuestion && wasLastQuestion != true)
+                {
+                    DemoStep = 7;
+                }
+                // At last question, advance to step 8 (final step)
+                else if (DemoStep == 7 && IsLastQuestion)
+                {
+                    DemoStep = 8;
+                }
+            }
+
             StateHasChanged();
         }
 
@@ -965,6 +1080,38 @@ namespace JwtIdentity.Client.Pages.Survey
             ProcessBranchingForCurrentQuestion();
             StateHasChanged();
             return Task.CompletedTask;
+        }
+
+        protected bool IsFirstQuestionInGroup()
+        {
+            if (CurrentQuestion == null || QuestionsToShow == null || QuestionsToShow.Count == 0)
+                return false;
+
+            var currentGroupId = CurrentQuestion.GroupId;
+            var groupQuestions = QuestionsToShow.Where(q => q.GroupId == currentGroupId).ToList();
+            
+            if (groupQuestions.Count == 0)
+                return false;
+
+            return CurrentQuestion.Id == groupQuestions.First().Id;
+        }
+
+        protected void CompleteBranchingDemo()
+        {
+            // Navigate back to SurveysICreated with demo step after Preview button
+            Navigation.NavigateTo($"/mysurveys/surveysicreated?DemoType=branching&DemoStep=1");
+        }
+
+        private async Task EnsureInitializedAsync()
+        {
+            if (_initialized)
+                return;
+
+            _initialized = true;
+
+            await HandleLoggingInUser();
+            await LoadData();
+            Loading = false;
         }
     }
 }
