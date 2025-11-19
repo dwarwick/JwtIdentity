@@ -1088,7 +1088,7 @@ namespace JwtIdentity.Client.Pages.Survey
         protected void CompleteBranchingDemo()
         {
             // Navigate back to SurveysICreated with demo step after Preview button
-            Navigation.NavigateTo($"/surveys/created?DemoType=branching&DemoStep=1");
+            Navigation.NavigateTo($"/mysurveys/surveysicreated?DemoType=branching&DemoStep=1");
         }
 
         private async Task EnsureInitializedAsync()
