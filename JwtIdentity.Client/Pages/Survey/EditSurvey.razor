@@ -257,7 +257,7 @@
                                 </DemoBorder>
                             </DemoPopup>
                             <MudText Typo="Typo.h6" Class="mt-5">Create a @StringHelper.PascalCaseToWords(SelectedQuestionType) Question</MudText>
-                            <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 4, 7, 8 })">
+                            <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 4, 7 })">
                                 <MudTextField id="Text" Label="Question Text" @bind-Value="QuestionText" Variant="Variant.Filled" Lines="1" MaxLines="5" AutoGrow="true" Immediate="true" Counter="500" MaxLength="500" ReadOnly="@IsDemoUser" />
                             </DemoBorder>
                             <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 4 })" AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft">
@@ -310,10 +310,10 @@
                             <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 21 })" TransformOrigin="Origin.TopLeft" AnchorOrigin="Origin.BottomLeft">
                                 <MudText Typo="Typo.body2">Now save this text question by clicking the Save Question button.</MudText>
                             </DemoPopup>
-                            <MudCheckBox T="bool" @bind-Value="IsRequired" Label="Is Required?" Color="Color.Primary" Disabled="@(AddQuestionToSurveyDisabled || (IsDemoUser && DemoStep != 9 && DemoStep != 12 && DemoStep != 15 && DemoStep != 18 && DemoStep != 21))" />
+                            <MudCheckBox T="bool" @bind-Value="IsRequired" Label="Is Required?" Color="Color.Primary" Disabled="@(AddQuestionToSurveyDisabled || IsDemoUser)" />
                             @if ((SelectedQuestion?.GroupId ?? 0) == 0 && (SelectedQuestion?.CanBeMarkedAsLastQuestion ?? true))
                             {
-                                <MudCheckBox T="bool" @bind-Value="IsLastQuestion" Label="Is Last Question?" Color="Color.Primary" Disabled="@(AddQuestionToSurveyDisabled || (IsDemoUser && DemoStep != 9 && DemoStep != 12 && DemoStep != 15 && DemoStep != 18 && DemoStep != 21))" />
+                                <MudCheckBox T="bool" @bind-Value="IsLastQuestion" Label="Is Last Question?" Color="Color.Primary" Disabled="@(AddQuestionToSurveyDisabled || (IsDemoUser && DemoStep != 22))" />
                             }
                         </MudStack>
                     </MudPaper>
@@ -323,7 +323,7 @@
                     {
                         <MudPaper>
                             <MudText Typo="Typo.h6" Class="mb-1">Add the Question Choices</MudText>
-                            <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 11, 14, 17 })">
+                            <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 8, 11, 14, 17 })">
                                 <MudSelect id="PresetChoices" Label="Preset Choices (Will overwrite existing choices)" T="string" @bind-Value="SelectedPresetChoice" Variant="Variant.Filled" Dense="true" Disabled="@(IsDemoUser && DemoStep != 8 && DemoStep != 11 && DemoStep != 14 && DemoStep != 17)">
                                     <MudSelectItem T="string" Value=null>-- Select Preset --</MudSelectItem>
                                     @foreach (var preset in PresetChoices)
