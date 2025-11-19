@@ -15,9 +15,9 @@
             @if (DemoType == "branching")
             {
                 <DemoBorder Class="ms-auto mt-2" CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 23 })" IsButton="true">
-                    <MudButton Variant="Variant.Filled" Color="Color.Secondary" 
-                                OnClick="@NavigateToBranching"
-                                StartIcon="@Icons.Material.Filled.AccountTree">
+                    <MudButton Variant="Variant.Filled" Color="Color.Secondary"
+                               OnClick="@NavigateToBranching"
+                               StartIcon="@Icons.Material.Filled.AccountTree">
                         Configure Branching
                     </MudButton>
                 </DemoBorder>
@@ -25,9 +25,9 @@
             else
             {
                 <DemoBorder Class="ms-auto mt-2" CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { -1 })" IsButton="true">
-                    <MudButton Variant="Variant.Filled" Color="Color.Secondary" 
-                                OnClick="@NavigateToBranching"
-                                StartIcon="@Icons.Material.Filled.AccountTree">
+                    <MudButton Variant="Variant.Filled" Color="Color.Secondary"
+                               OnClick="@NavigateToBranching"
+                               StartIcon="@Icons.Material.Filled.AccountTree">
                         Configure Branching
                     </MudButton>
                 </DemoBorder>
@@ -48,7 +48,7 @@
 
         </MudStack>
     }
-    
+
     @if (DemoType == "branching")
     {
         <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 23 })" TransformOrigin="Origin.TopLeft" AnchorOrigin="Origin.BottomLeft">
@@ -86,8 +86,10 @@
             </DemoBorder>
         </MudStack>
         <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 1 })" TransformOrigin="Origin.TopLeft" AnchorOrigin="Origin.BottomLeft">
-            <MudText Typo="Typo.body2" Style="white-space: pre-line">Click each question then scroll down to inspect it.
-                Regenerate the AI-generated questions, or accept them if you're satisfied.</MudText>
+            <MudText Typo="Typo.body2" Style="white-space: pre-line">
+                Click each question then scroll down to inspect it.
+                Regenerate the AI-generated questions, or accept them if you're satisfied.
+            </MudText>
         </DemoPopup>
     </MudAlert>
 }
@@ -135,7 +137,7 @@
                                             {
                                                 <MudText Color="Color.Error" Typo="Typo.caption" Class="RequiredStar">*</MudText>
                                             }
-                                            
+
                                             @if (question.IsLastQuestion)
                                             {
                                                 <MudChip Size="MudBlazor.Size.Small" Color="Color.Warning" Icon="@Icons.Material.Filled.Flag">Last</MudChip>
@@ -151,11 +153,13 @@
                 </MudExpansionPanel>
             </DemoBorder>
             <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 0 })" TransformOrigin="Origin.TopLeft" AnchorOrigin="Origin.BottomLeft">
-                <MudText Typo="Typo.body2" Style="white-space: pre-line">AI can occasionally hallucinate.
+                <MudText Typo="Typo.body2" Style="white-space: pre-line">
+                    AI can occasionally hallucinate.
                     This can cause the generated questions and answers to be incorrect or not make sense.
-                    Review each generated question and its choices. 
-                    Expand this panel and click question 1 and scroll down to examine it. 
-                    Then do the same for the other questions.</MudText>
+                    Review each generated question and its choices.
+                    Expand this panel and click question 1 and scroll down to examine it.
+                    Then do the same for the other questions.
+                </MudText>
             </DemoPopup>
             <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 2 })" TransformOrigin="Origin.TopLeft" AnchorOrigin="Origin.BottomLeft">
                 <MudText Typo="Typo.body2">The questions can be reordered by dragging and dropping them.</MudText>
@@ -175,36 +179,44 @@
         {
             @if (CanEditQuestions)
             {
-            <MudExpansionPanel @ref="ManualQuestionPanel" @bind-Expanded="@ManualQuestionPanelExpanded" Text="Create Question Manually">
-                <MudPaper Class="p-2">
-                    <MudStack Spacing="1">
-                        @{ bool purpleBorder = ShowDemoStep(4); }
-                        <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 4, 6 })" IsButton="@purpleBorder">
-                            <MudSelect id="QuestionTypeSelect" Label="Select the Question Type"
-                                       Value="@SelectedQuestionType"
-                                       ValueChanged="@((string questionType) => HandleSelectedQuestionType(questionType))"
-                                       Variant="Variant.Filled"
-                                       Immediate="true"
-                                       ErrorText="Please select a type"
-                                       Error="@(string.IsNullOrWhiteSpace(SelectedQuestionType))"
-                                       Disabled="@(SelectedQuestion != null)">
-                                @foreach (var questionType in QuestionTypes)
-                                {
-                                    <MudSelectItem Value="@(StringHelper.PascalCaseToWords(questionType))" />
-                                }
-                            </MudSelect>
-                        </DemoBorder>
+                <MudExpansionPanel @ref="ManualQuestionPanel" @bind-Expanded="@ManualQuestionPanelExpanded" Text="Create Question Manually">
+                    <MudPaper Class="p-2">
+                        <MudStack Spacing="1">
+                            @{
+                                bool purpleBorder = ShowDemoStep(4);
+                            }
+                            <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 4, 6 })" IsButton="@purpleBorder">
+                                <MudSelect id="QuestionTypeSelect" Label="Select the Question Type"
+                                           Value="@SelectedQuestionType"
+                                           ValueChanged="@((string questionType) => HandleSelectedQuestionType(questionType))"
+                                           Variant="Variant.Filled"
+                                           Immediate="true"
+                                           ErrorText="Please select a type"
+                                           Error="@(string.IsNullOrWhiteSpace(SelectedQuestionType))"
+                                           Disabled="@(SelectedQuestion != null)">
+                                    @foreach (var questionType in QuestionTypes)
+                                    {
+                                        <MudSelectItem Value="@(StringHelper.PascalCaseToWords(questionType))" />
+                                    }
+                                </MudSelect>
+                            </DemoBorder>
                             <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 6 })" TransformOrigin="Origin.TopLeft" AnchorOrigin="Origin.BottomLeft">
-                                <MudText Style="white-space: pre-line" Typo="Typo.body2">Now we will see how to create a new question.
-                                    Currently, the Question Type is set to Text. Select Multiple Choice for the question type. 
-                                    We will create a new Multiple Choice question.</MudText>
+                                <MudText Style="white-space: pre-line" Typo="Typo.body2">
+                                    Now we will see how to create a new question.
+                                    Currently, the Question Type is set to Text. Select Multiple Choice for the question type.
+                                    We will create a new Multiple Choice question.
+                                </MudText>
                             </DemoPopup>
-                            <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 10 })" TransformOrigin="Origin.TopLeft" AnchorOrigin="Origin.BottomLeft">
-                                <MudText Typo="Typo.body2">Great! The first branching question is saved. Now let's create the second question. It will automatically be set up for you. Click Next to continue.</MudText>
-                                <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 10 })" IsButton="true">
-                                    <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
-                                </DemoBorder>
-                            </DemoPopup>
+                            @if (DemoType == "branching")
+                            {
+                                <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 10 })" TransformOrigin="Origin.TopLeft" AnchorOrigin="Origin.BottomLeft">
+                                    <MudText Typo="Typo.body2">Great! The first branching question is saved. Now let's create the second question. It will automatically be set up for you. Click Next to continue.</MudText>
+                                    <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 10 })" IsButton="true">
+                                        <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
+                                    </DemoBorder>
+                                </DemoPopup>
+                            }
+
                             <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 13 })" TransformOrigin="Origin.TopLeft" AnchorOrigin="Origin.BottomLeft">
                                 <MudText Typo="Typo.body2">Second question saved! Now let's create the third question. Click Next to continue.</MudText>
                                 <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 13 })" IsButton="true">
@@ -235,10 +247,10 @@
                                     <MudButton OnClick="NextDemoStep" Variant="Variant.Filled" Color="Color.Success">Next</MudButton>
                                 </DemoBorder>
                             </DemoPopup>
-                        <MudText Typo="Typo.h6" Class="mt-5">Create a @StringHelper.PascalCaseToWords(SelectedQuestionType) Question</MudText>
-                        <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 4, 7, 8 })">
-                            <MudTextField id="Text" Label="Question Text" @bind-Value="QuestionText" Variant="Variant.Filled" Lines="1" MaxLines="5" AutoGrow="true" Immediate="true" Counter="500" MaxLength="500" ReadOnly="@IsDemoUser" />
-                        </DemoBorder>
+                            <MudText Typo="Typo.h6" Class="mt-5">Create a @StringHelper.PascalCaseToWords(SelectedQuestionType) Question</MudText>
+                            <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 4, 7, 8 })">
+                                <MudTextField id="Text" Label="Question Text" @bind-Value="QuestionText" Variant="Variant.Filled" Lines="1" MaxLines="5" AutoGrow="true" Immediate="true" Counter="500" MaxLength="500" ReadOnly="@IsDemoUser" />
+                            </DemoBorder>
                             <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 4 })" AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft">
                                 <MudText Typo="Typo.body2" Style="white-space: pre-line">
                                     Scroll down to preview the <span style="color: var(--mud-palette-success);">Question Text</span> editor.
@@ -268,12 +280,12 @@
                                     <MudText Typo="Typo.body2">Now we will pick appropriate choices for this question. Scroll down, expand the Preset Choices drop-down and select Yes No Partially.</MudText>
                                 }
                             </DemoPopup>
-                    </MudStack>
+                        </MudStack>
 
-                    <MudStack Row="true">
-                        <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 9, 12, 15, 18, 21 })" IsButton="true">
-                            <MudButton id="SaveQuestionBtn" ButtonType="ButtonType.Button" Variant="Variant.Filled" Color="Color.Primary" OnClick="AddQuestionToSurvey" Disabled="@AddQuestionToSurveyDisabled">Save Question</MudButton>
-                        </DemoBorder>
+                        <MudStack Row="true">
+                            <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 9, 12, 15, 18, 21 })" IsButton="true">
+                                <MudButton id="SaveQuestionBtn" ButtonType="ButtonType.Button" Variant="Variant.Filled" Color="Color.Primary" OnClick="AddQuestionToSurvey" Disabled="@AddQuestionToSurveyDisabled">Save Question</MudButton>
+                            </DemoBorder>
                             <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 9 })" TransformOrigin="Origin.TopLeft" AnchorOrigin="Origin.BottomLeft">
                                 <MudText Typo="Typo.body2">Scroll down so you can see the choices down below. Click Save Question button to save the question.</MudText>
                             </DemoPopup>
@@ -289,28 +301,28 @@
                             <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 21 })" TransformOrigin="Origin.TopLeft" AnchorOrigin="Origin.BottomLeft">
                                 <MudText Typo="Typo.body2">Now save this text question by clicking the Save Question button.</MudText>
                             </DemoPopup>
-                        <MudCheckBox T="bool" @bind-Value="IsRequired" Label="Is Required?" Color="Color.Primary" Disabled="@AddQuestionToSurveyDisabled" />
-                        @if ((SelectedQuestion?.GroupId ?? 0) == 0 && (SelectedQuestion?.CanBeMarkedAsLastQuestion ?? true))
-                        {
-                            <MudCheckBox T="bool" @bind-Value="IsLastQuestion" Label="Is Last Question?" Color="Color.Primary" Disabled="@AddQuestionToSurveyDisabled" />
-                        }
-                    </MudStack>
-                </MudPaper>
-
-                @if (SelectedQuestionType.Replace(" ", "") == Enum.GetName(QuestionType.MultipleChoice) ||
-                            SelectedQuestionType.Replace(" ", "") == Enum.GetName(QuestionType.SelectAllThatApply))
-                {
-                    <MudPaper>
-                        <MudText Typo="Typo.h6" Class="mb-1">Add the Question Choices</MudText>
-                        <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 11, 14, 17 })">
-                        <MudSelect id="PresetChoices" Label="Preset Choices (Will overwrite existing choices)" T="string" @bind-Value="SelectedPresetChoice" Variant="Variant.Filled" Dense="true">
-                            <MudSelectItem T="string" Value=null>-- Select Preset --</MudSelectItem>
-                            @foreach (var preset in PresetChoices)
+                            <MudCheckBox T="bool" @bind-Value="IsRequired" Label="Is Required?" Color="Color.Primary" Disabled="@AddQuestionToSurveyDisabled" />
+                            @if ((SelectedQuestion?.GroupId ?? 0) == 0 && (SelectedQuestion?.CanBeMarkedAsLastQuestion ?? true))
                             {
-                                <MudSelectItem Value="@preset.Key">@preset.Key</MudSelectItem>
+                                <MudCheckBox T="bool" @bind-Value="IsLastQuestion" Label="Is Last Question?" Color="Color.Primary" Disabled="@AddQuestionToSurveyDisabled" />
                             }
-                        </MudSelect>
-                        </DemoBorder>
+                        </MudStack>
+                    </MudPaper>
+
+                    @if (SelectedQuestionType.Replace(" ", "") == Enum.GetName(QuestionType.MultipleChoice) ||
+                                SelectedQuestionType.Replace(" ", "") == Enum.GetName(QuestionType.SelectAllThatApply))
+                    {
+                        <MudPaper>
+                            <MudText Typo="Typo.h6" Class="mb-1">Add the Question Choices</MudText>
+                            <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 11, 14, 17 })">
+                                <MudSelect id="PresetChoices" Label="Preset Choices (Will overwrite existing choices)" T="string" @bind-Value="SelectedPresetChoice" Variant="Variant.Filled" Dense="true">
+                                    <MudSelectItem T="string" Value=null>-- Select Preset --</MudSelectItem>
+                                    @foreach (var preset in PresetChoices)
+                                    {
+                                        <MudSelectItem Value="@preset.Key">@preset.Key</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </DemoBorder>
                             <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 11 })" TransformOrigin="Origin.TopLeft" AnchorOrigin="Origin.BottomLeft">
                                 <MudText Typo="Typo.body2">For the second question about customer service, select <strong>How Satisfied</strong> from the Preset Choices.</MudText>
                             </DemoPopup>
@@ -320,36 +332,36 @@
                             <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 17 })" TransformOrigin="Origin.TopLeft" AnchorOrigin="Origin.BottomLeft">
                                 <MudText Typo="Typo.body2">For the fourth question about ease of use, select <strong>Yes No Partially</strong> from the Preset Choices.</MudText>
                             </DemoPopup>
-                        <MudTextField id="Choice" Label="Choice Text" @bind-Value="NewChoiceOptionText" Variant="Variant.Filled" Lines="1" MaxLines="5" AutoGrow="true" Immediate="true" Counter="50" MaxLength="50" ReadOnly="@IsDemoUser" />
+                            <MudTextField id="Choice" Label="Choice Text" @bind-Value="NewChoiceOptionText" Variant="Variant.Filled" Lines="1" MaxLines="5" AutoGrow="true" Immediate="true" Counter="50" MaxLength="50" ReadOnly="@IsDemoUser" />
 
-                        <MudButton ButtonType="ButtonType.Button" Variant="Variant.Filled" Color="Color.Primary" OnClick="@AddChoiceOption" Disabled="@(string.IsNullOrWhiteSpace(NewChoiceOptionText))">Add Choice</MudButton>
+                            <MudButton ButtonType="ButtonType.Button" Variant="Variant.Filled" Color="Color.Primary" OnClick="@AddChoiceOption" Disabled="@(string.IsNullOrWhiteSpace(NewChoiceOptionText))">Add Choice</MudButton>
 
-                        <div style="height:300px;overflow:auto;" class="mt-2">
-                            <MudList T="string" ReadOnly="true" Dense="true">
-                                @foreach (var choice in MultipleChoiceQuestion.Options)
-                                {
-                                    <DragAndDrop TItem="ChoiceOptionViewModel" Items="MultipleChoiceQuestion.Options" Item="choice" ItemsChanged="DroppedChoiceOption">
-                                        <MudStack Class=".d-flex.flex-row.gap-3.ai-style-change-1" Row="true" AlignItems="AlignItems.Center">
-                                            <MudIconButton Icon="@Icons.Material.Filled.Delete" ButtonType="ButtonType.Button" OnClick="@(() => DeleteChoiceOption(choice))" />
-                                            <MudIcon Class="drag-icon ai-style-change-9" Icon="@Icons.Material.Filled.DragIndicator" />
-                                            <MudListItem T="string" Class="ai-style-change-3 ai-style-change-6" Text="@choice.OptionText" />
-                                        </MudStack>
-                                        <div style="height: 2px; background-color: blueviolet; width: 100%;"></div>
-                                    </DragAndDrop>
-                                }
-                            </MudList>
-                        </div>
-                    </MudPaper>
-                }
-            </MudExpansionPanel>
+                            <div style="height:300px;overflow:auto;" class="mt-2">
+                                <MudList T="string" ReadOnly="true" Dense="true">
+                                    @foreach (var choice in MultipleChoiceQuestion.Options)
+                                    {
+                                        <DragAndDrop TItem="ChoiceOptionViewModel" Items="MultipleChoiceQuestion.Options" Item="choice" ItemsChanged="DroppedChoiceOption">
+                                            <MudStack Class=".d-flex.flex-row.gap-3.ai-style-change-1" Row="true" AlignItems="AlignItems.Center">
+                                                <MudIconButton Icon="@Icons.Material.Filled.Delete" ButtonType="ButtonType.Button" OnClick="@(() => DeleteChoiceOption(choice))" />
+                                                <MudIcon Class="drag-icon ai-style-change-9" Icon="@Icons.Material.Filled.DragIndicator" />
+                                                <MudListItem T="string" Class="ai-style-change-3 ai-style-change-6" Text="@choice.OptionText" />
+                                            </MudStack>
+                                            <div style="height: 2px; background-color: blueviolet; width: 100%;"></div>
+                                        </DragAndDrop>
+                                    }
+                                </MudList>
+                            </div>
+                        </MudPaper>
+                    }
+                </MudExpansionPanel>
 
-            <MudExpansionPanel @ref="ExistingQuestionPanel" Text="Start with Existing Question" @bind-Expanded="@ExistingQuestionPanelExpanded">
-                <SfAutoComplete TValue="BaseQuestionDto" TItem="BaseQuestionDto" PopupHeight="130px" EnableVirtualization="true" Placeholder="Start Typing to Search Existing Questions" Query="@RemoteDataQuery" Value="SelectedExistingQuestion" ValueChanged="HandleSelectedExistingQuestion" ShowPopupButton="true">
-                    <SfDataManager Url="odata/odataquestion" CrossDomain="true" Adaptor="Adaptors.ODataV4Adaptor" />
-                    <AutoCompleteFieldSettings Text="Text" Value="Text" />
-                </SfAutoComplete>
+                <MudExpansionPanel @ref="ExistingQuestionPanel" Text="Start with Existing Question" @bind-Expanded="@ExistingQuestionPanelExpanded">
+                    <SfAutoComplete TValue="BaseQuestionDto" TItem="BaseQuestionDto" PopupHeight="130px" EnableVirtualization="true" Placeholder="Start Typing to Search Existing Questions" Query="@RemoteDataQuery" Value="SelectedExistingQuestion" ValueChanged="HandleSelectedExistingQuestion" ShowPopupButton="true">
+                        <SfDataManager Url="odata/odataquestion" CrossDomain="true" Adaptor="Adaptors.ODataV4Adaptor" />
+                        <AutoCompleteFieldSettings Text="Text" Value="Text" />
+                    </SfAutoComplete>
 
-            </MudExpansionPanel>
+                </MudExpansionPanel>
             }
             else if (SelectedQuestion != null)
             {
