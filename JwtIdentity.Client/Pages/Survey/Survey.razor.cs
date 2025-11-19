@@ -36,7 +36,7 @@ namespace JwtIdentity.Client.Pages.Survey
 
         protected bool AgreedToTerms { get; set; }
 
-        protected bool IsDemoUser { get; set; }
+        internal bool IsDemoUser { get; set; }
         internal int DemoStep { get; set; }
         protected string DemoType { get; set; }
 
@@ -493,8 +493,19 @@ namespace JwtIdentity.Client.Pages.Survey
 
                 _ = Snackbar.Add("Survey submitted successfully", Severity.Success);
 
-                if (IsDemoUser)
+                if (IsDemoUser && DemoStep >= 10)
                 {
+                    // Demo user completing actual survey demo - return to SurveysICreated
+                    var returnUrl = "/mysurveys/surveysicreated?DemoStep=4";
+                    if (!string.IsNullOrEmpty(DemoType))
+                    {
+                        returnUrl += $"&DemoType={DemoType}";
+                    }
+                    Navigation.NavigateTo(returnUrl);
+                }
+                else if (IsDemoUser)
+                {
+                    // Old demo flow (shouldn't reach here with new flow)
                     Navigation.NavigateTo("/mysurveys/surveysicreated?DemoStep=3");
                 }
                 else
