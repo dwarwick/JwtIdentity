@@ -224,7 +224,7 @@ namespace JwtIdentity.Client.Pages.Survey
                 7 => "Text",
                 8 => "PresetChoices",
                 9 => "SaveQuestionBtn",
-                10 => "SaveQuestionBtn",
+                10 => DemoType == "branching" ? "SaveQuestionBtn" : "PublishSurveyBtn",
                 23 => "PublishSurveyBtn",
                 _ => null
             };

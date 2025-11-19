@@ -17,32 +17,41 @@
                 <DemoBorder Class="ms-auto mt-2" CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 23 })" IsButton="true">
                     <MudButton Variant="Variant.Filled" Color="Color.Secondary"
                                OnClick="@NavigateToBranching"
-                               StartIcon="@Icons.Material.Filled.AccountTree">
+                               StartIcon="@Icons.Material.Filled.AccountTree" Disabled="@(DemoStep != 23)">
                         Configure Branching
                     </MudButton>
                 </DemoBorder>
             }
             else
-            {
-                <DemoBorder Class="ms-auto mt-2" CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { -1 })" IsButton="true">
-                    <MudButton Variant="Variant.Filled" Color="Color.Secondary"
-                               OnClick="@NavigateToBranching"
-                               StartIcon="@Icons.Material.Filled.AccountTree">
-                        Configure Branching
-                    </MudButton>
-                </DemoBorder>
+            {                
+                <MudButton Variant="Variant.Filled" Color="Color.Secondary"
+                            OnClick="@NavigateToBranching"
+                            StartIcon="@Icons.Material.Filled.AccountTree"
+                            Disabled="@(DemoType == "linear")">
+                    Configure Branching
+                </MudButton>                
             }
 
             @if (DemoType == "branching")
             {
                 <DemoBorder Class="ms-auto mt-2" CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 30 })" IsButton="true">
-                    <MudButton id="PublishSurveyBtn" ButtonType="ButtonType.Button" Variant="Variant.Filled" Color="Color.Primary" OnClick="PublishSurvey" Disabled="@(Survey.Published)">Publish Survey</MudButton>
+                    <MudButton id="PublishSurveyBtn" 
+                        ButtonType="ButtonType.Button" 
+                        Variant="Variant.Filled" 
+                        Color="Color.Primary" 
+                        OnClick="PublishSurvey" 
+                        Disabled="@(Survey.Published || DemoStep !=30)">Publish Survey</MudButton>
                 </DemoBorder>
             }
             else
             {
                 <DemoBorder Class="ms-auto mt-2" CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 10 })" IsButton="true">
-                    <MudButton id="PublishSurveyBtn" ButtonType="ButtonType.Button" Variant="Variant.Filled" Color="Color.Primary" OnClick="PublishSurvey" Disabled="@(Survey.Published)">Publish Survey</MudButton>
+                    <MudButton id="PublishSurveyBtn" 
+                        ButtonType="ButtonType.Button" 
+                        Variant="Variant.Filled" 
+                        Color="Color.Primary" 
+                        OnClick="PublishSurvey" 
+                        Disabled="@(Survey.Published || (DemoType == "linear" && DemoStep !=10))">Publish Survey</MudButton>
                 </DemoBorder>
             }
 
