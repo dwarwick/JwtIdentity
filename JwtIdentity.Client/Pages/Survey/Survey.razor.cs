@@ -37,7 +37,7 @@ namespace JwtIdentity.Client.Pages.Survey
         protected bool AgreedToTerms { get; set; }
 
         protected bool IsDemoUser { get; set; }
-        protected int DemoStep { get; set; }
+        internal int DemoStep { get; set; }
         protected string DemoType { get; set; }
 
         protected bool ShowDemoStep(int step)
@@ -331,7 +331,7 @@ namespace JwtIdentity.Client.Pages.Survey
             }
         }
 
-        protected async Task HandleAnswerQuestion(AnswerViewModel answer, object selectedAnswer)
+        internal async Task HandleAnswerQuestion(AnswerViewModel answer, object selectedAnswer)
         {
             AnswerViewModel response = null;
 
@@ -607,12 +607,14 @@ namespace JwtIdentity.Client.Pages.Survey
             StateHasChanged();
         }
 
-        protected void NextDemoStep()
+        internal void NextDemoStep()
         {
             if (!IsDemoUser) return;
             DemoStep++;
 
-            if (DemoStep == 3 && Preview)
+            // Linear demo navigation: Step 3 returns to SurveysICreated
+            // Branching demo navigation: Step 9 returns to SurveysICreated (handled in CompleteBranchingDemo)
+            if (Preview && DemoType != "branching" && DemoStep == 3)
             {
                 Navigation.NavigateTo("/mysurveys/surveysicreated?DemoStep=1");
             }
@@ -779,7 +781,7 @@ namespace JwtIdentity.Client.Pages.Survey
             _lastQuestionsLoaded = true;
         }
 
-        protected void GoToNextQuestion()
+        internal void GoToNextQuestion()
         {
             if (!HasBranching)
             {

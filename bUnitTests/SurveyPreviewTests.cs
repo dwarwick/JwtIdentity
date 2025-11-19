@@ -1078,5 +1078,291 @@ namespace JwtIdentity.BunitTests
         }
 
         #endregion
+
+        #region Demo Step Advancement Tests
+
+        [Test]
+        public async Task BranchingDemo_Step0_AdvancesToStep1_WhenNextClicked()
+        {
+            // Arrange
+            NavManager.NavigateTo($"http://localhost/survey/{_testSurveyGuid}?Preview=true&DemoStep=0&DemoType=branching");
+            
+            var cut = Context.RenderComponent<Survey>(parameters => parameters
+                .Add(p => p.SurveyId, _testSurveyGuid)
+            );
+            
+            await cut.InvokeAsync(async () => await cut.Instance.LoadData());
+            
+            // Act - Call NextDemoStep
+            await cut.InvokeAsync(() => cut.Instance.NextDemoStep());
+            
+            // Assert - DemoStep should be 1
+            Assert.That(cut.Instance.DemoStep, Is.EqualTo(1), "DemoStep should advance to 1");
+        }
+
+        [Test]
+        public async Task BranchingDemo_Step1_AdvancesToStep2_WhenAnswerSelected()
+        {
+            // Arrange
+            NavManager.NavigateTo($"http://localhost/survey/{_testSurveyGuid}?Preview=true&DemoStep=1&DemoType=branching");
+            
+            var cut = Context.RenderComponent<Survey>(parameters => parameters
+                .Add(p => p.SurveyId, _testSurveyGuid)
+            );
+            
+            await cut.InvokeAsync(async () => await cut.Instance.LoadData());
+            
+            // Get the first answer for the first question
+            var firstQuestion = _testSurvey.Questions[0];
+            var answer = firstQuestion.Answers.FirstOrDefault();
+            
+            // Act - Select first option (simulates user selecting answer)
+            await cut.InvokeAsync(async () => await cut.Instance.HandleAnswerQuestion(answer, 1));
+            
+            // Assert - DemoStep should advance to 2
+            Assert.That(cut.Instance.DemoStep, Is.EqualTo(2), "DemoStep should auto-advance to 2 after selecting answer at step 1");
+        }
+
+        [Test]
+        public async Task BranchingDemo_Step2_AdvancesToStep3_WhenNextClicked()
+        {
+            // Arrange
+            NavManager.NavigateTo($"http://localhost/survey/{_testSurveyGuid}?Preview=true&DemoStep=2&DemoType=branching");
+            
+            var cut = Context.RenderComponent<Survey>(parameters => parameters
+                .Add(p => p.SurveyId, _testSurveyGuid)
+            );
+            
+            await cut.InvokeAsync(async () => await cut.Instance.LoadData());
+            
+            // Act - Call NextDemoStep
+            await cut.InvokeAsync(() => cut.Instance.NextDemoStep());
+            
+            // Assert - DemoStep should be 3
+            Assert.That(cut.Instance.DemoStep, Is.EqualTo(3), "DemoStep should advance to 3");
+        }
+
+        [Test]
+        public async Task BranchingDemo_Step3_AdvancesToStep4_WhenAnswerSelected()
+        {
+            // Arrange
+            NavManager.NavigateTo($"http://localhost/survey/{_testSurveyGuid}?Preview=true&DemoStep=3&DemoType=branching");
+            
+            var cut = Context.RenderComponent<Survey>(parameters => parameters
+                .Add(p => p.SurveyId, _testSurveyGuid)
+            );
+            
+            await cut.InvokeAsync(async () => await cut.Instance.LoadData());
+            
+            // Ensure we're on question 2 (index 1)
+            await cut.InvokeAsync(() => cut.Instance.GoToNextQuestion());
+            
+            // Get the second answer for the second question
+            var secondQuestion = _testSurvey.Questions[1];
+            var answer = secondQuestion.Answers.FirstOrDefault();
+            
+            // Act - Select first option on Q2
+            await cut.InvokeAsync(async () => await cut.Instance.HandleAnswerQuestion(answer, 1));
+            
+            // Assert - DemoStep should advance to 4
+            Assert.That(cut.Instance.DemoStep, Is.EqualTo(4), "DemoStep should auto-advance to 4 after selecting answer at step 3");
+        }
+
+        [Test]
+        public async Task BranchingDemo_Step4_AdvancesToStep5_WhenNextClicked()
+        {
+            // Arrange
+            NavManager.NavigateTo($"http://localhost/survey/{_testSurveyGuid}?Preview=true&DemoStep=4&DemoType=branching");
+            
+            var cut = Context.RenderComponent<Survey>(parameters => parameters
+                .Add(p => p.SurveyId, _testSurveyGuid)
+            );
+            
+            await cut.InvokeAsync(async () => await cut.Instance.LoadData());
+            
+            // Act - Call NextDemoStep
+            await cut.InvokeAsync(() => cut.Instance.NextDemoStep());
+            
+            // Assert - DemoStep should be 5
+            Assert.That(cut.Instance.DemoStep, Is.EqualTo(5), "DemoStep should advance to 5");
+        }
+
+        [Test]
+        public async Task BranchingDemo_AllSteps_AdvanceSequentially()
+        {
+            // Test that steps advance correctly through the entire sequence
+            NavManager.NavigateTo($"http://localhost/survey/{_testSurveyGuid}?Preview=true&DemoStep=0&DemoType=branching");
+            
+            var cut = Context.RenderComponent<Survey>(parameters => parameters
+                .Add(p => p.SurveyId, _testSurveyGuid)
+            );
+            
+            await cut.InvokeAsync(async () => await cut.Instance.LoadData());
+            
+            // Verify initial state
+            Assert.That(cut.Instance.DemoStep, Is.EqualTo(0), "Should start at step 0");
+            
+            // Step 0 -> 1
+            await cut.InvokeAsync(() => cut.Instance.NextDemoStep());
+            Assert.That(cut.Instance.DemoStep, Is.EqualTo(1), "Step 0->1 failed");
+            
+            // Step 1 -> 2 (via answer selection)
+            var q1Answer = _testSurvey.Questions[0].Answers.FirstOrDefault();
+            await cut.InvokeAsync(async () => await cut.Instance.HandleAnswerQuestion(q1Answer, 1));
+            Assert.That(cut.Instance.DemoStep, Is.EqualTo(2), "Step 1->2 failed");
+            
+            // Step 2 -> 3
+            await cut.InvokeAsync(() => cut.Instance.NextDemoStep());
+            Assert.That(cut.Instance.DemoStep, Is.EqualTo(3), "Step 2->3 failed");
+            
+            // Step 3 -> 4 (via answer selection)
+            var q2Answer = _testSurvey.Questions[1].Answers.FirstOrDefault();
+            await cut.InvokeAsync(async () => await cut.Instance.HandleAnswerQuestion(q2Answer, 1));
+            Assert.That(cut.Instance.DemoStep, Is.EqualTo(4), "Step 3->4 failed");
+            
+            // Step 4 -> 5
+            await cut.InvokeAsync(() => cut.Instance.NextDemoStep());
+            Assert.That(cut.Instance.DemoStep, Is.EqualTo(5), "Step 4->5 failed");
+        }
+
+        [Test]
+        public async Task LinearDemo_Step1_AdvancesToStep2_WhenNextClicked()
+        {
+            // Arrange - Create linear survey (no branching)
+            var linearSurvey = CreateLinearSurvey();
+            ApiServiceMock.Setup(x => x.GetAsync<SurveyViewModel>(It.IsAny<string>()))
+                .ReturnsAsync(linearSurvey);
+                
+            NavManager.NavigateTo($"http://localhost/survey/{_testSurveyGuid}?Preview=true&DemoStep=1");
+            
+            var cut = Context.RenderComponent<Survey>(parameters => parameters
+                .Add(p => p.SurveyId, _testSurveyGuid)
+            );
+            
+            await cut.InvokeAsync(async () => await cut.Instance.LoadData());
+            
+            // Act - Call NextDemoStep
+            await cut.InvokeAsync(() => cut.Instance.NextDemoStep());
+            
+            // Assert - DemoStep should be 2
+            Assert.That(cut.Instance.DemoStep, Is.EqualTo(2), "LinearDemo DemoStep should advance to 2");
+        }
+
+        [Test]
+        public async Task LinearDemo_Step2_AdvancesToStep3_AndNavigatesAway()
+        {
+            // Arrange - Create linear survey (no branching)
+            var linearSurvey = CreateLinearSurvey();
+            ApiServiceMock.Setup(x => x.GetAsync<SurveyViewModel>(It.IsAny<string>()))
+                .ReturnsAsync(linearSurvey);
+                
+            NavManager.NavigateTo($"http://localhost/survey/{_testSurveyGuid}?Preview=true&DemoStep=2");
+            
+            var cut = Context.RenderComponent<Survey>(parameters => parameters
+                .Add(p => p.SurveyId, _testSurveyGuid)
+            );
+            
+            await cut.InvokeAsync(async () => await cut.Instance.LoadData());
+            
+            // Act - Call NextDemoStep
+            await cut.InvokeAsync(() => cut.Instance.NextDemoStep());
+            
+            // Assert - DemoStep should be 3 and navigation should have occurred
+            Assert.That(cut.Instance.DemoStep, Is.EqualTo(3), "LinearDemo DemoStep should advance to 3");
+            Assert.That(NavManager.Uri, Does.Contain("surveysicreated"), "Should navigate to SurveysICreated");
+            Assert.That(NavManager.Uri, Does.Contain("DemoStep=1"), "Should include DemoStep=1 parameter");
+        }
+
+        [Test]
+        public async Task LinearDemo_AllSteps_AdvanceSequentially()
+        {
+            // Arrange - Create linear survey (no branching)
+            var linearSurvey = CreateLinearSurvey();
+            ApiServiceMock.Setup(x => x.GetAsync<SurveyViewModel>(It.IsAny<string>()))
+                .ReturnsAsync(linearSurvey);
+                
+            NavManager.NavigateTo($"http://localhost/survey/{_testSurveyGuid}?Preview=true&DemoStep=1");
+            
+            var cut = Context.RenderComponent<Survey>(parameters => parameters
+                .Add(p => p.SurveyId, _testSurveyGuid)
+            );
+            
+            await cut.InvokeAsync(async () => await cut.Instance.LoadData());
+            
+            // Verify initial state
+            Assert.That(cut.Instance.DemoStep, Is.EqualTo(1), "Should start at step 1");
+            
+            // Step 1 -> 2
+            await cut.InvokeAsync(() => cut.Instance.NextDemoStep());
+            Assert.That(cut.Instance.DemoStep, Is.EqualTo(2), "LinearDemo Step 1->2 failed");
+            
+            // Step 2 -> 3 (and navigate away)
+            await cut.InvokeAsync(() => cut.Instance.NextDemoStep());
+            Assert.That(cut.Instance.DemoStep, Is.EqualTo(3), "LinearDemo Step 2->3 failed");
+            Assert.That(NavManager.Uri, Does.Contain("surveysicreated"), "Should navigate away after step 3");
+        }
+
+        [Test]
+        public async Task BranchingDemo_DoesNotNavigateAway_AtStep3()
+        {
+            // This test ensures branching demos don't navigate away at step 3 like linear demos do
+            NavManager.NavigateTo($"http://localhost/survey/{_testSurveyGuid}?Preview=true&DemoStep=3&DemoType=branching");
+            
+            var cut = Context.RenderComponent<Survey>(parameters => parameters
+                .Add(p => p.SurveyId, _testSurveyGuid)
+            );
+            
+            await cut.InvokeAsync(async () => await cut.Instance.LoadData());
+            
+            var initialUri = NavManager.Uri;
+            
+            // Act - Advance to step 4
+            await cut.InvokeAsync(()  => cut.Instance.NextDemoStep());
+            
+            // Assert - Should NOT navigate away, should stay on survey page
+            Assert.That(cut.Instance.DemoStep, Is.EqualTo(4), "BranchingDemo should advance to step 4");
+            Assert.That(NavManager.Uri, Is.EqualTo(initialUri), "BranchingDemo should NOT navigate away at step 3");
+        }
+
+        private SurveyViewModel CreateLinearSurvey()
+        {
+            var survey = new SurveyViewModel
+            {
+                Id = 3,
+                Guid = _testSurveyGuid.ToString(),
+                Title = "Simple Survey",
+                Description = "A simple linear survey without branching",
+                Published = true,
+                Questions = new List<QuestionViewModel>(),
+                QuestionGroups = new List<QuestionGroupViewModel>
+                {
+                    new QuestionGroupViewModel { Id = 1, GroupNumber = 0, GroupName = "Main Questions" }
+                }
+            };
+
+            // Add a simple question
+            var q1 = new MultipleChoiceQuestionViewModel
+            {
+                Id = 1,
+                SurveyId = survey.Id,
+                Text = "How was your experience?",
+                QuestionNumber = 1,
+                QuestionType = QuestionType.MultipleChoice,
+                IsRequired = true,
+                GroupId = 0,
+                Options = new List<ChoiceOptionViewModel>
+                {
+                    new ChoiceOptionViewModel { Id = 1, OptionText = "Great", Order = 0 },
+                    new ChoiceOptionViewModel { Id = 2, OptionText = "Good", Order = 1 },
+                    new ChoiceOptionViewModel { Id = 3, OptionText = "Poor", Order = 2 }
+                },
+                Answers = new List<AnswerViewModel>()
+            };
+            survey.Questions.Add(q1);
+
+            return survey;
+        }
+
+        #endregion
     }
 }
