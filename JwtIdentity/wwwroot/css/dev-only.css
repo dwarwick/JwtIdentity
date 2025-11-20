@@ -1,0 +1,6 @@
+﻿/* Suppress the flaky ASP.NET Core Hot Reload overlay */
+#dotnet-compile-error {
+    display: none !important;
+    pointer-events: none !important;
+    background: transparent !important;
+}
