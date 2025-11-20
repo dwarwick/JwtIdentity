@@ -1,25 +1,19 @@
 using Bunit;
 using JwtIdentity.Client.Pages.Survey;
+using JwtIdentity.Client.Services;
 using JwtIdentity.Common.ViewModels;
 using JwtIdentity.Common.Helpers;
 using Microsoft.AspNetCore.Components;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Components.Authorization;
+using MudBlazor;
 using NUnit.Framework;
 using System.Threading.Tasks;
-using Blazored.LocalStorage;
 using System;
 using System.Collections.Generic;
 using Moq;
 using JwtIdentity.Client.Services.Base;
 using System.Linq;
-using Bunit.TestDoubles;
-using Microsoft.AspNetCore.Components.Authorization;
 using System.Security.Claims;
-using MudBlazor;
-using MudBlazor.Services;
-using JwtIdentity.Client.Helpers;
-using JwtIdentity.Client.Services;
-using BunitTestContext = Bunit.TestContext;
 
 namespace JwtIdentity.BunitTests
 {
@@ -29,84 +23,39 @@ namespace JwtIdentity.BunitTests
     /// These tests focus on component initialization, structure, and service interactions.
     /// </summary>
     [TestFixture]
-    public class SurveyTests : IDisposable
+    public class SurveyTests : BUnitTestBase
     {
-        private BunitTestContext _context;
-        private MockNavigationManager _navManager;
-        private Mock<AuthenticationStateProvider> _authStateProviderMock;
-        private Mock<IAuthService> _authServiceMock;
-        private Mock<ILocalStorageService> _localStorageMock;
-        private Mock<ISnackbar> _snackbarMock;
-        private Mock<IDialogService> _dialogServiceMock;
-        private Mock<IApiService> _apiServiceMock;
-        private Mock<IHttpClientFactory> _httpClientFactoryMock;
         private SurveyViewModel _testSurvey;
         private Guid _testSurveyId;
 
         [SetUp]
         public void Setup()
         {
-            // Create a fresh test context for each test
-            _context = new BunitTestContext();
+            // Reset mocks to clear any previous test invocations
+            ApiServiceMock.Reset();
+            AuthServiceMock.Reset();
+            AuthStateProviderMock.Reset();
 
             // Generate a test survey ID
             _testSurveyId = Guid.NewGuid();
 
-            // Create mocks
-            _authServiceMock = new Mock<IAuthService>();
-            _localStorageMock = new Mock<ILocalStorageService>();
-            _snackbarMock = new Mock<ISnackbar>();
-            _dialogServiceMock = new Mock<IDialogService>();
-            _apiServiceMock = new Mock<IApiService>();
-            _httpClientFactoryMock = new Mock<IHttpClientFactory>();
-            _httpClientFactoryMock.Setup(f => f.CreateClient(It.IsAny<string>())).Returns(new HttpClient());
-
-            // Setup MockNavigationManager
-            _navManager = new MockNavigationManager();
-            _context.Services.AddSingleton<NavigationManager>(_navManager);
-
             // Setup AuthenticationStateProvider with authenticated user by default
-            _authStateProviderMock = new Mock<AuthenticationStateProvider>();
             var authenticatedUser = new ClaimsPrincipal(new ClaimsIdentity(new[]
             {
                 new Claim(ClaimTypes.Name, "test@example.com")
             }, "TestAuth"));
             var authState = new AuthenticationState(authenticatedUser);
-            _authStateProviderMock.Setup(x => x.GetAuthenticationStateAsync()).ReturnsAsync(authState);
-
-            // Register all services
-            _context.Services.AddSingleton<IAuthService>(_authServiceMock.Object);
-            _context.Services.AddSingleton<ILocalStorageService>(_localStorageMock.Object);
-            _context.Services.AddSingleton<ISnackbar>(_snackbarMock.Object);
-            _context.Services.AddSingleton<IDialogService>(_dialogServiceMock.Object);
-            _context.Services.AddSingleton<IApiService>(_apiServiceMock.Object);
-            _context.Services.AddSingleton<AuthenticationStateProvider>(_authStateProviderMock.Object);
-            _context.Services.AddSingleton<IHttpClientFactory>(_httpClientFactoryMock.Object);
-
-            // Register mock IConfiguration
-            var mockConfig = new Mock<Microsoft.Extensions.Configuration.IConfiguration>();
-            mockConfig.Setup(c => c["ReCaptcha:SiteKey"]).Returns("test-site-key");
-            _context.Services.AddSingleton<Microsoft.Extensions.Configuration.IConfiguration>(mockConfig.Object);
-
-            // Register fake CustomAuthorizationMessageHandler
-            _context.Services.AddSingleton<JwtIdentity.Client.Services.CustomAuthorizationMessageHandler>(
-                new FakeCustomAuthorizationMessageHandler());
-            _context.Services.AddSingleton<HttpClient>(new HttpClient());
-            _context.Services.AddSingleton<Microsoft.JSInterop.IJSRuntime>(new Mock<Microsoft.JSInterop.IJSRuntime>().Object);
-            _context.Services.AddSingleton<JwtIdentity.Client.Helpers.IUtility>(new Mock<JwtIdentity.Client.Helpers.IUtility>().Object);
-
-            // Register MudBlazor services
-            _context.Services.AddMudServices();
+            AuthStateProviderMock.Setup(x => x.GetAuthenticationStateAsync()).ReturnsAsync(authState);
 
             // Setup default test survey
             _testSurvey = CreateTestSurvey();
 
             // Setup default API service responses
-            _apiServiceMock.Setup(x => x.GetAsync<SurveyViewModel>(It.IsAny<string>()))
+            ApiServiceMock.Setup(x => x.GetAsync<SurveyViewModel>(It.IsAny<string>()))
                 .ReturnsAsync(_testSurvey);
 
             // Setup AuthService for anonymous login
-            _authServiceMock.Setup(x => x.Login(It.IsAny<ApplicationUserViewModel>()))
+            AuthServiceMock.Setup(x => x.Login(It.IsAny<ApplicationUserViewModel>()))
                 .ReturnsAsync(new Response<ApplicationUserViewModel>
                 {
                     Success = true,
@@ -114,37 +63,8 @@ namespace JwtIdentity.BunitTests
                 });
 
             // Setup default answer post responses
-            _apiServiceMock.Setup(x => x.PostAsync(It.Is<string>(s => s == ApiEndpoints.Answer), It.IsAny<AnswerViewModel>()))
+            ApiServiceMock.Setup(x => x.PostAsync(It.Is<string>(s => s == ApiEndpoints.Answer), It.IsAny<AnswerViewModel>()))
                 .ReturnsAsync((string endpoint, AnswerViewModel answer) => answer);
-        }
-
-        // Fake implementation for DI
-        private class FakeCustomAuthorizationMessageHandler : JwtIdentity.Client.Services.CustomAuthorizationMessageHandler
-        {
-            public FakeCustomAuthorizationMessageHandler()
-                : base(new MockNavigationManager(), new ServiceCollection().BuildServiceProvider(), new Mock<ILocalStorageService>().Object)
-            {
-            }
-        }
-
-        private class MockNavigationManager : NavigationManager
-        {
-            public List<string> History { get; } = new List<string>();
-            public MockNavigationManager()
-            {
-                Initialize("http://localhost/", "http://localhost/");
-            }
-            protected override void NavigateToCore(string uri, bool forceLoad)
-            {
-                var absoluteUri = ToAbsoluteUri(uri).ToString();
-                History.Add(absoluteUri);
-                Uri = absoluteUri;
-            }
-        }
-
-        public void Dispose()
-        {
-            _context?.Dispose();
         }
 
         #region Helper Methods
@@ -281,7 +201,7 @@ namespace JwtIdentity.BunitTests
         {
             var anonymousUser = new ClaimsPrincipal(new ClaimsIdentity());
             var authState = new AuthenticationState(anonymousUser);
-            _authStateProviderMock.Setup(x => x.GetAuthenticationStateAsync()).ReturnsAsync(authState);
+            AuthStateProviderMock.Setup(x => x.GetAuthenticationStateAsync()).ReturnsAsync(authState);
         }
 
         private void SetupDemoUser()
@@ -291,7 +211,7 @@ namespace JwtIdentity.BunitTests
                 new Claim(ClaimTypes.Name, "DemoUser123@surveyshark.site")
             }, "TestAuth"));
             var authState = new AuthenticationState(demoUser);
-            _authStateProviderMock.Setup(x => x.GetAuthenticationStateAsync()).ReturnsAsync(authState);
+            AuthStateProviderMock.Setup(x => x.GetAuthenticationStateAsync()).ReturnsAsync(authState);
         }
 
         #endregion
@@ -308,7 +228,7 @@ namespace JwtIdentity.BunitTests
             };
 
             // Act
-            var cut = _context.RenderComponent<Survey>(parameters);
+            var cut = Context.RenderComponent<Survey>(parameters);
 
             // Assert
             Assert.That(cut, Is.Not.Null);
@@ -325,7 +245,7 @@ namespace JwtIdentity.BunitTests
             };
 
             // Act
-            var cut = _context.RenderComponent<Survey>(parameters);
+            var cut = Context.RenderComponent<Survey>(parameters);
 
             // Assert
             Assert.That(cut.Instance, Is.Not.Null);
@@ -342,7 +262,7 @@ namespace JwtIdentity.BunitTests
             };
 
             // Act
-            var cut = _context.RenderComponent<Survey>(parameters);
+            var cut = Context.RenderComponent<Survey>(parameters);
 
             // Assert
             Assert.That(cut.Instance, Is.Not.Null);
@@ -365,7 +285,7 @@ namespace JwtIdentity.BunitTests
             };
 
             // Act
-            var cut = _context.RenderComponent<Survey>(parameters);
+            var cut = Context.RenderComponent<Survey>(parameters);
 
             // Assert - Component should render without error even for anonymous users
             Assert.That(cut, Is.Not.Null);
@@ -383,7 +303,7 @@ namespace JwtIdentity.BunitTests
             };
 
             // Act
-            var cut = _context.RenderComponent<Survey>(parameters);
+            var cut = Context.RenderComponent<Survey>(parameters);
 
             // Assert
             Assert.That(cut, Is.Not.Null);
@@ -401,7 +321,7 @@ namespace JwtIdentity.BunitTests
             };
 
             // Act
-            var cut = _context.RenderComponent<Survey>(parameters);
+            var cut = Context.RenderComponent<Survey>(parameters);
 
             // Assert
             Assert.That(cut, Is.Not.Null);
@@ -416,18 +336,18 @@ namespace JwtIdentity.BunitTests
         public void Survey_Setup_Includes_All_Required_Services()
         {
             // Assert - Verify all required services are registered
-            Assert.That(_context.Services.GetService<IApiService>(), Is.Not.Null);
-            Assert.That(_context.Services.GetService<IAuthService>(), Is.Not.Null);
-            Assert.That(_context.Services.GetService<AuthenticationStateProvider>(), Is.Not.Null);
-            Assert.That(_context.Services.GetService<NavigationManager>(), Is.Not.Null);
-            Assert.That(_context.Services.GetService<ISnackbar>(), Is.Not.Null);
+            Assert.That(Context.Services.GetService<IApiService>(), Is.Not.Null);
+            Assert.That(Context.Services.GetService<IAuthService>(), Is.Not.Null);
+            Assert.That(Context.Services.GetService<AuthenticationStateProvider>(), Is.Not.Null);
+            Assert.That(Context.Services.GetService<NavigationManager>(), Is.Not.Null);
+            Assert.That(Context.Services.GetService<ISnackbar>(), Is.Not.Null);
         }
 
         [Test]
         public void Survey_ApiService_Mock_Returns_Valid_Survey()
         {
             // Arrange & Act
-            var survey = _apiServiceMock.Object.GetAsync<SurveyViewModel>("test").Result;
+            var survey = ApiServiceMock.Object.GetAsync<SurveyViewModel>("test").Result;
 
             // Assert
             Assert.That(survey, Is.Not.Null);
@@ -549,7 +469,7 @@ namespace JwtIdentity.BunitTests
             };
 
             // Act
-            var cut = _context.RenderComponent<Survey>(parameters);
+            var cut = Context.RenderComponent<Survey>(parameters);
 
             // Assert
             Assert.That(cut.Markup, Does.Contain("survey-container"));
@@ -563,8 +483,8 @@ namespace JwtIdentity.BunitTests
             var surveyId2 = Guid.NewGuid();
 
             // Act
-            var cut1 = _context.RenderComponent<Survey>(ComponentParameter.CreateParameter(nameof(Survey.SurveyId), surveyId1));
-            var cut2 = _context.RenderComponent<Survey>(ComponentParameter.CreateParameter(nameof(Survey.SurveyId), surveyId2));
+            var cut1 = Context.RenderComponent<Survey>(ComponentParameter.CreateParameter(nameof(Survey.SurveyId), surveyId1));
+            var cut2 = Context.RenderComponent<Survey>(ComponentParameter.CreateParameter(nameof(Survey.SurveyId), surveyId2));
 
             // Assert
             Assert.That(cut1.Instance.SurveyId, Is.EqualTo(surveyId1));
@@ -580,7 +500,7 @@ namespace JwtIdentity.BunitTests
         public void Survey_Handles_Null_Survey_Response_Gracefully()
         {
             // Arrange
-            _apiServiceMock.Setup(x => x.GetAsync<SurveyViewModel>(It.IsAny<string>()))
+            ApiServiceMock.Setup(x => x.GetAsync<SurveyViewModel>(It.IsAny<string>()))
                 .ReturnsAsync((SurveyViewModel)null);
 
             var parameters = new ComponentParameter[]
@@ -591,7 +511,7 @@ namespace JwtIdentity.BunitTests
             // Act & Assert - Should not throw exception
             Assert.DoesNotThrow(() =>
             {
-                var cut = _context.RenderComponent<Survey>(parameters);
+                var cut = Context.RenderComponent<Survey>(parameters);
                 Assert.That(cut, Is.Not.Null);
             });
         }
@@ -609,7 +529,7 @@ namespace JwtIdentity.BunitTests
             // Act & Assert - Should not throw exception
             Assert.DoesNotThrow(() =>
             {
-                var cut = _context.RenderComponent<Survey>(parameters);
+                var cut = Context.RenderComponent<Survey>(parameters);
                 Assert.That(cut, Is.Not.Null);
             });
         }
@@ -626,7 +546,7 @@ namespace JwtIdentity.BunitTests
             {
                 ComponentParameter.CreateParameter(nameof(Survey.SurveyId), _testSurveyId)
             };
-            var cut = _context.RenderComponent<Survey>(parameters);
+            var cut = Context.RenderComponent<Survey>(parameters);
 
             // Act
             // LoadData is now called automatically during OnInitializedAsync via EnsureInitializedAsync
@@ -634,7 +554,7 @@ namespace JwtIdentity.BunitTests
             await Task.Delay(100); // Give time for async initialization
 
             // Assert - Should be called once from OnInitializedAsync
-            _apiServiceMock.Verify(x => x.GetAsync<SurveyViewModel>(
+            ApiServiceMock.Verify(x => x.GetAsync<SurveyViewModel>(
                 It.Is<string>(s => s.Contains(_testSurveyId.ToString()))), Times.Once);
         }
 
@@ -646,7 +566,7 @@ namespace JwtIdentity.BunitTests
             {
                 ComponentParameter.CreateParameter(nameof(Survey.SurveyId), _testSurveyId)
             };
-            var cut = _context.RenderComponent<Survey>(parameters);
+            var cut = Context.RenderComponent<Survey>(parameters);
 
             // Act
             await cut.Instance.LoadData();
@@ -654,7 +574,7 @@ namespace JwtIdentity.BunitTests
             // Assert - All questions should have at least one answer initialized
             var instance = cut.Instance;
             // We can't directly access Survey property, but we can verify the API was called
-            _apiServiceMock.Verify(x => x.GetAsync<SurveyViewModel>(It.IsAny<string>()), Times.AtLeastOnce);
+            ApiServiceMock.Verify(x => x.GetAsync<SurveyViewModel>(It.IsAny<string>()), Times.AtLeastOnce);
         }
 
         [Test]
@@ -666,14 +586,14 @@ namespace JwtIdentity.BunitTests
             {
                 ComponentParameter.CreateParameter(nameof(Survey.SurveyId), _testSurveyId)
             };
-            var cut = _context.RenderComponent<Survey>(parameters);
+            var cut = Context.RenderComponent<Survey>(parameters);
 
             // Act
             // HandleLoggingInUser is now called automatically during OnInitializedAsync via EnsureInitializedAsync
             await Task.Delay(100); // Give time for async initialization
 
             // Assert - Should be called once from OnInitializedAsync
-            _authServiceMock.Verify(x => x.Login(
+            AuthServiceMock.Verify(x => x.Login(
                 It.Is<ApplicationUserViewModel>(u => u.UserName == "logmeinanonymoususer")), Times.Once);
         }
 
@@ -685,13 +605,13 @@ namespace JwtIdentity.BunitTests
             {
                 ComponentParameter.CreateParameter(nameof(Survey.SurveyId), _testSurveyId)
             };
-            var cut = _context.RenderComponent<Survey>(parameters);
+            var cut = Context.RenderComponent<Survey>(parameters);
 
             // Act
             await cut.Instance.HandleLoggingInUser();
 
             // Assert - Should not attempt login for authenticated users
-            _authServiceMock.Verify(x => x.Login(It.IsAny<ApplicationUserViewModel>()), Times.Never);
+            AuthServiceMock.Verify(x => x.Login(It.IsAny<ApplicationUserViewModel>()), Times.Never);
         }
 
         #endregion
@@ -702,14 +622,14 @@ namespace JwtIdentity.BunitTests
         public void Survey_Preview_Mode_Detected_From_QueryString()
         {
             // Arrange
-            _navManager.NavigateTo($"http://localhost/survey/{_testSurveyId}?Preview=true");
+            NavManager.NavigateTo($"http://localhost/survey/{_testSurveyId}?Preview=true");
             var parameters = new ComponentParameter[]
             {
                 ComponentParameter.CreateParameter(nameof(Survey.SurveyId), _testSurveyId)
             };
 
             // Act
-            var cut = _context.RenderComponent<Survey>(parameters);
+            var cut = Context.RenderComponent<Survey>(parameters);
 
             // Assert
             Assert.That(cut.Instance, Is.Not.Null);
@@ -720,14 +640,14 @@ namespace JwtIdentity.BunitTests
         public void Survey_ViewAnswers_Mode_Detected_From_QueryString()
         {
             // Arrange
-            _navManager.NavigateTo($"http://localhost/survey/{_testSurveyId}?ViewAnswers=true");
+            NavManager.NavigateTo($"http://localhost/survey/{_testSurveyId}?ViewAnswers=true");
             var parameters = new ComponentParameter[]
             {
                 ComponentParameter.CreateParameter(nameof(Survey.SurveyId), _testSurveyId)
             };
 
             // Act
-            var cut = _context.RenderComponent<Survey>(parameters);
+            var cut = Context.RenderComponent<Survey>(parameters);
 
             // Assert
             Assert.That(cut.Instance, Is.Not.Null);
@@ -743,21 +663,21 @@ namespace JwtIdentity.BunitTests
         {
             // Arrange
             var branchingSurvey = CreateBranchingSurvey();
-            _apiServiceMock.Setup(x => x.GetAsync<SurveyViewModel>(It.IsAny<string>()))
+            ApiServiceMock.Setup(x => x.GetAsync<SurveyViewModel>(It.IsAny<string>()))
                 .ReturnsAsync(branchingSurvey);
 
             var parameters = new ComponentParameter[]
             {
                 ComponentParameter.CreateParameter(nameof(Survey.SurveyId), _testSurveyId)
             };
-            var cut = _context.RenderComponent<Survey>(parameters);
+            var cut = Context.RenderComponent<Survey>(parameters);
 
             // Act
             // LoadData is now called automatically during OnInitializedAsync via EnsureInitializedAsync
             await Task.Delay(100); // Give time for async initialization
 
             // Assert - Verify branching survey was loaded once from OnInitializedAsync
-            _apiServiceMock.Verify(x => x.GetAsync<SurveyViewModel>(It.IsAny<string>()), Times.Once);
+            ApiServiceMock.Verify(x => x.GetAsync<SurveyViewModel>(It.IsAny<string>()), Times.Once);
         }
 
         [Test]
@@ -929,7 +849,7 @@ namespace JwtIdentity.BunitTests
             };
 
             // Act
-            var cut = _context.RenderComponent<Survey>(parameters);
+            var cut = Context.RenderComponent<Survey>(parameters);
 
             // Assert
             Assert.That(cut.Instance, Is.Not.Null);
@@ -946,7 +866,7 @@ namespace JwtIdentity.BunitTests
             };
 
             // Act
-            var cut = _context.RenderComponent<Survey>(parameters);
+            var cut = Context.RenderComponent<Survey>(parameters);
 
             // Assert
             Assert.That(cut.Instance, Is.Not.Null);
