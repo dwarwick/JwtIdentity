@@ -88,10 +88,10 @@
         <MudText Typo="Typo.body2">Please review the AI generated questions and answers. Sometimes the AI may halucinate and as a result, the questions and answers may not make sense. You may regenerate the questions up to 2 times. If you are satisfied with the generated questions, click the Accept Questions button.</MudText>
         <MudStack Row="true" Spacing="1" Class="mt-2">
             <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 1 })" IsButton="true">
-                <SpinnerButton Text="Regenerate Questions" Color="Color.Secondary" OnClick="RegenerateQuestions" Disabled="@(Survey.AiRetryCount >= 2)" IsBusy="@RegeneratingQuestions" />
+                <SpinnerButton Text="Regenerate Questions" Color="Color.Secondary" OnClick="RegenerateQuestions" Disabled="@(Survey.AiRetryCount >= 2 || (IsDemoUser && DemoStep != 1))" IsBusy="@RegeneratingQuestions" />
             </DemoBorder>
             <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 1 })" IsButton="true">
-                <MudButton id="AcceptQuestionsBtn" Variant="Variant.Filled" Color="Color.Primary" OnClick="AcceptQuestions">Accept Questions</MudButton>
+                <MudButton id="AcceptQuestionsBtn" Variant="Variant.Filled" Color="Color.Primary" OnClick="AcceptQuestions" Disabled="@(IsDemoUser && DemoStep != 1)">Accept Questions</MudButton>
             </DemoBorder>
         </MudStack>
         <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 1 })" TransformOrigin="Origin.TopLeft" AnchorOrigin="Origin.BottomLeft">
@@ -122,11 +122,11 @@
                             <MudList id="QuestionList" T="QuestionViewModel" Dense="true" SelectedValue="SelectedQuestion" SelectionMode="MudBlazor.SelectionMode.ToggleSelection" SelectedValueChanged="QuestionSelected">
                                 @foreach (var question in Survey.Questions)
                                 {
-                                    <DragAndDrop TItem="QuestionViewModel" Items="Survey.Questions" Item="question" ItemsChanged="DroppedQuestion" Disabled="@(!CanEditQuestions)">
+                                    <DragAndDrop TItem="QuestionViewModel" Items="Survey.Questions" Item="question" ItemsChanged="DroppedQuestion" Disabled="@(!CanEditQuestions || (IsDemoUser && DemoStep != 2))">
                                         <MudStack Class=".d-flex.flex-row.gap-3.ai-style-change-1" Row="true" AlignItems="AlignItems.Center">
                                             @if (CanEditQuestions)
                                             {
-                                                <MudIconButton Icon="@Icons.Material.Filled.Delete" ButtonType="ButtonType.Button" OnClick="@(() => DeleteQuestion(question))" />
+                                                <MudIconButton Icon="@Icons.Material.Filled.Delete" ButtonType="ButtonType.Button" OnClick="@(() => DeleteQuestion(question))" Disabled="@(IsDemoUser)" />
                                                 <MudIcon Class="drag-icon ai-style-change-9" Icon="@Icons.Material.Filled.DragIndicator" />
                                             }
 
@@ -202,7 +202,7 @@
                                            Immediate="true"
                                            ErrorText="Please select a type"
                                            Error="@(string.IsNullOrWhiteSpace(SelectedQuestionType))"
-                                           Disabled="@(SelectedQuestion != null)">
+                                           Disabled="@(SelectedQuestion != null || (IsDemoUser && DemoStep != 6))">
                                     @foreach (var questionType in QuestionTypes)
                                     {
                                         <MudSelectItem Value="@(StringHelper.PascalCaseToWords(questionType))" />
@@ -257,7 +257,7 @@
                                 </DemoBorder>
                             </DemoPopup>
                             <MudText Typo="Typo.h6" Class="mt-5">Create a @StringHelper.PascalCaseToWords(SelectedQuestionType) Question</MudText>
-                            <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 4, 7, 8 })">
+                            <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 4, 7 })">
                                 <MudTextField id="Text" Label="Question Text" @bind-Value="QuestionText" Variant="Variant.Filled" Lines="1" MaxLines="5" AutoGrow="true" Immediate="true" Counter="500" MaxLength="500" ReadOnly="@IsDemoUser" />
                             </DemoBorder>
                             <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 4 })" AnchorOrigin="Origin.BottomLeft" TransformOrigin="Origin.TopLeft">
@@ -293,7 +293,7 @@
 
                         <MudStack Row="true">
                             <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 9, 12, 15, 18, 21 })" IsButton="true">
-                                <MudButton id="SaveQuestionBtn" ButtonType="ButtonType.Button" Variant="Variant.Filled" Color="Color.Primary" OnClick="AddQuestionToSurvey" Disabled="@AddQuestionToSurveyDisabled">Save Question</MudButton>
+                                <MudButton id="SaveQuestionBtn" ButtonType="ButtonType.Button" Variant="Variant.Filled" Color="Color.Primary" OnClick="AddQuestionToSurvey" Disabled="@(AddQuestionToSurveyDisabled || (IsDemoUser && DemoStep != 9 && DemoStep != 12 && DemoStep != 15 && DemoStep != 18 && DemoStep != 21))">Save Question</MudButton>
                             </DemoBorder>
                             <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 9 })" TransformOrigin="Origin.TopLeft" AnchorOrigin="Origin.BottomLeft">
                                 <MudText Typo="Typo.body2">Scroll down so you can see the choices down below. Click Save Question button to save the question.</MudText>
@@ -310,10 +310,10 @@
                             <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 21 })" TransformOrigin="Origin.TopLeft" AnchorOrigin="Origin.BottomLeft">
                                 <MudText Typo="Typo.body2">Now save this text question by clicking the Save Question button.</MudText>
                             </DemoPopup>
-                            <MudCheckBox T="bool" @bind-Value="IsRequired" Label="Is Required?" Color="Color.Primary" Disabled="@AddQuestionToSurveyDisabled" />
+                            <MudCheckBox T="bool" @bind-Value="IsRequired" Label="Is Required?" Color="Color.Primary" Disabled="@(AddQuestionToSurveyDisabled || IsDemoUser)" />
                             @if ((SelectedQuestion?.GroupId ?? 0) == 0 && (SelectedQuestion?.CanBeMarkedAsLastQuestion ?? true))
                             {
-                                <MudCheckBox T="bool" @bind-Value="IsLastQuestion" Label="Is Last Question?" Color="Color.Primary" Disabled="@AddQuestionToSurveyDisabled" />
+                                <MudCheckBox T="bool" @bind-Value="IsLastQuestion" Label="Is Last Question?" Color="Color.Primary" Disabled="@(AddQuestionToSurveyDisabled || (IsDemoUser && DemoStep != 22))" />
                             }
                         </MudStack>
                     </MudPaper>
@@ -323,8 +323,8 @@
                     {
                         <MudPaper>
                             <MudText Typo="Typo.h6" Class="mb-1">Add the Question Choices</MudText>
-                            <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 11, 14, 17 })">
-                                <MudSelect id="PresetChoices" Label="Preset Choices (Will overwrite existing choices)" T="string" @bind-Value="SelectedPresetChoice" Variant="Variant.Filled" Dense="true">
+                            <DemoBorder CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 8, 11, 14, 17 })">
+                                <MudSelect id="PresetChoices" Label="Preset Choices (Will overwrite existing choices)" T="string" @bind-Value="SelectedPresetChoice" Variant="Variant.Filled" Dense="true" Disabled="@(IsDemoUser && DemoStep != 8 && DemoStep != 11 && DemoStep != 14 && DemoStep != 17)">
                                     <MudSelectItem T="string" Value=null>-- Select Preset --</MudSelectItem>
                                     @foreach (var preset in PresetChoices)
                                     {
@@ -341,17 +341,17 @@
                             <DemoPopup CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { 17 })" TransformOrigin="Origin.TopLeft" AnchorOrigin="Origin.BottomLeft">
                                 <MudText Typo="Typo.body2">For the fourth question about ease of use, select <strong>Yes No Partially</strong> from the Preset Choices.</MudText>
                             </DemoPopup>
-                            <MudTextField id="Choice" Label="Choice Text" @bind-Value="NewChoiceOptionText" Variant="Variant.Filled" Lines="1" MaxLines="5" AutoGrow="true" Immediate="true" Counter="50" MaxLength="50" ReadOnly="@IsDemoUser" />
+                            <MudTextField id="Choice" Label="Choice Text" @bind-Value="NewChoiceOptionText" Variant="Variant.Filled" Lines="1" MaxLines="5" AutoGrow="true" Immediate="true" Counter="50" MaxLength="50" ReadOnly="@IsDemoUser" Disabled="@IsDemoUser" />
 
-                            <MudButton ButtonType="ButtonType.Button" Variant="Variant.Filled" Color="Color.Primary" OnClick="@AddChoiceOption" Disabled="@(string.IsNullOrWhiteSpace(NewChoiceOptionText))">Add Choice</MudButton>
+                            <MudButton ButtonType="ButtonType.Button" Variant="Variant.Filled" Color="Color.Primary" OnClick="@AddChoiceOption" Disabled="@(string.IsNullOrWhiteSpace(NewChoiceOptionText) || IsDemoUser)">Add Choice</MudButton>
 
                             <div style="height:300px;overflow:auto;" class="mt-2">
                                 <MudList T="string" ReadOnly="true" Dense="true">
                                     @foreach (var choice in MultipleChoiceQuestion.Options)
                                     {
-                                        <DragAndDrop TItem="ChoiceOptionViewModel" Items="MultipleChoiceQuestion.Options" Item="choice" ItemsChanged="DroppedChoiceOption">
+                                        <DragAndDrop TItem="ChoiceOptionViewModel" Items="MultipleChoiceQuestion.Options" Item="choice" ItemsChanged="DroppedChoiceOption" Disabled="@IsDemoUser">
                                             <MudStack Class=".d-flex.flex-row.gap-3.ai-style-change-1" Row="true" AlignItems="AlignItems.Center">
-                                                <MudIconButton Icon="@Icons.Material.Filled.Delete" ButtonType="ButtonType.Button" OnClick="@(() => DeleteChoiceOption(choice))" />
+                                                <MudIconButton Icon="@Icons.Material.Filled.Delete" ButtonType="ButtonType.Button" OnClick="@(() => DeleteChoiceOption(choice))" Disabled="@IsDemoUser" />
                                                 <MudIcon Class="drag-icon ai-style-change-9" Icon="@Icons.Material.Filled.DragIndicator" />
                                                 <MudListItem T="string" Class="ai-style-change-3 ai-style-change-6" Text="@choice.OptionText" />
                                             </MudStack>
@@ -365,7 +365,7 @@
                 </MudExpansionPanel>
 
                 <MudExpansionPanel @ref="ExistingQuestionPanel" Text="Start with Existing Question" @bind-Expanded="@ExistingQuestionPanelExpanded">
-                    <SfAutoComplete TValue="BaseQuestionDto" TItem="BaseQuestionDto" PopupHeight="130px" EnableVirtualization="true" Placeholder="Start Typing to Search Existing Questions" Query="@RemoteDataQuery" Value="SelectedExistingQuestion" ValueChanged="HandleSelectedExistingQuestion" ShowPopupButton="true">
+                    <SfAutoComplete TValue="BaseQuestionDto" TItem="BaseQuestionDto" PopupHeight="130px" EnableVirtualization="true" Placeholder="Start Typing to Search Existing Questions" Query="@RemoteDataQuery" Value="SelectedExistingQuestion" ValueChanged="HandleSelectedExistingQuestion" ShowPopupButton="true" Enabled="@(!IsDemoUser)">
                         <SfDataManager Url="odata/odataquestion" CrossDomain="true" Adaptor="Adaptors.ODataV4Adaptor" />
                         <AutoCompleteFieldSettings Text="Text" Value="Text" />
                     </SfAutoComplete>

@@ -19,11 +19,11 @@ namespace JwtIdentity.Services
             _configuration = configuration;
             _logger = logger;
             _context = context;
+            _httpClient.Timeout = TimeSpan.FromSeconds(180);
         }
 
         public async Task<SurveyViewModel> GenerateSurveyAsync(string description, string aiInstructions = "")
-        {
-            _httpClient.Timeout = TimeSpan.FromSeconds(180);
+        {            
             var apiKey = _configuration["OpenAI:ApiKey"];
             if (string.IsNullOrWhiteSpace(apiKey))
             {
@@ -54,7 +54,8 @@ namespace JwtIdentity.Services
                 {
                     new { role = "system", content = "You are a helpful assistant for creating surveys." },
                     new { role = "user", content = prompt.Replace("{SURVEY_DESCRIPTION}", description).Replace("{AI_INSTRUCTIONS}", aiInstructions) }
-                }
+                },
+                response_format = new { type = "json_object" }
             };
 
             var content = new StringContent(JsonSerializer.Serialize(body), Encoding.UTF8, "application/json");
@@ -191,7 +192,8 @@ namespace JwtIdentity.Services
                 {
                     new { role = "system", content = "You are an expert survey analyst." },
                     new { role = "user", content = finalPrompt }
-                }
+                },
+                response_format = new { type = "json_object" }
             };
 
             var content = new StringContent(JsonSerializer.Serialize(body), Encoding.UTF8, "application/json");
