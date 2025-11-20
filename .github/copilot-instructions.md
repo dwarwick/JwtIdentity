@@ -92,12 +92,21 @@ This is a Blazor WebAssembly project with a server-side API. The solution uses .
 ### Test Structure Guidelines
 
 #### bUnit Test Structure
-**All bUnit test classes MUST inherit from `BUnitTestBase`** which provides:
+**CRITICAL: All bUnit test classes MUST inherit from `BUnitTestBase`** 
+
+This is mandatory to avoid MudPopoverProvider and service registration issues. The base class provides:
 - Pre-configured `TestContext` with all necessary services
-- Mocked services (AuthService, ApiService, LocalStorage, etc.)
+- Pre-rendered `MudPopoverProvider` (prevents MudBlazor popover errors)
+- Mocked services (AuthService, ApiService, LocalStorage, etc.) via protected properties
 - MockNavigationManager for navigation testing
 - MudBlazor and Syncfusion services registered
 - `AssertPopoverText(string expectedText)` helper method for verifying demo popup content
+
+**Key Requirements:**
+1. **Never** create your own `TestContext` - use the `Context` property from the base class
+2. **Always** use base class mock properties: `ApiServiceMock`, `AuthServiceMock`, `AuthStateProviderMock`, etc.
+3. **Reset mocks** in `[SetUp]` if you need clean state between tests: `ApiServiceMock.Reset();`
+4. **Do not** duplicate MockNavigationManager or service registration code
 
 **IMPORTANT: Demo Popup Testing**
 When testing demo functionality with `DemoPopup` components:
@@ -110,6 +119,7 @@ When testing demo functionality with `DemoPopup` components:
   AssertPopoverText("Click the button to continue");
   ```
 
+**Example Test Structure:**
 ```csharp
 [TestFixture]
 public class MyComponentTests : BUnitTestBase
@@ -117,18 +127,22 @@ public class MyComponentTests : BUnitTestBase
     [SetUp]
     public void Setup()
     {
-        // Additional test-specific setup if needed
+        // Reset mocks if needed for clean state between tests
+        ApiServiceMock.Reset();
+        AuthServiceMock.Reset();
+        
+        // Additional test-specific setup
         // Context, AuthServiceMock, ApiServiceMock, etc. are available from base class
+        ApiServiceMock.Setup(x => x.GetAsync<SomeType>(It.IsAny<string>()))
+            .ReturnsAsync(new SomeType());
     }
 
     [Test]
     public void Component_Scenario_ExpectedBehavior()
     {
-        // Arrange
-        ApiServiceMock.Setup(x => x.GetAsync<SomeType>(It.IsAny<string>()))
-            .ReturnsAsync(new SomeType());
+        // Arrange - use base class properties
         
-        // Act
+        // Act - use Context.RenderComponent from base class
         var cut = Context.RenderComponent<MyComponent>();
         
         // Assert
