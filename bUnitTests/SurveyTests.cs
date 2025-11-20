@@ -629,9 +629,11 @@ namespace JwtIdentity.BunitTests
             var cut = _context.RenderComponent<Survey>(parameters);
 
             // Act
-            await cut.Instance.LoadData();
+            // LoadData is now called automatically during OnInitializedAsync via EnsureInitializedAsync
+            // So we just need to wait for it to complete
+            await Task.Delay(100); // Give time for async initialization
 
-            // Assert
+            // Assert - Should be called once from OnInitializedAsync
             _apiServiceMock.Verify(x => x.GetAsync<SurveyViewModel>(
                 It.Is<string>(s => s.Contains(_testSurveyId.ToString()))), Times.Once);
         }
@@ -667,9 +669,10 @@ namespace JwtIdentity.BunitTests
             var cut = _context.RenderComponent<Survey>(parameters);
 
             // Act
-            await cut.Instance.HandleLoggingInUser();
+            // HandleLoggingInUser is now called automatically during OnInitializedAsync via EnsureInitializedAsync
+            await Task.Delay(100); // Give time for async initialization
 
-            // Assert
+            // Assert - Should be called once from OnInitializedAsync
             _authServiceMock.Verify(x => x.Login(
                 It.Is<ApplicationUserViewModel>(u => u.UserName == "logmeinanonymoususer")), Times.Once);
         }
@@ -750,9 +753,10 @@ namespace JwtIdentity.BunitTests
             var cut = _context.RenderComponent<Survey>(parameters);
 
             // Act
-            await cut.Instance.LoadData();
+            // LoadData is now called automatically during OnInitializedAsync via EnsureInitializedAsync
+            await Task.Delay(100); // Give time for async initialization
 
-            // Assert - Verify branching survey was loaded
+            // Assert - Verify branching survey was loaded once from OnInitializedAsync
             _apiServiceMock.Verify(x => x.GetAsync<SurveyViewModel>(It.IsAny<string>()), Times.Once);
         }
 
