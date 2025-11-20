@@ -521,8 +521,13 @@ namespace JwtIdentity.Client.Pages.Survey
 
         private bool AllQuestionsAnswered()
         {
-            // check if all questions have been answered
-            foreach (var question in Survey.Questions)
+            // For branching surveys, only validate questions that are in QuestionsToShow
+            // (i.e., questions in Group 0 plus questions in groups that were loaded based on branching logic)
+            // For linear surveys, QuestionsToShow contains all questions, so validation works the same
+            var questionsToValidate = HasBranching ? QuestionsToShow : Survey.Questions;
+            
+            // check if all required questions have been answered
+            foreach (var question in questionsToValidate)
             {
                 if (question.IsRequired == false)
                 {
