@@ -6,13 +6,15 @@ namespace JwtIdentity.Client.Pages.Survey
     public class SurveyModel : BlazorBase, IAsyncDisposable
     {
         private int _previousDemoStep = -1;
-        
+
         private bool _initialized;
+
+        private PersistingComponentStateSubscription _persistingStateSubscription;
 
         [Parameter]
         public Guid SurveyId { get; set; }
 
-        [PersistentState]
+        [PersistentState("Survey")]
         public SurveyViewModel Survey { get; set; }
 
         protected bool isCaptchaVerified { get; set; } = false;
@@ -101,6 +103,22 @@ namespace JwtIdentity.Client.Pages.Survey
         private HashSet<int> _groupsToVisit = new();
         private HashSet<int> _visitedGroups = new();
         private int _currentGroupId = 0;
+
+        protected override void OnInitialized()
+        {
+            _persistingStateSubscription = PersistentComponentState.RegisterOnPersisting(PersistSurveyState);
+
+            if (PersistentComponentState.TryTakeFromJson<SurveyViewModel>("Survey", out var restoredSurvey))
+            {
+                Survey = restoredSurvey;
+            }
+        }
+
+        private Task PersistSurveyState()
+        {
+            PersistentComponentState.PersistAsJson("Survey", Survey);
+            return Task.CompletedTask;
+        }
 
         // Calculate total question count based on groups to visit
         protected int CalculateTotalQuestions()
@@ -426,6 +444,8 @@ namespace JwtIdentity.Client.Pages.Survey
                 {
                     // Dispose managed resources
                     objRef?.Dispose();
+
+                    _persistingStateSubscription?.Dispose();
 
                     var authState = await AuthStateProvider.GetAuthenticationStateAsync();
                     ClaimsPrincipal user = authState.User;

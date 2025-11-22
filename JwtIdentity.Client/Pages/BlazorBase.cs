@@ -42,6 +42,9 @@ namespace JwtIdentity.Client.Pages
 
         [Inject]
         internal ILogger<BlazorBase> Logger { get; set; }
+
+        [Inject]
+        internal PersistentComponentState PersistentComponentState { get; set; }
 #pragma warning restore CS8618
 
         private HttpClient _client;
