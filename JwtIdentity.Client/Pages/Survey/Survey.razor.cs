@@ -162,18 +162,29 @@ namespace JwtIdentity.Client.Pages.Survey
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
+            Console.WriteLine("Render 1");
             // Only run JavaScript on the first render in the browser (not during prerendering)
             if (!firstRender || !OperatingSystem.IsBrowser())
             {
                 return;
             }
 
+            Console.WriteLine("Render 2");
+
+            Console.WriteLine($"Survey != null: {Survey != null}");
+            Console.WriteLine($"Survey.Id > 0: {(Survey?.Id ?? 0) > 0}");
+            Console.WriteLine($"!Preview: {!Preview}");
+            Console.WriteLine($"!ViewAnswers: {!ViewAnswers}");
+            Console.WriteLine($"!isCaptchaVerified: {!isCaptchaVerified}");
+
             // Captcha JS – only if we actually need it
             if (Survey != null && Survey.Id > 0 && !Preview && !ViewAnswers && !isCaptchaVerified)
             {
+                Console.WriteLine("Render 3");
                 objRef ??= DotNetObjectReference.Create(this);
                 await JSRuntime.InvokeVoidAsync("registerCaptchaCallback", objRef);
                 await JSRuntime.InvokeVoidAsync("renderReCaptcha", "captcha-container", Configuration["ReCaptcha:SiteKey"]);
+                Console.WriteLine("Render 4");
             }
 
             // Demo scroll
@@ -211,7 +222,7 @@ namespace JwtIdentity.Client.Pages.Survey
         {
             // get the survey based on the SurveyId
             Survey = await ApiService.GetAsync<SurveyViewModel>($"{ApiEndpoints.Answer}/getanswersforsurveyforloggedinuser/{SurveyId}?Preview={Preview || ViewAnswers}");
-
+            Console.WriteLine("LoadData complete");
             if (Survey != null && Survey.Id > 0)
             {
                 foreach (var question in Survey.Questions)
@@ -1108,13 +1119,14 @@ namespace JwtIdentity.Client.Pages.Survey
         }
 
         private async Task EnsureInitializedAsync()
-        {
+        {        
             if (_initialized)
                 return;
 
             _initialized = true;
 
             await HandleLoggingInUser();
+            Console.WriteLine("Loading survey data...");
             await LoadData();
             Loading = false;
         }
