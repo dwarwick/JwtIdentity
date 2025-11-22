@@ -1110,7 +1110,7 @@ namespace JwtIdentity.Client.Pages.Survey
             _initialized = true;
 
             await HandleLoggingInUser();
-            if (Survey == null || Survey.Id == 0)
+            if (Survey?.Id == 0)
             {
                 await LoadData();
             }
