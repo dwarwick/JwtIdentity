@@ -21,7 +21,7 @@ namespace JwtIdentity.Middleware
                            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; " +
                            "font-src 'self' data: https://fonts.gstatic.com; " +
                            "img-src 'self' data: https: blob:; " +
-                           "connect-src 'self' wss://localhost:* https://www.google.com https://www.gstatic.com https://cdn.jsdelivr.net; " +
+                           "connect-src 'self' ws://localhost:* wss://localhost:* http://localhost:* https://localhost:* https://www.google.com https://www.gstatic.com https://cdn.jsdelivr.net https://raw.githubusercontent.com; " +
                            "worker-src 'self' blob: https://www.google.com https://www.gstatic.com;";
 
             // Add CSP header
