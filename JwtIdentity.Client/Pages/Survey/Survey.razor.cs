@@ -181,7 +181,7 @@ namespace JwtIdentity.Client.Pages.Survey
                     await JSRuntime.InvokeVoidAsync("renderReCaptcha", "captcha-container", Configuration["ReCaptcha:SiteKey"]);
                     _captchaRendered = true;                    
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {                    
                     // Don't set _captchaRendered = true on error, so we can retry
                     Console.WriteLine($"Error rendering reCAPTCHA: {ex.Message}");
