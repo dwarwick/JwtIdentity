@@ -160,11 +160,13 @@ namespace JwtIdentity.Client.Pages.Survey
         }
 
 
+        private bool _captchaRendered = false;
+
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
             Console.WriteLine("Render 1");
-            // Only run JavaScript on the first render in the browser (not during prerendering)
-            if (!firstRender || !OperatingSystem.IsBrowser())
+            // Only run JavaScript in the browser (not during server prerendering)
+            if (!OperatingSystem.IsBrowser())
             {
                 return;
             }
@@ -177,13 +179,14 @@ namespace JwtIdentity.Client.Pages.Survey
             Console.WriteLine($"!ViewAnswers: {!ViewAnswers}");
             Console.WriteLine($"!isCaptchaVerified: {!isCaptchaVerified}");
 
-            // Captcha JS – only if we actually need it
-            if (Survey != null && Survey.Id > 0 && !Preview && !ViewAnswers && !isCaptchaVerified)
+            // Captcha JS – only if we actually need it and haven't already rendered it
+            if (!_captchaRendered && Survey != null && Survey.Id > 0 && !Preview && !ViewAnswers && !isCaptchaVerified)
             {
                 Console.WriteLine("Render 3");
                 objRef ??= DotNetObjectReference.Create(this);
                 await JSRuntime.InvokeVoidAsync("registerCaptchaCallback", objRef);
                 await JSRuntime.InvokeVoidAsync("renderReCaptcha", "captcha-container", Configuration["ReCaptcha:SiteKey"]);
+                _captchaRendered = true;
                 Console.WriteLine("Render 4");
             }
 
@@ -1129,6 +1132,7 @@ namespace JwtIdentity.Client.Pages.Survey
             Console.WriteLine("Loading survey data...");
             await LoadData();
             Loading = false;
+            StateHasChanged();
         }
     }
 }
