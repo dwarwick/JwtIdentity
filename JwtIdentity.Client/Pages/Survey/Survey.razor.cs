@@ -163,40 +163,26 @@ namespace JwtIdentity.Client.Pages.Survey
         private bool _captchaRendered = false;
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
-        {
-            Console.WriteLine("Render 1");
+        {            
             // Only run JavaScript in the browser (not during server prerendering)
             if (!OperatingSystem.IsBrowser())
-            {
-                Console.WriteLine("Not in browser, skipping");
+            {                
                 return;
-            }
-
-            Console.WriteLine("Render 2");
-
-            Console.WriteLine($"Survey != null: {Survey != null}");
-            Console.WriteLine($"Survey.Id > 0: {(Survey?.Id ?? 0) > 0}");
-            Console.WriteLine($"!Preview: {!Preview}");
-            Console.WriteLine($"!ViewAnswers: {!ViewAnswers}");
-            Console.WriteLine($"!isCaptchaVerified: {!isCaptchaVerified}");
-            Console.WriteLine($"_captchaRendered: {_captchaRendered}");
+            }            
 
             // Captcha JS – only if we actually need it and haven't already rendered it
             if (!_captchaRendered && Survey != null && Survey.Id > 0 && !Preview && !ViewAnswers && !isCaptchaVerified)
-            {
-                Console.WriteLine("Render 3 - About to render reCAPTCHA");
+            {                
                 
                 try
                 {
                     objRef ??= DotNetObjectReference.Create(this);
                     await JSRuntime.InvokeVoidAsync("registerCaptchaCallback", objRef);
                     await JSRuntime.InvokeVoidAsync("renderReCaptcha", "captcha-container", Configuration["ReCaptcha:SiteKey"]);
-                    _captchaRendered = true;
-                    Console.WriteLine("Render 4 - reCAPTCHA rendered successfully");
+                    _captchaRendered = true;                    
                 }
                 catch (Exception ex)
-                {
-                    Console.WriteLine($"Error rendering reCAPTCHA: {ex.Message}");
+                {                    
                     // Don't set _captchaRendered = true on error, so we can retry
                 }
             }
@@ -236,7 +222,7 @@ namespace JwtIdentity.Client.Pages.Survey
         {
             // get the survey based on the SurveyId
             Survey = await ApiService.GetAsync<SurveyViewModel>($"{ApiEndpoints.Answer}/getanswersforsurveyforloggedinuser/{SurveyId}?Preview={Preview || ViewAnswers}");
-            Console.WriteLine("LoadData complete");
+            
             if (Survey != null && Survey.Id > 0)
             {
                 foreach (var question in Survey.Questions)
@@ -1139,8 +1125,7 @@ namespace JwtIdentity.Client.Pages.Survey
 
             _initialized = true;
 
-            await HandleLoggingInUser();
-            Console.WriteLine("Loading survey data...");
+            await HandleLoggingInUser();            
             await LoadData();
             Loading = false;
             StateHasChanged();
