@@ -12,13 +12,8 @@ namespace JwtIdentity.Client.Pages.Survey
         [Parameter]
         public Guid SurveyId { get; set; }
 
-        protected SurveyViewModel Survey { get; set; }
-
-        protected List<AnswerViewModel> Answers { get; set; } = new List<AnswerViewModel>();
-
-        protected int SelectedOptionId { get; set; }
-
-        protected string Url => $"{NavigationManager.BaseUri}survey/{Survey?.Guid ?? ""}";
+        [PersistentState]
+        public SurveyViewModel Survey { get; set; }
 
         protected bool isCaptchaVerified { get; set; } = false;
 
@@ -1115,7 +1110,15 @@ namespace JwtIdentity.Client.Pages.Survey
             _initialized = true;
 
             await HandleLoggingInUser();
-            await LoadData();
+            if (Survey?.Id == 0)
+            {
+                await LoadData();
+            }
+            else
+            {
+                InitializeBranchingQuestions();
+            }
+
             Loading = false;
         }
     }
