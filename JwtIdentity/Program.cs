@@ -368,6 +368,8 @@ else
 
 app.UseHttpsRedirection();
 
+//app.UseContentSecurityPolicy();
+
 app.UseAntiforgery();
 
 app.UseAuthentication();

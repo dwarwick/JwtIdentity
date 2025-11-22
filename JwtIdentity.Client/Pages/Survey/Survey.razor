@@ -5,7 +5,7 @@
 <PageTitle>Survey Shark - Survey</PageTitle>
 
 <div class="survey-container">
-    @if (!isCaptchaVerified && !Preview && !ViewAnswers)
+    @if (OperatingSystem.IsBrowser() && !isCaptchaVerified && !Preview && !ViewAnswers)
     {
         <MudText Typo="Typo.h5" Class="mb-4" Align="Align.Center">Verification Required</MudText>
         <!-- reCAPTCHA widget with data-callback pointing to our JS function -->
