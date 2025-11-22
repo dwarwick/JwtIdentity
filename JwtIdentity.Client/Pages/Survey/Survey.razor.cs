@@ -162,8 +162,10 @@ namespace JwtIdentity.Client.Pages.Survey
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
-            // We still only want the JS bits on the first browser render
-            if (!firstRender || !OperatingSystem.IsBrowser())
+            // Only run on the first render
+            // Note: With InteractiveServer render mode, this runs on the server,
+            // but JSRuntime calls are sent to the browser via SignalR
+            if (!firstRender)
             {
                 return;
             }
