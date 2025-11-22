@@ -184,6 +184,7 @@ namespace JwtIdentity.Client.Pages.Survey
                 catch (Exception)
                 {                    
                     // Don't set _captchaRendered = true on error, so we can retry
+                    Console.WriteLine($"Error rendering reCAPTCHA: {ex.Message}");
                 }
             }
 
