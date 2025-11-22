@@ -59,22 +59,18 @@ try {
 // Track rendered reCAPTCHA widgets by container ID
 window.recaptchaWidgets = window.recaptchaWidgets || {};
 
-function renderReCaptcha(containerId, siteKey) {
-    console.log(`renderReCaptcha called for ${containerId}`);
+function renderReCaptcha(containerId, siteKey) {    
     
     var container = document.getElementById(containerId);
-    if (!container) {
-        console.error("reCAPTCHA container not found.");
+    if (!container) {        
         return;
     }
 
     // If reCAPTCHA was already rendered in this container, reset it instead of re-rendering
-    if (window.recaptchaWidgets[containerId] !== undefined) {
-        console.log(`reCAPTCHA already exists for ${containerId}, resetting...`);
+    if (window.recaptchaWidgets[containerId] !== undefined) {        
         try {
             if (typeof grecaptcha !== 'undefined' && grecaptcha.reset) {
-                grecaptcha.reset(window.recaptchaWidgets[containerId]);
-                console.log(`reCAPTCHA reset successfully`);
+                grecaptcha.reset(window.recaptchaWidgets[containerId]);                
                 return;
             }
         } catch (e) {
@@ -93,8 +89,7 @@ function renderReCaptcha(containerId, siteKey) {
                 'sitekey': siteKey,
                 'callback': onCaptchaSuccess // Ensure this function is defined
             });
-            window.recaptchaWidgets[containerId] = widgetId;
-            console.log(`reCAPTCHA rendered successfully with widget ID: ${widgetId}`);
+            window.recaptchaWidgets[containerId] = widgetId;            
         } catch (e) {
             console.error(`Error rendering reCAPTCHA: ${e.message}`);
         }
@@ -221,8 +216,7 @@ function rejectThirdPartyCookies(successCallback) {
 }
 
 // Function to delete a cookie by setting its expiration date to the past
-function deleteCookie(name) {
-    console.log(`Attempting to delete cookie: ${name}`);
+function deleteCookie(name) {    
     
     // Never delete essential cookies
     if (isEssentialCookie(name)) {
@@ -268,8 +262,6 @@ function deleteCookie(name) {
     
     if (stillExists) {
         console.warn(`Failed to delete cookie: ${name}`);
-    } else {
-        console.log(`Successfully deleted cookie: ${name}`);
     }
 }
 
@@ -289,9 +281,7 @@ function isEssentialCookie(name) {
 }
 
 // Function to identify and delete common third-party cookies
-function deleteThirdPartyCookies() {
-    console.log('Deleting third-party cookies...');
-    
+function deleteThirdPartyCookies() {    
     // Common tracking and analytics cookies - extended list
     const thirdPartyCookieNames = [
         // Google Analytics
@@ -310,11 +300,6 @@ function deleteThirdPartyCookies() {
     
     // Get all cookies
     const cookies = document.cookie.split(';');
-    console.log(`Found ${cookies.length} cookies total`);
-    
-    if (cookies.length > 0) {
-        console.log('Current cookies: ' + document.cookie);
-    }
     
     // Track essential cookies that should be preserved
     const essentialCookies = ['authToken', 'ThirdPartyCookieConsent', '.AspNetCore.Cookies', 'RequestVerificationToken', '__RequestVerificationToken'];
@@ -338,14 +323,12 @@ function deleteThirdPartyCookies() {
         
         // Skip essential cookies
         if (isEssentialCookie(cookieName)) {
-            console.log(`Preserving essential cookie: ${cookieName}`);
             return;
         }
         
         // If it's not in our essential list, and looks like third-party, delete it
         const looksThirdParty = thirdPartyCookieNames.some(name => cookieName.startsWith(name));
-        if (looksThirdParty) {
-            console.log(`Deleting cookie: ${cookieName}`);
+        if (looksThirdParty) {            
             deleteCookie(cookieName);
             deletedCount++;
         }
@@ -353,97 +336,73 @@ function deleteThirdPartyCookies() {
     
     // Clean up all third-party elements from the DOM
     cleanupThirdPartyDomElements();
-    
-    console.log(`Attempted to delete ${deletedCount} third-party cookies`);
-    console.log('Remaining cookies: ' + document.cookie);
-    
     return deletedCount > 0;
 }
 
 // Function to clean up third-party DOM elements more thoroughly
 function cleanupThirdPartyDomElements() {
-    console.log('Cleaning up third-party DOM elements...');
     
     // Remove Google Ads scripts
-    const scripts = document.querySelectorAll('script[src*="google"]');
-    console.log(`Removing ${scripts.length} Google-related scripts`);
+    const scripts = document.querySelectorAll('script[src*="google"]');    
     scripts.forEach(script => script.remove());
     
     // Remove Google Ads iframe
     const googleEsf = document.getElementById('google_esf');
     if (googleEsf) {
-        console.log('Removing Google ESF iframe');
         googleEsf.remove();
     }
     
     // Remove AdSense elements
-    const adsenseElements = document.querySelectorAll('ins.adsbygoogle, ins.adsbygoogle-noablate');
-    console.log(`Removing ${adsenseElements.length} AdSense elements`);
+    const adsenseElements = document.querySelectorAll('ins.adsbygoogle, ins.adsbygoogle-noablate');    
     adsenseElements.forEach(element => element.remove());
     
     // Remove any other ad-related iframes
-    const adIframes = document.querySelectorAll('iframe[src*="doubleclick"], iframe[src*="googleads"], iframe[id^="aswift_"]');
-    console.log(`Removing ${adIframes.length} ad-related iframes`);
+    const adIframes = document.querySelectorAll('iframe[src*="doubleclick"], iframe[src*="googleads"], iframe[id^="aswift_"]');    
     adIframes.forEach(iframe => iframe.remove());
     
     // Remove Google ad containers
-    const adContainers = document.querySelectorAll('div[id^="aswift_"][id$="_host"]');
-    console.log(`Removing ${adContainers.length} ad containers`);
+    const adContainers = document.querySelectorAll('div[id^="aswift_"][id$="_host"]');    
     adContainers.forEach(container => container.remove());
     
     // Remove any hidden elements with Google ad attributes
     const hiddenAdElements = document.querySelectorAll('[data-ad-client], [data-ad-slot], [data-ad-format], [data-adsbygoogle-status]');
-    console.log(`Removing ${hiddenAdElements.length} hidden ad elements`);
     hiddenAdElements.forEach(element => element.remove());
     
     // Clean up Google Analytics objects
     if (window.ga) {
-        console.log('Disabling Google Analytics');
         window.ga = undefined;
     }
     if (window.google_tag_manager) {
-        console.log('Disabling Google Tag Manager');
         window.google_tag_manager = undefined;
     }
     if (window.dataLayer) {
-        console.log('Clearing dataLayer');
         window.dataLayer = undefined;
     }
-    
-    console.log('Third-party DOM cleanup complete');
 }
 
 // Function to handle cleaning up third-party services completely
 function clearThirdPartyServicesCompletely() {
-    console.log('Performing complete third-party service cleanup...');
-    
     // First call the server-side endpoint to clear cookies (for any cookies that might be accessible to the server)
     fetch('/api/cookie/clear')
         .then(response => response.json())
         .then(data => {
-            console.log('Server-side cookie deletion result:', data);
-            
             // Clean up DOM elements
             cleanupThirdPartyDomElements();
             
             // Clean up all Google variables to prevent tracking
             if (window.google) {
-                console.log('Removing window.google');
                 window.google = undefined;
             }
             
             if (window.gaData) {
-                console.log('Removing window.gaData');
                 window.gaData = undefined;
             }
             
             if (window.gaGlobal) {
-                console.log('Removing window.gaGlobal');
                 window.gaGlobal = undefined;
             }
             
             if (window.gaplugins) {
-                console.log('Removing window.gaplugins');
                 window.gaplugins = undefined;
             }
             
@@ -452,8 +411,6 @@ function clearThirdPartyServicesCompletely() {
             
             // Set a flag indicating we want a clean context
             localStorage.setItem('requireCleanContext', 'true');
-            
-            console.log('Complete third-party service cleanup finished. Reloading for clean context...');
         })
         .catch(error => {
             console.error('Error calling server-side cookie deletion:', error);
@@ -472,7 +429,6 @@ function clearTrackingFromStorage() {
             // Check if the key matches any tracking pattern
             if (key && trackingKeys.some(trackingKey => 
                 key.toLowerCase().includes(trackingKey.toLowerCase()))) {
-                console.log(`Removing localStorage item: ${key}`);
                 localStorage.removeItem(key);
             }
         }
@@ -483,7 +439,6 @@ function clearTrackingFromStorage() {
             
             // Check if the key matches any tracking pattern
             if (key && key.toLowerCase().includes('google')) {
-                console.log(`Removing sessionStorage item: ${key}`);
                 sessionStorage.removeItem(key);
             }
         }
@@ -493,17 +448,12 @@ function clearTrackingFromStorage() {
 }
 
 // Update the clear cookie consent function to use our more thorough approach
-function clearCookieConsent() {
-    console.log('Clearing cookie consent...');
-    
+function clearCookieConsent() {    
     // Delete the consent cookie itself
     deleteCookie('ThirdPartyCookieConsent');
     
     // Perform complete third-party services cleanup
     clearThirdPartyServicesCompletely();
-    
-    console.log('Cookie consent cleared and third-party services disabled');
-
     return true;
 }
 
