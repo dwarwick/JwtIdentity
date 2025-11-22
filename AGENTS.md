@@ -1,12 +1,12 @@
-This is a blazor webassembly project that uses a server project that provides an API. 
-Both projects are in the same solution. They both use .Net9.
+This is a blazor webassembly project that uses a server project that provides an API.
+Both projects are in the same solution. They both use .NET 10.
 The solution also contains a Common Library for shared functionality, which can be utilized across both the Blazor WebAssembly and the server project for consistency and code reuse.
 The common project contains ViewModels and static classes and helper methods that are used by the client and server project. This enhances maintainability and promotes a clean architecture in the solution.
 The solution uses cookie authentication and authorization for the Blazor WebAssembly project. Additionally, best practices are followed for security and performance optimizations.
-The Blazor WebAssembly project is configured to use the latest .NET 9 features and libraries, ensuring that it is up-to-date with the latest advancements in the .NET ecosystem.
+The Blazor WebAssembly project is configured to use the latest .NET 10 features and libraries, ensuring that it is up-to-date with the latest advancements in the .NET ecosystem.
 The solution is designed to be modular and scalable, allowing for easy addition of new features and components in the future.
 The project structure is organized to separate concerns, making it easier to manage and understand the codebase.
-The solution is built using the latest .NET 9 features and libraries, ensuring that it is up-to-date with the latest advancements in the .NET ecosystem.
+The solution is built using the latest .NET 10 features and libraries, ensuring that it is up-to-date with the latest advancements in the .NET ecosystem.
 The server project uses ef core and has a database connection string in the appsettings.json file and appsettings.Development.json file. The connection string is used to connect to a SQL Server database.
 The database is created using ef core migrations, and the initial migration is included in the project. The database is created when the application is run for the first time, and the data is seeded with some initial data.
 When building datagrids, use Syncfusion Blazor components for data grids. Examples of how to use Syncfusion Blazor components are included in the project in LogsGrid.razor, ManageFeedback.razor, MyFeedback.razor, Filter.razor, SurveysIAnswered.razor, and SurverysICreated.razor.
@@ -26,7 +26,9 @@ When creating a new Razor component, always create a code behind file with the s
 app-dark.css is used for dark mode. It should only contain dark mode styles. Do not add any other styles to this file.
 app-light.css is used for light mode. It should only contain light mode styles. Do not add any other styles to this file.
 app.css is used for styles that are common to both dark mode and light mode. Do not add any dark mode or light mode specific styles to this file.
-Playwright end-to-end tests live in the JwtIdentity.PlaywrightTests project and use NUnit. Install browsers with `pwsh bin/Debug/net9.0/playwright.ps1 install` after the first build, and run the suite with `dotnet test JwtIdentity.PlaywrightTests`.
+Playwright end-to-end tests live in the JwtIdentity.PlaywrightTests project and use NUnit. Install browsers with `pwsh bin/Debug/net10.0/playwright.ps1 install` after the first build, and run the suite with `dotnet test JwtIdentity.PlaywrightTests`.
 The projects in the solution explicitly disable nullable reference types. Do not enable nullable reference types in any of the projects. If you find nullable reference types enabled in any of the projects, please disable them. If you find that any reference types are marked as nullable, please remove the nullable annotation.
 The MudStack Wrap attribute expects a Wrap enum value. See DemoLanding.razor for an example.
 When you build the solution, check for new warnings and fix them. Do not ignore new warnings. Warnings should be treated as errors and fixed before committing code.33.MudBlazor MudCheckBox API: Use Value and ValueChanged properties (NOT Checked/CheckedChanged which are deprecated). Example: `<MudCheckBox T="bool" Value="@myValue" ValueChanged="@((bool val) => HandleChange(val))" />`
+
+Before creating a PR, always run the unit tests and the bUnit tests; fix any failures you encounter. Do not attempt to run the Playwright tests. Review all Copilot instruction files in the repository and follow their guidance.

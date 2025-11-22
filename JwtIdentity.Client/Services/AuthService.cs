@@ -1,8 +1,6 @@
 ﻿
 using Blazored.LocalStorage;
-using System.Net.Http.Headers;
 using System.Security.Claims;
-using System.Text.Json;
 
 namespace JwtIdentity.Client.Services
 {
@@ -38,7 +36,8 @@ namespace JwtIdentity.Client.Services
 
                     if (OperatingSystem.IsBrowser())
                     {
-                        await LocalStorage.SetItemAsync("authToken", response.Data.Token);
+                        await LocalStorage.SetItemAsync(AuthStorageKeys.AuthTokenStorageKey, response.Data.Token);
+                        await LocalStorage.SetItemAsync(AuthStorageKeys.CurrentUserStorageKey, response.Data);
                     }
                     await ((CustomAuthStateProvider)_customAuthStateProvider).LoggedIn();
 
@@ -78,7 +77,8 @@ namespace JwtIdentity.Client.Services
 
                     if (OperatingSystem.IsBrowser())
                     {
-                        await LocalStorage.SetItemAsync("authToken", response.Data.Token);
+                        await LocalStorage.SetItemAsync(AuthStorageKeys.AuthTokenStorageKey, response.Data.Token);
+                        await LocalStorage.SetItemAsync(AuthStorageKeys.CurrentUserStorageKey, response.Data);
                     }
                     await ((CustomAuthStateProvider)_customAuthStateProvider).LoggedIn();
 
