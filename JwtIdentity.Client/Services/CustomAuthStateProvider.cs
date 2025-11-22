@@ -100,6 +100,10 @@ namespace JwtIdentity.Client.Services
                     {
                         CurrentUser = cachedUser;
                     }
+                    else if (cachedUser != null)
+                    {
+                        await _localStorage.RemoveItemAsync(AuthStorageKeys.CurrentUserStorageKey);
+                    }
                 }
 
                 if (CurrentUser == null && !string.IsNullOrEmpty(userId))
