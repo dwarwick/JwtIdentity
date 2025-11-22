@@ -56,21 +56,48 @@ try {
     });
 } catch {}
 
+// Track rendered reCAPTCHA widgets by container ID
+window.recaptchaWidgets = window.recaptchaWidgets || {};
+
 function renderReCaptcha(containerId, siteKey) {
+    console.log(`renderReCaptcha called for ${containerId}`);
+    
     var container = document.getElementById(containerId);
     if (!container) {
         console.error("reCAPTCHA container not found.");
         return;
     }
 
+    // If reCAPTCHA was already rendered in this container, reset it instead of re-rendering
+    if (window.recaptchaWidgets[containerId] !== undefined) {
+        console.log(`reCAPTCHA already exists for ${containerId}, resetting...`);
+        try {
+            if (typeof grecaptcha !== 'undefined' && grecaptcha.reset) {
+                grecaptcha.reset(window.recaptchaWidgets[containerId]);
+                console.log(`reCAPTCHA reset successfully`);
+                return;
+            }
+        } catch (e) {
+            console.error(`Error resetting reCAPTCHA: ${e.message}`);
+            // If reset fails, try to remove and re-render
+            delete window.recaptchaWidgets[containerId];
+        }
+    }
+
     // Clear the container before rendering to prevent the "must be empty" error
     container.innerHTML = "";
 
     if (typeof grecaptcha !== 'undefined') {
-        grecaptcha.render(containerId, {
-            'sitekey': siteKey,
-            'callback': onCaptchaSuccess // Ensure this function is defined
-        });
+        try {
+            var widgetId = grecaptcha.render(containerId, {
+                'sitekey': siteKey,
+                'callback': onCaptchaSuccess // Ensure this function is defined
+            });
+            window.recaptchaWidgets[containerId] = widgetId;
+            console.log(`reCAPTCHA rendered successfully with widget ID: ${widgetId}`);
+        } catch (e) {
+            console.error(`Error rendering reCAPTCHA: ${e.message}`);
+        }
     } else {
         console.error('reCAPTCHA API not loaded.');
     }

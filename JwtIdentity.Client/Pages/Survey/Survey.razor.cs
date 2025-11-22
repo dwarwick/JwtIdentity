@@ -168,6 +168,7 @@ namespace JwtIdentity.Client.Pages.Survey
             // Only run JavaScript in the browser (not during server prerendering)
             if (!OperatingSystem.IsBrowser())
             {
+                Console.WriteLine("Not in browser, skipping");
                 return;
             }
 
@@ -178,16 +179,26 @@ namespace JwtIdentity.Client.Pages.Survey
             Console.WriteLine($"!Preview: {!Preview}");
             Console.WriteLine($"!ViewAnswers: {!ViewAnswers}");
             Console.WriteLine($"!isCaptchaVerified: {!isCaptchaVerified}");
+            Console.WriteLine($"_captchaRendered: {_captchaRendered}");
 
             // Captcha JS – only if we actually need it and haven't already rendered it
             if (!_captchaRendered && Survey != null && Survey.Id > 0 && !Preview && !ViewAnswers && !isCaptchaVerified)
             {
-                Console.WriteLine("Render 3");
-                objRef ??= DotNetObjectReference.Create(this);
-                await JSRuntime.InvokeVoidAsync("registerCaptchaCallback", objRef);
-                await JSRuntime.InvokeVoidAsync("renderReCaptcha", "captcha-container", Configuration["ReCaptcha:SiteKey"]);
-                _captchaRendered = true;
-                Console.WriteLine("Render 4");
+                Console.WriteLine("Render 3 - About to render reCAPTCHA");
+                
+                try
+                {
+                    objRef ??= DotNetObjectReference.Create(this);
+                    await JSRuntime.InvokeVoidAsync("registerCaptchaCallback", objRef);
+                    await JSRuntime.InvokeVoidAsync("renderReCaptcha", "captcha-container", Configuration["ReCaptcha:SiteKey"]);
+                    _captchaRendered = true;
+                    Console.WriteLine("Render 4 - reCAPTCHA rendered successfully");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error rendering reCAPTCHA: {ex.Message}");
+                    // Don't set _captchaRendered = true on error, so we can retry
+                }
             }
 
             // Demo scroll
