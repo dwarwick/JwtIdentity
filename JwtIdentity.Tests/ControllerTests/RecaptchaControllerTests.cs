@@ -28,7 +28,7 @@ namespace JwtIdentity.Tests.ControllerTests
             _mockHttpHandler = new Mock<HttpMessageHandler>(MockBehavior.Strict);
             _mockHttpHandler.Protected().Setup("Dispose", ItExpr.IsAny<bool>()); // Allow Dispose
             // Setup configuration to return the fake secret
-            MockConfiguration.Setup(c => c["Recaptcha:SecretKey"]).Returns(FakeSecret);
+            MockConfiguration.Setup(c => c["ReCaptcha:SecretKey"]).Returns(FakeSecret);
             // Remove controller creation from here
         }
 

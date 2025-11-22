@@ -54,7 +54,7 @@ namespace JwtIdentity.Controllers
         {
             try
             {
-                string secretKey = configuration["Recaptcha:SecretKey"];
+                string secretKey = configuration["ReCaptcha:SecretKey"];
                 
                 if (string.IsNullOrEmpty(secretKey))
                 {
