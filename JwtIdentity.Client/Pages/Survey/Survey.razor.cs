@@ -15,12 +15,6 @@ namespace JwtIdentity.Client.Pages.Survey
         [PersistentState]
         public SurveyViewModel Survey { get; set; }
 
-        protected List<AnswerViewModel> Answers { get; set; } = new List<AnswerViewModel>();
-
-        protected int SelectedOptionId { get; set; }
-
-        protected string Url => $"{NavigationManager.BaseUri}survey/{Survey?.Guid ?? ""}";
-
         protected bool isCaptchaVerified { get; set; } = false;
 
         protected bool Preview { get; set; }
