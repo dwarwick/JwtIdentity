@@ -12,6 +12,7 @@ namespace JwtIdentity.Client.Pages.Survey
         [Parameter]
         public Guid SurveyId { get; set; }
 
+        [PersistentState]
         protected SurveyViewModel Survey { get; set; }
 
         protected List<AnswerViewModel> Answers { get; set; } = new List<AnswerViewModel>();
