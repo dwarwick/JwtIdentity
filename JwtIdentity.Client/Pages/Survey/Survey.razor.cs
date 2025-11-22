@@ -12,7 +12,8 @@ namespace JwtIdentity.Client.Pages.Survey
         [Parameter]
         public Guid SurveyId { get; set; }
 
-        protected SurveyViewModel Survey { get; set; }
+        [PersistentState]
+        public SurveyViewModel Survey { get; set; }
 
         protected List<AnswerViewModel> Answers { get; set; } = new List<AnswerViewModel>();
 
@@ -1115,7 +1116,15 @@ namespace JwtIdentity.Client.Pages.Survey
             _initialized = true;
 
             await HandleLoggingInUser();
-            await LoadData();
+            if (Survey == null || Survey.Id == 0)
+            {
+                await LoadData();
+            }
+            else
+            {
+                InitializeBranchingQuestions();
+            }
+
             Loading = false;
         }
     }

@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace JwtIdentity.Common.ViewModels
 {
+    [JsonConverter(typeof(QuestionViewModelConverter))]
     public abstract class QuestionViewModel : BaseViewModel
     {
         public int Id { get; set; }
