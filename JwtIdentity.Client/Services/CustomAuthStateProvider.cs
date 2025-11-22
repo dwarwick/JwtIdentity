@@ -69,7 +69,7 @@ namespace JwtIdentity.Client.Services
                     return new AuthenticationState(serverUser);
                 }
 
-                var savedToken = await _localStorage.GetItemAsync<string>("authToken");
+                var savedToken = await _localStorage.GetItemAsync<string>(AuthStorageKeys.AuthTokenStorageKey);
                 if (savedToken == null)
                 {
                     return new AuthenticationState(anonymous);
@@ -79,7 +79,8 @@ namespace JwtIdentity.Client.Services
 
                 if (tokenContent.ValidTo < DateTime.UtcNow)
                 {
-                    await _localStorage.RemoveItemAsync("authToken");
+                    await _localStorage.RemoveItemAsync(AuthStorageKeys.AuthTokenStorageKey);
+                    await _localStorage.RemoveItemAsync(AuthStorageKeys.CurrentUserStorageKey);
                     return new AuthenticationState(anonymous);
                 }
 
@@ -92,9 +93,23 @@ namespace JwtIdentity.Client.Services
 
                 var userId = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
 
+                if (CurrentUser == null && OperatingSystem.IsBrowser())
+                {
+                    var cachedUser = await _localStorage.GetItemAsync<ApplicationUserViewModel>(AuthStorageKeys.CurrentUserStorageKey);
+                    if (cachedUser != null && !string.IsNullOrEmpty(userId) && cachedUser.Id.ToString() == userId)
+                    {
+                        CurrentUser = cachedUser;
+                    }
+                }
+
                 if (CurrentUser == null && !string.IsNullOrEmpty(userId))
                 {
                     CurrentUser = await _apiService.GetAsync<ApplicationUserViewModel>($"{ApiEndpoints.ApplicationUser}/{userId}");
+
+                    if (CurrentUser != null)
+                    {
+                        await _localStorage.SetItemAsync(AuthStorageKeys.CurrentUserStorageKey, CurrentUser);
+                    }
                 }
 
                 // Return the current authentication state without triggering an
@@ -121,7 +136,8 @@ namespace JwtIdentity.Client.Services
         {
             if (OperatingSystem.IsBrowser())
             {
-                await this._localStorage.RemoveItemAsync("authToken");
+                await _localStorage.RemoveItemAsync(AuthStorageKeys.AuthTokenStorageKey);
+                await _localStorage.RemoveItemAsync(AuthStorageKeys.CurrentUserStorageKey);
             }
 
             if (_httpClient != null && _httpClient.DefaultRequestHeaders?.Authorization != null)
@@ -148,7 +164,7 @@ namespace JwtIdentity.Client.Services
                 return new List<Claim>();
             }
 
-            var savedToken = await _localStorage.GetItemAsync<string>("authToken");
+            var savedToken = await _localStorage.GetItemAsync<string>(AuthStorageKeys.AuthTokenStorageKey);
             var tokenContent = jwtSecurityTokenHandler.ReadJwtToken(savedToken);
             var claims = tokenContent.Claims.ToList();
             claims.Add(new Claim(ClaimTypes.Name, tokenContent.Subject));
