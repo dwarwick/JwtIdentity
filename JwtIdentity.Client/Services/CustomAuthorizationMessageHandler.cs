@@ -26,7 +26,7 @@ namespace JwtIdentity.Client.Services
         {
             if (OperatingSystem.IsBrowser())
             {
-                var token = await localStorage.GetItemAsync<string>("authToken");
+                var token = await localStorage.GetItemAsync<string>(AuthStorageKeys.AuthTokenStorageKey);
                 if (!string.IsNullOrWhiteSpace(token) && request.Headers.Authorization is null)
                 {
                     request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
@@ -60,7 +60,7 @@ namespace JwtIdentity.Client.Services
                 }
                 
                 OnUnauthorized?.Invoke();
-                var returnUrl = _navigationManager.ToBaseRelativePath(_navigationManager.Uri);
+                var returnUrl = Uri.EscapeDataString(_navigationManager.ToBaseRelativePath(_navigationManager.Uri));
                 _navigationManager.NavigateTo($"login?returnUrl={returnUrl}");
             }
             else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)

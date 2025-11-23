@@ -57,10 +57,11 @@ namespace JwtIdentity.BunitTests
             // Note: Token clearing only happens when OperatingSystem.IsBrowser() is true,
             // which is false in test environments. In actual browser, tokens would be cleared.
             
-            // Verify navigation to login with return URL
+            // Verify navigation to login with URL-encoded return URL
             Assert.That(_navigationManager.NavigationHistory.Count, Is.EqualTo(2)); // Initial navigation + redirect
             Assert.That(_navigationManager.Uri, Does.Contain("login?returnUrl="));
-            Assert.That(_navigationManager.Uri, Does.Contain("survey/my-survey"));
+            // The return URL should be URL encoded (/ becomes %2F)
+            Assert.That(_navigationManager.Uri, Does.Contain("survey%2Fmy-survey"));
         }
 
         [Test]
