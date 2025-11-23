@@ -368,6 +368,10 @@ else
 
 app.UseHttpsRedirection();
 
+// Serve static files early in the pipeline (before status code pages)
+// This ensures favicon.ico and other static assets are served before 404 handling
+app.UseStaticFiles();
+
 //app.UseContentSecurityPolicy();
 
 app.UseAntiforgery();
@@ -378,9 +382,6 @@ app.UseRateLimiter();
 
 // Add the UserNameEnricher middleware after authentication/authorization
 app.UseUserNameEnricher();
-
-// Handle favicon.ico requests by rewriting to favicon.png
-app.UseFaviconRewrite();
 
 app.UseStatusCodePages(context =>
 {
@@ -393,9 +394,7 @@ app.UseStatusCodePages(context =>
         response.Redirect("/not-authorized");
     }
 
-    if (response.StatusCode == StatusCodes.Status404NotFound && 
-        !(context.HttpContext.Request.Path.Value?.StartsWith("/api/") ?? false) &&
-        !FaviconMiddleware.IsFaviconRequest(context.HttpContext.Request.Path.Value))
+    if (response.StatusCode == StatusCodes.Status404NotFound && !(context.HttpContext.Request.Path.Value?.StartsWith("/api/") ?? false))
     {
         response.Redirect("/not-found");
     }
