@@ -201,10 +201,10 @@ namespace JwtIdentity.Client.Services
 
                 if (jwtToken.ValidTo < DateTime.UtcNow)
                 {
-                    // Token is expired, clear it and redirect to login
-                    await _localStorage.RemoveItemAsync(AuthStorageKeys.AuthTokenStorageKey);
-                    await _localStorage.RemoveItemAsync(AuthStorageKeys.CurrentUserStorageKey);
+                    // Token is expired - perform full logout to clean up everything
+                    await LoggedOut();
                     
+                    // Redirect to login with return URL
                     var returnUrl = Uri.EscapeDataString(_navigationManager.ToBaseRelativePath(_navigationManager.Uri));
                     _navigationManager.NavigateTo($"login?returnUrl={returnUrl}");
                     return false;
