@@ -23,14 +23,15 @@
                 </DemoBorder>
             }
             else
-            {                
-                <MudButton Variant="Variant.Filled" Color="Color.Secondary"
-                            OnClick="@NavigateToBranching"
-                            StartIcon="@Icons.Material.Filled.AccountTree"
-                            Disabled="@(DemoType == "linear")">
-                    Configure Branching
-                </MudButton>                
-            }
+            {    
+                <DemoBorder Class="ms-auto mt-2" CurrentDemoStep="@DemoStep" StepsToShow="@(new List<int>() { -1 })" IsButton="true">
+                    <MudButton Variant="Variant.Filled" Color="Color.Secondary"
+                                OnClick="@NavigateToBranching"
+                                StartIcon="@Icons.Material.Filled.AccountTree"
+                                Disabled="@(DemoType == "linear")">
+                        Configure Branching
+                    </MudButton>
+            </DemoBorder>}
 
             @if (DemoType == "branching")
             {
