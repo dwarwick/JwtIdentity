@@ -379,6 +379,16 @@ app.UseRateLimiter();
 // Add the UserNameEnricher middleware after authentication/authorization
 app.UseUserNameEnricher();
 
+// Handle favicon.ico requests by rewriting to favicon.png
+app.Use(async (context, next) =>
+{
+    if (context.Request.Path.Equals("/favicon.ico", StringComparison.OrdinalIgnoreCase))
+    {
+        context.Request.Path = "/favicon.png";
+    }
+    await next();
+});
+
 app.UseStatusCodePages(context =>
 {
     var response = context.HttpContext.Response;
@@ -390,7 +400,9 @@ app.UseStatusCodePages(context =>
         response.Redirect("/not-authorized");
     }
 
-    if (response.StatusCode == StatusCodes.Status404NotFound && !(context.HttpContext.Request.Path.Value?.StartsWith("/api/") ?? false))
+    if (response.StatusCode == StatusCodes.Status404NotFound && 
+        !(context.HttpContext.Request.Path.Value?.StartsWith("/api/") ?? false) &&
+        !(context.HttpContext.Request.Path.Value?.Equals("/favicon.ico", StringComparison.OrdinalIgnoreCase) ?? false))
     {
         response.Redirect("/not-found");
     }
