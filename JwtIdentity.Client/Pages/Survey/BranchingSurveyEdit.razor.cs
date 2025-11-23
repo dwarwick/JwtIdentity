@@ -67,6 +67,12 @@ namespace JwtIdentity.Client.Pages.Survey
 
         protected override async Task OnInitializedAsync()
         {
+            // Check if token is expired before making API calls
+            if (!await CheckTokenExpirationAsync())
+            {
+                return; // Token expired, user will be redirected to login
+            }
+
             var authState = await AuthStateProvider.GetAuthenticationStateAsync();
             var userName = authState.User.Identity?.Name ?? string.Empty;
             IsDemoUser = userName.StartsWith("DemoUser") && userName.EndsWith("@surveyshark.site");

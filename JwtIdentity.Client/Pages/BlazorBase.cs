@@ -1,7 +1,6 @@
 using Blazored.LocalStorage;
 using JwtIdentity.Client.Helpers;
 using Microsoft.Extensions.Logging;
-using System.IdentityModel.Tokens.Jwt;
 
 namespace JwtIdentity.Client.Pages
 {
@@ -61,40 +60,14 @@ namespace JwtIdentity.Client.Pages
         /// <returns>True if token is valid, false if expired (and redirected to login)</returns>
         protected async Task<bool> CheckTokenExpirationAsync()
         {
-            if (!OperatingSystem.IsBrowser())
+            // In tests, the AuthStateProvider may be a mock, so we need to check the type
+            if (AuthStateProvider is CustomAuthStateProvider customProvider)
             {
-                return true; // Server-side rendering, skip check
+                return await customProvider.CheckTokenExpirationAsync();
             }
-
-            try
-            {
-                var token = await LocalStorage.GetItemAsync<string>(AuthStorageKeys.AuthTokenStorageKey);
-                if (string.IsNullOrEmpty(token))
-                {
-                    return true; // No token, let normal auth flow handle it
-                }
-
-                var handler = new JwtSecurityTokenHandler();
-                var jwtToken = handler.ReadJwtToken(token);
-
-                if (jwtToken.ValidTo < DateTime.UtcNow)
-                {
-                    // Token is expired, clear it and redirect to login
-                    await LocalStorage.RemoveItemAsync(AuthStorageKeys.AuthTokenStorageKey);
-                    await LocalStorage.RemoveItemAsync(AuthStorageKeys.CurrentUserStorageKey);
-                    
-                    var returnUrl = Uri.EscapeDataString(NavigationManager.ToBaseRelativePath(NavigationManager.Uri));
-                    NavigationManager.NavigateTo($"login?returnUrl={returnUrl}");
-                    return false;
-                }
-
-                return true; // Token is still valid
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "Error checking token expiration");
-                return true; // On error, let normal auth flow handle it
-            }
+            
+            // In test environments or when using a mock, skip the check
+            return true;
         }
     }
 }
