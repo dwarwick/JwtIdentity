@@ -13,8 +13,6 @@ namespace JwtIdentity.Client.Services
 
         private ISnackbar Snackbar => serviceProvider.GetRequiredService<ISnackbar>();
 
-        public event Action OnUnauthorized;
-
         public CustomAuthorizationMessageHandler(NavigationManager navigationManager, IServiceProvider serviceProvider, ILocalStorageService localStorage)
         {
             _navigationManager = navigationManager;
@@ -59,7 +57,6 @@ namespace JwtIdentity.Client.Services
                     await localStorage.RemoveItemAsync(AuthStorageKeys.CurrentUserStorageKey);
                 }
                 
-                OnUnauthorized?.Invoke();
                 var returnUrl = Uri.EscapeDataString(_navigationManager.ToBaseRelativePath(_navigationManager.Uri));
                 _navigationManager.NavigateTo($"login?returnUrl={returnUrl}");
             }

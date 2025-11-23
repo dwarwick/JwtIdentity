@@ -46,7 +46,7 @@ namespace JwtIdentity.BunitTests
             var fakeHandler = (FakeHttpMessageHandler)_handler.InnerHandler;
             fakeHandler.StatusCodeToReturn = HttpStatusCode.Unauthorized;
             
-            var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/api/test");
+            using var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/api/test");
             
             // Act
             var response = await _invoker.SendAsync(request, CancellationToken.None);
@@ -72,7 +72,7 @@ namespace JwtIdentity.BunitTests
             var fakeHandler = (FakeHttpMessageHandler)_handler.InnerHandler;
             fakeHandler.StatusCodeToReturn = HttpStatusCode.Unauthorized;
             
-            var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/api/test");
+            using var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/api/test");
             
             // Act
             var response = await _invoker.SendAsync(request, CancellationToken.None);
@@ -95,7 +95,7 @@ namespace JwtIdentity.BunitTests
             var fakeHandler = (FakeHttpMessageHandler)_handler.InnerHandler;
             fakeHandler.StatusCodeToReturn = HttpStatusCode.OK;
             
-            var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/api/test");
+            using var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/api/test");
             
             // Act
             var response = await _invoker.SendAsync(request, CancellationToken.None);
@@ -119,7 +119,7 @@ namespace JwtIdentity.BunitTests
             var fakeHandler = (FakeHttpMessageHandler)_handler.InnerHandler;
             fakeHandler.StatusCodeToReturn = HttpStatusCode.NotFound;
             
-            var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/api/test");
+            using var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/api/test");
             
             // Act
             var response = await _invoker.SendAsync(request, CancellationToken.None);

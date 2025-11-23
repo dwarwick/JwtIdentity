@@ -19,6 +19,12 @@ namespace JwtIdentity.Client.Services
 
         public event Action OnLoggedOut;
 
+        // Backward compatibility constructor - provides default null values for optional parameters
+        public CustomAuthStateProvider(Blazored.LocalStorage.ILocalStorageService localStorage, IHttpClientFactory httpClientFactory, IApiService apiService)
+            : this(localStorage, httpClientFactory, apiService, null, null)
+        {
+        }
+
         public CustomAuthStateProvider(Blazored.LocalStorage.ILocalStorageService localStorage, IHttpClientFactory httpClientFactory, IApiService apiService, NavigationManager navigationManager)
             : this(localStorage, httpClientFactory, apiService, navigationManager, null)
         {
@@ -205,8 +211,13 @@ namespace JwtIdentity.Client.Services
                     await LoggedOut();
                     
                     // Redirect to login with return URL
-                    var returnUrl = Uri.EscapeDataString(_navigationManager.ToBaseRelativePath(_navigationManager.Uri));
-                    _navigationManager.NavigateTo($"login?returnUrl={returnUrl}");
+                    // Note: LoggedOut() may invoke OnLoggedOut event handlers that could perform navigation.
+                    // We check if NavigationManager is available before navigating to avoid conflicts.
+                    if (_navigationManager != null)
+                    {
+                        var returnUrl = Uri.EscapeDataString(_navigationManager.ToBaseRelativePath(_navigationManager.Uri));
+                        _navigationManager.NavigateTo($"login?returnUrl={returnUrl}");
+                    }
                     return false;
                 }
 
