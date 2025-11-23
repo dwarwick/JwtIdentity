@@ -368,6 +368,10 @@ else
 
 app.UseHttpsRedirection();
 
+// Serve static files early in the pipeline (before status code pages)
+// This ensures favicon.ico and other static assets are served before 404 handling
+app.UseStaticFiles();
+
 //app.UseContentSecurityPolicy();
 
 app.UseAntiforgery();
