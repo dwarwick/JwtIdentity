@@ -12,24 +12,32 @@ namespace JwtIdentity.Client.Services
         private readonly JwtSecurityTokenHandler jwtSecurityTokenHandler;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly NavigationManager _navigationManager;
         private HttpClient _httpClient;
 
         public ApplicationUserViewModel CurrentUser { get; set; }
 
         public event Action OnLoggedOut;
 
+        // Backward compatibility constructor - provides default null values for optional parameters
         public CustomAuthStateProvider(Blazored.LocalStorage.ILocalStorageService localStorage, IHttpClientFactory httpClientFactory, IApiService apiService)
-            : this(localStorage, httpClientFactory, apiService, null)
+            : this(localStorage, httpClientFactory, apiService, null, null)
         {
         }
 
-        public CustomAuthStateProvider(Blazored.LocalStorage.ILocalStorageService localStorage, IHttpClientFactory httpClientFactory, IApiService apiService, IHttpContextAccessor httpContextAccessor)
+        public CustomAuthStateProvider(Blazored.LocalStorage.ILocalStorageService localStorage, IHttpClientFactory httpClientFactory, IApiService apiService, NavigationManager navigationManager)
+            : this(localStorage, httpClientFactory, apiService, navigationManager, null)
+        {
+        }
+
+        public CustomAuthStateProvider(Blazored.LocalStorage.ILocalStorageService localStorage, IHttpClientFactory httpClientFactory, IApiService apiService, NavigationManager navigationManager, IHttpContextAccessor httpContextAccessor)
         {
             _localStorage = localStorage;
             jwtSecurityTokenHandler = new JwtSecurityTokenHandler();
 
             _httpClientFactory = httpClientFactory;
             _apiService = apiService;
+            _navigationManager = navigationManager;
             _httpContextAccessor = httpContextAccessor;
         }
 
@@ -173,6 +181,53 @@ namespace JwtIdentity.Client.Services
             var claims = tokenContent.Claims.ToList();
             claims.Add(new Claim(ClaimTypes.Name, tokenContent.Subject));
             return claims;
+        }
+
+        /// <summary>
+        /// Checks if the current authentication token has expired and redirects to login if necessary.
+        /// Should be called in OnInitializedAsync of protected pages.
+        /// </summary>
+        /// <returns>True if token is valid, false if expired (and redirected to login)</returns>
+        public async Task<bool> CheckTokenExpirationAsync()
+        {
+            if (!OperatingSystem.IsBrowser())
+            {
+                return true; // Server-side rendering, skip check
+            }
+
+            try
+            {
+                var token = await _localStorage.GetItemAsync<string>(AuthStorageKeys.AuthTokenStorageKey);
+                if (string.IsNullOrEmpty(token))
+                {
+                    return true; // No token, let normal auth flow handle it
+                }
+
+                var jwtToken = jwtSecurityTokenHandler.ReadJwtToken(token);
+
+                if (jwtToken.ValidTo < DateTime.UtcNow)
+                {
+                    // Token is expired - perform full logout to clean up everything
+                    await LoggedOut();
+                    
+                    // Redirect to login with return URL
+                    // Note: LoggedOut() may invoke OnLoggedOut event handlers that could perform navigation.
+                    // We check if NavigationManager is available before navigating to avoid conflicts.
+                    if (_navigationManager != null)
+                    {
+                        var returnUrl = Uri.EscapeDataString(_navigationManager.ToBaseRelativePath(_navigationManager.Uri));
+                        _navigationManager.NavigateTo($"login?returnUrl={returnUrl}");
+                    }
+                    return false;
+                }
+
+                return true; // Token is still valid
+            }
+            catch (Exception)
+            {
+                // On error, let normal auth flow handle it
+                return true;
+            }
         }
 
         // Removed unused ParseBase64WithoutPadding method

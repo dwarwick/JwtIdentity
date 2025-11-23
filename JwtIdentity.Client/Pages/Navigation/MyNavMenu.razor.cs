@@ -7,8 +7,6 @@ namespace JwtIdentity.Client.Pages.Navigation
     public class MyNavMenuModel : BlazorBase, IDisposable
     {
         private bool _disposed = false;
-        // Cache handler to ensure subscriptions don't resolve services after disposal
-        private CustomAuthorizationMessageHandler _authorizationHandler;
 
         [Parameter]
         public bool DarkTheme { get; set; }
@@ -36,8 +34,6 @@ namespace JwtIdentity.Client.Pages.Navigation
         protected override void OnInitialized()
         {
             ((CustomAuthStateProvider)AuthStateProvider!).OnLoggedOut += UpdateLoggedIn;
-            _authorizationHandler = CustomAuthorizationMessageHandler;
-            _authorizationHandler.OnUnauthorized += UpdateLoggedIn;
             AuthStateProvider.AuthenticationStateChanged += AuthStateChanged;
             _drawerOpen = false;
         }
@@ -96,10 +92,6 @@ namespace JwtIdentity.Client.Pages.Navigation
                 if (disposing)
                 {
                     ((CustomAuthStateProvider)AuthStateProvider!).OnLoggedOut -= UpdateLoggedIn;
-                    if (_authorizationHandler != null)
-                    {
-                        _authorizationHandler.OnUnauthorized -= UpdateLoggedIn;
-                    }
                     AuthStateProvider.AuthenticationStateChanged -= AuthStateChanged;
                 }
                 _disposed = true;

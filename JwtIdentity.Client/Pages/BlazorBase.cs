@@ -52,6 +52,23 @@ namespace JwtIdentity.Client.Pages
         protected CustomAuthorizationMessageHandler CustomAuthorizationMessageHandler => ServiceProvider.GetRequiredService<CustomAuthorizationMessageHandler>();
 
         protected NavigationManager Navigation => NavigationManager;
+
+        /// <summary>
+        /// Checks if the current authentication token has expired and redirects to login if necessary.
+        /// Should be called in OnInitializedAsync of protected pages.
+        /// </summary>
+        /// <returns>True if token is valid, false if expired (and redirected to login)</returns>
+        protected async Task<bool> CheckTokenExpirationAsync()
+        {
+            // In tests, the AuthStateProvider may be a mock, so we need to check the type
+            if (AuthStateProvider is CustomAuthStateProvider customProvider)
+            {
+                return await customProvider.CheckTokenExpirationAsync();
+            }
+            
+            // In test environments or when using a mock, skip the check
+            return true;
+        }
     }
 }
 

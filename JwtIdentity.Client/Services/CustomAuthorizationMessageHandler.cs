@@ -13,8 +13,6 @@ namespace JwtIdentity.Client.Services
 
         private ISnackbar Snackbar => serviceProvider.GetRequiredService<ISnackbar>();
 
-        public event Action OnUnauthorized;
-
         public CustomAuthorizationMessageHandler(NavigationManager navigationManager, IServiceProvider serviceProvider, ILocalStorageService localStorage)
         {
             _navigationManager = navigationManager;
@@ -26,7 +24,7 @@ namespace JwtIdentity.Client.Services
         {
             if (OperatingSystem.IsBrowser())
             {
-                var token = await localStorage.GetItemAsync<string>("authToken");
+                var token = await localStorage.GetItemAsync<string>(AuthStorageKeys.AuthTokenStorageKey);
                 if (!string.IsNullOrWhiteSpace(token) && request.Headers.Authorization is null)
                 {
                     request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
@@ -52,8 +50,15 @@ namespace JwtIdentity.Client.Services
 
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
-                OnUnauthorized?.Invoke();
-                _navigationManager.NavigateTo("not-authorized");
+                // Token expired or invalid - clear auth tokens and redirect to login
+                if (OperatingSystem.IsBrowser())
+                {
+                    await localStorage.RemoveItemAsync(AuthStorageKeys.AuthTokenStorageKey);
+                    await localStorage.RemoveItemAsync(AuthStorageKeys.CurrentUserStorageKey);
+                }
+                
+                var returnUrl = Uri.EscapeDataString(_navigationManager.ToBaseRelativePath(_navigationManager.Uri));
+                _navigationManager.NavigateTo($"login?returnUrl={returnUrl}");
             }
             else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
             {

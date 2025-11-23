@@ -23,7 +23,14 @@
 
         protected override async Task OnInitializedAsync()
         {
-            UserSurveys = (await ApiService.GetAsync<List<SurveyViewModel>>($"{ApiEndpoints.Survey}/surveysianswered")).ToList();
+            // Check if token is expired before making API calls
+            if (!await CheckTokenExpirationAsync())
+            {
+                return; // Token expired, user will be redirected to login
+            }
+
+            var surveys = await ApiService.GetAsync<List<SurveyViewModel>>($"{ApiEndpoints.Survey}/surveysianswered");
+            UserSurveys = surveys?.ToList() ?? new List<SurveyViewModel>();
         }
 
         protected override async Task OnAfterRenderAsync(bool firstRender)

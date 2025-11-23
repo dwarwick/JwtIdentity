@@ -47,7 +47,14 @@
 
         protected override async Task OnInitializedAsync()
         {
-            UserSurveys = (await ApiService.GetAsync<List<SurveyViewModel>>($"{ApiEndpoints.Survey}/surveysicreated")).ToList();
+            // Check if token is expired before making API calls
+            if (!await CheckTokenExpirationAsync())
+            {
+                return; // Token expired, user will be redirected to login
+            }
+
+            var surveys = await ApiService.GetAsync<List<SurveyViewModel>>($"{ApiEndpoints.Survey}/surveysicreated");
+            UserSurveys = surveys?.ToList() ?? new List<SurveyViewModel>();
 
             var authState = await AuthStateProvider.GetAuthenticationStateAsync();
             var userName = authState.User.Identity?.Name ?? string.Empty;
