@@ -52,8 +52,16 @@ namespace JwtIdentity.Client.Services
 
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
+                // Token expired or invalid - clear auth tokens and redirect to login
+                if (OperatingSystem.IsBrowser())
+                {
+                    await localStorage.RemoveItemAsync(AuthStorageKeys.AuthTokenStorageKey);
+                    await localStorage.RemoveItemAsync(AuthStorageKeys.CurrentUserStorageKey);
+                }
+                
                 OnUnauthorized?.Invoke();
-                _navigationManager.NavigateTo("not-authorized");
+                var returnUrl = _navigationManager.ToBaseRelativePath(_navigationManager.Uri);
+                _navigationManager.NavigateTo($"login?returnUrl={returnUrl}");
             }
             else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
             {
