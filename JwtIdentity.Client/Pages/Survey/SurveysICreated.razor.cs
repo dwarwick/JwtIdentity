@@ -47,7 +47,8 @@
 
         protected override async Task OnInitializedAsync()
         {
-            UserSurveys = (await ApiService.GetAsync<List<SurveyViewModel>>($"{ApiEndpoints.Survey}/surveysicreated")).ToList();
+            var surveys = await ApiService.GetAsync<List<SurveyViewModel>>($"{ApiEndpoints.Survey}/surveysicreated");
+            UserSurveys = surveys?.ToList() ?? new List<SurveyViewModel>();
 
             var authState = await AuthStateProvider.GetAuthenticationStateAsync();
             var userName = authState.User.Identity?.Name ?? string.Empty;
