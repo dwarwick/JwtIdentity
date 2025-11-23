@@ -380,14 +380,7 @@ app.UseRateLimiter();
 app.UseUserNameEnricher();
 
 // Handle favicon.ico requests by rewriting to favicon.png
-app.Use(async (context, next) =>
-{
-    if (context.Request.Path.Equals("/favicon.ico", StringComparison.OrdinalIgnoreCase))
-    {
-        context.Request.Path = "/favicon.png";
-    }
-    await next();
-});
+app.UseFaviconRewrite();
 
 app.UseStatusCodePages(context =>
 {
@@ -402,7 +395,7 @@ app.UseStatusCodePages(context =>
 
     if (response.StatusCode == StatusCodes.Status404NotFound && 
         !(context.HttpContext.Request.Path.Value?.StartsWith("/api/") ?? false) &&
-        !(context.HttpContext.Request.Path.Value?.Equals("/favicon.ico", StringComparison.OrdinalIgnoreCase) ?? false))
+        !FaviconMiddleware.IsFaviconRequest(context.HttpContext.Request.Path.Value))
     {
         response.Redirect("/not-found");
     }
